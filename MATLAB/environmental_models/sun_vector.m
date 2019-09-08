@@ -3,6 +3,6 @@ function S= sun_vector(time)
 %   time(double): seconds since const.INITGPS_WN
 global const
 S= planetEphemeris(juliandate(time2datetime(time,const.INITGPS_WN)),'Earth','Sun');
-S= S/norm(S);
+S= (S/norm(S))';
 end
 

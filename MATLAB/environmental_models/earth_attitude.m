@@ -9,7 +9,8 @@ quat_ecef_eci(4)=q(1);
 quat_ecef_eci(1)=q(2);
 quat_ecef_eci(2)=q(3);
 quat_ecef_eci(3)=q(4);
-rate_ecef=[0,0,7.2921158553E-5];
+rate_ecef=[0;0;7.2921158553E-5;];
+quat_ecef_eci=quat_ecef_eci';
 %TODO properly handle higher accuracy terms, leap seconds, and rate calculation
 end
 
