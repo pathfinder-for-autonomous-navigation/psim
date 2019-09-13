@@ -3,6 +3,7 @@ clearvars; clc;
 global truth
 
 addpath('utl');
+addpath('environmental_models');
 
 t_max = 5.0 * 90.0 * 60.0;  % Amount of time simulated (s)
 t_int = 60.0;               % Sampling interval        (s)

@@ -28,6 +28,8 @@ Global variables treated as outputs:
 const.mu = 3.986e14;      % Earth's gravitational constant (m^3/s^2)
 const.dt = int64(0.1e9);  % Simulation timestep            (ns)
 const.INITGPS_WN= 2045;   % initial gps week number, epoch for time.
+const.MAXWHEELRATE= 677.0; % Max wheel rate in rad/s
+const.MAXWHEELRAMP= 304.5; % Max wheel ramp in rad/s/s
 
 truth.mission_time = int64(0);  % Mission time (ns)
 % ^^ Should always initially be zero

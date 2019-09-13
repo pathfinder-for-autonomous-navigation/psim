@@ -1,4 +1,4 @@
-function [acceleration,potential,hessian]= gravity(time,x)
+function [acceleration,potential,hessian]= env_gravity(time,x)
 %gravity Return the gravity acceleration vector, potential, and hessian in ECEF, units m/s^2
 %   time(double): seconds since const.INITGPS_WN
 %   x([3, 1]  vector): position in ECEF coords, units meters

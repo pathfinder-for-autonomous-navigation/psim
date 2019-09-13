@@ -1,4 +1,4 @@
-function out_datetime = time2datetime(time,init_GPS_week_number)
+function out_datetime = utl_time2datetime(time,init_GPS_week_number)
 %time2datetime converts time to a datetime with timezone 'UTCLeapSeconds'
 %   time(double): time since init_GPS_week_number in seconds
 %   init_GPS_week_number(int): initial GPS week number.

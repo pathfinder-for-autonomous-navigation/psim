@@ -1,8 +1,8 @@
-function [quat_ecef_eci,rate_ecef]= earth_attitude(time)
+function [quat_ecef_eci,rate_ecef]= env_earth_attitude(time)
 %earth_attitude Return the quaternion and anguar rate to rotate vectors from eci to ecef
 %   time(double): time in seconds since const.INITGPS_WN
 global const
-T=time2datetime(0,const.INITGPS_WN);
+T=utl_time2datetime(0,const.INITGPS_WN);
 dcm=dcmeci2ecef_noerror('IAU-2000/2006',[year(T),month(T),day(T),hour(T),minute(T),second(T)+time]);
 q=dcm2quat(dcm);
 quat_ecef_eci(4)=q(1);
