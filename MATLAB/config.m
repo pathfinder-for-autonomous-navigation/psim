@@ -25,13 +25,36 @@ Global variables treated as outputs:
 
 %}
 
-const.mu = 3.986e14;      % Earth's gravitational constant (m^3/s^2)
-const.dt = int64(0.1e9);  % Simulation timestep            (ns)
-const.INITGPS_WN= 2045;   % initial gps week number, epoch for time.
-const.MAXWHEELRATE= 677.0; % Max wheel rate in rad/s
-const.MAXWHEELRAMP= 304.5; % Max wheel ramp in rad/s/s
+const.mu = 3.986e14;% positive scalar 
+% Earth's gravitational constant (m^3/s^2)
+const.dt = int64(0.1e9);% positive int64
+% Simulation timestep            (ns)
+const.INITGPS_WN= 2045;% positive int 
+% initial gps week number, epoch for time.
+const.MAXWHEELRATE= 677.0;% positive scalar
+% Max wheel rate in rad/s
+const.MAXWHEELRAMP= 304.5;% positive scalar
+% Max wheel ramp in rad/s/s
+const.MASS= 4.0;% positive scalar
+%dry mass of satellite, kg.
+const.JB=[1/12*const.MASS*(0.3^2+0.1^2) 0 0;
+          0 1/12*const.MASS*(0.3^2+0.1^2) 0;
+          0 0 1/12*const.MASS*(0.1^2+0.1^2);];% 3x3 symmetric matrix
+%dry moment of inertia of satellite in body frame
+const.JWHEEL=135.0e-7;% positive scalar     
+% Wheel Inertia kg*m^2
+const.JFUEL_NORM=0.1^2;% positive scalar 
+% Moment of inertia of the fuel/mass of the fuel m^2.
+const.SLOSH_DAMPING=0.1;% positive scalar
+% Torque on fuel/difference in angular rates in eci Nm/(rad/s).
 
-truth.mission_time = int64(0);  % Mission time (ns)
+%derived constants
+const.JBINV=inv(const.JB);% 3x3 symmetric matrix
+% inverse of dry moment of inertia of satellite in body frame
+
+
+truth.mission_time = int64(0);% int64
+% Mission time (ns)
 % ^^ Should always initially be zero
 
 truth.a  = 6860636.6;  % Semimajor axis                        (m)
@@ -44,6 +67,10 @@ truth.nu = 0*pi/180;   % True anamoly                          (rad)
 [   truth.r,...  % Position (m)   [eci]
     truth.v,...  % Velocity (m/s) [eci]
 ] = utl_orb2rv(truth.a*(1-truth.e), truth.e, truth.i, truth.O, truth.o, truth.nu, const.mu);
+
+
+
+
 
 end
 
