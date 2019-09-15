@@ -30,5 +30,17 @@ repositories.
  * `./*` - scripts to be called for/during the full simulation.
  * `./utl/*` - utility functions shared across all other MATLAB scripts in
    this repository.
+ * `./environmental_models/*` - environmental functions shared across 
+   all other MATLAB scripts in this repository.
+ * `./environmental_models/helper_functions/*` - helper functions for environmental functions.
  * `./test/*` - standalone scripts that only depend on the utility functions
    mentioned above that demonstrate small bits of the simulation.
+
+# Add-Ons
+
+There are a few required add-ons
+
+ * Mapping Toolbox
+ * Ephemeris Data for Aerospace Toolbox
+ * Aerospace Toolbox
+ * Robotics System Toolbox
