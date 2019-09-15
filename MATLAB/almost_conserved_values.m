@@ -1,4 +1,4 @@
-function [orbital_energy,orbital_angular_momentum_eci,rotational_energy,body_angular_momentum_eci] = almost_conserved_values(state)
+function [orbital_energy,orbital_angular_momentum_eci,rotational_energy,spacecraft_angular_momentum_eci] = almost_conserved_values(state)
 %orbital_energy returns the orbital kinetic + potential energy 
 %   units J
 %   state is a structs with elements:
@@ -22,6 +22,6 @@ rotational_energy= rotational_energy+state.wheel_rate_body'*const.JWHEEL*state.w
 Jfuel= const.JFUEL_NORM*state.fuel_mass;
 rotational_energy= rotational_energy+state.fuel_net_angular_momentum_eci'*inv(Jfuel)*state.fuel_net_angular_momentum_eci;
 rotational_energy= 0.5*rotational_energy;
-body_angular_momentum_eci= rotateframe(quat_eci_body,hb_body')'+state.fuel_net_angular_momentum_eci;
+spacecraft_angular_momentum_eci= rotateframe(quat_eci_body,hb_body')'+state.fuel_net_angular_momentum_eci;
 end
 

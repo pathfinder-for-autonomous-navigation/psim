@@ -1,4 +1,4 @@
-function [final_state] = orbit_attitude_update(initial_state,actuators,delta_time)
+function [final_state] = orbit_attitude_update_ode45(initial_state,actuators,delta_time)
 %orbit_attitude_update updates the ECEF position, velocity, and attitude of
 %the satellite. (units are all MKS)
 %   initial_state and final state are a structs with elements:
@@ -67,7 +67,9 @@ global const
         %returns earths attitude at time t, using a first order
         %approximation (slerp)
         %of the rotation from the start to end of delta_time
-        quat_ecef_eci= slerp(quat_ecef_eci_initial,quat_ecef_eci_final,(t-initial_state.time)/delta_time);
+        %disp((t-initial_state.time)/delta_time)
+        T=min((t-initial_state.time)/delta_time,1.0);
+        quat_ecef_eci= slerp(quat_ecef_eci_initial,quat_ecef_eci_final,T);
     end
     magnetic_field_zero_order=env_magnetic_field(initial_state.time,rotateframe(quat_ecef_eci_initial,initial_state.position_eci')');
     function dydt= state_dot(t,y)
@@ -120,8 +122,9 @@ global const
     init_y(11:13)=initial_state.angular_rate_body;
     init_y(14:16)=initial_state.fuel_net_angular_momentum_eci;
     final_time=initial_state.time+delta_time;
-    opts = odeset('RelTol',1E-9,'AbsTol',1e-7);
+    opts = odeset('RelTol',1E-12,'AbsTol',1e-9);
     [~,ys]=ode45(@state_dot,[initial_state.time,final_time],init_y,opts);
+    %ys=utl_ode2(@state_dot,[initial_state.time,final_time],init_y);
     final_y= ys(end,:)';
     final_state=initial_state;
     final_state.time=final_time;

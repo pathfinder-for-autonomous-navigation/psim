@@ -2,6 +2,7 @@ function config
 
 global truth 
 global const
+global actuators
 
 %{
 
@@ -45,7 +46,7 @@ const.JWHEEL=135.0e-7;% positive scalar
 % Wheel Inertia kg*m^2
 const.JFUEL_NORM=0.1^2;% positive scalar 
 % Moment of inertia of the fuel/mass of the fuel m^2.
-const.SLOSH_DAMPING=0.1;% positive scalar
+const.SLOSH_DAMPING=0.0;% positive scalar
 % Torque on fuel/difference in angular rates in eci Nm/(rad/s).
 
 %derived constants
@@ -68,7 +69,37 @@ truth.nu = 0*pi/180;   % True anamoly                          (rad)
     truth.v,...  % Velocity (m/s) [eci]
 ] = utl_orb2rv(truth.a*(1-truth.e), truth.e, truth.i, truth.O, truth.o, truth.nu, const.mu);
 
+truth.time= double(truth.mission_time)*1E-9;
+truth.position_eci= truth.r;
+truth.velocity_eci= truth.v;
+truth.angular_rate_body= [10*pi/180;10*pi/180;10*pi/180];
+truth.quat_body_eci=[0;0;0;1];
+truth.wheel_rate_body=[0;0;0;];
+truth.fuel_net_angular_momentum_eci=[0;0;0;];
+truth.fuel_mass=0.16;
+actuators.wheel_commanded_rate= [0;0;0];
+actuators.wheel_commanded_ramp= [0;0;0];
+actuators.magrod_real_moment_body= [0;0;0];
 
+
+%   initial_state and final state are a structs with elements:
+%       time, datetime time zone UTC leepseconds.
+%       position_eci, position of the center of mass of the satellite.
+%       velocity_eci, velocity of the center of mass of the satellite.
+%       angular_rate_body, the angular rate of the spacecraft in the body frame.
+%       quat_body_eci, quaternion that rotates from eci to body frame.
+%       wheel_rate_body, x,y, and z, wheel angular rates.
+%       fuel_net_angular_momentum_eci, net angular momentum of the fuel.
+%       fuel_mass, the mass of the fuel.
+%   actuators is a struct with actuator inputs that are constant over the
+%   following time step but not constant for the whole simulation:
+%       firing_start_times, times since inital GPS week to start firing.
+%       real_thrust_vectors_body, real thruster forces, units N.
+%       centers_of_thrust_body, center of thrust for each firing, units m.
+%       firing_on_times, how long firings last.
+%       wheel_commanded_rate, commanded x,y,z wheel rate.
+%       wheel_commanded_ramp, commanded x,y,z wheel ramp, units rad/s/s.
+%       magrod_real_moment_body, real magnetorquer moment, units A*m^2
 
 
 
