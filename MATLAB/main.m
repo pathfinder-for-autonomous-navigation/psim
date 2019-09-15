@@ -7,7 +7,7 @@ addpath('utl');
 addpath('environmental_models');
 addpath('environmental_models/helper_functions');
 
-t_max = 1000;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
+t_max = 100;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
 t_int = 10.0;               % Sampling interval        (s)
 
 %arrays to plot
@@ -46,15 +46,29 @@ end
 figure;
 plot(r(1,:),r(2,:))
 title("orbit")
+xlabel('x position (m)')
+ylabel('Y position (m)')
+
 figure;
 plot(t,orbital_energys-orbital_energys(1))
-title("delta orbital_energys")
+title("delta orbital energy")
+xlabel('time (s)')
+ylabel('energy (J)')
+
 figure;
 plot(t,(orbital_angular_momentum_ecis-orbital_angular_momentum_ecis(:,1))')
-title("delta orbital_angular_momentum_ecis")
+title("delta orbital angular momentum eci")
+xlabel('time (s)')
+ylabel('angular momentum (Nms)')
+
 figure;
 plot(t,rotational_energys-rotational_energys(1))
-title("delta rotational_energys")
+title("delta rotational energy")
+xlabel('time (s)')
+ylabel('energy (J)')
+
 figure;
 plot(t,(spacecraft_angular_momentum_ecis-spacecraft_angular_momentum_ecis(:,1))')
-title("delta spacecraft_angular_momentum_eci")
+title("delta spacecraft angular momentum eci")
+xlabel('time (s)')
+ylabel('angular momentum (Nms)')

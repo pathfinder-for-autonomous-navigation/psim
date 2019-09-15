@@ -2,7 +2,7 @@ function [final_state] = orbit_attitude_update_ode45(initial_state,actuators,del
 %orbit_attitude_update updates the ECEF position, velocity, and attitude of
 %the satellite. (units are all MKS)
 %   initial_state and final state are a structs with elements:
-%       time, datetime time zone UTC leepseconds.
+%       time, time since inital GPS week.
 %       position_eci, position of the center of mass of the satellite.
 %       velocity_eci, velocity of the center of mass of the satellite.
 %       angular_rate_body, the angular rate of the spacecraft in the body frame.

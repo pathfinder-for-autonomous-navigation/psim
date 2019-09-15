@@ -36,6 +36,47 @@ repositories.
  * `./test/*` - standalone scripts that only depend on the utility functions
    mentioned above that demonstrate small bits of the simulation.
 
+
+# Global Variables
+
+ * truth
+   * time, time since inital GPS week.
+   * position_eci, Position of the center of mass of the satellite (m)
+   * velocity_eci, Velocity of the center of mass of the satellite (m/s)
+   * angular_rate_body, Angular rate of the spacecraft in the body frame (rad/s)
+   * quat_body_eci, Quaternion that rotates from eci to body frame.
+   * wheel_rate_body, x,y, and z, wheel angular rates (rad/s)
+   * fuel_net_angular_momentum_eci, Net angular momentum of the fuel (N*m*s)
+   * fuel_mass, The mass of the fuel (kg)
+   * mission_time(positive int64), Mission time (ns)
+   * a, Semimajor axis (m)
+   * e, Eccentricity (unitless)
+   * i, Inclination angle (rad)
+   * O, Right ascension of the ascending node (rad)
+   * o, Argument of perigee (rad)
+   * nu, True anamoly (rad)
+ * actuators
+   * firing_start_times, Times since inital GPS week to start firing (s)
+   * real_thrust_vectors_body, Real thruster forces (N)
+   * centers_of_thrust_body, Center of thrust for each firing (m)
+   * firing_on_times, How long firings last (s)
+   * wheel_commanded_rate, Commanded x,y,z wheel rate (rad/s)
+   * wheel_commanded_ramp, Commanded x,y,z wheel ramp (rad/s/s)
+   * magrod_real_moment_body, Real magnetorquer moment (A*m^2)
+ * const
+   * mu(positive scalar), Earth's gravitational constant (m^3/s^2)
+   * dt(positive int64), Simulation timestep (ns)
+   * INITGPS_WN(positive int), Initial gps week number, epoch for time (weeks)
+   * MAXWHEELRATE(positive scalar),  Max wheel rate (rad/s)
+   * MAXWHEELRAMP(positive scalar), Max wheel ramp (rad/s/s)
+   * MASS(positive scalar), Dry mass of satellite (kg)
+   * JB(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame (kg*m^2)
+   * JWHEEL(positive scalar),  Wheel Inertia (kg*m^2)
+   * JFUEL_NORM(positive scalar), Moment of inertia of the fuel/mass of the fuel (m^2)
+   * SLOSH_DAMPING(positive scalar), Torque on fuel/difference in angular rates in eci (Nm/(rad/s))
+   * JBINV(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kg*m^2))
+
+
 # Add-Ons
 
 There are a few required add-ons
