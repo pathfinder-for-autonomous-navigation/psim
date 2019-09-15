@@ -59,16 +59,31 @@ global const
         %TODO add actual fuel change
         mass=initial_state.fuel_mass;
     end
+    [quat_ecef_eci_initial,~]=env_earth_attitude(initial_state.time);
+    [quat_ecef_eci_final,~]=env_earth_attitude(initial_state.time+delta_time);
+    quat_ecef_eci_initial= utl_array2quaternion(quat_ecef_eci_initial);
+    quat_ecef_eci_final= utl_array2quaternion(quat_ecef_eci_final);
+    function quat_ecef_eci= earth_first_order_rotation(t)
+        %returns earths attitude at time t, using a first order
+        %approximation (slerp)
+        %of the rotation from the start to end of delta_time
+        quat_ecef_eci= slerp(quat_ecef_eci_initial,quat_ecef_eci_final,(t-initial_state.time)/delta_time);
+    end
+    magnetic_field_zero_order=env_magnetic_field(initial_state.time,rotateframe(quat_ecef_eci_initial,initial_state.position_eci')');
     function dydt= state_dot(t,y)
         %y = [x; y; z; xdot; ydot; zdot;q1;q2;q3;q4;ratex;ratey;ratez;
         %     1  2  3  4     5     6    7  8  9  10 11    12    13    
         %    
         %       fuel_ang_momentx;fuel_ang_momenty;fuel_ang_momentz;]
         %       14               15               16
+        %
+        % Don't have any super expensive calculation in here.
+        %   Instead make first or zero order approximations of
+        %   perturbations before, and pass in as a function of time.
+        
         dydt=zeros([16,1]);
         dydt(1:3)=y(4:6);
-        [q,~]=env_earth_attitude(t);
-        quat_ecef_eci= utl_array2quaternion(q);
+        quat_ecef_eci= earth_first_order_rotation(t);
         quat_eci_ecef= conj(quat_ecef_eci);
         quat_body_eci=utl_array2quaternion(y(7:10));
         quat_eci_body= conj(quat_body_eci);
@@ -85,7 +100,7 @@ global const
         Lwb= const.JWHEEL*wheelramp(t);
         %calculation of external torques 
         %TODO add drag, solar pressure, and gravity torques
-        magnetic_field_body=rotateframe(quat_body_ecef,env_magnetic_field(t,pos_ecef)')';
+        magnetic_field_body=rotateframe(quat_body_ecef,magnetic_field_zero_order')';
         magnetic_torque_body= cross(actuators.magrod_real_moment_body,magnetic_field_body);
         %calculate the difference in the rates of the fuel and the sat
         Jfuel= const.JFUEL_NORM*fuel_mass(t);%moment of inertia of fuel, spherical
@@ -105,7 +120,7 @@ global const
     init_y(11:13)=initial_state.angular_rate_body;
     init_y(14:16)=initial_state.fuel_net_angular_momentum_eci;
     final_time=initial_state.time+delta_time;
-    opts = odeset('RelTol',1E-12,'AbsTol',1e-7);
+    opts = odeset('RelTol',1E-9,'AbsTol',1e-7);
     [~,ys]=ode45(@state_dot,[initial_state.time,final_time],init_y,opts);
     final_y= ys(end,:)';
     final_state=initial_state;
