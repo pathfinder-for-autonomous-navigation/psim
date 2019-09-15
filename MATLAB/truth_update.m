@@ -31,7 +31,7 @@ dt = double(const.dt) * 1e-9;
 t0 = double(truth.mission_time) * 1e-9;
 %y = utl_ode2(@frhs, [t0, t0 + dt], [truth.r; truth.v]);
 truth.time= double(truth.mission_time)*1E-9;
-truth=orbit_attitude_update_ode45(truth,actuators,dt);
+truth=orbit_attitude_update_ode2(truth,actuators,dt);
 truth.r=truth.position_eci;
 truth.v=truth.velocity_eci;
 
