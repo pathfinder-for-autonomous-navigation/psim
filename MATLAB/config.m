@@ -48,6 +48,8 @@ const.JFUEL_NORM=0.1^2;% positive scalar
 % Moment of inertia of the fuel/mass of the fuel m^2.
 const.SLOSH_DAMPING=0.0;% positive scalar
 % Torque on fuel/difference in angular rates in eci Nm/(rad/s).
+const.Kp = 75e-4; % imported from simulink
+const.Kd = 32.5e-4; % imported from simulink
 
 %derived constants
 const.JBINV=inv(const.JB);% 3x3 symmetric matrix
