@@ -36,6 +36,10 @@ const.MAXWHEELRATE= 677.0;% positive scalar
 % Max wheel rate in rad/s
 const.MAXWHEELRAMP= 304.5;% positive scalar
 % Max wheel ramp in rad/s/s
+const.MAXMOMENT= 0.08;% positive scalar
+% Max magrod moment on one axis (A*m^2)
+const.RESIDUAL_MOMENT= [0;0;0;];% 3 vector
+% Residual magnetic moment in the body frame, when magrods are off.
 const.MASS= 4.0;% positive scalar
 %dry mass of satellite, kg.
 const.JB=[1/12*const.MASS*(0.3^2+0.1^2) 0 0;
