@@ -9,25 +9,13 @@ global actuators
 Temporary script to initialize global variables until a more robust system is
 developed.
 
-Global variables treated as inputs:
-
-Global variables treated as outputs:
- * const.mu
- * const.dt
- * truth.mission_time
- * truth.a
- * truth.e
- * truth.i
- * truth.O
- * truth.o
- * truth.nu
- * truth.r
- * truth.v
 
 %}
 
 const.mu = 3.986e14;% positive scalar 
 % Earth's gravitational constant (m^3/s^2)
+const.R_EARTH= 6378137.0;
+%Equatorial Radius of Earth (m)*/
 const.dt = int64(0.1e9);% positive int64
 % Simulation timestep            (ns)
 const.INITGPS_WN= 2045;% positive int 
@@ -52,32 +40,41 @@ const.JFUEL_NORM=0.1^2;% positive scalar
 % Moment of inertia of the fuel/mass of the fuel m^2.
 const.SLOSH_DAMPING=0.0;% positive scalar
 % Torque on fuel/difference in angular rates in eci Nm/(rad/s).
-const.Kp = 75e-4; % imported from simulink
-const.Kd = 32.5e-4; % imported from simulink
+const.ATTITUDE_PD_KP = 75e-4; % imported from simulink
+const.ATTITUDE_PD_KD = 32.5e-4; % imported from simulink
+
+% Sensor constants
+const.SUNSENSOR_DEADZONE=30*pi/180;% positive scalar
+% max angle from +z axis where the sun sensors don't work (rad)
+const.GPS_ZONE=30*pi/180;% positive scalar
+% max angle from +x axis of body frame, to position_body
+% where the gps can get a connection (rad)
+const.GPS_TTFF=15*60;% positive scalar
+% max angle from +x axis where the gps can get a connection (rad)
 
 %derived constants
 const.JBINV=inv(const.JB);% 3x3 symmetric matrix
 % inverse of dry moment of inertia of satellite in body frame
 
 
+
+
+a  = 6860636.6;  % Semimajor axis                        (m)
+e  = 0.001;      % Eccentricity                          (unitless)
+i  = 45*pi/180;  % Inclination angle                     (rad)
+O  = 0.0;        % Right ascension of the ascending node (rad)
+o  = 0.0;        % Argument of perigee                   (rad)
+nu = 0*pi/180;   % True anamoly                          (rad)
+
+[   r,...  % Position (m)   [eci]
+    v,...  % Velocity (m/s) [eci]
+] = utl_orb2rv(a*(1-e), e, i, O, o, nu, const.mu);
+
 truth.mission_time = int64(0);% int64
 % Mission time (ns)
-% ^^ Should always initially be zero
-
-truth.a  = 6860636.6;  % Semimajor axis                        (m)
-truth.e  = 0.001;      % Eccentricity                          (unitless)
-truth.i  = 45*pi/180;  % Inclination angle                     (rad)
-truth.O  = 0.0;        % Right ascension of the ascending node (rad)
-truth.o  = 0.0;        % Argument of perigee                   (rad)
-truth.nu = 0*pi/180;   % True anamoly                          (rad)
-
-[   truth.r,...  % Position (m)   [eci]
-    truth.v,...  % Velocity (m/s) [eci]
-] = utl_orb2rv(truth.a*(1-truth.e), truth.e, truth.i, truth.O, truth.o, truth.nu, const.mu);
-
 truth.time= double(truth.mission_time)*1E-9;
-truth.position_eci= truth.r;
-truth.velocity_eci= truth.v;
+truth.position_eci= r;
+truth.velocity_eci= v;
 truth.angular_rate_body= [10*pi/180;10*pi/180;10*pi/180];
 truth.quat_body_eci=[0;0;0;1];
 truth.wheel_rate_body=[0;0;0;];
@@ -110,12 +107,3 @@ actuators.magrod_real_moment_body= [0;0;0];
 
 
 end
-
-% % Julian date of the GPS epoch
-% const.init_epoch__jd = juliandate('6-Jan-1980', 'dd-mmm-yyyy');
-% % Mission start date in nanoseconds sense the epoch
-% const.init_gps_time__ns = int64( 9.158e17 );  % About epoch + 40 yrs
-% % Leap seconds from the epoch till current mission time
-% const.leap_time__ns = int64( 0 );
-% truth.m__kg = 3.7;  % Initial mass
-% % Timestep of the simulation (not the integration timestep as ode45 is used)
