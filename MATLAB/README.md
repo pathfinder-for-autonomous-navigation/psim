@@ -49,12 +49,6 @@ repositories.
    * fuel_net_angular_momentum_eci, Net angular momentum of the fuel (N*m*s)
    * fuel_mass, The mass of the fuel (kg)
    * mission_time(positive int64), Mission time (ns)
-   * a, Semimajor axis (m)
-   * e, Eccentricity (unitless)
-   * i, Inclination angle (rad)
-   * O, Right ascension of the ascending node (rad)
-   * o, Argument of perigee (rad)
-   * nu, True anamoly (rad)
  * actuators
    * firing_start_times, Times since inital GPS week to start firing (s)
    * real_thrust_vectors_body, Real thruster forces (N)
@@ -73,10 +67,17 @@ repositories.
    * RESIDUAL_MOMENT, Residual magnetic moment in the body frame, when magrods are off (A*m^2)
    * MASS(positive scalar), Dry mass of satellite (kg)
    * JB(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame (kg*m^2)
+   * JBINV(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kg*m^2))
    * JWHEEL(positive scalar),  Wheel Inertia (kg*m^2)
    * JFUEL_NORM(positive scalar), Moment of inertia of the fuel/mass of the fuel (m^2)
    * SLOSH_DAMPING(positive scalar), Torque on fuel/difference in angular rates in eci (Nm/(rad/s))
-   * JBINV(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kg*m^2))
+   * ATTITUDE_PD_KP
+   * ATTITUDE_PD_KD
+   * SUNSENSOR_DEADZONE(positive scalar), Angle from +z axis where the sun sensors don't work (rad)
+
+
+
+
 
 
 # Add-Ons
