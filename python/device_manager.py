@@ -1,0 +1,2 @@
+class DeviceManager(object):
+    

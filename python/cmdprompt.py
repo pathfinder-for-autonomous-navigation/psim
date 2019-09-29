@@ -1,21 +1,25 @@
 import readline
 from cmd import Cmd
+import random
 
 class StateCmdPrompt(Cmd):
     '''
     This command prompt is used by the user to read and write to write to the state of
-    flight computer(s). It can conveniently command both the ADCS Computer and the Flight Computer.
+    Teensies and simulation devices.
     '''
 
-    def __init__(self, fc_cmd, adcs_cmd):
-        self.adcs_cmd = adcs_cmd
-        self.fc_cmd = fc_cmd
+    def __init__(self, devices):
+        self.devices = devices
+
+        if not self.devices:
+            # There's no flight controller to connect with.
+            raise SystemExit
 
         # By default, if it's available, set the prompt to be commanding the Flight Computer.
-        if self.fc_cmd:
-            self.current_cmd = self.fc_cmd
-        elif self.adcs_cmd:
-            self.current_cmd = self.adcs_cmd
+        try:
+            self.cmded_device = self.devices['FlightController']
+        except KeyError:
+            self.cmded_device = random.choice(list(self.devices.values()))
 
         Cmd.__init__(self)
 
@@ -23,23 +27,37 @@ class StateCmdPrompt(Cmd):
         # Don't do anything with an empty line input
         pass
 
-    def do_currentcomp(self, args):
+    def do_cc(self, args):
         '''
-        Lists the flight computer currently being interacted with by the user.
+        Lists the Teensy currently being interacted with by the user.
         '''
-        print("Currently interacting with {}".format(self.current_cmd.device_name))
+        print('Currently interacting with {}'.format(self.cmded_device.device_name))
 
-    def do_switchcomp(self, args):
+    def do_lc(self, args):
         '''
-        Switches the flight computers that the user is controlling by the command line.
-        Only performs a switch if both flight computers are actually connected.
+        Lists all available Teensies.
         '''
-        if self.current_cmd == self.adcs_cmd and self.fc_cmd:
-            self.current_cmd = self.fc_cmd
-        elif self.adcs_cmd:
-            self.current_cmd = self.adcs_cmd
+        print("Available devices:")
+        for device_name in self.devices.keys():
+            print(device_name)
 
-        print("Switched to {}".format(self.current_cmd.device_name))
+    def do_sc(self, args):
+        '''
+        Switches the Teensy that the user is controlling by the command line.
+        '''
+        args = args.split()
+
+        if len(args) < 1:
+            print('Need to specify a state field to read')
+            return
+
+        try:
+            self.cmded_device = self.devices[args[0]]
+        except KeyError:
+            print('Invalid device specified')
+            return
+
+        print('Switched to {}'.format(self.cmded_device.device_name))
 
     def do_rs(self, args):
         '''
@@ -48,10 +66,10 @@ class StateCmdPrompt(Cmd):
         args = args.split()
 
         if len(args) < 1:
-            print("Need to specify a state field to read")
+            print('Need to specify a state field to read')
             return
 
-        print(self.current_cmd.read_state(args[0]))
+        print(self.cmded_device.read_state(args[0]))
 
     def do_ws(self, args):
         '''
@@ -60,13 +78,13 @@ class StateCmdPrompt(Cmd):
         args = args.split()
 
         if len(args) < 1:
-            print("Need to specify a state field to set")
+            print('Need to specify a state field to set')
             return
         elif len(args) < 2:
-            print("Need to specify the value to set")
+            print('Need to specify the value to set')
             return
 
-        self.current_cmd.write_state(args[0], args[1])
+        self.cmded_device.write_state(args[0], args[1])
 
     def do_wsfb(self, args):
         '''
@@ -75,42 +93,37 @@ class StateCmdPrompt(Cmd):
         args = args.split()
 
         if len(args) < 1:
-            print("Need to specify a state field to set")
+            print('Need to specify a state field to set')
             return
         elif len(args) < 2:
-            print("Need to specify the value to set")
+            print('Need to specify the value to set')
             return
 
-        self.current_cmd.write_state_fb(args[0], args[1])
+        self.cmded_device.write_state_fb(args[0], args[1])
 
     def do_os(self, args):
         '''
         Override simulation state. See state_session.py for documentation.
         '''
         args = args.split()
-        self.current_cmd.override_state(args[0], args[1])
+        self.cmded_device.override_state(args[0], args[1])
 
     def do_ro(self, args):
         '''
         Release override of simulation state. See state_session.py for documentation.
         '''
         args = args.split()
-        self.current_cmd.release_override(args[0])
+        self.cmded_device.release_override(args[0])
 
     def do_osfb(self, args):
         '''
         Override state and check write operation with feedback. See state_session.py for documentation.
         '''
         args = args.split()
-        self.current_cmd.override_state_fb(args[0], args[1])
+        self.cmded_device.override_state_fb(args[0], args[1])
 
     def do_quit(self, args):
         '''
         Exits the command line and terminates connections with the flight computer(s).
         '''
-        if self.adcs_cmd:
-            self.adcs_cmd.disconnect()
-        if self.fc_cmd:
-            self.fc_cmd.disconnect()
-        print("Exiting.")
-        raise SystemExit
+        print('Exiting command line.')

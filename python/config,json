@@ -1,0 +1,6 @@
+[
+    {
+        "name" : "FlightController",
+        "port" : "dev/cu.usbmodem"
+    }
+]
