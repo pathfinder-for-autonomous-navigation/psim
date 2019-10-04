@@ -25,8 +25,12 @@ class SimulationRun(object):
         # Set up test table by connecting to each device specified in the config.
         for device in self.device_data:
             device_name = device["name"]
-            device_datastore = Datastore(device_name, self.data_dir)
-            device_logger = Logger(device_name, self.data_dir)
+
+            simulation_run_dir = os.path.join(os.path.abspath(self.data_dir), "DummyRun")
+            os.makedirs(simulation_run_dir, exist_ok=True)
+            device_datastore = Datastore(device_name, simulation_run_dir)
+            device_logger = Logger(device_name, simulation_run_dir)
+
             port_cmd = StateSession(self.data_dir, device_name, device_datastore, device_logger)
             if port_cmd.connect(device["port"], 115200):
                 self.devices[device_name] = port_cmd

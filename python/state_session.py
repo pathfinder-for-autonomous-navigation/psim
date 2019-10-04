@@ -32,8 +32,8 @@ class StateSession(object):
         self.connected = False
 
         # Data logging
-        # self.datastore = datastore
-        # self.logger = logger
+        self.datastore = datastore
+        self.logger = logger
 
         # Simulation
         self.overriden_variables = set()
@@ -133,7 +133,7 @@ class StateSession(object):
                     # If the 'read state' command is awaiting the current field's value,
                     # report it!
                     self._store_awaited_value(data)
-                    # self.datastore.put(data)
+                    self.datastore.put(data)
 
             except ValueError:
                 logline = f'[RAW] {line}'
@@ -146,7 +146,7 @@ class StateSession(object):
                 print('Unspecified error. Exiting.')
                 self.disconnect()
 
-            # self.logger.put(logline)
+            self.logger.put(logline)
 
             time.sleep(delay)
 

@@ -1,4 +1,4 @@
-import queue
+import queue, os, json
 
 class DataContainer(object):
     def __init__(self, device_name, data_dir):
@@ -51,7 +51,11 @@ class Datastore(DataContainer):
         """
         Clean up file used for the data logger
         """
-        pass
+        filename = f"{self.device_name}-telemetry.txt"
+        filepath = os.path.join(self.data_dir, filename)
+        with open(filepath, 'w') as datafile:
+            json.dump(self.data, datafile)
+
 
 class Logger(DataContainer):
     def __init__(self, device_name, data_dir):
@@ -65,7 +69,10 @@ class Logger(DataContainer):
             self.queue.task_done()
 
     def intermediate_save(self):
-        pass
+        filename = f"{self.device_name}-log.txt"
+        filepath = os.path.join(self.data_dir, filename)
+        with open(filepath, 'a') as logfile:
+            logfile.write(self.log)
 
     def save(self):
-        pass
+        self.intermediate_save()
