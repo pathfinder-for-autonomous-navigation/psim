@@ -1,0 +1,20 @@
+{
+    "seed": 2,
+    "devices": [
+        {
+            "name": "FlightController",
+            "port": "/dev/cu.usbmodem47349801",
+            "stop_if_unconnected": true
+        },
+        {
+            "name": "ADCSController",
+            "port": "/dev/cu.usbmodem",
+            "stop_if_unconnected": true
+        },
+        {
+            "name": "FakePropDevice",
+            "port": "/dev/cu.usbmodem",
+            "stop_if_unconnected": false
+        }
+    ]
+}

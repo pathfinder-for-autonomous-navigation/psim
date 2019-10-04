@@ -31,7 +31,7 @@ class StateCmdPrompt(Cmd):
         '''
         Lists the Teensy currently being interacted with by the user.
         '''
-        print('Currently interacting with {}'.format(self.cmded_device.device_name))
+        print(f"Currently interacting with {self.cmded_device.device_name}")
 
     def do_lc(self, args):
         '''
@@ -57,7 +57,7 @@ class StateCmdPrompt(Cmd):
             print('Invalid device specified')
             return
 
-        print('Switched to {}'.format(self.cmded_device.device_name))
+        print(f"Switched to {self.cmded_device.device_name}")
 
     def do_rs(self, args):
         '''

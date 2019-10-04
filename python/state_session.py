@@ -17,7 +17,7 @@ class StateSession(object):
     they won't trip over each other in setting/receiving variables from the connected flight computer.
     '''
 
-    def __init__(self, data_dir, device_name, simulation_run, datastore, logger):
+    def __init__(self, data_dir, device_name, datastore, logger):
         '''
         Initializes state cmd prompt.
 
@@ -32,8 +32,8 @@ class StateSession(object):
         self.connected = False
 
         # Data logging
-        self.datastore = datastore
-        self.logger = logger
+        # self.datastore = datastore
+        # self.logger = logger
 
         # Simulation
         self.overriden_variables = set()
@@ -55,6 +55,8 @@ class StateSession(object):
             self.console = serial.Serial(self.console_port, self.baud_rate)
             self.start_time = datetime.datetime.now() # This is t = 0 on the Teensy, +/- a few milliseconds.
 
+            self.device_write_lock = threading.Lock() # Lock to prevent multiple writes to device at the same time.
+
             self.updating_data_lock = threading.Lock()     # Lock to allow for shared reads/writes of timeseries data between
             # the check_msgs thread and the save_data thread
 
@@ -63,16 +65,17 @@ class StateSession(object):
             self.awaited_value = None
 
             self.running_logger = True
-            self.check_msgs_thread = threading.Thread(name='{} logger thread'.format(self.device_name),
-                                                      target=self.check_console_msgs,
-                                                      args=[msg_check_delay])
+            self.check_msgs_thread = threading.Thread(
+                name=f"{self.device_name} logger thread",
+                target=self.check_console_msgs,
+                args=[msg_check_delay])
             self.check_msgs_thread.start()
 
             self.connected = True
+            print(f"Opened connection to {self.device_name}")
             return True
         except serial.SerialException:
-            print('Error: unable to open serial port for {}.'.format(
-                self.device_name))
+            print(f"Unable to open serial port for {self.device_name}.")
 
             self.connected = False
             return False
@@ -106,21 +109,23 @@ class StateSession(object):
             logline = ''
             try:
                 # Read line coming from device and parse it
-                line = self.console.readline().rstrip()
-                data = json.loads(line)
+                if self.console.inWaiting() > 0:
+                    line = self.console.readline().rstrip()
+                    data = json.loads(line)
+                else:
+                    continue
+                
                 data['time'] = self.start_time + datetime.timedelta(milliseconds=data['t'])
 
                 if 'msg' in data:
                     # The logline represents a debugging message created by Flight Software. Report the message to the logger.
-                    logline = '[{}] ({}) {}'.format(data['time'],
-                                                    data['svrty'], data['msg'])
+                    logline = f"[{data['time']}] ({data['svrty']}) {data['msg']}"
                 elif 'err' in data:
                     # The log line represents an error in retrieving or writing state data that
                     # was caused by a StateSession client improperly setting/retrieving a value.
                     # Report this failure to the logger.
 
-                    logline = "[{}] (ERROR) Tried to {} state value named '{}' but encountered an error: {}".format(
-                        data['time'], data['mode'], data['field'], data['err'])
+                    logline = f"[{data['time']}] (ERROR) Tried to {data['mode']} state value named \"{data['field']}\" but encountered an error: {data['err']}"
 
                     data['val'] = None
                     self._store_awaited_value(data)
@@ -128,10 +133,10 @@ class StateSession(object):
                     # If the 'read state' command is awaiting the current field's value,
                     # report it!
                     self._store_awaited_value(data)
-                    self.datastore.put(data)
+                    # self.datastore.put(data)
 
             except ValueError:
-                logline = '[RAW] {}'.format(line)
+                logline = f'[RAW] {line}'
             except serial.SerialException:
                 print('Error: unable to read serial port for {}. Exiting.'.
                       format(self.device_name))
@@ -141,7 +146,7 @@ class StateSession(object):
                 print('Unspecified error. Exiting.')
                 self.disconnect()
 
-            self.logger.put(logline)
+            # self.logger.put(logline)
 
             time.sleep(delay)
 
@@ -153,7 +158,9 @@ class StateSession(object):
         '''
 
         json_cmd = {'mode': ord('r'), 'field': str(field_name)}
+        self.device_write_lock.acquire()
         self.console.write(json.dumps(json_cmd).encode())
+        self.device_write_lock.release()
 
         # Wait for value to be found by check_console_msgs
         with self.awaiting_value_cv as cv:
@@ -177,7 +184,9 @@ class StateSession(object):
             'field': str(field_name),
             'val': str(val)
         }
+        self.device_write_lock.acquire()
         self.console.write(json.dumps(json_cmd).encode())
+        self.device_write_lock.release()
 
     def write_state(self, field_name, val):
         '''
@@ -242,13 +251,10 @@ class StateSession(object):
     def disconnect(self):
         '''Quits the program and stores message log and field telemetry to file.'''
 
-        print('Terminating console connection to and saving logging/telemetry data for {}.'.format(self.device_name))
+        print(f'Terminating console connection to and saving logging/telemetry data for {self.device_name}.')
 
         # End threads if there was actually a connection to the device
         if self.connected:
             self.running_logger = False
-            print('Here')
             self.check_msgs_thread.join()
-            print('Here')
             self.console.close()
-            print('Here')

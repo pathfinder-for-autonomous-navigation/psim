@@ -4,3 +4,5 @@ venv
 *.asv
 *.m~
 *.pyc
+__pycache__
+venv/
