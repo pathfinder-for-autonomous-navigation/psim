@@ -49,7 +49,7 @@ class StateCmdPrompt(Cmd):
         args = args.split()
 
         if len(args) < 1:
-            print('Need to specify a state field to read')
+            print('Need to specify a device to command')
             return
 
         try:
