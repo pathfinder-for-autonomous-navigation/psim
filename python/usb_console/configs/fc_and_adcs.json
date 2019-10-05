@@ -10,11 +10,6 @@
             "name": "ADCSController",
             "port": "/dev/cu.usbmodem",
             "stop_if_unconnected": true
-        },
-        {
-            "name": "FakePropDevice",
-            "port": "/dev/cu.usbmodem",
-            "stop_if_unconnected": false
         }
     ]
 }

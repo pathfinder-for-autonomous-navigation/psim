@@ -52,6 +52,8 @@ class Datastore(DataContainer):
         self.data = {}
 
     def process_queue_item(self, datapoint):
+        """ Adds a single data point to the telemetry log."""
+
         time_value_pair = (str(datapoint['time']), datapoint['val'])
         field_name = datapoint['field']
 
@@ -61,12 +63,11 @@ class Datastore(DataContainer):
         self.data[datapoint['field']].append(time_value_pair)
 
     def save(self):
-        """
-        Clean up file used for the data logger
-        """
+        """ Save telemetry log to a file. """
+
         filename = f"{self.device_name}-telemetry.txt"
         filepath = os.path.join(self.data_dir, filename)
-        
+
         with open(filepath, 'w') as datafile:
             json.dump(self.data, datafile)
 
@@ -76,13 +77,18 @@ class Logger(DataContainer):
         self.log = ""
 
     def process_queue_item(self, logline):
+        """Add a new line to the log."""
+
         self.log += logline + "\n"
 
     def intermediate_save(self):
+        """Save the log generated thus far to a file."""
+
         filename = f"{self.device_name}-log.txt"
         filepath = os.path.join(self.data_dir, filename)
         with open(filepath, 'a') as logfile:
             logfile.write(self.log)
+        self.log = ""
 
     def save(self):
         self.intermediate_save()

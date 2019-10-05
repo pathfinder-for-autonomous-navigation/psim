@@ -18,6 +18,8 @@ class SimulationRun(object):
         self.devices = {}
 
     def start(self):
+        """Starts a run of the simulation."""
+
         if not device_data:
             print('Error: must specify at least one serial port.')
             raise SystemExit
@@ -26,12 +28,16 @@ class SimulationRun(object):
         for device in self.device_data:
             device_name = device["name"]
 
-            simulation_run_dir = os.path.join(os.path.abspath(self.data_dir), time.strftime("%Y%m%d-%H%M%S"))
+            # Create directory for run data
+            simulation_run_dir = os.path.join(self.data_dir, time.strftime("%Y%m%d-%H%M%S"))
             os.makedirs(simulation_run_dir, exist_ok=True)
+
+            # Generate data loggers and device manager for device
             device_datastore = Datastore(device_name, simulation_run_dir)
             device_logger = Logger(device_name, simulation_run_dir)
-
             port_cmd = StateSession(self.data_dir, device_name, device_datastore, device_logger)
+
+            # Connect to device, failing gracefully if device connection fails
             if port_cmd.connect(device["port"], 115200):
                 self.devices[device_name] = port_cmd
                 self.datastores[device_name] = device_datastore
@@ -45,11 +51,11 @@ class SimulationRun(object):
                 return
 
         # Set up MATLAB simulation
-        sim = Simulation(self.devices, self.random_seed)
-        self.sim_thread = threading.Thread(name="Python-MATLAB Simulation Interface", target=sim.run, args=[2])
+        self.sim = Simulation(self.devices, self.random_seed)
+        self.sim_thread = threading.Thread(name="Python-MATLAB Simulation Interface", target=self.sim.run, args=[2])
         self.sim_thread.start()
 
-        # User command prompt
+        # Set up user command prompt
         cmd_prompt = StateCmdPrompt(self.devices, self.stop_all)
         pan_logo_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pan_logo.txt')
         with open(pan_logo_filepath, 'r') as pan_logo_file:
@@ -63,6 +69,10 @@ class SimulationRun(object):
             self.stop_all()
 
     def stop_all(self):
+        """Gracefully ends simulation run."""
+
+        print("Stopping simulation...")
+        self.sim.running = False
         self.sim_thread.join()
 
         print("Stopping loggers...")
@@ -88,9 +98,11 @@ if __name__ == '__main__':
 
     parser.add_argument('-c', '--conf', action='store', help='JSON file listing serial ports and Teensy computer names. Default is config.json.',
                         default = 'config.json')
+
+    log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
     parser.add_argument('-d', '--data-dir', action='store',
-        help='''Directory for storing run data, relative to the location of the console script. Default is logs/.
-                For the current run, a subdirectory of DATA_DIR is created in which the actual data is stored.''', default='logs')
+        help='''Directory for storing run data. Must be an absolute path. Default is logs/ relative to this script's location on disk.
+                For the current run, a subdirectory of DATA_DIR is created in which the actual data is stored.''', default=log_dir)
     args = parser.parse_args()
 
     try:
