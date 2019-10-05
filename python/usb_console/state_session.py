@@ -4,6 +4,7 @@ import serial
 import threading
 import json
 import traceback
+import queue
 
 class StateSession(object):
     '''
@@ -57,12 +58,9 @@ class StateSession(object):
 
             self.device_write_lock = threading.Lock() # Lock to prevent multiple writes to device at the same time.
 
-            self.updating_data_lock = threading.Lock()     # Lock to allow for shared reads/writes of timeseries data between
-            # the check_msgs thread and the save_data thread
-
-            self.awaiting_value_cv = threading.Condition() # Used to notify read_state that its requested value has arrived
-            self.awaiting_value = False
-            self.awaited_value = None
+            # Queues used to manage interface between the check_msgs_thread and calls to read_state or write_state
+            self.field_request = queue.Queue(1)
+            self.field_response = queue.Queue(1)
 
             self.running_logger = True
             self.check_msgs_thread = threading.Thread(
@@ -79,22 +77,6 @@ class StateSession(object):
 
             self.connected = False
             return False
-
-    def _store_awaited_value(self, data):
-        '''
-        Helper method used by check_console_msgs to return requested values to the main
-        state session thread.
-        '''
-
-        self.awaiting_value_cv.acquire()
-        awaited_value_name = self.awaited_value_name
-        self.awaiting_value_cv.release()
-        if data['field'] == awaited_value_name:
-            self.awaiting_value_cv.acquire()
-            self.awaited_value = data['val']
-            self.awaiting_value = False
-            self.awaiting_value_cv.notify()
-            self.awaiting_value_cv.release()
 
     def check_console_msgs(self, delay):
         '''
@@ -113,8 +95,9 @@ class StateSession(object):
                     line = self.console.readline().rstrip()
                     data = json.loads(line)
                 else:
+                    time.sleep(delay)
                     continue
-                
+
                 data['time'] = self.start_time + datetime.timedelta(milliseconds=data['t'])
 
                 if 'msg' in data:
@@ -128,12 +111,13 @@ class StateSession(object):
                     logline = f"[{data['time']}] (ERROR) Tried to {data['mode']} state value named \"{data['field']}\" but encountered an error: {data['err']}"
 
                     data['val'] = None
-                    self._store_awaited_value(data)
                 else:
-                    # If the 'read state' command is awaiting the current field's value,
-                    # report it!
-                    self._store_awaited_value(data)
+                    # A valid telemetry field was returned. Manage it.
                     self.datastore.put(data)
+
+                if self.field_request.queue[0] == data['field']:
+                    self.field_request.get()  # Clear the field request
+                    self.field_response.put(data)
 
             except ValueError:
                 logline = f'[RAW] {line}'
@@ -150,6 +134,18 @@ class StateSession(object):
 
             time.sleep(delay)
 
+    def _wait_for_state(self, field_name, timeout = None):
+        """
+        Helper function used by both read_state and write_state_fb to wait for a desired value
+        to be reported back by the Teensy.
+        """
+        self.field_request.put(field_name)
+        try:
+            data = self.field_response.get(True, timeout)
+            return data['val']
+        except queue.Empty:
+            return None
+
     def read_state(self, field_name, timeout = None):
         '''
         Read state.
@@ -162,17 +158,9 @@ class StateSession(object):
         self.console.write(json.dumps(json_cmd).encode())
         self.device_write_lock.release()
 
-        # Wait for value to be found by check_console_msgs
-        with self.awaiting_value_cv as cv:
-            self.awaiting_value_cv.acquire()
-            self.awaited_value_name = field_name
-            self.awaiting_value_cv.release()
-            while self.awaiting_value:
-                cv.wait(timeout = timeout)
+        return self._wait_for_state(field_name)
 
-        return self.awaited_value
-
-    def _write_state_basic(self, field_name, val):
+    def _write_state_basic(self, field_name, val, timeout = None):
         '''
         Write state.
 
@@ -188,45 +176,31 @@ class StateSession(object):
         self.console.write(json.dumps(json_cmd).encode())
         self.device_write_lock.release()
 
-    def write_state(self, field_name, val):
-        '''
-        Write state.
+        return val == self._wait_for_state(field_name, timeout)
 
-        Overwrite the value of the state field with the given state field name on the flight computer.
-        If the value is being overriden by user input, no changes are applied to computer state.
-
-        This function doesn't check for the value of the state actually getting set. That can be handled by
-        wsfb().
-        '''
-
-        if field_name in self.overriden_variables:
-            return
-        self._write_state_basic(field_name, val)
-
-    def write_state_fb(self, field_name, val, timeout = None):
+    def write_state(self, field_name, val, timeout = None):
         '''
         Write state and check write operation with feedback.
 
         Overwrite the value of the state field with the given state field name on the flight computer, and
-        then verify (via a read request) that the state was actually set.
+        then verify that the state was actually set. Do not write the state if the variable is being overriden
+        by the user. (This is the function that sim should exclusively use.)
         '''
 
-        self.write_state(field_name, val)
-        return val == self.read_state(field_name, timeout)
+        if field_name in self.overriden_variables:
+            return
+        return self._write_state_basic(field_name, val, timeout)
 
-    def override_state(self, field_name, val):
+    def override_state(self, field_name, val, timeout = None):
         '''
-        Override simulation state.
+        Override state and check write operation with feedback.
 
-        This function works the same way as ws(), but any fields modified through this function are added
-        to a list of overriden variables. Once variables are in this list, ws() cannot be used to modify their
-        state. This prevents Simulation, which only uses ws(), from writing state to the device. The reason
-        for this function's existence is to allow manual overrides of state variables during operation, e.g.
-        via a command prompt or within a test case definition.
+        Behaves the same way as write_state_fb(), but is strictly written for a state variable that is overriden
+        by the user, i.e. is no longer set by the simulation.
         '''
 
         self.overriden_variables.add(field_name)
-        self._write_state_basic(field_name, val)
+        return self._write_state_basic(field_name, val, timeout)
 
     def release_override(self, field_name):
         ''' Release override of simulation state. '''
@@ -235,18 +209,8 @@ class StateSession(object):
             self.overriden_variables.remove(field_name)
         except KeyError:
             # It doesn't matter if you try to take the override off of a field that wasn't
-            # actually being written, so just ignore it.
+            # actually being overridden, so just ignore it.
             return
-
-    def override_state_fb(self, field_name, val, timeout = None):
-        '''
-        Override state and check write operation with feedback.
-
-        Behaves the same way as wsfb(), but is strictly written for a state variable that is overriden.
-        '''
-
-        self.override_state(field_name, val)
-        return val == self.read_state(field_name, timeout)
 
     def disconnect(self):
         '''Quits the program and stores message log and field telemetry to file.'''

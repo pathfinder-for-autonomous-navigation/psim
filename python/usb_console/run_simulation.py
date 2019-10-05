@@ -51,7 +51,8 @@ class SimulationRun(object):
 
         # User command prompt
         cmd_prompt = StateCmdPrompt(self.devices)
-        with open('pan_logo.txt', 'r') as pan_logo_file:
+        pan_logo_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pan_logo.txt')
+        with open(pan_logo_filepath, 'r') as pan_logo_file:
             cmd_prompt.intro = pan_logo_file.read()
         cmd_prompt.prompt = '> '
         try:

@@ -1,9 +1,5 @@
 .DS_Store
 .vscode
-venv
 *.asv
 *.m~
-*.pyc
-__pycache__
-venv/
 logs/

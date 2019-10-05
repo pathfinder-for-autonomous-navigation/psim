@@ -1,0 +1,10 @@
+{
+    "seed" : 2,
+    "devices" : [
+        {
+            "name": "FlightController",
+            "port": "/dev/cu.usbmodem47349801",
+            "stop_if_unconnected": true
+        }
+    ]
+}

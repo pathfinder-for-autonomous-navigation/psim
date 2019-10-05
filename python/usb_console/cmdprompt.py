@@ -86,21 +86,6 @@ class StateCmdPrompt(Cmd):
 
         self.cmded_device.write_state(args[0], args[1])
 
-    def do_wsfb(self, args):
-        '''
-        Write state and check write operation with feedback. See state_session.py for documentation.
-        '''
-        args = args.split()
-
-        if len(args) < 1:
-            print('Need to specify a state field to set')
-            return
-        elif len(args) < 2:
-            print('Need to specify the value to set')
-            return
-
-        self.cmded_device.write_state_fb(args[0], args[1])
-
     def do_os(self, args):
         '''
         Override simulation state. See state_session.py for documentation.
@@ -114,13 +99,6 @@ class StateCmdPrompt(Cmd):
         '''
         args = args.split()
         self.cmded_device.release_override(args[0])
-
-    def do_osfb(self, args):
-        '''
-        Override state and check write operation with feedback. See state_session.py for documentation.
-        '''
-        args = args.split()
-        self.cmded_device.override_state_fb(args[0], args[1])
 
     def do_quit(self, args):
         '''

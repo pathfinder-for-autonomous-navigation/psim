@@ -42,6 +42,7 @@ To install the Python MATLAB engine, you must:
 
 # Running Simulation
 
-  1. Activate the virtualenv: `python3 -m virtualenv venv; source venv/bin/activate`
+  1. Activate a virtualenv: `python3 -m virtualenv venv; source venv/bin/activate`
   2. Install the requirements: `pip install -r requirements.txt`
-  3. Run the main script: `python run_simulation.py -c configs/fc_only.json`
+  3. Move into the usb_console directory.
+  4. Run the main script: `python usb_console/run_simulation.py -c usb_console/configs/fc_only.json`
