@@ -5,7 +5,7 @@ from state_session import StateSession
 from cmdprompt import StateCmdPrompt
 from data_containers import Logger, Datastore
 from simulation import Simulation
-import json, sys, os, threading
+import json, sys, os, threading, time
 
 class SimulationRun(object):
     def __init__(self, random_seed, data_dir, device_data):
@@ -26,7 +26,7 @@ class SimulationRun(object):
         for device in self.device_data:
             device_name = device["name"]
 
-            simulation_run_dir = os.path.join(os.path.abspath(self.data_dir), "DummyRun")
+            simulation_run_dir = os.path.join(os.path.abspath(self.data_dir), time.strftime("%Y%m%d-%H%M%S"))
             os.makedirs(simulation_run_dir, exist_ok=True)
             device_datastore = Datastore(device_name, simulation_run_dir)
             device_logger = Logger(device_name, simulation_run_dir)
@@ -50,7 +50,7 @@ class SimulationRun(object):
         self.sim_thread.start()
 
         # User command prompt
-        cmd_prompt = StateCmdPrompt(self.devices)
+        cmd_prompt = StateCmdPrompt(self.devices, self.stop_all)
         pan_logo_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pan_logo.txt')
         with open(pan_logo_filepath, 'r') as pan_logo_file:
             cmd_prompt.intro = pan_logo_file.read()
@@ -65,10 +65,13 @@ class SimulationRun(object):
     def stop_all(self):
         self.sim_thread.join()
 
+        print("Stopping loggers...")
         for datastore in self.datastores.values():
             datastore.stop()
         for logger in self.loggers.values():
             logger.stop()
+
+        print("Terminating device connections...")
         for device in self.devices.values():
             device.disconnect()
 

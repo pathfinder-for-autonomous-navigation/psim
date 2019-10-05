@@ -8,8 +8,9 @@ class StateCmdPrompt(Cmd):
     Teensies and simulation devices.
     '''
 
-    def __init__(self, devices):
+    def __init__(self, devices, exit_fn):
         self.devices = devices
+        self.exit_fn = exit_fn
 
         if not self.devices:
             # There's no flight controller to connect with.
@@ -105,3 +106,10 @@ class StateCmdPrompt(Cmd):
         Exits the command line and terminates connections with the flight computer(s).
         '''
         print('Exiting command line.')
+        self.exit_fn()
+
+    def do_exit(self, args):
+        '''
+        Exits the command line and terminates connections with the flight computer(s).
+        '''
+        self.do_quit(None)
