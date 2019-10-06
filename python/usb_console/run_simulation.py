@@ -61,17 +61,17 @@ class SimulationRun(object):
             os.makedirs(simulation_run_dir, exist_ok=True)
 
             # Generate data loggers and device manager for device
-            device_configstore = Datastore(device_name, simulation_run_dir)
+            device_datastore = Datastore(device_name, simulation_run_dir)
             device_logger = Logger(device_name, simulation_run_dir)
-            port_cmd = StateSession(self.data_dir, device_name, device_configstore, device_logger)
+            port_cmd = StateSession(self.data_dir, device_name, device_datastore, device_logger)
 
             # Connect to device, failing gracefully if device connection fails
             if port_cmd.connect(device["port"], device["baud_rate"]):
                 self.devices[device_name] = port_cmd
-                self.datastores[device_name] = device_configstore
+                self.datastores[device_name] = device_datastore
                 self.loggers[device_name] = device_logger
 
-                device_configstore.start()
+                device_datastore.start()
                 device_logger.start()
             elif device["required"]:
                 self.stop_all("Error: a required serial port is disconnected.")
