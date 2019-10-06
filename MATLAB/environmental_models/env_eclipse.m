@@ -2,7 +2,7 @@ function eclipse = env_eclipse(earth2sat,sat2sun)
 %env_eclipse returns true if the satellite is in eclipse
 %   Assumes the sunlight is completely parallel.
 %   earth2sat ([3, 1]  vector): Vector from earth to satellite (m)
-%   sat2sun ([3, 1]  vector): unit vector from satellite to sun (m)
+%   sat2sun ([3, 1]  vector): unit vector from satellite to sun
 global const
 d=dot(earth2sat,sat2sun);
 c_squared=dot(earth2sat,earth2sat);
