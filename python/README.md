@@ -1,5 +1,5 @@
 
-# Overview
+# psim Python Interface
 
 This folder will house all python code in this repository. Functionality to be
 supported by Python may include, but is not limited to:
@@ -10,7 +10,6 @@ supported by Python may include, but is not limited to:
    * https://stackoverflow.com/questions/11874767/how-do-i-plot-in-real-time-in-a-while-loop-using-matplotlib
    * https://learn.sparkfun.com/tutorials/graph-sensor-data-with-python-and-matplotlib/update-a-graph-in-real-time
  * Hardware/Sim interface for SHITLs.
-
 
 # Installing
 
@@ -40,6 +39,10 @@ To install the Python MATLAB engine, you must:
      Note: On mac, I recommend running the command from terminal yourself and
      not the MATLAB terminal. Make sure to substitue `python3` for `python` if
      you didn't change your default Python version.
-  4. Setup a virtual environment in the repositories top directory - highly
-     recommended. If you do this, be sure to set `include-system-site-packages`
-     to `true` in `venv/pyvenv.cfg`.
+
+# Running Simulation
+
+  1. Activate a virtualenv: `python3 -m virtualenv venv; source venv/bin/activate`
+  2. Install the requirements: `pip install -r requirements.txt`
+  3. Move into the usb_console directory.
+  4. Run the main script: `python usb_console/run_simulation.py -c usb_console/configs/fc_only.json`
