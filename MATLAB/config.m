@@ -44,11 +44,6 @@ const.ATTITUDE_PD_KD = 32.5e-4; % imported from simulink
 % Sensor constants
 const.SUNSENSOR_DEADZONE=30*pi/180;% positive scalar
 % max angle from +z axis where the sun sensors don't work (rad)
-const.GPS_ZONE=30*pi/180;% positive scalar
-% max angle from +x axis of body frame, to position_body
-% where the gps can get a connection (rad)
-const.GPS_TTFF=15*60;% positive scalar
-% max angle from +x axis where the gps can get a connection (rad)
 
 %derived constants
 const.JBINV=inv(const.JB);% 3x3 symmetric matrix
