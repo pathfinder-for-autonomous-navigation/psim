@@ -12,14 +12,28 @@ developed.
 
 %}
 
+%Time
+const.INITGPS_WN= 2045;% positive int 
+% initial gps week number, epoch for time.
+
 const.mu = 3.986e14;% positive scalar 
 % Earth's gravitational constant (m^3/s^2)
 const.R_EARTH= 6378137.0;
 %Equatorial Radius of Earth (m)*/
 const.dt = int64(0.1e9);% positive int64
+%Earth orbital elements
+const.e_earth = 0.0167086; % from wikipedia
+perihelion_date = datetime(2019,1,3,5,20,0,'TimeZone','UTCLeapSeconds');
+const.tp_earth = utl_datetime2time(perihelion_date,const.INITGPS_WN);
+const.period_earth = 365.256363004*24*60*60; % earth orbital period in seconds
+
+[rp_earth,vp_earth] = planetEphemeris(juliandate(perihelion_date),'Sun','Earth');
+rp_earth = rp_earth';
+vp_earth = vp_earth';
+h_earth = cross(rp_earth,vp_earth);
+const.quat_eci_perifocal = utl_triad([0; 0; 1],[1; 0; 0],h_earth/norm(h_earth),rp_earth/norm(rp_earth));
+
 % Simulation timestep            (ns)
-const.INITGPS_WN= 2045;% positive int 
-% initial gps week number, epoch for time.
 const.MAXWHEELRATE= 677.0;% positive scalar
 % Max wheel rate in rad/s
 const.MAXWHEELRAMP= 304.5;% positive scalar
