@@ -25,9 +25,9 @@ function real_actuators = actuator_command(commanded_actuators,state)
 %       fuel_net_angular_momentum_eci, net angular momentum of the fuel.
 %       fuel_mass, the mass of the fuel.
 global const
-real_actuators.magrod_real_moment_body=min(max(commanded_actuators.magrod_moment,-const.MAXMOMENT),const.MAXMOMENT)+const.RESIDUAL_MOMENT;
+real_actuators.magrod_real_moment_body=min(max(commanded_actuators.magrod_moment,-const.MAXMOMENT),const.MAXMOMENT);
 real_actuators.wheel_commanded_rate=commanded_actuators.wheel_enable.*sign(commanded_actuators.wheel_torque)*const.MAXWHEELRATE;
 real_actuators.wheel_commanded_ramp=abs(commanded_actuators.wheel_torque)/const.JWHEEL;
-%TODO add thruster commands, and descritized ramp for wheels
+%TODO add thruster commands, and descretized ramp for wheels
 end
 

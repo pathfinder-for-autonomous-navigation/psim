@@ -26,8 +26,6 @@ const.MAXWHEELRAMP= 304.5;% positive scalar
 % Max wheel ramp in rad/s/s
 const.MAXMOMENT= 0.08;% positive scalar
 % Max magrod moment on one axis (A*m^2)
-const.RESIDUAL_MOMENT= [0;0;0;];% 3 vector
-% Residual magnetic moment in the body frame, when magrods are off.
 const.MASS= 4.0;% positive scalar
 %dry mass of satellite, kg.
 const.JB=[1/12*const.MASS*(0.3^2+0.1^2) 0 0;
@@ -75,7 +73,7 @@ truth.mission_time = int64(0);% int64
 truth.time= double(truth.mission_time)*1E-9;
 truth.position_eci= r;
 truth.velocity_eci= v;
-truth.angular_rate_body= [10*pi/180;10*pi/180;10*pi/180];
+truth.angular_rate_body= [0;0;0;];%[10*pi/180;10*pi/180;10*pi/180];
 truth.quat_body_eci=[0;0;0;1];
 truth.wheel_rate_body=[0;0;0;];
 truth.fuel_net_angular_momentum_eci=[0;0;0;];

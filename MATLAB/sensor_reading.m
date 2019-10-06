@@ -6,6 +6,8 @@ function [sensor_readings] = sensor_reading(sensor_state,true_state,actuators)
 %       sat2sun_body, unit vector from satellite to sun.
 %       sun_sensor_true, true if sun vector reading is good, else false.
 %       wheel_momentum_body, wheel angular momentum reading (Nms)
+%       time, time since inital GPS week (s)
+%       position_ecef, position of the gps reciever of the satellite.
 %   true_state is a struct with elements:
 %       time, time since inital GPS week.
 %       position_eci, position of the center of mass of the satellite.
@@ -25,6 +27,7 @@ function [sensor_readings] = sensor_reading(sensor_state,true_state,actuators)
 %       wheel_commanded_ramp, commanded x,y,z wheel ramp, units rad/s/s.
 %       magrod_real_moment_body, real magnetorquer moment, units A*m^2
 %   TODO implement the actual sensors with errors
+%   TODO implement GPS
 global const
 %% quaternions
 [quat_ecef_eci,~]=env_earth_attitude(true_state.time);
@@ -54,5 +57,9 @@ else
 end
 %% wheel angular momentum reading
 sensor_readings.wheel_momentum_body= true_state.wheel_rate_body*const.JWHEEL;
+%% GPS
+sensor_readings.time= true_state.time;
+sensor_readings.position_ecef= rotateframe(quat_ecef_eci,true_state.position_eci')';
+%TODO get velocity in ECEF
 end
 

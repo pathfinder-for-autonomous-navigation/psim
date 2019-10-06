@@ -64,7 +64,6 @@ repositories.
    * MAXWHEELRATE(positive scalar),  Max wheel rate (rad/s)
    * MAXWHEELRAMP(positive scalar), Max wheel ramp (rad/s/s)
    * MAXMOMENT(positive scalar), Max magrod moment on one axis (A*m^2)
-   * RESIDUAL_MOMENT, Residual magnetic moment in the body frame, when magrods are off (A*m^2)
    * MASS(positive scalar), Dry mass of satellite (kg)
    * JB(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame (kg*m^2)
    * JBINV(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kg*m^2))

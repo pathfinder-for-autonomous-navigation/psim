@@ -13,8 +13,8 @@ addpath('utl');
 addpath('environmental_models');
 addpath('environmental_models/helper_functions');
 
-t_max = 100;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
-t_int = 10.0;               % Sampling interval        (s)
+t_max = 10;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
+t_int = 1.0;               % Sampling interval        (s)
 %arrays to plot
 N = floor(t_max / t_int) + 1;  % Number of samples
 config()  % Initialize the simulation
