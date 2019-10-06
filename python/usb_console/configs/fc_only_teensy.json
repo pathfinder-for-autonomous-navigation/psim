@@ -1,10 +1,13 @@
 {
     "seed" : 2,
+    "sim_duration": 2,
     "devices" : [
         {
             "name": "FlightController",
+            "run_mode": "teensy",
             "port": "/dev/cu.usbmodem47349801",
-            "stop_if_unconnected": true
+            "baud_rate": 1152000,
+            "required": true
         }
     ]
 }

@@ -4,6 +4,8 @@
 #Class to run a simulation and communicate with the flight computers.
 import time
 import math
+import threading
+
 class Simulation(object):
     """"""
     def __init__(self,devices,seed):
@@ -17,12 +19,18 @@ class Simulation(object):
         self.devices = devices
         self.flight_controller = self.devices['FlightController']
 
-    def run(self,time):
+    def start(self, duration):
+        self.sim_thread = threading.Thread(name="Python-MATLAB Simulation Interface",
+                                           target=self.run,
+                                           args=[duration])
+        self.sim_thread.start()
+
+    def run(self,duration):
         """
         Runs the simulation for time seconds
 
         Args:
-            time(float) length of simulation
+            duration(float) length of simulation
         """
 
         # startns=time.clock_gettime_ns()
@@ -36,3 +44,10 @@ class Simulation(object):
         #         pass
 
         # print("Stopping MATLAB Simulation.")
+
+    def stop(self):
+        """
+        Stops a run of the simulation.
+        """
+        self.running = False
+        self.sim_thread.join()

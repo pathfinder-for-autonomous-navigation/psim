@@ -23,9 +23,10 @@ class StateSession(object):
         Initializes state cmd prompt.
 
         Args:
-        console_port: Serial port of connected Teensy
         data_dir: Directory in which to store the results of the run.
         device_name: Name of device being connected to
+        datastore: Datastore to which telemetry data will be published
+        logger: Logger to which log lines should be committed
         '''
 
         # Device connection
@@ -48,12 +49,8 @@ class StateSession(object):
         - baud_rate: Baud rate of connection (default 1152000)
         - msg_check_delay: Delay between looped checks of messages from the flight controller. (default 5.0 ms)
         '''
-
-        self.console_port = console_port
-        self.baud_rate = baud_rate
-
         try:
-            self.console = serial.Serial(self.console_port, self.baud_rate)
+            self.console = serial.Serial(console_port, baud_rate)
             self.start_time = datetime.datetime.now() # This is t = 0 on the Teensy, +/- a few milliseconds.
 
             self.device_write_lock = threading.Lock() # Lock to prevent multiple writes to device at the same time.
@@ -136,8 +133,8 @@ class StateSession(object):
 
     def _wait_for_state(self, field_name, timeout = None):
         """
-        Helper function used by both read_state and write_state_fb to wait for a desired value
-        to be reported back by the Teensy.
+        Helper function used by both read_state and write_state to wait for a desired value
+        to be reported back by the Teensy (or native binary.)
         """
         self.field_request.put(field_name)
         try:
@@ -154,8 +151,9 @@ class StateSession(object):
         '''
 
         json_cmd = {'mode': ord('r'), 'field': str(field_name)}
+        json_cmd = json.dumps(json_cmd) + "\n"
         self.device_write_lock.acquire()
-        self.console.write(json.dumps(json_cmd).encode())
+        self.console.write(json_cmd.encode())
         self.device_write_lock.release()
 
         return self._wait_for_state(field_name)
@@ -172,8 +170,9 @@ class StateSession(object):
             'field': str(field_name),
             'val': str(val)
         }
+        json_cmd = json.dumps(json_cmd) + "\n"
         self.device_write_lock.acquire()
-        self.console.write(json.dumps(json_cmd).encode())
+        self.console.write(json_cmd.encode())
         self.device_write_lock.release()
 
         return val == self._wait_for_state(field_name, timeout)

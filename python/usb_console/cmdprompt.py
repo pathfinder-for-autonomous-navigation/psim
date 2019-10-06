@@ -105,8 +105,7 @@ class StateCmdPrompt(Cmd):
         '''
         Exits the command line and terminates connections with the flight computer(s).
         '''
-        print('Exiting command line.')
-        self.exit_fn()
+        self.exit_fn('Exiting command line.')
 
     def do_exit(self, args):
         '''
