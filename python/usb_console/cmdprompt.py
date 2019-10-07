@@ -17,7 +17,7 @@ class StateCmdPrompt(Cmd):
             # There's no flight controller to connect with.
             raise SystemExit
 
-        # By default, if it's available, set the prompt to be commanding the Flight Computer.
+        # By default, if it's available, set the prompt to be commanding the Flight Controller.
         try:
             self.cmded_device = self.devices['FlightController']
         except KeyError:
@@ -105,7 +105,7 @@ class StateCmdPrompt(Cmd):
         override_succeeded = self.cmded_device.override_state(args[0], args[1])
         elapsed_time = int((timeit.default_timer() - start_time) * 1E3)
 
-        override_succeeded = "Succeeded" if write_succeeded else "Failed"
+        override_succeeded = "Succeeded" if override_succeeded else "Failed"
         print(f"{override_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} ms)")
 
     def do_ro(self, args):

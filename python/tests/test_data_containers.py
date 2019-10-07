@@ -1,5 +1,4 @@
 from usb_console.data_containers import Datastore, Logger
-import unittest
 import os, json, tempfile, time
 
 def test_datastore():
