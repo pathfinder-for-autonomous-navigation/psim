@@ -48,7 +48,7 @@ for the Flight Software. You can find these binaries [here](https://github.com/p
 
 Then, run the main script:
 
-      python usb_console/run_simulation.py -c usb_console/configs/fc_only.json
+      python usb_console/run_simulation.py -c usb_console/configs/fc_only_native.json
 
 This starts up the simulation and uses a desktop binary for the FlightSoftware.
 
