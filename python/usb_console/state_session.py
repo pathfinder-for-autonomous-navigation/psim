@@ -18,12 +18,11 @@ class StateSession(object):
     they won't trip over each other in setting/receiving variables from the connected flight computer.
     '''
 
-    def __init__(self, data_dir, device_name, datastore, logger):
+    def __init__(self, device_name, datastore, logger):
         '''
         Initializes state cmd prompt.
 
         Args:
-        data_dir: Directory in which to store the results of the run.
         device_name: Name of device being connected to
         datastore: Datastore to which telemetry data will be published
         logger: Logger to which log lines should be committed

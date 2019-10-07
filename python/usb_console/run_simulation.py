@@ -12,7 +12,8 @@ class SimulationRun(object):
     def __init__(self, random_seed, sim_duration, data_dir, device_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
-        self.data_dir = data_dir
+        self.simulation_run_dir = os.path.join(self.data_dir,
+                                               time.strftime("%Y%m%d-%H%M%S"))
         self.device_config = device_config
 
         self.datastores = {}
@@ -57,13 +58,12 @@ class SimulationRun(object):
                 device['baud_rate'] = 9600
 
             # Create directory for run data
-            simulation_run_dir = os.path.join(self.data_dir, time.strftime("%Y%m%d-%H%M%S"))
             os.makedirs(simulation_run_dir, exist_ok=True)
 
             # Generate data loggers and device manager for device
-            device_datastore = Datastore(device_name, simulation_run_dir)
-            device_logger = Logger(device_name, simulation_run_dir)
-            port_cmd = StateSession(self.data_dir, device_name, device_datastore, device_logger)
+            device_datastore = Datastore(device_name, self.simulation_run_dir)
+            device_logger = Logger(device_name, self.simulation_run_dir)
+            port_cmd = StateSession(self.simulation_run_dir, device_name, device_datastore, device_logger)
 
             # Connect to device, failing gracefully if device connection fails
             if port_cmd.connect(device["port"], device["baud_rate"]):
@@ -99,7 +99,7 @@ class SimulationRun(object):
         print(reason_for_stop)
 
         print("Stopping simulation...")
-        self.sim.stop()
+        self.sim.stop(self.simulation_run_dir)
 
         print("Stopping loggers...")
         for datastore in self.datastores.values():
