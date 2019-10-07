@@ -30,9 +30,9 @@ To install the Python MATLAB engine, you must:
         >> pyversion
 
             version: '3.6'
-            executable: '/usr/local/bin/python3'
-            library: '/usr/local/Library/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6m.dylib'
-            home: '/usr/local/Library/Frameworks/Python.framework/Versions/3.6'
+            executable: '/Users/tanishqaggarwal/Documents/pan/repositories/psim/python/venv/bin/python3'
+            library: ''
+            home: '/Users/tanishqaggarwal/Documents/pan/repositories/psim/python/venv/bin/..'
             isloaded: 0
 
  6. Install MATLAB for this repository. On macOS:
