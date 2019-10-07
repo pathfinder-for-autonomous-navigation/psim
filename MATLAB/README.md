@@ -61,6 +61,11 @@ repositories.
    * mu(positive scalar), Earth's gravitational constant (m^3/s^2)
    * dt(positive int64), Simulation timestep (ns)
    * INITGPS_WN(positive int), Initial gps week number, epoch for time (weeks)
+   * R_EARTH(positive scalar), Equatorial Radius of Earth (m)
+   * e_earth(positive scalar), Earth's eccentricity
+   * tp_earth(scalar), Time when earth was at perihelion (s)
+   * period_earth(positive scalar), Earth orbital period (s)
+   * quat_eci_perifocal(quaternion), Quat between earth's perifocal and eci frame.
    * MAXWHEELRATE(positive scalar),  Max wheel rate (rad/s)
    * MAXWHEELRAMP(positive scalar), Max wheel ramp (rad/s/s)
    * MAXMOMENT(positive scalar), Max magrod moment on one axis (A*m^2)
@@ -70,11 +75,9 @@ repositories.
    * JWHEEL(positive scalar),  Wheel Inertia (kg*m^2)
    * JFUEL_NORM(positive scalar), Moment of inertia of the fuel/mass of the fuel (m^2)
    * SLOSH_DAMPING(positive scalar), Torque on fuel/difference in angular rates in eci (Nm/(rad/s))
-   * ATTITUDE_PD_KP
-   * ATTITUDE_PD_KD
+   * ATTITUDE_PD_KP(scalar), Attitude PD controller K_p (N*m)
+   * ATTITUDE_PD_KD(scalar), Attitude PD controller K_d (N*m/(rad/s))
    * SUNSENSOR_DEADZONE(positive scalar), Angle from +z axis where the sun sensors don't work (rad)
-
-
 
 
 
