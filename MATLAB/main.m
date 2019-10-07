@@ -2,73 +2,67 @@ clearvars; clc;
 
 global truth
 global const
+global truth_trajectory
+global actuators
+global actuator_commands
+global sensor_readings
+global sensor_state
+global computer_state
 
 addpath('utl');
 addpath('environmental_models');
 addpath('environmental_models/helper_functions');
 
-t_max = 100;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
-t_int = 10.0;               % Sampling interval        (s)
-
+t_max = 10;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
+t_int = 1.0;               % Sampling interval        (s)
 %arrays to plot
 N = floor(t_max / t_int) + 1;  % Number of samples
-t = zeros(1, N);               % Stored mission time data
-r = zeros(3, N);               % Stored position
-orbital_energys= zeros(1, N); 
-orbital_angular_momentum_ecis= zeros(3, N);
-rotational_energys= zeros(1, N);
-spacecraft_angular_momentum_ecis= zeros(3, N);
-
 config()  % Initialize the simulation
 
-[orbital_energys(:,1),orbital_angular_momentum_ecis(:,1),rotational_energys(:,1),spacecraft_angular_momentum_ecis(:,1)]=almost_conserved_values(truth);
-t(:, 1) = truth.mission_time * 1e-9;  % Take initial data
-r(:, 1) = truth.r;
-
-
-t_s = t(1);  % Timestamp of last data point
+truth_trajectory = cell(1,N);
+truth_trajectory{1} = truth;
+t_s = 0.0;  % Timestamp of last data point
 n   = 1;     % Previously logged data index
 
 while truth.mission_time * 1e-9 < t_max
     
-    truth_update()  % Update the simulation
+    %sense truth
+    tic;
+    sensor_readings = sensor_reading(sensor_state,truth,actuators);
+    t_sensors = toc;
+    %update dynamics
+    tic;
+    truth = orbit_attitude_update_ode2(truth,actuators,double(const.dt) * 1e-9);
+    t_orbit_att = toc;
+    %update time
+    truth.mission_time = truth.mission_time+const.dt;
+    truth.time = double(truth.mission_time)*1E-9;
+    %update sensor state (for example biases)
+    tic;
+    sensor_state_update(sensor_state,truth,double(const.dt) * 1e-9);
+    t_sensor_state = toc;
+    %simulate flight computer
+    tic;
+    [computer_state,actuator_commands] = update_FC_state(computer_state,sensor_readings);
+    t_fc = toc;
+    %command actuators
+    tic;
+    actuators = actuator_command(actuator_commands,truth);
+    t_actuators = toc;
+    
     if t_s + t_int <= truth.mission_time * 1e-9
         n = n + 1;
-        t(:, n) = truth.mission_time * 1e-9;
-        r(:, n) = truth.r;
-        t_s = t(n);
-        [orbital_energys(:,n),orbital_angular_momentum_ecis(:,n),rotational_energys(:,n),spacecraft_angular_momentum_ecis(:,n)]=almost_conserved_values(truth);
+        t_s = truth.mission_time * 1e-9;
+        truth_trajectory{n} = truth;
         fprintf("Progress at %.3f s / %.3f s\n", t_s, t_max);
     end
 end
 
-% Plot a projection of the the trajectory onto the ECI xy-plane
-figure;
-plot(r(1,:),r(2,:))
-title("orbit")
-xlabel('x position (m)')
-ylabel('Y position (m)')
+% check timings
+t_sensors
+t_orbit_att
+t_sensor_state
+t_fc
+t_actuators
 
-figure;
-plot(t,orbital_energys-orbital_energys(1))
-title("delta orbital energy")
-xlabel('time (s)')
-ylabel('energy (J)')
-
-figure;
-plot(t,(orbital_angular_momentum_ecis-orbital_angular_momentum_ecis(:,1))')
-title("delta orbital angular momentum eci")
-xlabel('time (s)')
-ylabel('angular momentum (Nms)')
-
-figure;
-plot(t,rotational_energys-rotational_energys(1))
-title("delta rotational energy")
-xlabel('time (s)')
-ylabel('energy (J)')
-
-figure;
-plot(t,(spacecraft_angular_momentum_ecis-spacecraft_angular_momentum_ecis(:,1))')
-title("delta spacecraft angular momentum eci")
-xlabel('time (s)')
-ylabel('angular momentum (Nms)')
+% plot_trajectory(truth_trajectory);
