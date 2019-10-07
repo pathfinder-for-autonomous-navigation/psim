@@ -178,7 +178,7 @@ class StateSession(object):
 
         return returned_vals == vals
 
-    def write_state_multiple(self, fields, vals, timeout = None):
+    def write_multiple_states(self, fields, vals, timeout = None):
         '''
         Write multiple states and check the write operation with feedback.
 
@@ -204,7 +204,7 @@ class StateSession(object):
         by the user. (This is a function that sim should exclusively use.)
         '''
 
-        return self.write_state_multiple([field], [val], timeout)
+        return self.write_multiple_states([field], [val], timeout)
 
     def override_state(self, field, val, timeout = None):
         '''

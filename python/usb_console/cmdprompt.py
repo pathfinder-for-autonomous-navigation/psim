@@ -96,6 +96,29 @@ class StateCmdPrompt(Cmd):
         write_succeeded = "Succeeded" if write_succeeded else "Failed"
         print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
 
+    def do_wms(self, args):
+        '''
+        Write multiple states. See state_session.py for documentation.
+        '''
+        args = args.split()
+
+        if len(args) == 0:
+            print('Need to specify a state field to set')
+            return
+        elif len(args) % 2 != 0:
+            print("Need to specify a value for every state field to set")
+            return
+
+        fields = [args[x] for x in range(0, len(args), 2)]
+        vals = [args[x] for x in range(1, len(args), 2)]
+
+        start_time = timeit.default_timer()
+        write_succeeded = self.cmded_device.write_multiple_states(fields, vals)
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
+
+        write_succeeded = "Succeeded" if write_succeeded else "Failed"
+        print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
+
     def do_os(self, args):
         '''
         Override simulation state. See state_session.py for documentation.
