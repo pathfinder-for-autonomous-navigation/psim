@@ -73,8 +73,8 @@ class StateCmdPrompt(Cmd):
 
         start_time = timeit.default_timer()
         read_result = self.cmded_device.read_state(args[0])
-        elapsed_time = int((timeit.default_timer() - start_time) * 1E3)
-        print(f"{read_result} \t\t\t\t\t\t(Completed in {elapsed_time} ms)")
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
+        print(f"{read_result} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
 
     def do_ws(self, args):
         '''
@@ -91,10 +91,10 @@ class StateCmdPrompt(Cmd):
 
         start_time = timeit.default_timer()
         write_succeeded = self.cmded_device.write_state(args[0], args[1])
-        elapsed_time = int((timeit.default_timer() - start_time) * 1E3)
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
 
         write_succeeded = "Succeeded" if write_succeeded else "Failed"
-        print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} ms)")
+        print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
 
     def do_os(self, args):
         '''
@@ -103,10 +103,10 @@ class StateCmdPrompt(Cmd):
         args = args.split()
         start_time = timeit.default_timer()
         override_succeeded = self.cmded_device.override_state(args[0], args[1])
-        elapsed_time = int((timeit.default_timer() - start_time) * 1E3)
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
 
         override_succeeded = "Succeeded" if override_succeeded else "Failed"
-        print(f"{override_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} ms)")
+        print(f"{override_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
 
     def do_ro(self, args):
         '''

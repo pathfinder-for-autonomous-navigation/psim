@@ -35,7 +35,7 @@ class Simulation(object):
 
     def run(self,duration):
         """
-        Runs the simulation for time seconds
+        Runs the simulation for "duration" seconds
 
         Args:
             duration(float) length of simulation
@@ -108,7 +108,7 @@ class Simulation(object):
 
     def stop(self, data_dir):
         """
-        Stops a run of the simulation.
+        Stops a run of the simulation and saves run data to disk.
         """
         self.running = False
         self.sim_thread.join()
