@@ -27,28 +27,28 @@ n   = 1;     % Previously logged data index
 while truth.mission_time * 1e-9 < t_max
     
     %sense truth
-%     tic;
+    tic;
     sensor_readings = sensor_reading(sensor_state,truth,actuators);
-%     t_sensors = toc
+    t_sensors = toc;
     %update dynamics
-%     tic;
+    tic;
     truth = orbit_attitude_update_ode2(truth,actuators,double(const.dt) * 1e-9);
-%     t_orbit_att = toc
+    t_orbit_att = toc;
     %update time
     truth.mission_time = truth.mission_time+const.dt;
     truth.time = double(truth.mission_time)*1E-9;
     %update sensor state (for example biases)
-%     tic;
+    tic;
     sensor_state_update(sensor_state,truth,double(const.dt) * 1e-9);
-%     t_sensor_state = toc
+    t_sensor_state = toc;
     %simulate flight computer
-%     tic;
+    tic;
     [computer_state,actuator_commands] = update_FC_state(computer_state,sensor_readings);
-%     t_fc = toc
+    t_fc = toc;
     %command actuators
-%     tic;
+    tic;
     actuators = actuator_command(actuator_commands,truth);
-%     t_actuators = toc
+    t_actuators = toc;
     
     if t_s + t_int <= truth.mission_time * 1e-9
         n = n + 1;
@@ -57,5 +57,9 @@ while truth.mission_time * 1e-9 < t_max
         fprintf("Progress at %.3f s / %.3f s\n", t_s, t_max);
     end
 end
-
-plot_trajectory(truth_trajectory);
+t_sensors
+t_orbit_att
+t_sensor_state
+t_fc
+t_actuators
+%plot_trajectory(truth_trajectory);
