@@ -101,7 +101,11 @@ class SimulationRun(object):
         print(reason_for_stop)
 
         print("Stopping simulation...")
-        self.sim.stop(self.simulation_run_dir)
+        try:
+            self.sim.stop(self.simulation_run_dir)
+        except:
+            # Simulation was never created
+            pass
 
         print("Stopping loggers (please be patient)...")
         for datastore in self.datastores.values():

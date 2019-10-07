@@ -3,7 +3,7 @@
 # simulation.py
 # Class to run a simulation and communicate with the flight computers.
 
-import time
+import time, timeit
 import math
 import threading
 import matlab.engine
@@ -38,7 +38,9 @@ class Simulation(object):
             duration(float) length of simulation
         """
 
-        print("Beginning simulation...")
+        print("Configuration simulation...")
+
+        start_time = timeit.default_timer()
 
         eng = matlab.engine.start_matlab()
         path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../MATLAB")
@@ -62,6 +64,10 @@ class Simulation(object):
         eng.eval("global sensor_state", nargout=0)
         eng.eval("global computer_state", nargout=0)
         eng.config(nargout=0)
+
+        elapsed_time = timeit.default_timer() - start_time
+
+        print(f"Configuring simulation took {elapsed_time} s. Starting simulation loop. ")
 
         dt = eng.workspace['const']['dt']
 

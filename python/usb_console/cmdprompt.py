@@ -1,6 +1,7 @@
 import readline
 from cmd import Cmd
 import random
+import timeit
 
 class StateCmdPrompt(Cmd):
     '''
@@ -70,7 +71,10 @@ class StateCmdPrompt(Cmd):
             print('Need to specify a state field to read')
             return
 
-        print(self.cmded_device.read_state(args[0]))
+        start_time = timeit.default_timer()
+        read_result = self.cmded_device.read_state(args[0])
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E3)
+        print(f"{read_result} \t\t\t\t\t\t(Completed in {elapsed_time} ms)")
 
     def do_ws(self, args):
         '''
@@ -85,14 +89,24 @@ class StateCmdPrompt(Cmd):
             print('Need to specify the value to set')
             return
 
-        self.cmded_device.write_state(args[0], args[1])
+        start_time = timeit.default_timer()
+        write_succeeded = self.cmded_device.write_state(args[0], args[1])
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E3)
+
+        write_succeeded = "Succeeded" if write_succeeded else "Failed"
+        print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} ms)")
 
     def do_os(self, args):
         '''
         Override simulation state. See state_session.py for documentation.
         '''
         args = args.split()
-        self.cmded_device.override_state(args[0], args[1])
+        start_time = timeit.default_timer()
+        override_succeeded = self.cmded_device.override_state(args[0], args[1])
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E3)
+
+        override_succeeded = "Succeeded" if write_succeeded else "Failed"
+        print(f"{override_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} ms)")
 
     def do_ro(self, args):
         '''

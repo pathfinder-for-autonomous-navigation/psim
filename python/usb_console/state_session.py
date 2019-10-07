@@ -39,14 +39,13 @@ class StateSession(object):
         # Simulation
         self.overriden_variables = set()
 
-    def connect(self, console_port, baud_rate=1152000, msg_check_delay=0.005):
+    def connect(self, console_port, baud_rate=1152000):
         '''
         Starts serial connection to the flight computer.
 
         Args:
         - console_port: Serial port to connect to.
         - baud_rate: Baud rate of connection (default 1152000)
-        - msg_check_delay: Delay between looped checks of messages from the flight controller. (default 5.0 ms)
         '''
         try:
             self.console = serial.Serial(console_port, baud_rate)
@@ -61,8 +60,7 @@ class StateSession(object):
             self.running_logger = True
             self.check_msgs_thread = threading.Thread(
                 name=f"{self.device_name} logger thread",
-                target=self.check_console_msgs,
-                args=[msg_check_delay])
+                target=self.check_console_msgs)
             self.check_msgs_thread.start()
 
             self.connected = True
@@ -74,13 +72,10 @@ class StateSession(object):
             self.connected = False
             return False
 
-    def check_console_msgs(self, delay):
+    def check_console_msgs(self):
         '''
         Read FC output for debug messages and state variable updates. Record debug messages
         to the logging file, and update the console's record of the state.
-
-        Args:
-        - delay: Time to wait between executions of the message check loop.
         '''
 
         while self.running_logger:
@@ -91,7 +86,6 @@ class StateSession(object):
                     line = self.console.readline().rstrip()
                     data = json.loads(line)
                 else:
-                    time.sleep(delay)
                     continue
 
                 data['time'] = self.start_time + datetime.timedelta(milliseconds=data['t'])
@@ -127,8 +121,6 @@ class StateSession(object):
                 self.disconnect()
 
             self.logger.put(logline)
-
-            time.sleep(delay)
 
     def _wait_for_state(self, field_name, timeout = None):
         """
