@@ -100,7 +100,7 @@ class SimulationRun(object):
 
         print(reason_for_stop)
 
-        print("Stopping simulation...")
+        print("Stopping simulation (please be patient)...")
         try:
             self.sim.stop(self.simulation_run_dir)
         except:
@@ -113,7 +113,8 @@ class SimulationRun(object):
         for logger in self.loggers.values():
             logger.stop()
 
-        print("Terminating device connections...")
+        num_devices = len(self.devices.values())
+        print(f"Terminating {num_devices} device connection(s):")
         for binary in self.binaries:
             binary['subprocess'].terminate()
             os.close(binary['pty_master_fd'])

@@ -79,7 +79,6 @@ class StateSession(object):
         '''
 
         while self.running_logger:
-            logline = ''
             try:
                 # Read line coming from device and parse it
                 if self.console.inWaiting() > 0:
@@ -93,12 +92,15 @@ class StateSession(object):
                 if 'msg' in data:
                     # The logline represents a debugging message created by Flight Software. Report the message to the logger.
                     logline = f"[{data['time']}] ({data['svrty']}) {data['msg']}"
+                    self.logger.put(logline)
+
                 elif 'err' in data:
                     # The log line represents an error in retrieving or writing state data that
                     # was caused by a StateSession client improperly setting/retrieving a value.
                     # Report this failure to the logger.
 
                     logline = f"[{data['time']}] (ERROR) Tried to {data['mode']} state value named \"{data['field']}\" but encountered an error: {data['err']}"
+                    self.logger.put(logline)
 
                     data['val'] = None
                 else:
@@ -119,8 +121,6 @@ class StateSession(object):
                 traceback.print_exc()
                 print('Unspecified error. Exiting.')
                 self.disconnect()
-
-            self.logger.put(logline)
 
     def _wait_for_state(self, field_name, timeout = None):
         """
@@ -205,7 +205,7 @@ class StateSession(object):
     def disconnect(self):
         '''Quits the program and stores message log and field telemetry to file.'''
 
-        print(f'Terminating console connection to and saving logging/telemetry data for {self.device_name}.')
+        print(f' - Terminating console connection to and saving logging/telemetry data for {self.device_name}.')
 
         # End threads if there was actually a connection to the device
         if self.connected:

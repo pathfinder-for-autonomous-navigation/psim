@@ -81,14 +81,10 @@ class Logger(DataContainer):
 
         self.log += logline + "\n"
 
-    def intermediate_save(self):
-        """Save the log generated thus far to a file."""
+    def save(self):
+        """Save the log to a file."""
 
         filename = f"{self.device_name}-log.txt"
         filepath = os.path.join(self.data_dir, filename)
-        with open(filepath, 'a') as logfile:
+        with open(filepath, 'w') as logfile:
             logfile.write(self.log)
-        self.log = ""
-
-    def save(self):
-        self.intermediate_save()
