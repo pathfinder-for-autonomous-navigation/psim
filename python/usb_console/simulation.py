@@ -7,6 +7,7 @@ import time
 import math
 import threading
 import matlab.engine
+import os
 import json
 
 class Simulation(object):
@@ -38,24 +39,44 @@ class Simulation(object):
         """
 
         print("Beginning simulation...")
-        while eng.workspace['truth']['mission_time'] < duration:
-            eng = matlab.engine.start_matlab()
-            eng.addpath('../../MATLAB', nargout=0)
-            eng.addpath('../../MATLAB/utl', nargout=0)
 
-            eng.config(nargout=0)
+        eng = matlab.engine.start_matlab()
+        path1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../MATLAB")
+        path2 = os.path.join(path1, "utl")
+        path3 = os.path.join(path1, "environmental_models")
+        path4 = os.path.join(path1, "environmental_models/helper_functions")
+        eng.addpath(path1, nargout=0)
+        eng.addpath(path2, nargout=0)
+        eng.addpath(path3, nargout=0)
+        eng.addpath(path4, nargout=0)
 
+        eng.eval("global truth", nargout=0)
+        eng.eval("global const", nargout=0)
+        eng.eval("global actuators", nargout=0)
+        eng.eval("global truth", nargout=0)
+        eng.eval("global const", nargout=0)
+        eng.eval("global truth_trajectory", nargout=0)
+        eng.eval("global actuators", nargout=0)
+        eng.eval("global actuator_commands", nargout=0)
+        eng.eval("global sensor_readings", nargout=0)
+        eng.eval("global sensor_state", nargout=0)
+        eng.eval("global computer_state", nargout=0)
+        eng.config(nargout=0)
+
+        dt = eng.workspace['const']['dt']
+
+        while eng.workspace['truth']['mission_time'] < duration * 1E9:
             # Update sensor model and begin update of truth model in the background
             eng.workspace['sensor_readings'] = eng.sensor_reading(eng.workspace['sensor_state'],
                                                 eng.workspace['truth'],
                                                 eng.workspace['actuators'])
 
-            truth = eng.orbit_attitude_update_ode2(eng.workspace['truth'], eng.workspace['actuators'], 0.1, background=True)
-            sensor_state_update = eng.sensor_state_update(eng.workspace['sensor_state'], eng.workspace['truth'], 0.1, background=True)
+            truth = eng.orbit_attitude_update_ode2(eng.workspace['truth'], eng.workspace['actuators'], dt * 1E9, background=True)
+            sensor_state_update = eng.sensor_state_update(eng.workspace['sensor_state'], eng.workspace['truth'], dt * 1E9, background=True)
 
             # Send sensor data to Flight Controller, and collect actuator outputs
-            self.flight_controller.write_state("prop.temp_outer", 2)
-            foo = self.flight_controller.read_state("prop.temp_inner")
+            # self.flight_controller.write_state("prop.temp_outer", 2)
+            # foo = self.flight_controller.read_state("prop.temp_inner")
 
             # Update actuators that are not updated by flight controller
             fc_outputs = eng.update_FC_state(eng.workspace['computer_state'], eng.workspace['sensor_readings'])
@@ -68,11 +89,13 @@ class Simulation(object):
 
             # Actuate the sim devices, and prepare for the next cycle
             eng.workspace['actuator'] = eng.actuator_command(eng.workspace['actuator_commands'], eng.workspace['truth'])
-            eng.workspace['truth']['mission_time'] += 0.1
+            eng.workspace['truth']['mission_time'] += dt * 1E9
             self.truth_trajectory.append(eng.workspace['truth'])
 
+            time.sleep(dt * 1E9)
+
         print("Simulation ended.")
-        eng.quit()
+        # eng.quit()
 
     def stop(self, data_dir):
         """
@@ -81,4 +104,5 @@ class Simulation(object):
         self.running = False
         self.sim_thread.join()
 
-        json.dump(self.truth_trajectory, data_dir + "/simulation_data.txt")
+        with open(data_dir + "/simulation_data.txt", "w") as fp:
+            json.dump(self.truth_trajectory, fp)

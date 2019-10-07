@@ -12,8 +12,11 @@ class SimulationRun(object):
     def __init__(self, random_seed, sim_duration, data_dir, device_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
-        self.simulation_run_dir = os.path.join(self.data_dir,
-                                               time.strftime("%Y%m%d-%H%M%S"))
+        
+        self.simulation_run_dir = os.path.join(data_dir, time.strftime("%Y%m%d-%H%M%S"))
+        # Create directory for run data
+        os.makedirs(self.simulation_run_dir, exist_ok=True)
+        
         self.device_config = device_config
 
         self.datastores = {}
@@ -23,6 +26,10 @@ class SimulationRun(object):
 
     def start(self):
         """Starts a run of the simulation."""
+
+        pan_logo_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pan_logo.txt')
+        with open(pan_logo_filepath, 'r') as pan_logo_file:
+            print(pan_logo_file.read())
 
         if not self.device_config:
             print('Error: must specify at least one serial port.')
@@ -57,13 +64,10 @@ class SimulationRun(object):
                 device['port'] = os.ttyname(slave_fd)
                 device['baud_rate'] = 9600
 
-            # Create directory for run data
-            os.makedirs(simulation_run_dir, exist_ok=True)
-
             # Generate data loggers and device manager for device
             device_datastore = Datastore(device_name, self.simulation_run_dir)
             device_logger = Logger(device_name, self.simulation_run_dir)
-            port_cmd = StateSession(self.simulation_run_dir, device_name, device_datastore, device_logger)
+            port_cmd = StateSession(device_name, device_datastore, device_logger)
 
             # Connect to device, failing gracefully if device connection fails
             if port_cmd.connect(device["port"], device["baud_rate"]):
@@ -82,9 +86,7 @@ class SimulationRun(object):
 
         # Set up user command prompt
         cmd_prompt = StateCmdPrompt(self.devices, self.stop_all)
-        pan_logo_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pan_logo.txt')
-        with open(pan_logo_filepath, 'r') as pan_logo_file:
-            cmd_prompt.intro = pan_logo_file.read()
+        cmd_prompt.intro = "Beginning console.\nType \"help\" for a list of commands."
         cmd_prompt.prompt = '> '
         try:
             cmd_prompt.cmdloop()
@@ -101,7 +103,7 @@ class SimulationRun(object):
         print("Stopping simulation...")
         self.sim.stop(self.simulation_run_dir)
 
-        print("Stopping loggers...")
+        print("Stopping loggers (please be patient)...")
         for datastore in self.datastores.values():
             datastore.stop()
         for logger in self.loggers.values():
