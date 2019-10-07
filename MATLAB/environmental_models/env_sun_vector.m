@@ -26,8 +26,5 @@ r_earth = [xses; yses; 0];
 % rotate into inertial frame (ICRF or ECI)
 S = -rotateframe(utl_array2quaternion(const.quat_eci_perifocal),r_earth')';
 
-% S = planetEphemeris(juliandate(utl_time2datetime(time,const.INITGPS_WN)),'Earth','Sun');
-% S = (S/norm(S))';
-
 end
 

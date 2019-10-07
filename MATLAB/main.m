@@ -57,9 +57,12 @@ while truth.mission_time * 1e-9 < t_max
         fprintf("Progress at %.3f s / %.3f s\n", t_s, t_max);
     end
 end
+
+% check timings
 t_sensors
 t_orbit_att
 t_sensor_state
 t_fc
 t_actuators
-%plot_trajectory(truth_trajectory);
+
+% plot_trajectory(truth_trajectory);
