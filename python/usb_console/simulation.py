@@ -1,7 +1,8 @@
-#Nathan Zimmerberg
-#9.14.2019
-#simulation.py
-#Class to run a simulation and communicate with the flight computers.
+# Nathan Zimmerberg, Tanishq Aggarwal
+# 9.14.2019
+# simulation.py
+# Class to run a simulation and communicate with the flight computers.
+
 import time
 import math
 import threading
@@ -39,8 +40,8 @@ class Simulation(object):
         print("Beginning simulation...")
         while eng.workspace['truth']['mission_time'] < duration:
             eng = matlab.engine.start_matlab()
-            eng.addpath('MATLAB', nargout=0)
-            eng.addpath('MATLAB/utl', nargout=0)
+            eng.addpath('../../MATLAB', nargout=0)
+            eng.addpath('../../MATLAB/utl', nargout=0)
 
             eng.config(nargout=0)
 
@@ -52,7 +53,7 @@ class Simulation(object):
             truth = eng.orbit_attitude_update_ode2(eng.workspace['truth'], eng.workspace['actuators'], 0.1, background=True)
             sensor_state_update = eng.sensor_state_update(eng.workspace['sensor_state'], eng.workspace['truth'], 0.1, background=True)
 
-            # Send sensor data to Flight Controller, and collect outputs
+            # Send sensor data to Flight Controller, and collect actuator outputs
             self.flight_controller.write_state("prop.temp_outer", 2)
             foo = self.flight_controller.read_state("prop.temp_inner")
 
