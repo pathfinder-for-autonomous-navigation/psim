@@ -1,4 +1,8 @@
-import readline
+try:
+    import readline
+except ImportError:
+    # We're on Windows
+    pass
 from cmd import Cmd
 import random
 import timeit
