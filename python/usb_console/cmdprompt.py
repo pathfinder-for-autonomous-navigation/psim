@@ -1,7 +1,7 @@
 try:
     import readline
 except ImportError:
-    # We're on Windows
+    # We're on Windows, so readline doesn't exist
     pass
 from cmd import Cmd
 import random

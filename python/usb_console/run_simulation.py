@@ -5,18 +5,23 @@ from state_session import StateSession
 from cmdprompt import StateCmdPrompt
 from data_consumers import Logger, Datastore
 from simulation import Simulation
-import json, sys, os, tempfile, threading, time, subprocess, pty
-import urllib.request
+import json, sys, os, tempfile, time
+
+try:
+    import pty, subprocess
+except ImportError:
+    # We're on Windows and pty doesn't exist
+    pass
 
 class SimulationRun(object):
     def __init__(self, random_seed, sim_duration, data_dir, device_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
-        
+
         self.simulation_run_dir = os.path.join(data_dir, time.strftime("%Y%m%d-%H%M%S"))
         # Create directory for run data
         os.makedirs(self.simulation_run_dir, exist_ok=True)
-        
+
         self.device_config = device_config
 
         self.datastores = {}
@@ -54,15 +59,19 @@ class SimulationRun(object):
             # If we want to use the native desktop binary for a device, instead of
             # a connected Teensy, we can do that by wrapping a serial port around it.
             if device['run_mode'] == 'native':
-                master_fd, slave_fd = pty.openpty()
-                binary_process = subprocess.Popen(device['binary_filepath'], stdout=master_fd, stderr=master_fd, stdin=master_fd)
-                self.binaries.append({
-                    "subprocess": binary_process,
-                    "pty_master_fd": master_fd,
-                    "pty_slave_fd": slave_fd,
-                })
-                device['port'] = os.ttyname(slave_fd)
-                device['baud_rate'] = 9600
+                try:
+                    master_fd, slave_fd = pty.openpty()
+                    binary_process = subprocess.Popen(device['binary_filepath'], stdout=master_fd, stderr=master_fd, stdin=master_fd)
+                    self.binaries.append({
+                        "subprocess": binary_process,
+                        "pty_master_fd": master_fd,
+                        "pty_slave_fd": slave_fd,
+                    })
+                    device['port'] = os.ttyname(slave_fd)
+                    device['baud_rate'] = 9600
+                except NameError:
+                    # pty isn't defined because we're on Windows
+                    self.stop_all(f"Cannot connect to a native binary for device {device_name}, since we're on Windows.")
 
             # Generate data loggers and device manager for device
             device_datastore = Datastore(device_name, self.simulation_run_dir)
