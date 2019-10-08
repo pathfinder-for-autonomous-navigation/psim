@@ -66,6 +66,9 @@ repositories.
    * tp_earth(scalar), Time when earth was at perihelion (s)
    * period_earth(positive scalar), Earth orbital period (s)
    * quat_eci_perifocal(quaternion), Quat between earth's perifocal and eci frame.
+   * PRECESSION_RATE(3 vector), earth's axis precession rate (rad/s)
+   * quat_ecef0_eci(quaternion), ecef0 is ecef frame at time 0.
+   * earth_rate_ecef(3 vector), earth's inertial rotation rate in ecef frame (rad/s)
    * MAXWHEELRATE(positive scalar),  Max wheel rate (rad/s)
    * MAXWHEELRAMP(positive scalar), Max wheel ramp (rad/s/s)
    * MAXMOMENT(positive scalar), Max magrod moment on one axis (A*m^2)

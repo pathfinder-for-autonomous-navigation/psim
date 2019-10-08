@@ -2,16 +2,15 @@ function [quat_ecef_eci,rate_ecef]= env_earth_attitude(time)
 %earth_attitude Return the quaternion and anguar rate to rotate vectors from eci to ecef
 %   time(double): time in seconds since const.INITGPS_WN
 global const
-T=utl_time2datetime(0,const.INITGPS_WN);
-dcm=dcmeci2ecef_noerror('IAU-2000/2006',[year(T),month(T),day(T),hour(T),minute(T),second(T)+time]);
-q=dcm2quat(dcm);
-quat_ecef_eci(4)=q(1);
-quat_ecef_eci(1)=q(2);
-quat_ecef_eci(2)=q(3);
-quat_ecef_eci(3)=q(4);
-rate_ecef=[0;0;7.2921158553E-5;];
-quat_ecef_eci=quat_ecef_eci';
-%TODO properly handle higher accuracy terms, leap seconds, and rate calculation
+rate_ecef=const.earth_rate_ecef;
+quat_ecef0p_ecef0= [const.PRECESSION_RATE*time; 1.0;];
+quat_ecef0p_ecef0= quat_ecef0p_ecef0/norm(quat_ecef0p_ecef0);
+quat_ecef0p_ecef0= utl_array2quaternion(quat_ecef0p_ecef0);
+theta= const.earth_rate_ecef(3)*time;% earth rotation angle
+quat_ecef_ecef0p= utl_array2quaternion([0;0;sin(theta/2);cos(theta/2);]);
+quat_ecef0_eci= utl_array2quaternion(const.quat_ecef0_eci);
+quat_ecef_eci= quat_ecef0_eci*quat_ecef0p_ecef0*quat_ecef_ecef0p;
+quat_ecef_eci= utl_quaternion2array(quat_ecef_eci);
 end
 
 

@@ -35,6 +35,17 @@ vp_earth = vp_earth';
 h_earth = cross(rp_earth,vp_earth);
 const.quat_eci_perifocal = utl_triad([0; 0; 1],[1; 0; 0],h_earth/norm(h_earth),rp_earth/norm(rp_earth));
 % Quat between earth's perifocal and eci frame.
+T0=utl_time2datetime(0,const.INITGPS_WN);%pan epoch
+T5=T0+years(5);%5 years after pan epoch
+dcm_ECEF0_ECI=dcmeci2ecef('IAU-2000/2006',[year(T0),month(T0),day(T0),hour(T0),minute(T0),second(T0)]);
+dcm_ECEF5_ECI=dcmeci2ecef('IAU-2000/2006',[year(T5),month(T5),day(T5),hour(T5),minute(T5),second(T5)]);
+polarprecessionaxis= -cross((dcm_ECEF0_ECI*dcm_ECEF5_ECI'*[0;0;1;]),[0;0;1;]);
+const.PRECESSION_RATE= polarprecessionaxis/seconds(T5-T0);% 3 vector
+% earth's axis precession rate (rad/s)
+const.quat_ecef0_eci= utl_quaternion2array(quaternion(dcm_ECEF0_ECI,'rotmat','frame'));
+%ecef0 is ecef frame at time 0 inertialy stuck.
+const.earth_rate_ecef=[0;0;7.2921158553E-5;];% 3 vector
+% earth's inertial rotation rate in ecef frame (rad/s)
 
 const.MAXWHEELRATE= 677.0;% positive scalar
 % Max wheel rate in rad/s
