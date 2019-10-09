@@ -19,7 +19,7 @@ To install the Python MATLAB engine, you must:
     officially supported by MATLAB.
  2. Activate a virtualenv within this directory.
     1. For Mac and Linux: `python3 -m virtualenv venv; source venv/bin/activate`
-    2. For Windows: `python3 -m virtualenv venv`, followed by `venv\Scripts\activate`.
+    2. For Windows: `python -m virtualenv venv`, followed by `venv\Scripts\activate`.
  3. Install the requirements: `pip install -r requirements.txt`
  4. If on Mac, separately install `readline` and `pty` via `pip`.
  5. I found that I required MATLAB R2019b in order for the simulation to work. Make sure you
@@ -51,6 +51,22 @@ To install the Python MATLAB engine, you must:
 
 # Running Simulation
 Activate the virtualenv as done in step 2 above.
+
+**Running with Teensy in the loop**
+
+Open the config file:
+
+      psim/python/usb_console/configs
+
+Change the port to the COM port Teensy is connected to
+
+Run the main script:
+
+      python usb_console/run_simulation.py -c usb_console/configs/fc_only_teensy.json
+
+**Running with software only**
+
+This only works for Mac and Linux
 
 Edit `usb_console/configs/fc_only.json` so that the `binary_filepath` for the Flight Controller points to a binary built
 for the Flight Software. You can find these binaries [here](https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases).
