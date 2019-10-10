@@ -21,19 +21,32 @@ const.mu = 3.986e14;% positive scalar
 const.R_EARTH= 6378137.0;
 %Equatorial Radius of Earth (m)*/
 const.dt = int64(0.1e9);% positive int64
-%Earth orbital elements
-const.e_earth = 0.0167086; % from wikipedia
+% Simulation timestep            (ns)
+const.e_earth = 0.0167086; 
+% Earth's eccentricity.
 perihelion_date = datetime(2019,1,3,5,20,0,'TimeZone','UTCLeapSeconds');
 const.tp_earth = utl_datetime2time(perihelion_date,const.INITGPS_WN);
-const.period_earth = 365.256363004*24*60*60; % earth orbital period in seconds
-
+% Time when earth was at perihelion (s)
+const.period_earth = 365.256363004*24*60*60; 
+% Earth orbital period (s)
 [rp_earth,vp_earth] = planetEphemeris(juliandate(perihelion_date),'Sun','Earth');
 rp_earth = rp_earth';
 vp_earth = vp_earth';
 h_earth = cross(rp_earth,vp_earth);
 const.quat_eci_perifocal = utl_triad([0; 0; 1],[1; 0; 0],h_earth/norm(h_earth),rp_earth/norm(rp_earth));
+% Quat between earth's perifocal and eci frame.
+T0=utl_time2datetime(0,const.INITGPS_WN);%pan epoch
+T5=T0+years(5);%5 years after pan epoch
+dcm_ECEF0_ECI=dcmeci2ecef('IAU-2000/2006',[year(T0),month(T0),day(T0),hour(T0),minute(T0),second(T0)]);
+dcm_ECEF5_ECI=dcmeci2ecef('IAU-2000/2006',[year(T5),month(T5),day(T5),hour(T5),minute(T5),second(T5)]);
+polarprecessionaxis= -cross((dcm_ECEF0_ECI*dcm_ECEF5_ECI'*[0;0;1;]),[0;0;1;]);
+const.PRECESSION_RATE= polarprecessionaxis/seconds(T5-T0);% 3 vector
+% earth's axis precession rate (rad/s)
+const.quat_ecef0_eci= utl_quaternion2array(quaternion(dcm_ECEF0_ECI,'rotmat','frame'));
+%ecef0 is ecef frame at time 0 inertialy stuck.
+const.earth_rate_ecef=[0;0;7.2921158553E-5;];% 3 vector
+% earth's inertial rotation rate in ecef frame (rad/s)
 
-% Simulation timestep            (ns)
 const.MAXWHEELRATE= 677.0;% positive scalar
 % Max wheel rate in rad/s
 const.MAXWHEELRAMP= 304.5;% positive scalar
