@@ -1,13 +1,7 @@
 clearvars; clc;
 
-global truth
 global const
 global truth_trajectory
-global actuators
-global actuator_commands
-global sensor_readings
-global sensor_state
-global computer_state
 
 addpath('utl');
 addpath('environmental_models');
@@ -19,6 +13,7 @@ t_int = 1.0;               % Sampling interval        (s)
 N = floor(t_max / t_int) + 1;  % Number of samples
 config()  % Initialize the simulation
 
+[truth,actuators,sensor_state,computer_state]=initialize_states('shuffle','detumbled');
 truth_trajectory = cell(1,N);
 truth_trajectory{1} = truth;
 t_s = 0.0;  % Timestamp of last data point
