@@ -96,3 +96,5 @@ There are a few required add-ons
 
  # Controllers
  <img src="https://docs.google.com/drawings/d/e/2PACX-1vQ36cMMJu3pSCEW4oTc9ZblkLZlGmEKQNGi2ywjk4QizGxEGnlWA3RTp1Hhh_5vhKp9Q6UxJgSJFVQZ/pub?w=846&amp;h=547">
+ 
+ <img src="https://docs.google.com/drawings/d/e/2PACX-1vQjQfsUQSmmeXKQT5tWik40ip17f55RgKxIxE-MhlL6FJqcM33Bdasc_leOyrpsiqIZiHovv2fvI1kh/pub?w=900&amp;h=694">
