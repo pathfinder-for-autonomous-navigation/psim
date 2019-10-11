@@ -62,5 +62,11 @@ plot(t,(spacecraft_angular_momentum_ecis-spacecraft_angular_momentum_ecis(:,1))'
 title("delta spacecraft angular momentum eci")
 xlabel('time (s)')
 ylabel('angular momentum (Nms)')
+
+figure;
+plot(t,(spacecraft_angular_momentum_ecis)')
+title("spacecraft angular momentum eci")
+xlabel('time (s)')
+ylabel('angular momentum (Nms)')
 end
 

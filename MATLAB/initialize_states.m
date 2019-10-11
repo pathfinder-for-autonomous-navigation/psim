@@ -28,6 +28,7 @@ actuators=struct();
 sensor_state=struct();
 computer_state=struct();
 
+computer_state.adcs_state='init';
 switch condition
     case 'detumbled'
         truth.angular_rate_body= [0;0;0;];

@@ -12,8 +12,8 @@ function [final_state,actuators] = update_FC_state(initial_state,sensor_readings
 %   update state with commanded wheel torque
 
 global const
-
-quat_cmd = utl_array2quaternion([0;0;1;0;]);
+state=initial_state;
+actuators= struct();
 
 %% Attitude determination
 
@@ -25,18 +25,76 @@ quat_eci_ecef= conj(quat_ecef_eci);
 mag_eci =rotateframe(quat_eci_ecef,mag_ecef')';
 quat_body_eci=utl_triad(sat2sun_eci,mag_eci,sensor_readings.sat2sun_body,sensor_readings.magnetometer_body);
 quat_body_eci = utl_array2quaternion(quat_body_eci);
+angular_momentum_body= const.JB*sensor_readings.gyro_body+sensor_readings.wheel_momentum_body;
 
-%% PD controller 
 
-quat_error =  conj(quat_cmd) * quat_body_eci;
-if parts(quat_error) < 0 %make sure the forth componet is positive
-    quat_error = -quat_error;
+%% Contollers
+
+
+
+switch state.adcs_state
+    case 'init'
+            actuators.magrod_moment= [0;0;0;];
+            actuators.wheel_torque = [100;100;100;];
+            actuators.wheel_enable=[0;0;0;];
+            state.adcs_state='tumbling';
+            state.detumbled_trigger_count=0;
+            state.detumbler_state=0;
+            state.magrod_moment_cmd= [0;0;0;];
+    case 'tumbling'
+        switch state.detumbler_state
+            case 5
+                %save magnetic field reading
+                state.old_magnetic_field= sensor_readings.magnetometer_body;
+            case 9
+                %calculate finite difference and bang bang controller
+                deltaB= sensor_readings.magnetometer_body-state.old_magnetic_field;
+                state.magrod_moment_cmd= -sign(deltaB)*const.MAXMOMENT;
+        end
+        state.detumbler_state= mod(state.detumbler_state + 1,10);
+        actuators.magrod_moment= state.magrod_moment_cmd;
+        actuators.wheel_torque = [100;100;100;];
+        actuators.wheel_enable=[0;0;0;];
+        if (norm(angular_momentum_body)<0.2*const.MAXWHEELRATE*const.JWHEEL)
+            %detumble done detected, increase detumbled trigger count
+            state.detumbled_trigger_count = state.detumbled_trigger_count+1;
+        else
+            state.detumbled_trigger_count = 0;
+        end
+        if (state.detumbled_trigger_count>=2)
+            %detumbled triggered twice in a row
+            state.adcs_state='pointing';
+            state.tumbling_trigger_count=0;
+        end
+    case 'pointing'
+        %TODO calculate where to point
+        quat_cmd = utl_array2quaternion([0;0;1;0;]);
+        quat_error =  conj(quat_cmd) * quat_body_eci;
+        if parts(quat_error) < 0 %make sure the forth componet is positive
+            quat_error = -quat_error;
+        end
+        q = utl_quaternion2array(quat_error);
+        actuators.wheel_torque = q(1:3)*const.ATTITUDE_PD_KP + sensor_readings.gyro_body*const.ATTITUDE_PD_KD;
+        actuators.magrod_moment= [0;0;0;];
+        actuators.wheel_enable=[1;1;1;];
+        if (norm(angular_momentum_body)>0.7*const.MAXWHEELRATE*const.JWHEEL)
+            %tumbling detected, increase tumbling trigger count
+            display('tumbling detected')
+            state.tumbling_trigger_count = state.tumbling_trigger_count+1;
+        else
+            state.tumbling_trigger_count = 0;
+        end
+        if (state.tumbling_trigger_count>=2)
+            %tumbling triggered twice in a row
+            state.adcs_state='tumbling';
+            state.detumbled_trigger_count = 0;
+            state.detumbler_state=0;
+            state.magrod_moment_cmd= [0;0;0;];
+        end
+    otherwise
+        actuators.magrod_moment= [0;0;0;];
+        actuators.wheel_torque = [100;100;100;];
+        actuators.wheel_enable=[0;0;0;];
 end
-
-q = utl_quaternion2array(quat_error);
-actuators.wheel_torque = q(1:3)*const.ATTITUDE_PD_KP + sensor_readings.gyro_body*const.ATTITUDE_PD_KD;
-actuators.magrod_moment= [0;0;0;];
-actuators.wheel_enable=[1;1;1;];
-final_state=initial_state;
-
+final_state=state;
 end
