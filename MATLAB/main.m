@@ -10,8 +10,8 @@ addpath('environmental_models');
 addpath('environmental_models/helper_functions');
 
 dt=double(const.dt) * 1e-9;
-t_max = 10;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
-t_int = 1.0;               % Sampling interval        (s)
+t_max = 2000;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
+t_int = 10.0;               % Sampling interval        (s)
 %arrays to plot
 num_steps = floor(t_max/dt);
 sample_rate = t_int/dt;
