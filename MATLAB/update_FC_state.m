@@ -75,8 +75,12 @@ switch state.adcs_state
         end
         q = utl_quaternion2array(quat_error);
         actuators.wheel_torque = q(1:3)*const.ATTITUDE_PD_KP + sensor_readings.gyro_body*const.ATTITUDE_PD_KD;
-        actuators.magrod_moment= [0;0;0;];
         actuators.wheel_enable=[1;1;1;];
+        if (norm(angular_momentum_body)>0.1*const.MAXWHEELRATE*const.JWHEEL)
+            actuators.magrod_moment= sign(cross(angular_momentum_body,sensor_readings.magnetometer_body))*const.MAXMOMENT;
+        else
+            actuators.magrod_moment= [0;0;0;];
+        end
         if (norm(angular_momentum_body)>0.7*const.MAXWHEELRATE*const.JWHEEL)
             %tumbling detected, increase tumbling trigger count
             display('tumbling detected')
