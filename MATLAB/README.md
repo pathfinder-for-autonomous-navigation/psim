@@ -93,3 +93,6 @@ There are a few required add-ons
  * Ephemeris Data for Aerospace Toolbox
  * Aerospace Toolbox
  * Robotics System Toolbox
+
+ # Controllers
+ <img src="https://docs.google.com/drawings/d/e/2PACX-1vQ36cMMJu3pSCEW4oTc9ZblkLZlGmEKQNGi2ywjk4QizGxEGnlWA3RTp1Hhh_5vhKp9Q6UxJgSJFVQZ/pub?w=846&amp;h=547">
