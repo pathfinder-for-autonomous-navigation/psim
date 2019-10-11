@@ -83,7 +83,7 @@ switch state.adcs_state
         end
         if (norm(angular_momentum_body)>0.7*const.MAXWHEELRATE*const.JWHEEL)
             %tumbling detected, increase tumbling trigger count
-            display('tumbling detected')
+            disp('tumbling detected')
             state.tumbling_trigger_count = state.tumbling_trigger_count+1;
         else
             state.tumbling_trigger_count = 0;
