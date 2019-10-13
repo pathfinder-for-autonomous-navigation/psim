@@ -90,11 +90,15 @@ class SimulationRun(object):
                 self.stop_all("Error: a required serial port is disconnected.")
 
         # Set up MATLAB simulation
-        self.sim = Simulation(self.devices, self.random_seed)
-        self.sim.start(self.sim_duration)
+        if self.sim_duration > 0:
+            self.sim = Simulation(self.devices, self.random_seed)
+            self.sim.start(self.sim_duration)
+        else:
+            self.sim = lambda: None # Create empty object
+            self.sim.running = False
 
         # Set up user command prompt
-        cmd_prompt = StateCmdPrompt(self.devices, self.stop_all)
+        cmd_prompt = StateCmdPrompt(self.devices, self.sim, self.stop_all)
         cmd_prompt.intro = "Beginning console.\nType \"help\" for a list of commands."
         cmd_prompt.prompt = '> '
         try:

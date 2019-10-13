@@ -13,8 +13,9 @@ class StateCmdPrompt(Cmd):
     Teensies and simulation devices.
     '''
 
-    def __init__(self, devices, exit_fn):
+    def __init__(self, devices, sim, exit_fn):
         self.devices = devices
+        self.sim = sim
         self.exit_fn = exit_fn
 
         if not self.devices:
@@ -64,6 +65,21 @@ class StateCmdPrompt(Cmd):
             return
 
         print(f"Switched to {self.cmded_device.device_name}")
+
+    def do_checksim(self, args):
+        '''
+        Check the running status of the simulation.
+        '''
+        if self.sim.running:
+            print("Running ({} of {}s)".format(format(self.sim.sim_time,"0.2f"), self.sim.sim_duration))
+        else:
+            print("Not running")
+
+    def do_endsim(self, args):
+        '''
+        End the simulation, if it's running.
+        '''
+        self.sim.running = False
 
     def do_rs(self, args):
         '''

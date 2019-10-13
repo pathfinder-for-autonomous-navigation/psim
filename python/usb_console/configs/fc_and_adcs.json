@@ -1,6 +1,6 @@
 {
     "seed": 2,
-    "sim_duration": 2,
+    "sim_duration": 2000,
     "devices": [
         {
             "name": "FlightController",

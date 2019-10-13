@@ -17,9 +17,9 @@ To install the Python MATLAB engine, you must:
 
  1. Install Python 3.6 - it's what we'll be using as it's the newest version
     officially supported by MATLAB.
- 2. Activate a virtualenv within this directory.
-    1. For Mac and Linux: `python3 -m virtualenv venv; source venv/bin/activate`
-    2. For Windows: `python -m virtualenv venv`, followed by `venv\Scripts\activate`.
+ 2. Create and activate a virtualenv within this directory.
+    - For Mac and Linux: `python3 -m virtualenv venv; source venv/bin/activate`
+    - For Windows: `python -m virtualenv venv`, followed by `venv\Scripts\activate`.
  3. Install the requirements: `pip install -r requirements.txt`
  4. If on Mac, separately install `readline` and `pty` via `pip`.
  5. I found that I required MATLAB R2019b in order for the simulation to work. Make sure you
@@ -43,14 +43,13 @@ To install the Python MATLAB engine, you must:
          cd /Applications/MATLAB_R2019b.app/extern/engines/python
          python setup.py install --prefix="PATH_TO_PSIM/python/venv"
 
-   On Windows:
+      On Windows:
 
          cd C:\Program Files\MATLAB\R2019b\extern\engines\python
          python setup.py install --prefix="PATH_TO_PSIM/python/venv"
 
 
-# Running Simulation
-Activate the virtualenv as done in step 2 above.
+# Configuring Simulation
 
 **Running with Teensy in the loop**
 
@@ -66,19 +65,24 @@ Run the main script:
 
 **Running with software only**
 
-This only works for Mac and Linux
+This only works for Mac and Linux for now.
 
 Edit `usb_console/configs/fc_only.json` so that the `binary_filepath` for the Flight Controller points to a binary built
 for the Flight Software. You can find these binaries [here](https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases).
 
-Then, run the main script. On Windows you must run
+# Running simulation
+1. Activate the virtualenv as done in step 2 of the Installation above. You do not need to reinstall the venv.
+    - For Mac and Linux: `source venv/bin/activate`
+    - For Windows: `venv\Scripts\activate`
 
-      python usb_console/run_simulation.py -c usb_console/configs/fc_only_teensy.json
+2. Then, run the main script. On Windows you must run
 
-since psim for Windows currently only supports connections to actual Teensy devices. On Mac you may run
+         python usb_console/run_simulation.py -c usb_console/configs/fc_only_teensy.json
 
-      python usb_console/run_simulation.py -c usb_console/configs/fc_only_native.json
+      since psim for Windows currently only supports connections to actual Teensy devices. On Mac you may run
 
-To connect to a desktop binary.
+         python usb_console/run_simulation.py -c usb_console/configs/fc_only_native.json
 
-If you'd like to run more complex configurations, see the examples in the folder `usb_console/configs`.
+      To connect to a desktop binary.
+
+3. If you'd like to run more complex configurations, see the examples in the folder `usb_console/configs`.

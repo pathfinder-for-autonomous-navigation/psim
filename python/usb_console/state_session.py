@@ -186,7 +186,7 @@ class StateSession(object):
         then verify that the state was actually set. Do not write the state if the variable is being overriden
         by the user. (This is the function that sim should exclusively use.)
         '''
-
+        # Filter out fields that are being overridden by the user
         field_val_pairs = [
             field_val_pair for field_val_pair in zip(fields, vals)
             if field_val_pair[0] not in self.overriden_variables
