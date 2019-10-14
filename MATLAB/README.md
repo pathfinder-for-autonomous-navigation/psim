@@ -223,7 +223,7 @@ update_FC_state and any function it uses including:
     
 Also, the test scripts for these functions should also be partially translated into C++.
 
-#Team Member Responsibilities
+# Team Member Responsibilities
 
 Each team member is the principle programmer
 for about 7 functions in the system.
