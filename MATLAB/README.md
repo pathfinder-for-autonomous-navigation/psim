@@ -59,7 +59,7 @@ Each satellites state has the following members and submembers:
 Inaddition to this core state, other info about the satellite is retrieved using
 the function get_truth which takes a string and the dynamics of a satellite as input.
 
-    For example,
+For example,
 get_truth('magnetic field body',main_state.follower.dynamics)
 returns the real magnetic field in the body frame.
 
@@ -90,65 +90,68 @@ velocity measurements take into account additional velocity from rate cross radi
 returns the velocity of the center of mass of the sat relative to earth in the ecef frame.
 
 get_truth has full support for the following frames:
-    body: The +x face has the antennas, the -z face has the docking magnets.
-    eci: Earth Centered Inertial, an inertial frame, z axis is close to(but not exactly) the north pole.
-    ecef: Earth Centered Earth Fixed, rotates with earth, z axis is the north pole.
-    lvlh: Local Vertical Local Horizontal, x axis is position from earth to sat, z axis is orbit normal
-    vbn: Velocity Binormal Normal, x axis is sats eci velocity, z axis is orbit normal.
+ * body: The +x face has the antennas, the -z face has the docking magnets.
+ * eci: Earth Centered Inertial, an inertial frame, z axis is close to(but not exactly) the north pole.
+ * ecef: Earth Centered Earth Fixed, rotates with earth, z axis is the north pole.
+ * lvlh: Local Vertical Local Horizontal, x axis is position from earth to sat, z axis is orbit normal
+ * vbn: Velocity Binormal Normal, x axis is sats eci velocity, z axis is orbit normal.
+
 Additional frames can be added as needed, just modify quaternion_from_string(frame1,frame2)
 and rate_from_string(frame) nested functions in get_truth.
 
 get_truth supports the following vectors, these have a frame:
-    rate: angular rate (rad/s)
-    velocity: velocity of the center of mass of the sat relative to earth (m/s)
-    position: position of the center of mass of the sat relative to earth (m)
-    sat2sun: the normalized vector from the satellite to the sun (unitless) 
-    magnetic field: (T)
-    gravity: acceleration from gravity, doesn't account for coriolus effect (m/s^2)
-    total angular momentum: Total internal angular momentum of the sat (Nms)
-    orbital angular momentum: Orbital angular momentum of the sat (Nms)
-    eccentricity vector: Vector pointing from apoapsis to periapsis, using osculating elements with magnitude equal to the orbit's scalar eccentricity (unitless)
+ * rate: angular rate (rad/s)
+ * velocity: velocity of the center of mass of the sat relative to earth (m/s)
+ * position: position of the center of mass of the sat relative to earth (m)
+ * sat2sun: the normalized vector from the satellite to the sun (unitless) 
+ * magnetic field: (T)
+ * gravity: acceleration from gravity, doesn't account for coriolus effect (m/s^2)
+ * total angular momentum: Total internal angular momentum of the sat (Nms)
+ * orbital angular momentum: Orbital angular momentum of the sat (Nms)
+ * eccentricity vector: Vector pointing from apoapsis to periapsis, using osculating elements with magnitude equal to the orbit's scalar eccentricity (unitless)
 
 get_truth also supports the following scalar values, these don't have a frame:
-    orbital energy: (J)
-    rotational energy: (J)
-    semimajor axis: osculating semimajor axis (m)
-    eccentricity: osculating eccentricity (unitless)
-    inclination angle: osculating inclination angle (rad)
-    right ascension of the ascending node: osculating right ascension of the ascending node (rad)
-    argument of perigee: osculating argument of perigee (rad)
-    true anamoly: osculating true anamoly (rad)
+ * orbital energy: (J)
+ * rotational energy: (J)
+ * semimajor axis: osculating semimajor axis (m)
+ * eccentricity: osculating eccentricity (unitless)
+ * inclination angle: osculating inclination angle (rad)
+ * right ascension of the ascending node: osculating right ascension of the ascending node (rad)
+ * argument of perigee: osculating argument of perigee (rad)
+ * true anamoly: osculating true anamoly (rad)
 
 # Sensor Readings and Actuator Commands
+
 sensor readings is a struct with elements:
-       * gyro_body, gyro reading (rad/s)
-       * magnetometer_body, magnetometer reading (T)
-       * sat2sun_body, unit vector from satellite to sun.
-       * sun_sensor_true, true if sun vector reading is good, else false.
-       * wheel_momentum_body, wheel angular momentum reading (Nms)
-       * time, time since inital GPS week (s)
-       * position_ecef, position of the gps reciever of the satellite.
-       * velocity_ecef, velocity of the gps reciever of the satellite.
-       * target_position_ecef, position of the target gps reciever of the satellite, from ground
-       * target_velocity_ecef, velocity of the target gps reciever of the satellite, from ground
-       * relative_position_ecef, position vector from self to target, from cdgps
+ * gyro_body, gyro reading (rad/s)
+ * magnetometer_body, magnetometer reading (T)
+ * sat2sun_body, unit vector from satellite to sun.
+ * sun_sensor_true, true if sun vector reading is good, else false.
+ * wheel_momentum_body, wheel angular momentum reading (Nms)
+ * time, time since inital GPS week (s)
+ * position_ecef, position of the gps reciever of the satellite.
+ * velocity_ecef, velocity of the gps reciever of the satellite.
+ * target_position_ecef, position of the target gps reciever of the satellite, from ground
+ * target_velocity_ecef, velocity of the target gps reciever of the satellite, from ground
+ * relative_position_ecef, position vector from self to target, from cdgps
+ 
 actuator commands is a struct with elements:
-       * firing_start_times, commanded time since inital GPS week to start firing.
-       * commanded_impulse_vectors_eci, commanded impulse, units N.
-       * wheel_torque, commanded x,y,z wheel torque, (signed ramp)*(rotor inertia), units(N*m).
-       * wheel_enable, commanded x,y,z wheel enables, whether each wheel
+ * firing_start_times, commanded time since inital GPS week to start firing.
+ * commanded_impulse_vectors_eci, commanded impulse, units N.
+ * wheel_torque, commanded x,y,z wheel torque, (signed ramp)*(rotor inertia), units(N*m).
+ * wheel_enable, commanded x,y,z wheel enables, whether each wheel
            should be on, if false, the wheel rate is commanded to zero.
-       * magrod_moment, commanded x,y,z magnetorquer moments (A*m^2)
+ * magrod_moment, commanded x,y,z magnetorquer moments (A*m^2)
 
 
 # Test Harness
-    Each function will have its own test script in `./test/` called `test_functionName.m` containing:
-        1. Setup of path, constants, and seed.
-        2. Calls to the function.
-        3. Asserts that the outputs are within required accuracy.
-    run_tests.m is a script that will run all of the test scripts and give a failure summary for each test that failed.
+Each function will have its own test script in `./test/` called `test_functionName.m` containing:
+    1. Setup of path, constants, and seed.
+    2. Calls to the function.
+    3. Asserts that the outputs are within required accuracy.
+run_tests.m is a script that will run all of the test scripts and give a failure summary for each test that failed.
     
-    Tests should be completely deterministic, fast, and not have any prints or plots unless they fail.
+Tests should be completely deterministic, fast, and not have any prints or plots unless they fail.
     
 # Functions
 
@@ -156,61 +159,61 @@ config(): sets up path and constants
 get_truth(name,dynamics): returns named value from dynamics
 
 The simulator has four main functions that preform computations with the main state.
-    initialize_main_state: Constructs the main state given a seed, and situation.
-    sensor_reading: Outputs the sensor readings of one satellite.
-    main_state_update: Updates the main state over one delta time step.
-    actuator_command: Modifies the state of one satellite, given its actuator commands.
+ * initialize_main_state: Constructs the main state given a seed, and situation.
+ * sensor_reading: Outputs the sensor readings of one satellite.
+ * main_state_update: Updates the main state over one delta time step.
+ * actuator_command: Modifies the state of one satellite, given its actuator commands.
 
 The matlab prototype of gnc flight software has two main functions.
-    initialize_computer_states: Constructs both leader and follower computer states.
-    update_FC_state: Outputs actuator commands and updates one satellite's computer state given sensor readings.
+ * initialize_computer_states: Constructs both leader and follower computer states.
+ * update_FC_state: Outputs actuator commands and updates one satellite's computer state given sensor readings.
 
 
 main_state_update has a few main helper funtions.
-    dynamics=dynamics_update(dynamics,actuators)
+ * dynamics=dynamics_update(dynamics,actuators)
         updates the orbital and attitude dynamics, and time using numerical integration.
-    sensors=sensors_update(sensors,dynamics)
+ * sensors=sensors_update(sensors,dynamics)
         updates the sensor state given dynamics
 
 update_FC_state is also broken in to a few main helper functions.
-    [orbit_controller_state, delta_v, delta_time]=get_next_maneuver(orbit_controller_state, current_orbit,target_orbit,current_time)
+ * [orbit_controller_state, delta_v, delta_time]=get_next_maneuver(orbit_controller_state, current_orbit,target_orbit,current_time)
         Calculate the next maneuver to rendevous with target_orbit.
-    [orbit,jacabian] = orbit_propagator(orbit,current_time,delta_time)
+ * [orbit,jacabian] = orbit_propagator(orbit,current_time,delta_time)
         Propagate orbit forward delta_time and calculate the jacobian of the translation.
-    [orbit_estimator_state, both_orbits, time, covariance]=estimate_orbits(orbit_estimator_state,my_gps_readings,other_gps_readings,cdgps_readings)
+ * [orbit_estimator_state, both_orbits, time, covariance]=estimate_orbits(orbit_estimator_state,my_gps_readings,other_gps_readings,cdgps_readings)
         Update estimates of my orbit and other orbit.
-    [adcs_state,magrod_moment,wheel_torque,wheel_enable]=adcs_update(adcs_state,time,orbit,target_orbit,gyro,magnetometer,sat2sun)
+ * [adcs_state,magrod_moment,wheel_torque,wheel_enable]=adcs_update(adcs_state,time,orbit,target_orbit,gyro,magnetometer,sat2sun)
         Attitude Determination and Control System (ADCS) update.
         
 Environmental functions.
-    density= env_atmosphere_density(time,x)
-    [quat_ecef_eci,rate_ecef]= env_earth_attitude(time)
-    eclipse = env_eclipse(earth2sat,sat2sun)
-    [acceleration,potential,hessian]= env_gravity(time,x)
-    B= env_magnetic_field(time,x)
-    S= env_sun_vector(time)
+ * density= env_atmosphere_density(time,x)
+ * [quat_ecef_eci,rate_ecef]= env_earth_attitude(time)
+ * eclipse = env_eclipse(earth2sat,sat2sun)
+ * [acceleration,potential,hessian]= env_gravity(time,x)
+ * B= env_magnetic_field(time,x)
+ * S= env_sun_vector(time)
 
 Testing utility functions:
-    equal= utl_compare_main_states(main_state1,main_state2)
+ * equal= utl_compare_main_states(main_state1,main_state2)
         returns true if main_state1 and main_state2 are close enough.
-    equal= utl_compare_dynamics(dynamics1,dynamics2)
+ * equal= utl_compare_dynamics(dynamics1,dynamics2)
         returns true if dynamics1 and dynamics2 are close enough.
-    equal= utl_compare_actuators(actuators1,actuators2)
+ * equal= utl_compare_actuators(actuators1,actuators2)
         returns true if actuators1 and actuators2 are close enough.
-    equal= utl_compare_sensors(sensors1,sensors2)
+ * equal= utl_compare_sensors(sensors1,sensors2)
         returns true if sensors1 and sensors2 are close enough.
     
 Plotting and visualization functions:
-    plot_almost_conserved_values(main_state_trajectory)
+ * plot_almost_conserved_values(main_state_trajectory)
         creates plots of angular momentums in eci and total energies, 
         if these have a huge jump, there is a problem with physics.
-    plot_pointing_errors(main_state_trajectory)
+ * plot_pointing_errors(main_state_trajectory)
         plots magnitude of error of where the sats are pointing vs where they should be pointing.
-    plot_wheel_rates(main_state_trajectory)
+ * plot_wheel_rates(main_state_trajectory)
         plots reaction wheel rates.
-    plot_orbit_error(main_state_trajectory)
+ * plot_orbit_error(main_state_trajectory)
         plots differences in leader and follower orbits.
-    fancy_animation(main_state_trajectory)
+ * fancy_animation(main_state_trajectory)
         creates a fancy animation from the simulation data.
     
 # Functions to be implemented in C++
@@ -225,9 +228,13 @@ Also, the test scripts for these functions should also be partially translated i
 Each team member is the principle programmer
 for about 7 functions in the system.
 The assignments are:
+
 Nathan(nhz2): dynamics_update, adcs_update, env_earth_attitude, env_eclipse, env_magnetic_field, env_sun_vector, initialize_main_state, estimate_orbits.
+
 Kyle(kkrol27): sensor_reading, sensors_update, actuator_command, get_next_maneuver, orbit_propagator, env_gravity.  
+
 Stewart(saa243): get_truth, env_atmosphere_density, testing utilities, plotting.
+
 Tanishq(tanishqaggarwal): update_FC_state, initialize_computer_states
 
 #
