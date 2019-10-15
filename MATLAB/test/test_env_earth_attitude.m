@@ -5,10 +5,6 @@ clearvars;
 
 global const
 
-addpath('utl');
-addpath('environmental_models');
-addpath('environmental_models/helper_functions');
-
 config();
 
 years_to_test= 5;

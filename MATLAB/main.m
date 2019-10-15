@@ -1,74 +1,49 @@
 clearvars; clc;
+config()  % Initialize const
+
+
 
 global const
-global truth_trajectory
-global computer_state_trajectory
-global actuators_trajectory
-
-addpath('utl');
-addpath('environmental_models');
-addpath('environmental_models/helper_functions');
+global main_state_trajectory
+global computer_state_follower_trajectory
+global computer_state_leader_trajectory
 
 dt=double(const.dt) * 1e-9;
-t_max = 2000;%0.01 * 90.0 * 60.0;  % Amount of time simulated (s)
-t_int = 10.0;               % Sampling interval        (s)
-%arrays to plot
+t_max = 2000;% Amount of time simulated (s)
+t_int = 10.0;% Sampling interval        (s)
 num_steps = floor(t_max/dt);
 sample_rate = t_int/dt;
 N = floor(num_steps /sample_rate);  % Number of samples
-config()  % Initialize the simulation
-
-[truth,actuators,sensor_state,computer_state]=initialize_states(1,'not_detumbled');
-computer_state_trajectory = cell(1,N);
-sensor_state_trajectory{1} = sensor_state;
-actuators_trajectory = cell(1,N);
-actuators_trajectory{1} = actuators;
-truth_trajectory = cell(1,N);
-truth_trajectory{1} = truth;
+main_state= initialize_main_state(1,'not_detumbled');
+[computer_state_follower,computer_state_leader]= initialize_computer_states('not_detumbled');
+main_state_trajectory = cell(1,N);
+main_state_trajectory{1} = main_state;
+computer_state_follower_trajectory = cell(1,N);
+computer_state_follower_trajectory{1} = computer_state_follower;
+computer_state_leader_trajectory = cell(1,N);
+computer_state_leader_trajectory{1} = computer_state_leader;
 t_s = 0.0;  % Timestamp of last data point
 n   = 1;     % Previously logged data index
 
 for step= 1:num_steps
-    %sense truth
-    tic;
-    sensor_readings = sensor_reading(sensor_state,truth,actuators);
-    t_sensors = toc;
+    sensor_readings_follower = sensor_reading(main_state.follower,main_state.leader);
+    sensor_readings_leader = sensor_reading(main_state.leader,main_state.follower);
     %update dynamics
-    tic;
-    truth = orbit_attitude_update_ode2(truth,actuators,dt);
-    t_orbit_att = toc;
-    %update time
-    truth.mission_time = truth.mission_time+const.dt;
-    truth.time = double(truth.mission_time)*1E-9;
-    %update sensor state (for example biases)
-    tic;
-    sensor_state_update(sensor_state,truth,dt);
-    t_sensor_state = toc;
-    %simulate flight computer
-    tic;
-    [computer_state,actuator_commands] = update_FC_state(computer_state,sensor_readings);
-    t_fc = toc;
+    main_state = main_state_update(main_state);
+    %simulate flight computers
+    [computer_state_follower,actuator_commands_follower] = update_FC_state(computer_state_follower,sensor_readings_follower);
+    [computer_state_leader,actuator_commands_leader] = update_FC_state(computer_state_leader,sensor_readings_leader);
     %command actuators
-    tic;
-    actuators = actuator_command(actuator_commands,truth);
-    t_actuators = toc;
-    
+    main_state.follower = actuator_command(actuator_commands_follower,main_state.follower);
+    main_state.leader = actuator_command(actuator_commands_leader,main_state.leader);
+
+    %store trajectory
     if (mod(step,sample_rate)==0)
         n = n + 1;
         t_s = double(truth.mission_time) * 1e-9;
-        truth_trajectory{n} = truth;
-        actuators_trajectory{n} = actuators;
-        computer_state_trajectory{n} = computer_state;
-        tumbling_momentum=norm(const.JB*truth.angular_rate_body)
+        main_state_trajectory{n} = main_state;
+        computer_state_follower_trajectory{n} = computer_state_follower;
+        computer_state_leader_trajectory{n} = computer_state_leader;
         fprintf("Progress at %.3f s / %.3f s\n", t_s, t_max);
     end
 end
-
-% check timings
-t_sensors
-t_orbit_att
-t_sensor_state
-t_fc
-t_actuators
-
-plot_trajectory(truth_trajectory);

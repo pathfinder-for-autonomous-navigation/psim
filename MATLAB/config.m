@@ -4,6 +4,10 @@ global truth
 global const
 global actuators
 
+
+addpath('utl');
+addpath('environmental_models');
+addpath('environmental_models/helper_functions');
 %{
 
 Temporary script to initialize global variables until a more robust system is
