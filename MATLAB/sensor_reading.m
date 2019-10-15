@@ -1,4 +1,4 @@
-function [sensor_readings] = sensor_reading(sensor_state,true_state,actuators)
+function [sensor_readings] = sensor_reading(my_satellite_state,other_satellite_state)
 %sensor_reading returns the sensor readings
 %   sensor_readings is a struct with elements:
 %       gyro_body, gyro reading (rad/s)
@@ -8,28 +8,14 @@ function [sensor_readings] = sensor_reading(sensor_state,true_state,actuators)
 %       wheel_momentum_body, wheel angular momentum reading (Nms)
 %       time, time since inital GPS week (s)
 %       position_ecef, position of the gps reciever of the satellite.
-%   true_state is a struct with elements:
-%       time, time since inital GPS week.
-%       position_eci, position of the center of mass of the satellite.
-%       velocity_eci, velocity of the center of mass of the satellite.
-%       angular_rate_body, the angular rate of the spacecraft in the body frame.
-%       quat_body_eci, quaternion that rotates from eci to body frame.
-%       wheel_rate_body, x,y, and z, wheel angular rates.
-%       fuel_net_angular_momentum_eci, net angular momentum of the fuel.
-%       fuel_mass, the mass of the fuel.
-%   actuators is a struct with actuator inputs that are constant over the
-%   following time step but not constant for the whole simulation:
-%       firing_start_times, times since inital GPS week to start firing.
-%       real_thrust_vectors_body, real thruster forces, units N.
-%       centers_of_thrust_body, center of thrust for each firing, units m.
-%       firing_on_times, how long firings last.
-%       wheel_commanded_rate, commanded x,y,z wheel rate.
-%       wheel_commanded_ramp, commanded x,y,z wheel ramp, units rad/s/s.
-%       magrod_real_moment_body, real magnetorquer moment, units A*m^2
 %   TODO implement the actual sensors with errors
 %   TODO implement GPS
 
 global const
+sensor_readings= struct();
+return
+
+
 
 %% quaternions
 

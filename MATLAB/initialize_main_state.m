@@ -5,5 +5,6 @@ global const
 
 main_state=struct();
 rng(seed,'threefry');
+main_state.leader=struct();
+main_state.follower=struct();
 end
-
