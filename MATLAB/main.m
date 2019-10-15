@@ -40,7 +40,7 @@ for step= 1:num_steps
     %store trajectory
     if (mod(step,sample_rate)==0)
         n = n + 1;
-        t_s = double(truth.mission_time) * 1e-9;
+        t_s = main_state.follower.dynamics.time;
         main_state_trajectory{n} = main_state;
         computer_state_follower_trajectory{n} = computer_state_follower;
         computer_state_leader_trajectory{n} = computer_state_leader;
