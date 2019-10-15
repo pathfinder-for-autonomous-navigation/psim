@@ -5,16 +5,12 @@ clearvars;
 
 global const
 
-addpath('utl');
-addpath('environmental_models');
-addpath('environmental_models/helper_functions');
-
 config();
 
 years_to_test= 10;
 angle_error_margin= 0.1*pi/180;
 norm_margin= 1E-6;
-N= 100;
+N= 40;
 test_times= linspace(0.0,years_to_test*365*24*60*60,N);%test times, 20 years
 
 for time = test_times
