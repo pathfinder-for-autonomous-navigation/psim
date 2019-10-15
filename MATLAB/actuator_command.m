@@ -1,4 +1,4 @@
-function real_actuators = actuator_command(commanded_actuators,state)
+function satellite_state = actuator_command(actuator_commands,satellite_state)
 %actuator_command Returns the real actuator output from the commands/state
 %   given a satelite state and the commanded actuators.
 %   real_actuators is a struct with real actuator states.
@@ -25,13 +25,15 @@ function real_actuators = actuator_command(commanded_actuators,state)
 %       fuel_net_angular_momentum_eci, net angular momentum of the fuel.
 %       fuel_mass, the mass of the fuel.
 global const
-commanded_actuators.magrod_moment(isnan(commanded_actuators.magrod_moment)) = 0;
-commanded_actuators.wheel_enable(isnan(commanded_actuators.wheel_enable)) = 0;
-commanded_actuators.wheel_torque(isnan(commanded_actuators.wheel_torque)) = 0;
+return
 
-real_actuators.magrod_real_moment_body=min(max(commanded_actuators.magrod_moment,-const.MAXMOMENT),const.MAXMOMENT);
-real_actuators.wheel_commanded_rate=commanded_actuators.wheel_enable.*sign(commanded_actuators.wheel_torque)*const.MAXWHEELRATE;
-real_actuators.wheel_commanded_ramp=abs(commanded_actuators.wheel_torque)/const.JWHEEL;
+actuator_commands.magrod_moment(isnan(actuator_commands.magrod_moment)) = 0;
+actuator_commands.wheel_enable(isnan(actuator_commands.wheel_enable)) = 0;
+actuator_commands.wheel_torque(isnan(actuator_commands.wheel_torque)) = 0;
+
+real_actuators.magrod_real_moment_body=min(max(actuator_commands.magrod_moment,-const.MAXMOMENT),const.MAXMOMENT);
+real_actuators.wheel_commanded_rate=actuator_commands.wheel_enable.*sign(actuator_commands.wheel_torque)*const.MAXWHEELRATE;
+real_actuators.wheel_commanded_ramp=abs(actuator_commands.wheel_torque)/const.JWHEEL;
 %TODO add thruster commands, and descretized ramp for wheels
 end
 
