@@ -226,16 +226,48 @@ Also, the test scripts for these functions should also be partially translated i
 # Team Member Responsibilities
 
 Each team member is the principle programmer
-for about 7 functions in the system.
-The assignments are:
+for some functions in the system. If you are going to start work on a function, 
+create an issue with the same name as the function and assign yourself to it. 
+In addition to the function also write a test script that at a minimum just calls the function and add that script to run_tests.m
+If you need new constants just add them to config and add the name, description, and units to the readme.
 
-Nathan(nhz2): dynamics_update, adcs_update, env_earth_attitude, env_eclipse, env_magnetic_field, env_sun_vector, initialize_main_state, estimate_orbits.
 
-Kyle(kkrol27): sensor_reading, sensors_update, actuator_command, get_next_maneuver, orbit_propagator, env_gravity.  
+# Current Status
 
-Stewart(saa243): get_truth, env_atmosphere_density, testing utilities, plotting.
+not started, wip, done
 
-Tanishq(tanishqaggarwal): update_FC_state, initialize_computer_states
+Priority, 0 is most important.
+
+| Function                     | Person  | Priority | Basic Matlab Version | Test Script | C++ Version |
+|------------------------------|---------|----------|----------------------|-------------|-------------|
+| get_truth                    |         |          | not started          | not started | NA          |
+| initialize_main_state        | Nathan  |          | wip                  | not started | NA          |
+| sensor_reading               |         |          | wip                  | not started | NA          |
+| main_state_update            | Nathan  |          | wip                  | not started | NA          |
+| actuator_command             |         |          | wip                  | not started | NA          |
+| initialize_computer_states   |         |          | wip                  | not started | NA          |
+| update_FC_state              |         |          | wip                  | not started | NA          |
+| dynamics_update              | Nathan  |          | wip                  | not started | NA          |
+| sensors_update               |         |          | not started          | not started | NA          |
+| get_next_maneuver            |         |          | not started          | not started | not started |
+| orbit_propagator             |         |          | not started          | not started | not started |
+| estimate_orbits              |         |          | not started          | not started | not started |
+| adcs_update                  | Nathan  |          | wip                  | not started | not started |
+| env_atmosphere_density       |         |          | not started          | not started | NA          |
+| env_earth_attitude           | Nathan  |          | done                 | done        | wip         |
+| env_eclipse                  | Nathan  |          | done                 | not started | not started |
+| env_gravity                  |         |          | done                 | not started | NA          |
+| env_magnetic_field           | Nathan  |          | wip                  | not started | wip         |
+| env_sun_vector               | Nathan  |          | done                 | done        | wip         |
+| utl_compare_main_states      |         |          | not started          | not started | NA          |
+| utl_compare_dynamics         |         |          | not started          | not started | NA          |
+| utl_compare_actuators        |         |          | not started          | not started | NA          |
+| utl_compare_sensors          |         |          | not started          | not started | NA          |
+| plot_almost_conserved_values |         |          | not started          | NA          | NA          |
+| plot_pointing_errors         |         |          | not started          | NA          | NA          |
+| plot_wheel_rates             |         |          | not started          | NA          | NA          |
+| plot_orbit_error             |         |          | not started          | NA          | NA          |
+| fancy_animation              |         |          | not started          | NA          | NA          |
 
 #
 
@@ -243,9 +275,6 @@ We will be able to slowly replace MATLAB code with CXX code to test
 the GNC code we will be flying with beforehand. This includes feedback control,
 rendezvous algorith, state filter, et ceter. See the `/src` and `/include`
 repositories.
-
-
-
 
 
 
@@ -257,8 +286,7 @@ repositories.
  * `./environmental_models/*` - environmental functions shared across 
    all other MATLAB scripts in this repository.
  * `./environmental_models/helper_functions/*` - helper functions for environmental functions.
- * `./test/*` - standalone scripts that only depend on the utility functions
-   mentioned above that demonstrate small bits of the simulation.
+ * `./test/*` - standalone scripts that test almost every function in the simulation.
 
 
 # Constants
