@@ -92,8 +92,5 @@ sensors.gps_bias= zeros(6,1);
 sensors.gps_time_till_lock= const.GPS_LOCK_TIME;
 sensors.cdgps_bias= zeros(6,1);
 sensors.cdgps_time_till_lock= const.CDGPS_LOCK_TIME;
-
-
-
 end
 

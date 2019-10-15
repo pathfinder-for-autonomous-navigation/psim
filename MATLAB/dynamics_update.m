@@ -1,4 +1,4 @@
-function [final_state] = orbit_attitude_update_ode2(initial_state,actuators,delta_time)
+function [final_state] = dynamics_update(initial_state,actuators)
 %orbit_attitude_update updates the ECEF position, velocity, and attitude of
 %the satellite. (units are all MKS)
 %   initial_state and final state are a structs with elements:
@@ -21,6 +21,8 @@ function [final_state] = orbit_attitude_update_ode2(initial_state,actuators,delt
 %       magrod_real_moment_body, real magnetorquer moment, units A*m^2
 %
 global const
+
+delta_time= double(const.dt)*1E-9;
     function rate= wheelrate(t)
         %wheel rate at any given time, includes saturation
         real_ramp= min(abs(actuators.wheel_commanded_ramp),const.MAXWHEELRAMP);%saturate ramp
@@ -127,7 +129,8 @@ global const
     ys=utl_ode2(@state_dot,[initial_state.time,final_time],init_y);
     final_y= ys(end,:)';
     final_state=initial_state;
-    final_state.time=final_time;
+    final_state.time_ns= initial_state.time_ns+const.dt;
+    final_state.time= double(final_state.time_ns)*1E-9;
     final_state.position_eci=final_y(1:3);
     final_state.velocity_eci=final_y(4:6);
     final_state.quat_body_eci=final_y(7:10)/norm(final_y(7:10));
