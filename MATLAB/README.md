@@ -25,8 +25,8 @@ These functions, and functions they call will have to be translated into c++.
 Main state contains the state of both satellites, it contains leader and follower members.
 Each satellites state has the following members and submembers:
 * dynamics
-   * time, Time since inital GPS week (s)
-   * time_ns(positive int64), Time since inital GPS week (ns)
+   * time, Time since initial GPS week (s)
+   * time_ns(positive int64), Time since initial GPS week (ns)
    * position_eci, Position of the center of mass of the satellite (m)
    * velocity_eci, Velocity of the center of mass of the satellite (m/s)
    * angular_rate_body, Angular rate of the spacecraft in the body frame (rad/s)
@@ -35,7 +35,7 @@ Each satellites state has the following members and submembers:
    * fuel_net_angular_momentum_eci, Net angular momentum of the fuel (N*m*s)
    * fuel_mass, The mass of the fuel (kg)
  * actuators
-   * firing_start_times, Times since inital GPS week to start firing each thruster (s)
+   * firing_start_times, Times since initial GPS week to start firing each thruster (s)
    * thrust_vectors_body, each thruster's force vector (N)
    * centers_of_thrust_body, Center of thrust of each truster (m)
    * firing_on_times, How long each thruster firing lasts (s)
@@ -128,7 +128,7 @@ sensor readings is a struct with elements:
  * sat2sun_body, unit vector from satellite to sun.
  * sun_sensor_true, true if sun vector reading is good, else false.
  * wheel_momentum_body, wheel angular momentum reading (Nms)
- * time, time since inital GPS week (s)
+ * time, time since initial GPS week (s)
  * position_ecef, position of the gps reciever of the satellite.
  * velocity_ecef, velocity of the gps reciever of the satellite.
  * target_position_ecef, position of the target gps reciever of the satellite, from ground
@@ -136,7 +136,7 @@ sensor readings is a struct with elements:
  * relative_position_ecef, position vector from self to target, from cdgps
 
 actuator commands is a struct with elements:
- * firing_start_times, commanded time since inital GPS week to start firing.
+ * firing_start_times, commanded time since initial GPS week to start firing.
  * commanded_impulse_vectors_eci, commanded impulse, units N.
  * wheel_torque, commanded x,y,z wheel torque, (signed ramp)x(rotor inertia), units(N*m).
  * wheel_enable, commanded x,y,z wheel enables, whether each wheel

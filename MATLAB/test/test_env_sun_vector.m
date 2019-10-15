@@ -7,15 +7,15 @@ global const
 
 config();
 
-years_to_test= 10;
+years_to_test= 5;
 angle_error_margin= 0.1*pi/180;
 norm_margin= 1E-6;
-N= 40;
+N= 20;
 test_times= linspace(0.0,years_to_test*365*24*60*60,N);%test times, 20 years
 
 for time = test_times
     
-    earth2sun_truth = planetEphemeris(juliandate(utl_time2datetime(time,const.INITGPS_WN)),'Earth','Sun');
+    earth2sun_truth = planetEphemeris(juliandate(utl_time2datetime(time,const.INITGPS_WN)),'Earth','Sun','421');
     earth2sun_truth = (earth2sun_truth/norm(earth2sun_truth))';
     earth2sun_test = env_sun_vector(time);
     
