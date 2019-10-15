@@ -72,16 +72,13 @@ const.SLOSH_DAMPING=0.0;% positive scalar
 const.ATTITUDE_PD_KP = 75e-4; % imported from simulink
 const.ATTITUDE_PD_KD = 32.5e-4; % imported from simulink
 
-% Sensor constants
-const.SUNSENSOR_DEADZONE=30*pi/180;% positive scalar
-% max angle from +z axis where the sun sensors don't work (rad)
-
 %derived constants
 const.JBINV=inv(const.JB);% 3x3 symmetric matrix
 % inverse of dry moment of inertia of satellite in body frame
 
-
-
-
+const.GPS_LOCK_TIME=15*60;% positive scalar
+%Time it takes the GPS to get a lock (s)
+const.CDGPS_LOCK_TIME=15*60;% positive scalar
+%Time it takes the CDGPS to get a lock (s)
 
 end
