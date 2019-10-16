@@ -1,62 +1,57 @@
 import queue, os, json, threading, time
 
-
-class DataConsumer(object):
+class DataContainer(object):
     def __init__(self, device_name, data_dir):
         self.device_name = device_name
         self.data_dir = data_dir
         self.queue = queue.Queue()
 
-    def consume_queue_item(self, item):
+    def process_queue_item(self):
         """
-        Takes an item put into the queue by a StateSession, and consumes it.
+        Takes an item put into the queue by a StateSession, and processes it.
         """
         raise NotImplementedError
 
-    def consume_queue(self):
-        """ The data consumer thread. """
+    def process_queue(self):
+        """ The data processing thread. """
         while self.running:
             try:
                 while True:
                     item = self.queue.get_nowait()
-                    self.consume_queue_item(item)
+                    self.process_queue_item(item)
             except queue.Empty:
                 pass
 
             time.sleep(1.0) # Sleep 1 second
 
     def start(self):
-        """ Start data consumer thread. """
-        self.consumer_thread = threading.Thread(target=self.consume_queue)
+        """ Start data processing thread. """
+        self.processor_thread = threading.Thread(target=self.process_queue)
         self.running = True
-        self.consumer_thread.start()
+        self.processor_thread.start()
 
     def save(self):
-        """ Save consumed data to disk. """
+        """ Clean up file used for the data container. """
         raise NotImplementedError
 
     def stop(self):
-        """ Stop data consumer thread. """
+        """ Stop data processing thread. """
         self.running = False
-        self.consumer_thread.join()
+        self.processor_thread.join()
         self.save()
 
     def put(self, item):
         """
-        External-facing method used by clients of this class to add data for consumption.
-
-        Args:
-         - item: Item to consume.
+        External-facing method used by clients of this class to add data for processing.
         """
         self.queue.put(item)
 
-
-class Datastore(DataConsumer):
+class Datastore(DataContainer):
     def __init__(self, device_name, data_dir):
         super().__init__(device_name, data_dir)
         self.data = {}
 
-    def consume_queue_item(self, datapoint):
+    def process_queue_item(self, datapoint):
         """ Adds a single data point to the telemetry log."""
 
         time_value_pair = (str(datapoint['time']), datapoint['val'])
@@ -76,21 +71,24 @@ class Datastore(DataConsumer):
         with open(filepath, 'w') as datafile:
             json.dump(self.data, datafile)
 
-
-class Logger(DataConsumer):
+class Logger(DataContainer):
     def __init__(self, device_name, data_dir):
         super().__init__(device_name, data_dir)
         self.log = ""
 
-    def consume_queue_item(self, logline):
+    def process_queue_item(self, logline):
         """Add a new line to the log."""
 
         self.log += logline + "\n"
 
-    def save(self):
-        """Save the log to a file."""
+    def intermediate_save(self):
+        """Save the log generated thus far to a file."""
 
         filename = f"{self.device_name}-log.txt"
         filepath = os.path.join(self.data_dir, filename)
-        with open(filepath, 'w') as logfile:
+        with open(filepath, 'a') as logfile:
             logfile.write(self.log)
+        self.log = ""
+
+    def save(self):
+        self.intermediate_save()

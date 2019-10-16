@@ -18,11 +18,12 @@ class StateSession(object):
     they won't trip over each other in setting/receiving variables from the connected flight computer.
     '''
 
-    def __init__(self, device_name, datastore, logger):
+    def __init__(self, data_dir, device_name, datastore, logger):
         '''
-        Initializes state session with a device.
+        Initializes state cmd prompt.
 
         Args:
+        data_dir: Directory in which to store the results of the run.
         device_name: Name of device being connected to
         datastore: Datastore to which telemetry data will be published
         logger: Logger to which log lines should be committed
@@ -39,13 +40,14 @@ class StateSession(object):
         # Simulation
         self.overriden_variables = set()
 
-    def connect(self, console_port, baud_rate):
+    def connect(self, console_port, baud_rate=1152000, msg_check_delay=0.005):
         '''
-        Starts serial connection to the desired device.
+        Starts serial connection to the flight computer.
 
         Args:
         - console_port: Serial port to connect to.
-        - baud_rate: Baud rate of connection.
+        - baud_rate: Baud rate of connection (default 1152000)
+        - msg_check_delay: Delay between looped checks of messages from the flight controller. (default 5.0 ms)
         '''
         try:
             self.console = serial.Serial(console_port, baud_rate)
@@ -54,17 +56,18 @@ class StateSession(object):
             self.device_write_lock = threading.Lock() # Lock to prevent multiple writes to device at the same time.
 
             # Queues used to manage interface between the check_msgs_thread and calls to read_state or write_state
-            self.field_requests = queue.Queue()
-            self.field_responses = queue.Queue()
+            self.field_request = queue.Queue(1)
+            self.field_response = queue.Queue(1)
 
             self.running_logger = True
             self.check_msgs_thread = threading.Thread(
                 name=f"{self.device_name} logger thread",
-                target=self.check_console_msgs)
+                target=self.check_console_msgs,
+                args=[msg_check_delay])
             self.check_msgs_thread.start()
 
             self.connected = True
-            print(f"Opened connection to {self.device_name}.")
+            print(f"Opened connection to {self.device_name}")
             return True
         except serial.SerialException:
             print(f"Unable to open serial port for {self.device_name}.")
@@ -72,19 +75,24 @@ class StateSession(object):
             self.connected = False
             return False
 
-    def check_console_msgs(self):
+    def check_console_msgs(self, delay):
         '''
-        Read device output for debug messages and state variable updates. Record debug messages
+        Read FC output for debug messages and state variable updates. Record debug messages
         to the logging file, and update the console's record of the state.
+
+        Args:
+        - delay: Time to wait between executions of the message check loop.
         '''
 
         while self.running_logger:
+            logline = ''
             try:
                 # Read line coming from device and parse it
                 if self.console.inWaiting() > 0:
                     line = self.console.readline().rstrip()
                     data = json.loads(line)
                 else:
+                    time.sleep(delay)
                     continue
 
                 data['time'] = self.start_time + datetime.timedelta(milliseconds=data['t'])
@@ -92,21 +100,21 @@ class StateSession(object):
                 if 'msg' in data:
                     # The logline represents a debugging message created by Flight Software. Report the message to the logger.
                     logline = f"[{data['time']}] ({data['svrty']}) {data['msg']}"
-                    self.logger.put(logline)
+                elif 'err' in data:
+                    # The log line represents an error in retrieving or writing state data that
+                    # was caused by a StateSession client improperly setting/retrieving a value.
+                    # Report this failure to the logger.
+
+                    logline = f"[{data['time']}] (ERROR) Tried to {data['mode']} state value named \"{data['field']}\" but encountered an error: {data['err']}"
+
+                    data['val'] = None
                 else:
-                    if 'err' in data:
-                        # The log line represents an error in retrieving or writing state data that
-                        # was caused by a StateSession client improperly setting/retrieving a value.
-                        # Report this failure to the logger.
+                    # A valid telemetry field was returned. Manage it.
+                    self.datastore.put(data)
 
-                        logline = f"[{data['time']}] (ERROR) Tried to {data['mode']} state value named \"{data['field']}\" but encountered an error: {data['err']}"
-                        self.logger.put(logline)
-                        data['val'] = None
-                    else:
-                        # A valid telemetry field was returned. Manage it.
-                        self.datastore.put(data)
-
-                    self.field_responses.put(data)
+                if self.field_request.queue[0] == data['field']:
+                    self.field_request.get()  # Clear the field request
+                    self.field_response.put(data)
 
             except ValueError:
                 logline = f'[RAW] {line}'
@@ -119,109 +127,85 @@ class StateSession(object):
                 print('Unspecified error. Exiting.')
                 self.disconnect()
 
-    def _wait_for_state(self, field, timeout = None):
+            self.logger.put(logline)
+
+            time.sleep(delay)
+
+    def _wait_for_state(self, field_name, timeout = None):
         """
         Helper function used by both read_state and write_state to wait for a desired value
-        to be reported back by the connected device.
+        to be reported back by the Teensy (or native binary.)
         """
-        self.field_requests.put(field)
+        self.field_request.put(field_name)
         try:
-            data = self.field_responses.get(True, timeout)
+            data = self.field_response.get(True, timeout)
             return data['val']
         except queue.Empty:
             return None
 
-    def read_state(self, field, timeout = None):
+    def read_state(self, field_name, timeout = None):
         '''
         Read state.
         
         Read the value of the state field associated with the given field name on the flight controller.
         '''
 
-        json_cmd = {'mode': ord('r'), 'field': str(field)}
+        json_cmd = {'mode': ord('r'), 'field': str(field_name)}
         json_cmd = json.dumps(json_cmd) + "\n"
         self.device_write_lock.acquire()
         self.console.write(json_cmd.encode())
         self.device_write_lock.release()
 
-        return self._wait_for_state(field)
+        return self._wait_for_state(field_name)
 
-    def _write_state_basic(self, fields, vals, timeout = None):
+    def _write_state_basic(self, field_name, val, timeout = None):
         '''
-        Write multiple state fields to the device at once.
+        Write state.
+
+        Overwrite the value of the state field with the given state field name on the flight controller.
         '''
 
-        assert len(fields) == len(vals)
-        assert len(fields) <= 20, "Flight Software can't handle more than 20 state field writes at a time"
-
-        json_cmds = ""
-        for field, val in zip(fields, vals):
-            json_cmd = {
-                'mode': ord('w'),
-                'field': str(field),
-                'val': str(val)
-            }
-            json_cmd = json.dumps(json_cmd) + "\n"
-            json_cmds += json_cmd
-
-        if len(json_cmds) >= 512:
-            print("Error: Flight Software can't handle input buffers >= 512 bytes.")
-            return False
-
+        json_cmd = {
+            'mode': ord('w'),
+            'field': str(field_name),
+            'val': str(val)
+        }
+        json_cmd = json.dumps(json_cmd) + "\n"
         self.device_write_lock.acquire()
-        self.console.write(json_cmds.encode())
+        self.console.write(json_cmd.encode())
         self.device_write_lock.release()
 
-        returned_vals = []
-        for field in fields:
-            returned_vals.append(self._wait_for_state(field, timeout))
+        return val == self._wait_for_state(field_name, timeout)
 
-        return returned_vals == vals
-
-    def write_multiple_states(self, fields, vals, timeout = None):
-        '''
-        Write multiple states and check the write operation with feedback.
-
-        Overwrite the value of the state field with the given state field name on the flight computer, and
-        then verify that the state was actually set. Do not write the state if the variable is being overriden
-        by the user. (This is the function that sim should exclusively use.)
-        '''
-        # Filter out fields that are being overridden by the user
-        field_val_pairs = [
-            field_val_pair for field_val_pair in zip(fields, vals)
-            if field_val_pair[0] not in self.overriden_variables
-        ]
-        fields, vals = zip(*field_val_pairs)
-
-        return self._write_state_basic(list(fields), list(vals), timeout)
-
-    def write_state(self, field, val, timeout=None):
+    def write_state(self, field_name, val, timeout = None):
         '''
         Write state and check write operation with feedback.
 
         Overwrite the value of the state field with the given state field name on the flight computer, and
         then verify that the state was actually set. Do not write the state if the variable is being overriden
-        by the user. (This is a function that sim should exclusively use.)
+        by the user. (This is the function that sim should exclusively use.)
         '''
 
-        return self.write_multiple_states([field], [val], timeout)
+        if field_name in self.overriden_variables:
+            return
+        return self._write_state_basic(field_name, val, timeout)
 
-    def override_state(self, field, val, timeout = None):
+    def override_state(self, field_name, val, timeout = None):
         '''
         Override state and check write operation with feedback.
 
-        Behaves the same way as write_state(), but is strictly written for a state variable that is overriden
+        Behaves the same way as write_state_fb(), but is strictly written for a state variable that is overriden
         by the user, i.e. is no longer set by the simulation.
         '''
 
-        self.overriden_variables.add(field)
-        return self._write_state_basic(field, val, timeout)
+        self.overriden_variables.add(field_name)
+        return self._write_state_basic(field_name, val, timeout)
 
-    def release_override(self, field):
+    def release_override(self, field_name):
         ''' Release override of simulation state. '''
 
         try:
-            self.overriden_variables.remove(field)
+            self.overriden_variables.remove(field_name)
         except KeyError:
             # It doesn't matter if you try to take the override off of a field that wasn't
             # actually being overridden, so just ignore it.
@@ -230,7 +214,7 @@ class StateSession(object):
     def disconnect(self):
         '''Quits the program and stores message log and field telemetry to file.'''
 
-        print(f' - Terminating console connection to and saving logging/telemetry data for {self.device_name}.')
+        print(f'Terminating console connection to and saving logging/telemetry data for {self.device_name}.')
 
         # End threads if there was actually a connection to the device
         if self.connected:

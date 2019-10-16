@@ -3,25 +3,16 @@
 from argparse import ArgumentParser
 from state_session import StateSession
 from cmdprompt import StateCmdPrompt
-from data_consumers import Logger, Datastore
+from data_containers import Logger, Datastore
 from simulation import Simulation
-import json, sys, os, tempfile, time
-
-try:
-    import pty, subprocess
-except ImportError:
-    # We're on Windows and pty doesn't exist
-    pass
+import json, sys, os, tempfile, threading, time, subprocess, pty
+import urllib.request
 
 class SimulationRun(object):
     def __init__(self, random_seed, sim_duration, data_dir, device_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
-
-        self.simulation_run_dir = os.path.join(data_dir, time.strftime("%Y%m%d-%H%M%S"))
-        # Create directory for run data
-        os.makedirs(self.simulation_run_dir, exist_ok=True)
-
+        self.data_dir = data_dir
         self.device_config = device_config
 
         self.datastores = {}
@@ -31,10 +22,6 @@ class SimulationRun(object):
 
     def start(self):
         """Starts a run of the simulation."""
-
-        pan_logo_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pan_logo.txt')
-        with open(pan_logo_filepath, 'r') as pan_logo_file:
-            print(pan_logo_file.read())
 
         if not self.device_config:
             print('Error: must specify at least one serial port.')
@@ -59,24 +46,24 @@ class SimulationRun(object):
             # If we want to use the native desktop binary for a device, instead of
             # a connected Teensy, we can do that by wrapping a serial port around it.
             if device['run_mode'] == 'native':
-                try:
-                    master_fd, slave_fd = pty.openpty()
-                    binary_process = subprocess.Popen(device['binary_filepath'], stdout=master_fd, stderr=master_fd, stdin=master_fd)
-                    self.binaries.append({
-                        "subprocess": binary_process,
-                        "pty_master_fd": master_fd,
-                        "pty_slave_fd": slave_fd,
-                    })
-                    device['port'] = os.ttyname(slave_fd)
-                    device['baud_rate'] = 9600
-                except NameError:
-                    # pty isn't defined because we're on Windows
-                    self.stop_all(f"Cannot connect to a native binary for device {device_name}, since we're on Windows.")
+                master_fd, slave_fd = pty.openpty()
+                binary_process = subprocess.Popen(device['binary_filepath'], stdout=master_fd, stderr=master_fd, stdin=master_fd)
+                self.binaries.append({
+                    "subprocess": binary_process,
+                    "pty_master_fd": master_fd,
+                    "pty_slave_fd": slave_fd,
+                })
+                device['port'] = os.ttyname(slave_fd)
+                device['baud_rate'] = 9600
+
+            # Create directory for run data
+            simulation_run_dir = os.path.join(self.data_dir, time.strftime("%Y%m%d-%H%M%S"))
+            os.makedirs(simulation_run_dir, exist_ok=True)
 
             # Generate data loggers and device manager for device
-            device_datastore = Datastore(device_name, self.simulation_run_dir)
-            device_logger = Logger(device_name, self.simulation_run_dir)
-            port_cmd = StateSession(device_name, device_datastore, device_logger)
+            device_datastore = Datastore(device_name, simulation_run_dir)
+            device_logger = Logger(device_name, simulation_run_dir)
+            port_cmd = StateSession(self.data_dir, device_name, device_datastore, device_logger)
 
             # Connect to device, failing gracefully if device connection fails
             if port_cmd.connect(device["port"], device["baud_rate"]):
@@ -90,16 +77,14 @@ class SimulationRun(object):
                 self.stop_all("Error: a required serial port is disconnected.")
 
         # Set up MATLAB simulation
-        if self.sim_duration > 0:
-            self.sim = Simulation(self.devices, self.random_seed)
-            self.sim.start(self.sim_duration)
-        else:
-            self.sim = lambda: None # Create empty object
-            self.sim.running = False
+        self.sim = Simulation(self.devices, self.random_seed)
+        self.sim.start(self.sim_duration)
 
         # Set up user command prompt
-        cmd_prompt = StateCmdPrompt(self.devices, self.sim, self.stop_all)
-        cmd_prompt.intro = "Beginning console.\nType \"help\" for a list of commands."
+        cmd_prompt = StateCmdPrompt(self.devices, self.stop_all)
+        pan_logo_filepath = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pan_logo.txt')
+        with open(pan_logo_filepath, 'r') as pan_logo_file:
+            cmd_prompt.intro = pan_logo_file.read()
         cmd_prompt.prompt = '> '
         try:
             cmd_prompt.cmdloop()
@@ -113,21 +98,16 @@ class SimulationRun(object):
 
         print(reason_for_stop)
 
-        print("Stopping simulation (please be patient)...")
-        try:
-            self.sim.stop(self.simulation_run_dir)
-        except:
-            # Simulation was never created
-            pass
+        print("Stopping simulation...")
+        self.sim.stop()
 
-        print("Stopping loggers (please be patient)...")
+        print("Stopping loggers...")
         for datastore in self.datastores.values():
             datastore.stop()
         for logger in self.loggers.values():
             logger.stop()
 
-        num_devices = len(self.devices.values())
-        print(f"Terminating {num_devices} device connection(s):")
+        print("Terminating device connections...")
         for binary in self.binaries:
             binary['subprocess'].terminate()
             os.close(binary['pty_master_fd'])
