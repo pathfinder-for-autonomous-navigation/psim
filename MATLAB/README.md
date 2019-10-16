@@ -20,6 +20,18 @@ The matlab prototype of gnc flight software has two main functions.
     update_FC_state: Outputs actuator commands and updates one satellite's computer state given sensor readings.
 These functions, and functions they call will have to be translated into c++.
 
+There are two main scripts, main.m and run_tests.m. run_tests.m runs all the test scripts.
+main.m runs a simulation and saves the main_state_trajectory as well as computer state trajectories.
+
+# Python Integration
+
+Python uses the [Matlab engine](https://www.mathworks.com/help/matlab/matlab_external/call-matlab-functions-from-python.html)
+to call simulation functions from MATLAB, primarily initialize_main_state, sensor_reading, main_state_update, and actuator_command.
+Global variables in the workspace don't have to be used to transfer data.
+
+Most Matlab types are compatible with python types: [Python to Matlab function inputs](mathworks.com/help/matlab/matlab_external/pass-data-to-matlab-from-python.html)
+[Matlab function outputs to Python](https://www.mathworks.com/help/matlab/matlab_external/handle-data-returned-from-matlab-to-python.html)
+
 # Main State Data Structure
 
 Main state contains the state of both satellites, it contains leader and follower members.
