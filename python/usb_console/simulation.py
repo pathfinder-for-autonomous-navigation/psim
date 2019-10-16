@@ -53,6 +53,9 @@ class Simulation(object):
         start_time = timeit.default_timer()
 
         self.eng = matlab.engine.start_matlab()
+        path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), "../../MATLAB")
+        self.eng.addpath(path, nargout=0)
 
         self.eng.config(nargout=0)
         self.eng.eval("global const", nargout=0)
@@ -60,11 +63,11 @@ class Simulation(object):
         self.eng.eval("global computer_state_follower_trajectory", nargout=0)
         self.eng.eval("global computer_state_leader_trajectory", nargout=0)
 
-        self.main_state = self.eng.initialize_main_state(1,'not_detumbled')
-        self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states('not_detumbled')
-        self.main_state_trajectory = [self.main_state]
-        self.computer_state_follower_trajectory = [self.computer_state_follower]
-        self.computer_state_leader_trajectory = [self.computer_state_leader]
+        self.main_state = self.eng.initialize_main_state(1,'not_detumbled', nargout=1)
+        self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states('not_detumbled', nargout=2)
+        self.main_state_trajectory = []
+        self.computer_state_follower_trajectory = []
+        self.computer_state_leader_trajectory = []
 
         elapsed_time = timeit.default_timer() - start_time
 
@@ -88,23 +91,24 @@ class Simulation(object):
             self.sim_time = self.main_state['follower']['dynamics']['time']
 
             # Get sensor readings
-            self.sensor_readings_follower = self.eng.sensor_reading(self.main_state['follower'],self.main_state['leader'])
-            self.sensor_readings_leader = self.eng.sensor_reading(self.main_state['leader'],self.main_state['follower'])
+            self.sensor_readings_follower = self.eng.sensor_reading(self.main_state['follower'],self.main_state['leader'], nargout=1)
+            self.sensor_readings_leader = self.eng.sensor_reading(self.main_state['leader'],self.main_state['follower'], nargout=1)
             # update dynamics
-            self.main_state = self.eng.main_state_update(self.main_state)
+            self.main_state = self.eng.main_state_update(self.main_state, nargout=1)
             # simulate flight computers
-            self.computer_state_follower, self.actuator_commands_follower = self.eng.update_FC_state(self.computer_state_follower,self.sensor_readings_follower)
-            self.computer_state_leader, self.actuator_commands_leader = self.eng.update_FC_state(self.computer_state_leader,self.sensor_readings_leader)
+            self.computer_state_follower, self.actuator_commands_follower = self.eng.update_FC_state(self.computer_state_follower,self.sensor_readings_follower, nargout=2)
+            self.computer_state_leader, self.actuator_commands_leader = self.eng.update_FC_state(self.computer_state_leader,self.sensor_readings_leader, nargout=2)
             # command actuators
-            self.main_state['follower'] = self.eng.actuator_command(self.actuator_commands_follower,self.main_state['follower'])
-            self.main_state['leader'] = self.eng.actuator_command(self.actuator_commands_leader,self.main_state['leader'])
+            self.main_state['follower'] = self.eng.actuator_command(self.actuator_commands_follower,self.main_state['follower'], nargout=1)
+            self.main_state['leader'] = self.eng.actuator_command(self.actuator_commands_leader,self.main_state['leader'], nargout=1)
 
             # store trajectory
             if step % sample_rate == 0:
-                self.main_state_trajectory.append(main_state)
+                self.main_state_trajectory.append(self.main_state)
                 self.computer_state_follower_trajectory.append(self.computer_state_follower)
                 self.computer_state_leader_trajectory.append(self.computer_state_leader)
 
+            step += 1
             time.sleep(dt - ((time.time() - start_time) % dt))
 
         self.running = False
