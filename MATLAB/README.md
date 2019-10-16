@@ -26,10 +26,10 @@ main.m runs a simulation and saves the main_state_trajectory as well as computer
 # Python Integration
 
 Python uses the [Matlab engine](https://www.mathworks.com/help/matlab/matlab_external/call-matlab-functions-from-python.html)
-to call simulation functions from MATLAB, primarily initialize_main_state, sensor_reading, main_state_update, and actuator_command.
+to call simulation functions from MATLAB, primarily config, initialize_main_state, sensor_reading, main_state_update, and actuator_command.
 Global variables in the workspace don't have to be used to transfer data.
 
-Most Matlab types are compatible with python types: [Python to Matlab function inputs](mathworks.com/help/matlab/matlab_external/pass-data-to-matlab-from-python.html)
+Most Matlab types are compatible with python types: [Python to Matlab function inputs](https://www.mathworks.com/help/matlab/matlab_external/pass-data-to-matlab-from-python.html)
 [Matlab function outputs to Python](https://www.mathworks.com/help/matlab/matlab_external/handle-data-returned-from-matlab-to-python.html)
 
 # Main State Data Structure
