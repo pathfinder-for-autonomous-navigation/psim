@@ -1,11 +1,11 @@
 {
     "seed" : 2,
-    "sim_duration": 2000,
+    "sim_duration": 2,
     "devices" : [
         {
             "name": "FlightController",
             "run_mode": "teensy",
-            "port": "COM3",
+            "port": "/dev/cu.usbmodem47349801",
             "baud_rate": 1152000,
             "required": true
         }

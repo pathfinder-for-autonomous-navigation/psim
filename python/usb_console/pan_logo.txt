@@ -8,3 +8,5 @@
 Pathfinder for Autonomous Navigation                            
 Space Systems Design Studio, Cornell Unversity       
 Console Software | Version 1.0
+
+Type "help" for a list of commands.
