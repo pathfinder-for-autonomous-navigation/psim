@@ -1,6 +1,11 @@
-import readline
+try:
+    import readline
+except ImportError:
+    # We're on Windows, so readline doesn't exist
+    pass
 from cmd import Cmd
 import random
+import timeit
 
 class StateCmdPrompt(Cmd):
     '''
@@ -8,15 +13,16 @@ class StateCmdPrompt(Cmd):
     Teensies and simulation devices.
     '''
 
-    def __init__(self, devices, exit_fn):
+    def __init__(self, devices, sim, exit_fn):
         self.devices = devices
+        self.sim = sim
         self.exit_fn = exit_fn
 
         if not self.devices:
             # There's no flight controller to connect with.
             raise SystemExit
 
-        # By default, if it's available, set the prompt to be commanding the Flight Computer.
+        # By default, if it's available, set the prompt to be commanding the Flight Controller.
         try:
             self.cmded_device = self.devices['FlightController']
         except KeyError:
@@ -60,6 +66,21 @@ class StateCmdPrompt(Cmd):
 
         print(f"Switched to {self.cmded_device.device_name}")
 
+    def do_checksim(self, args):
+        '''
+        Check the running status of the simulation.
+        '''
+        if self.sim.running:
+            print("Running ({} of {}s)".format(format(self.sim.sim_time,"0.2f"), self.sim.sim_duration))
+        else:
+            print("Not running")
+
+    def do_endsim(self, args):
+        '''
+        End the simulation, if it's running.
+        '''
+        self.sim.running = False
+
     def do_rs(self, args):
         '''
         Read state. See state_session.py for documentation.
@@ -70,7 +91,10 @@ class StateCmdPrompt(Cmd):
             print('Need to specify a state field to read')
             return
 
-        print(self.cmded_device.read_state(args[0]))
+        start_time = timeit.default_timer()
+        read_result = self.cmded_device.read_state(args[0])
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
+        print(f"{read_result} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
 
     def do_ws(self, args):
         '''
@@ -85,14 +109,47 @@ class StateCmdPrompt(Cmd):
             print('Need to specify the value to set')
             return
 
-        self.cmded_device.write_state(args[0], args[1])
+        start_time = timeit.default_timer()
+        write_succeeded = self.cmded_device.write_state(args[0], args[1])
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
+
+        write_succeeded = "Succeeded" if write_succeeded else "Failed"
+        print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
+
+    def do_wms(self, args):
+        '''
+        Write multiple states. See state_session.py for documentation.
+        '''
+        args = args.split()
+
+        if len(args) == 0:
+            print('Need to specify a state field to set')
+            return
+        elif len(args) % 2 != 0:
+            print("Need to specify a value for every state field to set")
+            return
+
+        fields = [args[x] for x in range(0, len(args), 2)]
+        vals = [args[x] for x in range(1, len(args), 2)]
+
+        start_time = timeit.default_timer()
+        write_succeeded = self.cmded_device.write_multiple_states(fields, vals)
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
+
+        write_succeeded = "Succeeded" if write_succeeded else "Failed"
+        print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
 
     def do_os(self, args):
         '''
         Override simulation state. See state_session.py for documentation.
         '''
         args = args.split()
-        self.cmded_device.override_state(args[0], args[1])
+        start_time = timeit.default_timer()
+        override_succeeded = self.cmded_device.override_state(args[0], args[1])
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
+
+        override_succeeded = "Succeeded" if override_succeeded else "Failed"
+        print(f"{override_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
 
     def do_ro(self, args):
         '''
