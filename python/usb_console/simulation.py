@@ -96,17 +96,22 @@ class Simulation(object):
             # update dynamics
             self.main_state = self.eng.main_state_update(self.main_state, nargout=1)
             # simulate flight computers
-            self.computer_state_follower, self.actuator_commands_follower = self.eng.update_FC_state(self.computer_state_follower,self.sensor_readings_follower, nargout=2)
-            self.computer_state_leader, self.actuator_commands_leader = self.eng.update_FC_state(self.computer_state_leader,self.sensor_readings_leader, nargout=2)
+            self.computer_state_follower, self.actuator_commands_follower = \
+                self.eng.update_FC_state(self.computer_state_follower,self.sensor_readings_follower, nargout=2)
+            self.computer_state_leader, self.actuator_commands_leader = \
+                self.eng.update_FC_state(self.computer_state_leader,self.sensor_readings_leader, nargout=2)
             # command actuators
             self.main_state['follower'] = self.eng.actuator_command(self.actuator_commands_follower,self.main_state['follower'], nargout=1)
             self.main_state['leader'] = self.eng.actuator_command(self.actuator_commands_leader,self.main_state['leader'], nargout=1)
 
             # store trajectory
             if step % sample_rate == 0:
-                self.main_state_trajectory.append(self.main_state)
-                self.computer_state_follower_trajectory.append(self.computer_state_follower)
-                self.computer_state_leader_trajectory.append(self.computer_state_leader)
+                self.main_state_trajectory.append(
+                    json.loads(self.eng.jsonencode(self.main_state, nargout=1)))
+                self.computer_state_follower_trajectory.append(
+                    json.loads(self.eng.jsonencode(self.computer_state_follower, nargout=1)))
+                self.computer_state_leader_trajectory.append(
+                    json.loads(self.eng.jsonencode(self.computer_state_leader, nargout=1)))
 
             step += 1
             time.sleep(dt - ((time.time() - start_time) % dt))
@@ -122,8 +127,14 @@ class Simulation(object):
         self.running = False
         self.sim_thread.join()
 
-        with open(data_dir + "/simulation_data.txt", "w") as fp:
-            json.dump(self.truth_trajectory, fp)
+        with open(data_dir + "/simulation_data_main.txt", "w") as fp:
+            json.dump(self.main_state_trajectory, fp)
+
+        with open(data_dir + "/simulation_data_follower.txt", "w") as fp:
+            json.dump(self.computer_state_follower_trajectory, fp)
+
+        with open(data_dir + "/simulation_data_leader.txt", "w") as fp:
+            json.dump(self.computer_state_leader_trajectory, fp)
 
         with open(data_dir + "/simulation_log.txt", "w") as fp:
             fp.write(self.log)
