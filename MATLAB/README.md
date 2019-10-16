@@ -183,14 +183,14 @@ The matlab prototype of gnc flight software has two main functions.
 
 main_state_update has a few main helper funtions.
  * dynamics=dynamics_update(dynamics,actuators)
-        updates the orbital and attitude dynamics, and time using numerical integration.
+        Update the orbital and attitude dynamics, and time using numerical integration.
  * sensors=sensors_update(sensors,dynamics)
-        updates the sensor state given dynamics
+        Update the sensor state given dynamics.
 
 update_FC_state is also broken in to a few main helper functions.
  * [orbit_controller_state, delta_v, delta_time]=get_next_maneuver(orbit_controller_state, current_orbit,target_orbit,current_time)
         Calculate the next maneuver to rendevous with target_orbit.
- * [orbit,jacabian] = orbit_propagator(orbit,current_time,delta_time)
+ * [orbit,jacobian] = orbit_propagator(orbit,current_time,delta_time)
         Propagate orbit forward delta_time and calculate the jacobian of the translation.
  * [orbit_estimator_state, both_orbits, time, covariance]=estimate_orbits(orbit_estimator_state,my_gps_readings,other_gps_readings,cdgps_readings)
         Update estimates of my orbit and other orbit.
