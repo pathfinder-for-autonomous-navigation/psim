@@ -20,13 +20,25 @@ The matlab prototype of gnc flight software has two main functions.
     update_FC_state: Outputs actuator commands and updates one satellite's computer state given sensor readings.
 These functions, and functions they call will have to be translated into c++.
 
+There are two main scripts, main.m and run_tests.m. run_tests.m runs all the test scripts.
+main.m runs a simulation and saves the main_state_trajectory as well as computer state trajectories.
+
+# Python Integration
+
+Python uses the [Matlab engine](https://www.mathworks.com/help/matlab/matlab_external/call-matlab-functions-from-python.html)
+to call simulation functions from MATLAB, primarily config, initialize_main_state, sensor_reading, main_state_update, and actuator_command.
+Global variables in the workspace don't have to be used to transfer data.
+
+Most Matlab types are compatible with python types: [Python to Matlab function inputs](https://www.mathworks.com/help/matlab/matlab_external/pass-data-to-matlab-from-python.html)
+[Matlab function outputs to Python](https://www.mathworks.com/help/matlab/matlab_external/handle-data-returned-from-matlab-to-python.html)
+
 # Main State Data Structure
 
 Main state contains the state of both satellites, it contains leader and follower members.
 Each satellites state has the following members and submembers:
 * dynamics
-   * time, Time since inital GPS week (s)
-   * time_ns(positive int64), Time since inital GPS week (ns)
+   * time, Time since initial GPS week (s)
+   * time_ns(positive int64), Time since initial GPS week (ns)
    * position_eci, Position of the center of mass of the satellite (m)
    * velocity_eci, Velocity of the center of mass of the satellite (m/s)
    * angular_rate_body, Angular rate of the spacecraft in the body frame (rad/s)
@@ -35,7 +47,7 @@ Each satellites state has the following members and submembers:
    * fuel_net_angular_momentum_eci, Net angular momentum of the fuel (N*m*s)
    * fuel_mass, The mass of the fuel (kg)
  * actuators
-   * firing_start_times, Times since inital GPS week to start firing each thruster (s)
+   * firing_start_times, Times since initial GPS week to start firing each thruster (s)
    * thrust_vectors_body, each thruster's force vector (N)
    * centers_of_thrust_body, Center of thrust of each truster (m)
    * firing_on_times, How long each thruster firing lasts (s)
@@ -48,14 +60,14 @@ Each satellites state has the following members and submembers:
    * sunsensor_real_normals, (unitless)
    * sunsensor_measured_normals,  (unitless)
    * gps_bias,  (m,m/s)
-   * gps_time_till_lock, 
+   * gps_time_till_lock,
        time till the GPS gets a lock, starts at XX min, then counts down and stays at 0
        when the antenna is pointing towards the GPS constellation (s)
    * cdgps_bias, (m,m/s)
    * cdgps_time_till_lock,
         time till the carrier-phase differential GPS(CDGPS) gets a lock, starts at XX min, then counts down and stays at 0
         when the gps antenna is pointing towards the GPS constellation the piksi antenna is pointing at the other sattelite (s)
-    
+
 Inaddition to this core state, other info about the satellite is retrieved using
 the function get_truth which takes a string and the dynamics of a satellite as input.
 
@@ -103,7 +115,7 @@ get_truth supports the following vectors, these have a frame:
  * rate: angular rate (rad/s)
  * velocity: velocity of the center of mass of the sat relative to earth (m/s)
  * position: position of the center of mass of the sat relative to earth (m)
- * sat2sun: the normalized vector from the satellite to the sun (unitless) 
+ * sat2sun: the normalized vector from the satellite to the sun (unitless)
  * magnetic field: (T)
  * gravity: acceleration from gravity, doesn't account for coriolus effect (m/s^2)
  * total angular momentum: Total internal angular momentum of the sat (Nms)
@@ -128,17 +140,17 @@ sensor readings is a struct with elements:
  * sat2sun_body, unit vector from satellite to sun.
  * sun_sensor_true, true if sun vector reading is good, else false.
  * wheel_momentum_body, wheel angular momentum reading (Nms)
- * time, time since inital GPS week (s)
+ * time, time since initial GPS week (s)
  * position_ecef, position of the gps reciever of the satellite.
  * velocity_ecef, velocity of the gps reciever of the satellite.
  * target_position_ecef, position of the target gps reciever of the satellite, from ground
  * target_velocity_ecef, velocity of the target gps reciever of the satellite, from ground
  * relative_position_ecef, position vector from self to target, from cdgps
- 
+
 actuator commands is a struct with elements:
- * firing_start_times, commanded time since inital GPS week to start firing.
+ * firing_start_times, commanded time since initial GPS week to start firing.
  * commanded_impulse_vectors_eci, commanded impulse, units N.
- * wheel_torque, commanded x,y,z wheel torque, (signed ramp)*(rotor inertia), units(N*m).
+ * wheel_torque, commanded x,y,z wheel torque, (signed ramp)x(rotor inertia), units(N*m).
  * wheel_enable, commanded x,y,z wheel enables, whether each wheel
            should be on, if false, the wheel rate is commanded to zero.
  * magrod_moment, commanded x,y,z magnetorquer moments (A*m^2)
@@ -150,9 +162,9 @@ Each function will have its own test script in `./test/` called `test_functionNa
     2. Calls to the function.
     3. Asserts that the outputs are within required accuracy.
 run_tests.m is a script that will run all of the test scripts and give a failure summary for each test that failed.
-    
+
 Tests should be completely deterministic, fast, and not have any prints or plots unless they fail.
-    
+
 # Functions
 
 config(): sets up path and constants
@@ -171,20 +183,20 @@ The matlab prototype of gnc flight software has two main functions.
 
 main_state_update has a few main helper funtions.
  * dynamics=dynamics_update(dynamics,actuators)
-        updates the orbital and attitude dynamics, and time using numerical integration.
+        Update the orbital and attitude dynamics, and time using numerical integration.
  * sensors=sensors_update(sensors,dynamics)
-        updates the sensor state given dynamics
+        Update the sensor state given dynamics.
 
 update_FC_state is also broken in to a few main helper functions.
  * [orbit_controller_state, delta_v, delta_time]=get_next_maneuver(orbit_controller_state, current_orbit,target_orbit,current_time)
         Calculate the next maneuver to rendevous with target_orbit.
- * [orbit,jacabian] = orbit_propagator(orbit,current_time,delta_time)
+ * [orbit,jacobian] = orbit_propagator(orbit,current_time,delta_time)
         Propagate orbit forward delta_time and calculate the jacobian of the translation.
  * [orbit_estimator_state, both_orbits, time, covariance]=estimate_orbits(orbit_estimator_state,my_gps_readings,other_gps_readings,cdgps_readings)
         Update estimates of my orbit and other orbit.
  * [adcs_state,magrod_moment,wheel_torque,wheel_enable]=adcs_update(adcs_state,time,orbit,target_orbit,gyro,magnetometer,sat2sun)
         Attitude Determination and Control System (ADCS) update.
-        
+
 Environmental functions.
  * density= env_atmosphere_density(time,x)
  * [quat_ecef_eci,rate_ecef]= env_earth_attitude(time)
@@ -202,10 +214,10 @@ Testing utility functions:
         returns true if actuators1 and actuators2 are close enough.
  * equal= utl_compare_sensors(sensors1,sensors2)
         returns true if sensors1 and sensors2 are close enough.
-    
+
 Plotting and visualization functions:
  * plot_almost_conserved_values(main_state_trajectory)
-        creates plots of angular momentums in eci and total energies, 
+        creates plots of angular momentums in eci and total energies,
         if these have a huge jump, there is a problem with physics.
  * plot_pointing_errors(main_state_trajectory)
         plots magnitude of error of where the sats are pointing vs where they should be pointing.
@@ -215,19 +227,19 @@ Plotting and visualization functions:
         plots differences in leader and follower orbits.
  * fancy_animation(main_state_trajectory)
         creates a fancy animation from the simulation data.
-    
+
 # Functions to be implemented in C++
 update_FC_state and any function it uses including:
-    get_next_maneuver, orbit_propagator, estimate_orbits, adcs_update, 
+    get_next_maneuver, orbit_propagator, estimate_orbits, adcs_update,
     env_earth_attitude, env_eclipse, env_magnetic_field, env_sun_vector.
-    
+
 Also, the test scripts for these functions should also be partially translated into C++.
 
 # Team Member Responsibilities
 
 Each team member is the principle programmer
-for some functions in the system. If you are going to start work on a function, 
-create an issue with the same name as the function and assign yourself to it. 
+for some functions in the system. If you are going to start work on a function,
+create an issue with the same name as the function and assign yourself to it.
 In addition to the function also write a test script that at a minimum just calls the function and add that script to run_tests.m
 If you need new constants just add them to config and add the name, description, and units to the readme.
 
@@ -283,7 +295,7 @@ repositories.
  * `./*` - scripts to be called for/during the full simulation.
  * `./utl/*` - utility functions shared across all other MATLAB scripts in
    this repository.
- * `./environmental_models/*` - environmental functions shared across 
+ * `./environmental_models/*` - environmental functions shared across
    all other MATLAB scripts in this repository.
  * `./environmental_models/helper_functions/*` - helper functions for environmental functions.
  * `./test/*` - standalone scripts that test almost every function in the simulation.
@@ -315,9 +327,8 @@ Constants are stored in the "const" global struct.
    * SLOSH_DAMPING(positive scalar), Torque on fuel/difference in angular rates in eci (Nm/(rad/s))
    * ATTITUDE_PD_KP(scalar), Attitude PD controller K_p (N*m)
    * ATTITUDE_PD_KD(scalar), Attitude PD controller K_d (N*m/(rad/s))
-   * SUNSENSOR_DEADZONE(positive scalar), Angle from -z axis where the sun sensors don't work (rad)
-
-
+   * GPS_LOCK_TIME(positive scalar), Time it takes the GPS to get a lock (s)
+   * CDGPS_LOCK_TIME(positive scalar), Time it takes the CDGPS to get a lock (s)
 
 
 # Add-Ons
@@ -331,5 +342,5 @@ There are a few required add-ons
 
  # Controllers
  <img src="https://docs.google.com/drawings/d/e/2PACX-1vQ36cMMJu3pSCEW4oTc9ZblkLZlGmEKQNGi2ywjk4QizGxEGnlWA3RTp1Hhh_5vhKp9Q6UxJgSJFVQZ/pub?w=846&amp;h=547">
- 
+
  <img src="https://docs.google.com/drawings/d/e/2PACX-1vQjQfsUQSmmeXKQT5tWik40ip17f55RgKxIxE-MhlL6FJqcM33Bdasc_leOyrpsiqIZiHovv2fvI1kh/pub?w=900&amp;h=694">
