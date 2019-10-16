@@ -7,7 +7,7 @@ import traceback
 import queue
 
 
-class QuakeSession(object):
+class RadioSession(object):
     '''
     Represents a connection session with a Flight Computer's Quake radio.
 
@@ -31,7 +31,6 @@ class QuakeSession(object):
 
         # Device connection
         self.device_name = device_name
-        self.connected = False
 
         # Data logging
         self.datastore = datastore
@@ -49,7 +48,11 @@ class QuakeSession(object):
         '''
         self.imei = imei
         self.check_downlink_thread = threading.Thread(target=self.check_for_downlink)
+        self.running_logger = True
         self.check_downlink_thread.start()
+
+        print(f"Opened connection to {self.device_name} radio.")
+        return True
 
     def check_for_downlink(self):
         '''
@@ -58,7 +61,8 @@ class QuakeSession(object):
         '''
 
         while self.running_logger:
-            raise NotImplementedError
+            # TODO implement
+            pass
 
     def read_state(self, field, timeout=None):
         '''
@@ -68,23 +72,18 @@ class QuakeSession(object):
         '''
         raise NotImplementedError
 
-    def _write_state_basic(self, fields, vals, timeout=None):
-        '''
-        Uplink multiple state fields at once.
-        '''
-
-        assert len(fields) == len(vals)
-        raise NotImplementedError
-
     def write_multiple_states(self, fields, vals, timeout=None):
         '''
-        Uplink multiple state variables.
+        Uplink multiple state variables. Return success of write.
         '''
-        return self._write_state_basic(list(fields), list(vals), timeout)
+        assert len(fields) == len(vals)
+
+        # TODO send uplink via email.
+        raise NotImplementedError
 
     def write_state(self, field, val, timeout=None):
         '''
-        Uplink one state variable.
+        Uplink one state variable. Return success of write.
         '''
         return self.write_multiple_states([field], [val], timeout)
 
@@ -92,11 +91,9 @@ class QuakeSession(object):
         '''Quits the Quake connection, and stores message log and field telemetry to file.'''
 
         print(
-            f' - Terminating console connection to and saving logging/telemetry data for Quake connection to {self.device_name}.'
+            f' - Terminating console connection to and saving logging/telemetry data for radio connection to {self.device_name}.'
         )
 
-        # End threads if there was actually a connection to the device
-        if self.connected:
-            self.running_logger = False
-            self.check_downlink_thread.join()
-            self.console.close()
+        # End threads if there was actually a connection to the radio
+        self.running_logger = False
+        self.check_downlink_thread.join()
