@@ -78,20 +78,13 @@ class QuakeSession(object):
 
     def write_multiple_states(self, fields, vals, timeout=None):
         '''
-        Uplink multiple states, as long as they aren't being overridden by the sim.
+        Uplink multiple state variables.
         '''
-        # Filter out fields that are being overridden by the user
-        field_val_pairs = [
-            field_val_pair for field_val_pair in zip(fields, vals)
-            if field_val_pair[0] not in self.overriden_variables
-        ]
-        fields, vals = zip(*field_val_pairs)
-
         return self._write_state_basic(list(fields), list(vals), timeout)
 
     def write_state(self, field, val, timeout=None):
         '''
-        Uplink state, as long as it isn't being overridden by the sim.
+        Uplink one state variable.
         '''
         return self.write_multiple_states([field], [val], timeout)
 
