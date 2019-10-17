@@ -53,7 +53,8 @@ Each satellites state has the following members and submembers:
    * firing_on_times, How long each thruster firing lasts (s)
    * wheel_commanded_rate, Commanded x,y,z wheel rate (rad/s)
    * wheel_commanded_ramp, Commanded x,y,z wheel ramp (rad/s/s)
-   * magrod_real_moment_body, Real magnetorquer moment (A*m^2)
+   * magrod_real_moment_body, Real magnetorquer moment (Am^2)
+   * magrod_hysteresis_body, Real magnetorquer hysteresis moment (Am^2)
  * sensors
    * gyro_bias, (rad/s)
    * magnetometer_bias, (T)
@@ -68,6 +69,7 @@ Each satellites state has the following members and submembers:
         time till the carrier-phase differential GPS(CDGPS) gets a lock, starts at XX min, then counts down and stays at 0
         when the gps antenna is pointing towards the GPS constellation the piksi antenna is pointing at the other sattelite (s)
 
+# get_truth
 Inaddition to this core state, other info about the satellite is retrieved using
 the function get_truth which takes a string and the dynamics of a satellite as input.
 
@@ -148,8 +150,8 @@ sensor readings is a struct with elements:
  * relative_position_ecef, position vector from self to target, from cdgps
 
 actuator commands is a struct with elements:
- * firing_start_times, commanded time since initial GPS week to start firing.
- * commanded_impulse_vectors_eci, commanded impulse, units N.
+ * firing_start_times(4,1 matrix): commanded times since initial GPS week to start firing.
+ * firing_on_times(4,1 matrix): commanded thruster on times.
  * wheel_torque, commanded x,y,z wheel torque, (signed ramp)x(rotor inertia), units(N*m).
  * wheel_enable, commanded x,y,z wheel enables, whether each wheel
            should be on, if false, the wheel rate is commanded to zero.
