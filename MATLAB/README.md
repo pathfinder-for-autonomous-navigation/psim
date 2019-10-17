@@ -271,7 +271,7 @@ Priority, 0 is most important.
 | env_earth_attitude           | Nathan  |          | done                 | done        | wip         |
 | env_eclipse                  | Nathan  |          | done                 | not started | not started |
 | env_gravity                  |         |          | done                 | not started | NA          |
-| env_magnetic_field           | Nathan  |          | wip                  | not started | wip         |
+| env_magnetic_field           | Nathan  |          | wip                  | done        | wip         |
 | env_sun_vector               | Nathan  |          | done                 | done        | wip         |
 | utl_compare_main_states      |         |          | not started          | not started | NA          |
 | utl_compare_dynamics         |         |          | not started          | not started | NA          |
