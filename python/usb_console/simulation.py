@@ -53,18 +53,18 @@ class Simulation(object):
         start_time = timeit.default_timer()
 
         self.eng = matlab.engine.start_matlab()
-        path1 = os.path.join(
+        path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "../../MATLAB")
-        path2 = os.path.join(path1, "utl")
-        path3 = os.path.join(path1, "environmental_models")
-        path4 = os.path.join(path1, "environmental_models/helper_functions")
-        self.eng.addpath(path1, nargout=0)
-        self.eng.addpath(path2, nargout=0)
-        self.eng.addpath(path3, nargout=0)
-        self.eng.addpath(path4, nargout=0)
+        self.eng.addpath(path, nargout=0)
 
-        self.eng.eval("global const", nargout=0)
         self.eng.config(nargout=0)
+        self.eng.eval("global const", nargout=0)
+
+        self.main_state = self.eng.initialize_main_state(self.seed, 'not_detumbled', nargout=1)
+        self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states('not_detumbled', nargout=2)
+        self.main_state_trajectory = []
+        self.computer_state_follower_trajectory = []
+        self.computer_state_leader_trajectory = []
 
         elapsed_time = timeit.default_timer() - start_time
 
@@ -77,17 +77,40 @@ class Simulation(object):
         Runs the simulation for the time interval specified in start().
         """
 
+
         dt = self.eng.workspace['const']['dt'] * 1E-9
+        num_steps = int(self.sim_duration/dt)
+        sample_rate = int(10.0 / dt) # Sample once every ten seconds
+        step = 0
+
         start_time = time.time()
-        while self.sim_time < self.sim_duration and self.running:
-            # Update sensor model and begin update of truth model in the background
+        while step < num_steps and self.running:
+            self.sim_time = self.main_state['follower']['dynamics']['time']
 
-            # Send sensor data to Flight Controller, and collect actuator outputs
+            # Get sensor readings
+            self.sensor_readings_follower = self.eng.sensor_reading(self.main_state['follower'],self.main_state['leader'], nargout=1)
+            self.sensor_readings_leader = self.eng.sensor_reading(self.main_state['leader'],self.main_state['follower'], nargout=1)
+            # update dynamics
+            self.main_state = self.eng.main_state_update(self.main_state, nargout=1)
+            # simulate flight computers
+            self.computer_state_follower, self.actuator_commands_follower = \
+                self.eng.update_FC_state(self.computer_state_follower,self.sensor_readings_follower, nargout=2)
+            self.computer_state_leader, self.actuator_commands_leader = \
+                self.eng.update_FC_state(self.computer_state_leader,self.sensor_readings_leader, nargout=2)
+            # command actuators
+            self.main_state['follower'] = self.eng.actuator_command(self.actuator_commands_follower,self.main_state['follower'], nargout=1)
+            self.main_state['leader'] = self.eng.actuator_command(self.actuator_commands_leader,self.main_state['leader'], nargout=1)
 
-            # Update actuators that are not updated by flight controller
+            # store trajectory
+            if step % sample_rate == 0:
+                self.main_state_trajectory.append(
+                    json.loads(self.eng.jsonencode(self.main_state, nargout=1)))
+                self.computer_state_follower_trajectory.append(
+                    json.loads(self.eng.jsonencode(self.computer_state_follower, nargout=1)))
+                self.computer_state_leader_trajectory.append(
+                    json.loads(self.eng.jsonencode(self.computer_state_leader, nargout=1)))
 
-            # Actuate the sim devices, and prepare for the next cycle
-            self.sim_time += dt
+            step += 1
             time.sleep(dt - ((time.time() - start_time) % dt))
 
         self.running = False
@@ -101,8 +124,14 @@ class Simulation(object):
         self.running = False
         self.sim_thread.join()
 
-        with open(data_dir + "/simulation_data.txt", "w") as fp:
-            json.dump(self.truth_trajectory, fp)
+        with open(data_dir + "/simulation_data_main.txt", "w") as fp:
+            json.dump(self.main_state_trajectory, fp)
+
+        with open(data_dir + "/simulation_data_follower.txt", "w") as fp:
+            json.dump(self.computer_state_follower_trajectory, fp)
+
+        with open(data_dir + "/simulation_data_leader.txt", "w") as fp:
+            json.dump(self.computer_state_leader_trajectory, fp)
 
         with open(data_dir + "/simulation_log.txt", "w") as fp:
             fp.write(self.log)
