@@ -1,13 +1,15 @@
 function config
 
-global truth 
 global const
-global actuators
 
 [filepath, name, ext] = fileparts(mfilename("fullpath"));
 addpath(strcat(filepath, '/utl'));
 addpath(strcat(filepath, '/environmental_models'));
 addpath(strcat(filepath, '/environmental_models/helper_functions'));
+
+const.AEROWMM2015= load('./environmental_models/aerowmm2015.mat');%load in wmm model
+
+
 %{
 
 Temporary script to initialize global variables until a more robust system is

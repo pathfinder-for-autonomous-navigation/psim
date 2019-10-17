@@ -9,3 +9,4 @@ runtests('test_initialize_computer_states');
 
 runtests('test_env_sun_vector');
 runtests('test_env_earth_attitude');
+runtests('test_env_magnetic_field');

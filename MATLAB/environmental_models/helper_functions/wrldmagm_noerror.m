@@ -54,6 +54,7 @@ function [XYZ, H, DEC, DIP, F] = wrldmagm_noerror(height, lat, lon, dyear, varar
 %   [1] The WMM-2015 can be found on the web at
 %   http://www.ngdc.noaa.gov/geomag/WMM/DoDWMM.shtml and in "NOAA Technical
 %   Report: The US/UK World Magnetic Model for 2015-2020". 
+global const
 
 narginchk(4, 5);
 
@@ -65,7 +66,16 @@ end
 % Use 2015 epoch or catch numeric inputs for epoch
 if ((nargin < 5) || (varargin{1} == 2015))
     epoch = 2015;
-    load aerowmm2015;
+    %load aerowmm2015;
+    c= const.AEROWMM2015.c;
+    dc= const.AEROWMM2015.dc;
+    epoch= const.AEROWMM2015.epoch;
+    fid= const.AEROWMM2015.fid;
+    fm= const.AEROWMM2015.fm;
+    fn= const.AEROWMM2015.fn;
+    k= const.AEROWMM2015.k;
+    maxdef= const.AEROWMM2015.maxdef;
+    snorm= const.AEROWMM2015.snorm;
 elseif (varargin{1} == 2010)
     warning(message('aero:wrldmagm:obsoleteEpoch',2010));
     epoch = 2010;
