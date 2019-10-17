@@ -59,11 +59,8 @@ class Simulation(object):
 
         self.eng.config(nargout=0)
         self.eng.eval("global const", nargout=0)
-        self.eng.eval("global main_state_trajectory", nargout=0)
-        self.eng.eval("global computer_state_follower_trajectory", nargout=0)
-        self.eng.eval("global computer_state_leader_trajectory", nargout=0)
 
-        self.main_state = self.eng.initialize_main_state(1,'not_detumbled', nargout=1)
+        self.main_state = self.eng.initialize_main_state(self.seed, 'not_detumbled', nargout=1)
         self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states('not_detumbled', nargout=2)
         self.main_state_trajectory = []
         self.computer_state_follower_trajectory = []
@@ -83,7 +80,7 @@ class Simulation(object):
 
         dt = self.eng.workspace['const']['dt'] * 1E-9
         num_steps = int(self.sim_duration/dt)
-        sample_rate = 10.0 / dt # Sample once every ten seconds
+        sample_rate = int(10.0 / dt) # Sample once every ten seconds
         step = 0
 
         start_time = time.time()
