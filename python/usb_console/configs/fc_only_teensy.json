@@ -6,8 +6,14 @@
             "name": "FlightController",
             "run_mode": "teensy",
             "port": "COM3",
-            "baud_rate": 1152000,
-            "required": true
+            "baud_rate": 1152000
+        }
+    ],
+    "radios": [
+        {
+            "connected_device": "FlightController",
+            "imei": "",
+            "connect": false
         }
     ]
 }

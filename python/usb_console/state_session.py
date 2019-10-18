@@ -30,7 +30,6 @@ class StateSession(object):
 
         # Device connection
         self.device_name = device_name
-        self.connected = False
 
         # Data logging
         self.datastore = datastore
@@ -63,13 +62,10 @@ class StateSession(object):
                 target=self.check_console_msgs)
             self.check_msgs_thread.start()
 
-            self.connected = True
             print(f"Opened connection to {self.device_name}.")
             return True
         except serial.SerialException:
             print(f"Unable to open serial port for {self.device_name}.")
-
-            self.connected = False
             return False
 
     def check_console_msgs(self):
@@ -232,8 +228,7 @@ class StateSession(object):
 
         print(f' - Terminating console connection to and saving logging/telemetry data for {self.device_name}.')
 
-        # End threads if there was actually a connection to the device
-        if self.connected:
-            self.running_logger = False
-            self.check_msgs_thread.join()
-            self.console.close()
+        # End threads
+        self.running_logger = False
+        self.check_msgs_thread.join()
+        self.console.close()

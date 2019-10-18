@@ -2,6 +2,7 @@
 
 from argparse import ArgumentParser
 from state_session import StateSession
+from radio_session import RadioSession
 from cmdprompt import StateCmdPrompt
 from data_consumers import Logger, Datastore
 from simulation import Simulation
@@ -10,11 +11,11 @@ import json, sys, os, tempfile, time
 try:
     import pty, subprocess
 except ImportError:
-    # We're on Windows and pty doesn't exist
+    # The current OS is Windows, and pty doesn't exist
     pass
 
 class SimulationRun(object):
-    def __init__(self, random_seed, sim_duration, data_dir, device_config):
+    def __init__(self, random_seed, sim_duration, data_dir, device_config, radios_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
 
@@ -23,10 +24,12 @@ class SimulationRun(object):
         os.makedirs(self.simulation_run_dir, exist_ok=True)
 
         self.device_config = device_config
+        self.radios_config = radios_config
 
         self.datastores = {}
         self.loggers = {}
         self.devices = {}
+        self.radios = {}
         self.binaries = []
 
     def start(self):
@@ -37,24 +40,30 @@ class SimulationRun(object):
             print(pan_logo_file.read())
 
         if not self.device_config:
-            print('Error: must specify at least one serial port.')
+            print('must specify at least one serial port.')
             raise SystemExit
 
+        self.set_up_devices()
+        self.set_up_radios()
+        self.set_up_sim()
+        self.set_up_cmd_prompt()
+
+    def set_up_devices(self):
         # Set up test table by connecting to each device specified in the config.
         for device in self.device_config:
-            device_name = device["name"]
+            try:
+                device_name = device["name"]
+            except:
+                self.stop_all("Invalid configuration file. A device's name was not specified.")
 
             # Check device configuration.
-            if 'required' not in device.keys():
-                self.stop_all(f"Error: device configuration for {device_name} does not specify if the simulation requires the device.")
-
             if device.get('run_mode') not in ['teensy', 'native']:
-                self.stop_all(f"Error: device configuration for {device_name} is invalid.")
+                self.stop_all(f"Device configuration for {device_name} is invalid.")
             if device['run_mode'] == "teensy":
                 if not device.get("baud_rate"):
-                    self.stop_all(f"Error: device configuration for {device_name} does not specify baud rate.")
+                    self.stop_all(f"device configuration for {device_name} does not specify baud rate.")
             elif "binary_filepath" not in device.keys():
-                self.stop_all(f"Error: Binary firmware location not specified for {device_name}")
+                self.stop_all(f"Binary firmware location not specified for {device_name}")
 
             # If we want to use the native desktop binary for a device, instead of
             # a connected Teensy, we can do that by wrapping a serial port around it.
@@ -71,25 +80,54 @@ class SimulationRun(object):
                     device['baud_rate'] = 9600
                 except NameError:
                     # pty isn't defined because we're on Windows
-                    self.stop_all(f"Cannot connect to a native binary for device {device_name}, since we're on Windows.")
+                    self.stop_all(f"Cannot connect to a native binary for device {device_name}, since the current OS is Windows.")
 
             # Generate data loggers and device manager for device
             device_datastore = Datastore(device_name, self.simulation_run_dir)
             device_logger = Logger(device_name, self.simulation_run_dir)
-            port_cmd = StateSession(device_name, device_datastore, device_logger)
+            device_session = StateSession(device_name, device_datastore, device_logger)
 
             # Connect to device, failing gracefully if device connection fails
-            if port_cmd.connect(device["port"], device["baud_rate"]):
-                self.devices[device_name] = port_cmd
+            if device_session.connect(device["port"], device["baud_rate"]):
+                self.devices[device_name] = device_session
                 self.datastores[device_name] = device_datastore
                 self.loggers[device_name] = device_logger
 
                 device_datastore.start()
                 device_logger.start()
-            elif device["required"]:
-                self.stop_all("Error: a required serial port is disconnected.")
+            else:
+                self.stop_all("A required device is disconnected.")
 
-        # Set up MATLAB simulation
+    def set_up_radios(self):
+        for radio in self.radios_config:
+            try:
+                radio_connected_device = radio["connected_device"]
+            except:
+                self.stop_all("Invalid configuration file. A radio's connected device was not specified.")
+
+            # Check radio configuration
+            if 'imei' not in radio.keys():
+                self.stop_all(f"IMEI number for radio connected to {radio_connected_device} was not specified.")
+            if 'connect' not in radio.keys():
+                self.stop_all(f"Configuration for {radio_connected_device} does not specify whether or not to connect to the radio.")
+
+            if radio['connect']:
+                radio_data_name = radio_connected_device + "_radio"
+                radio_datastore = Datastore(radio_data_name, self.simulation_run_dir)
+                radio_logger = Logger(radio_data_name, self.simulation_run_dir)
+                radio_session = RadioSession(radio_connected_device, radio_datastore, radio_logger)
+
+                if radio_session.connect(radio['imei']):
+                    self.radios[radio_connected_device] = radio_session
+                    self.datastores[radio_data_name] = radio_datastore
+                    self.loggers[radio_data_name] = radio_logger
+
+                    radio_datastore.start()
+                    radio_logger.start()
+                else:
+                    self.stop_all(f"Unable to connect to radio for {radio_connected_device}.")
+
+    def set_up_sim(self):
         if self.sim_duration > 0:
             self.sim = Simulation(self.devices, self.random_seed)
             self.sim.start(self.sim_duration)
@@ -97,6 +135,7 @@ class SimulationRun(object):
             self.sim = lambda: None # Create empty object
             self.sim.running = False
 
+    def set_up_cmd_prompt(self):
         # Set up user command prompt
         cmd_prompt = StateCmdPrompt(self.devices, self.sim, self.stop_all)
         cmd_prompt.intro = "Beginning console.\nType \"help\" for a list of commands."
@@ -111,7 +150,7 @@ class SimulationRun(object):
     def stop_all(self, reason_for_stop):
         """Gracefully ends simulation run."""
 
-        print(reason_for_stop)
+        print("Error: " + reason_for_stop)
 
         print("Stopping simulation (please be patient)...")
         try:
@@ -126,14 +165,19 @@ class SimulationRun(object):
         for logger in self.loggers.values():
             logger.stop()
 
+        num_radios = len(self.radios.values())
+        print(f"Terminating {num_radios} radio connection(s)...")
+        for radio in self.radios.values():
+            radio.disconnect()
+
         num_devices = len(self.devices.values())
-        print(f"Terminating {num_devices} device connection(s):")
+        print(f"Terminating {num_devices} device connection(s)...")
+        for device in self.devices.values():
+            device.disconnect()
         for binary in self.binaries:
             binary['subprocess'].terminate()
             os.close(binary['pty_master_fd'])
             os.close(binary['pty_slave_fd'])
-        for device in self.devices.values():
-            device.disconnect()
 
         raise SystemExit
 
@@ -158,9 +202,10 @@ if __name__ == '__main__':
     try:
         with open(args.conf, 'r') as config_file:
             config_data = json.load(config_file)
-            device_config = config_data["devices"]
             random_seed = config_data["seed"]
             sim_duration = config_data["sim_duration"]
+            device_config = config_data["devices"]
+            radios_config = config_data["radios"]
     except json.JSONDecodeError:
         print("Could not load config file. Exiting.")
         raise SystemExit
@@ -168,5 +213,6 @@ if __name__ == '__main__':
         print("Malformed config file. Exiting.")
         raise SystemExit
 
-    simulation_run = SimulationRun(random_seed, sim_duration, args.data_dir, device_config)
+    simulation_run = SimulationRun(random_seed, sim_duration, args.data_dir,
+                                   device_config, radios_config)
     simulation_run.start()
