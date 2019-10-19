@@ -116,9 +116,9 @@ delta_time= double(const.dt)*1E-9;
     final_time=initial_state.time+delta_time;
     %opts = odeset('RelTol',1E-12,'AbsTol',1e-9);
     %[~,ys]=ode45(@state_dot,[initial_state.time,final_time],init_y,opts);
-    %ys=utl_ode2(@state_dot,[initial_state.time,final_time],init_y);
-    %final_y= ys(end,:)';
-    final_y= init_y+state_dot(initial_state.time,init_y)*delta_time;
+    ys=utl_ode2(@state_dot,[initial_state.time,final_time],init_y);
+    final_y= ys(end,:)';
+    %final_y= init_y+state_dot(initial_state.time,init_y)*delta_time;
     
     final_state=initial_state;
     final_state.time_ns= initial_state.time_ns+const.dt;
