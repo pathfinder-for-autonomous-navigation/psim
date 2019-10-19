@@ -20,11 +20,9 @@ actuators= struct();
 sat2sun_eci= env_sun_vector(sensor_readings.time);
 mag_ecef= env_magnetic_field(sensor_readings.time,sensor_readings.position_ecef);
 [quat_ecef_eci,~]=env_earth_attitude(sensor_readings.time);
-quat_ecef_eci= utl_array2quaternion(quat_ecef_eci);
-quat_eci_ecef= conj(quat_ecef_eci);
-mag_eci =rotateframe(quat_eci_ecef,mag_ecef')';
+quat_eci_ecef= utl_quat_conj(quat_ecef_eci);
+mag_eci =utl_rotateframe(quat_eci_ecef,mag_ecef);
 quat_body_eci=utl_triad(sat2sun_eci,mag_eci,sensor_readings.sat2sun_body,sensor_readings.magnetometer_body);
-quat_body_eci = utl_array2quaternion(quat_body_eci);
 angular_momentum_body= const.JB*sensor_readings.gyro_body+sensor_readings.wheel_momentum_body;
 
 
@@ -68,12 +66,12 @@ switch state.adcs_state
         end
     case 'pointing'
         %TODO calculate where to point
-        quat_cmd = utl_array2quaternion([0;0;1;0;]);
-        quat_error =  conj(quat_cmd) * quat_body_eci;
-        if parts(quat_error) < 0 %make sure the forth componet is positive
+        quat_cmd = [0;0;1;0;];
+        quat_error =  utl_quat_cross_mult(quat_body_eci,utl_quat_conj(quat_cmd));
+        if quat_error(4) < 0 %make sure the forth componet is positive
             quat_error = -quat_error;
         end
-        q = utl_quaternion2array(quat_error);
+        q = quat_error;
         actuators.wheel_torque = q(1:3)*const.ATTITUDE_PD_KP + sensor_readings.gyro_body*const.ATTITUDE_PD_KD;
         actuators.wheel_enable=[1;1;1;];
         if (norm(angular_momentum_body)>0.1*const.MAXWHEELRATE*const.JWHEEL)

@@ -1,6 +1,6 @@
 clearvars; clc;
 config()  % Initialize const
-
+generate_mex_code() %generate mex from wrappers
 
 
 global const
@@ -9,7 +9,7 @@ global computer_state_follower_trajectory
 global computer_state_leader_trajectory
 
 dt=double(const.dt) * 1e-9;
-t_max = 200;% Amount of time simulated (s)
+t_max = 2000;% Amount of time simulated (s)
 t_int = 10.0;% Sampling interval        (s)
 num_steps = floor(t_max/dt);
 sample_rate = t_int/dt;

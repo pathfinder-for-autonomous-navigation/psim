@@ -331,6 +331,7 @@ Constants are stored in the "const" global struct.
    * ATTITUDE_PD_KD(scalar), Attitude PD controller K_d (N*m/(rad/s))
    * GPS_LOCK_TIME(positive scalar), Time it takes the GPS to get a lock (s)
    * CDGPS_LOCK_TIME(positive scalar), Time it takes the CDGPS to get a lock (s)
+   * INIT_DYEAR(positive scalar), Decimal year of initial gps week (years)
 
 
 # Add-Ons
