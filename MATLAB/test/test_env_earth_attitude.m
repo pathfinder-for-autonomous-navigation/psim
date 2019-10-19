@@ -15,8 +15,8 @@ N= 100;
 test_times= linspace(0.0,years_to_test*365*24*60*60,N);%test times
 
 for time = test_times
-    T=utl_time2datetime(0,const.INITGPS_WN);
-    dcm=dcmeci2ecef_noerror('IAU-2000/2006',[year(T),month(T),day(T),hour(T),minute(T),second(T)+time]);
+    T=utl_time2datetime(time,const.INITGPS_WN);
+    dcm=dcmeci2ecef('IAU-2000/2006',[year(T),month(T),day(T),hour(T),minute(T),second(T)]);
     q=dcm2quat(dcm);
     quat_ecef_eci(4)=q(1);
     quat_ecef_eci(1)=q(2);

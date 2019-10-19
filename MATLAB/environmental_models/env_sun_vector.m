@@ -24,7 +24,7 @@ yses= yses/d; % [AU]
 r_earth = [xses; yses; 0];
 
 % rotate into inertial frame (ICRF or ECI)
-S = -rotateframe(utl_array2quaternion(const.quat_eci_perifocal),r_earth')';
+S = -utl_rotateframe(const.quat_eci_perifocal,r_earth);
 
 end
 

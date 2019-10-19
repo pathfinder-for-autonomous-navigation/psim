@@ -1,5 +1,10 @@
 function config
+%{
 
+Script to initialize global variables.
+
+
+%}
 global const
 
 [filepath, name, ext] = fileparts(mfilename("fullpath"));
@@ -7,20 +12,11 @@ addpath(strcat(filepath, '/utl'));
 addpath(strcat(filepath, '/environmental_models'));
 addpath(strcat(filepath, '/environmental_models/helper_functions'));
 
-const.AEROWMM2015= load('./environmental_models/aerowmm2015.mat');%load in wmm model
-
-
-%{
-
-Temporary script to initialize global variables until a more robust system is
-developed.
-
-
-%}
 
 %Time
 const.INITGPS_WN= 2045;% positive int 
 % initial gps week number, epoch for time.
+const.INIT_DYEAR= decyear(utl_time2datetime(0.0,const.INITGPS_WN));
 
 const.mu = 3.986e14;% positive scalar 
 % Earth's gravitational constant (m^3/s^2)
