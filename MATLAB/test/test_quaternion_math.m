@@ -14,3 +14,7 @@ quat= utl_array2quaternion(q);
 rotv= rotateframe(quat,v')';
 rotv_test= utl_rotateframe(q,v);
 assert(norm(rotv-rotv_test)<=1E-12,'quaternion rotation is broken')
+
+rotationMatrix = rotmat(quat,'frame');
+q_test= utl_dcm2quat(rotationMatrix);
+assert(norm(q-q_test)<=1E-12,'dcm2quat is broken')
