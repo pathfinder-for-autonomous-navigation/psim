@@ -1,1 +1,1 @@
-mex ./environmental_models/helper_functions/geomag_wrapper.cpp -R2018a
+mex ./environmental_models/helper_functions/geomag_wrapper.cpp -R2018a -silent
