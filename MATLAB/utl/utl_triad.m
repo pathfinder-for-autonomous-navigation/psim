@@ -56,7 +56,6 @@ DCM_be=w1(:)*v1(:)'+w3(:)*v3(:)'+w2(:)*v2(:)';
 %th= acos((tr-1)/2);
 %axis= 0.5/sin(th)*[DCM_be(2,3)-DCM_be(3,2);DCM_be(3,1)-DCM_be(1,3);DCM_be(1,2)-DCM_be(2,1)];
 %q_triad= [axis*sin(th/2);cos(th/2)];
-q_temp=dcm2quat(DCM_be);
-q_triad=[q_temp(2); q_temp(3); q_temp(4); q_temp(1);];
+q_triad=utl_dcm2quat(DCM_be);
 end
 
