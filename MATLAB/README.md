@@ -320,9 +320,7 @@ If you need new constants just add them to `config.m` and add the name, descript
 
 ## Current Status
 
-One the Matlab simulation side, next getting a complete version of `sensor_reading`, `actuator_command`, `initialize_main_state`, `sensors_update`, and `adcs_update` is the most important task. On the output and visualization side, `get_truth` is the most important task. On the C++ side, a working version of Kyle's vector library, and quaternion functions are next.
-
-Priority, 0 is most important.
+One the Matlab simulation side, next getting a complete version of `sensor_reading`, `actuator_command`, `initialize_main_state`, `sensors_update`, and `adcs_update` is the most important task. On the output and visualization side, `get_truth` is the most important task. On the C++ side, a working version of Kyle's vector library, and quaternion functions are next. On the rendezvous side, `true_orbit_propagator`, `orbit_propagator`, and `get_next_maneuver` are the most important.
 
 | Function                     | Person  | Priority | Basic Matlab Version | Test Script | C++ Version |
 |------------------------------|---------|----------|----------------------|-------------|-------------|
