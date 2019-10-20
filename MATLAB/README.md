@@ -1,8 +1,12 @@
-# Pathfinder for Autonomous Navigation MATLAB Simulation
+# Pathfinder for Autonomous Navigation MATLAB Simulation README
 Started by Nathan Zimmerberg on Oct 14, 2019.
+
 Latest Revision: Oct 19, 2019
+
 Pathfinder for Autonomous Navigation
+
 Space Systems Design Studio
+
 Cornell University
 
 
@@ -14,32 +18,42 @@ This doc is stored in the MATLAB directory of the psim repository which contains
 
 The MATLAB portion of psim has two major components.
 
-1. A simulator to model the physics of pan.
-1. A matlab prototype version of gnc related flight software.
+1. A simulator to model the physics of Pathfinder for Autonomous Navigation(PAN).
+1. A matlab prototype version of GNC related flight software.
 
 
-The simulator has four main functions that preform computations with the main state.
- * initialize_main_state: Constructs the main state given a seed, and situation.
- * sensor_reading: Outputs the sensor readings of one satellite.
- * main_state_update: Updates the main state over one delta time step(100ms).
- * actuator_command: Modifies the state of one satellite, given its actuator commands.
+The simulator has four main functions that preform computations with the `main_state`.
+ * `initialize_main_state`: Constructs the main state given a seed, and situation.
+ * `sensor_reading`: Outputs the sensor readings of one satellite.
+ * `main_state_update`: Updates the main state over one delta time step (`const.dt` ns).
+ * `actuator_command`: Modifies the state of one satellite, given its actuator commands.
 
 The matlab prototype of gnc flight software has two main functions.
- * initialize_computer_states: Constructs both leader and follower computer states.
- * update_FC_state: Outputs actuator commands and updates one satellite's computer state given sensor readings.
+ * `initialize_computer_states`: Constructs both leader and follower computer states.
+ * `update_FC_state`: Outputs actuator commands and updates one satellite's computer state given sensor readings.
 These functions, and functions they call will have to be translated into c++.
 
-There are two main scripts, main.m and run_tests.m. run_tests.m runs all the test scripts.
-main.m runs a simulation and saves the main_state_trajectory as well as computer state trajectories.
+There are two main scripts, `main.m` and `run_tests.m`. `run_tests.m` runs all the test scripts.
+`main.m` runs a simulation and saves the `main_state_trajectory` as well as computer state trajectories.
 
 ## Python Integration
 
 Python uses the [Matlab engine](https://www.mathworks.com/help/matlab/matlab_external/call-matlab-functions-from-python.html)
-to call simulation functions from MATLAB, primarily config, initialize_main_state, sensor_reading, main_state_update, and actuator_command.
+to call simulation functions from MATLAB, primarily `config`, `generate_mex_code`, `initialize_main_state`, `sensor_reading`, `main_state_update`, and `actuator_command`.
 Global variables in the workspace don't have to be used to transfer data.
 
 Most Matlab types are compatible with python types: [Python to Matlab function inputs](https://www.mathworks.com/help/matlab/matlab_external/pass-data-to-matlab-from-python.html)
 [Matlab function outputs to Python](https://www.mathworks.com/help/matlab/matlab_external/handle-data-returned-from-matlab-to-python.html)
+
+## Directory Structure
+
+ * `./*` - scripts to be called for/during the full simulation.
+ * `./utl/*` - utility functions shared across all other MATLAB scripts in
+   this repository.
+ * `./environmental_models/*` - environmental functions shared across
+   all other MATLAB scripts in this repository.
+ * `./environmental_models/helper_functions/*` - helper functions for environmental functions.
+ * `./test/*` - standalone scripts that test almost every function in the simulation.
 
 ## Main State Data Structure
 
@@ -53,7 +67,7 @@ Each satellites state has the following members and submembers:
    * `angular_rate_body`, Angular rate of the spacecraft in the body frame (rad/s)
    * `quat_body_eci`, Quaternion that rotates from eci to body frame.
    * `wheel_rate_body`, x,y, and z, wheel angular rates (rad/s)
-   * `fuel_net_angular_momentum_eci`, Net angular momentum of the fuel (N*m*s)
+   * `fuel_net_angular_momentum_eci`, Net angular momentum of the fuel (Nms)
    * `fuel_mass`, The mass of the fuel (kg)
  * `actuators`
    * `firing_start_times`, Times since initial GPS week to start firing each thruster (s)
@@ -71,11 +85,11 @@ Each satellites state has the following members and submembers:
    * `sunsensor_measured_normals`, (V)
    * `gps_bias`,  (m and m/s)
    * `gps_time_till_lock`,
-       time till the GPS gets a lock, starts at XX min, then counts down and stays at 0
+       time till the GPS gets a lock, starts at `const.GPS_LOCK_TIME`, then counts down and stays at 0
        when the antenna is pointing towards the GPS constellation (s)
    * `cdgps_bias`, (m and m/s)
    * `cdgps_time_till_lock`,
-        time till the carrier-phase differential GPS(CDGPS) gets a lock, starts at XX min, then counts down and stays at 0
+        time till the carrier-phase differential GPS(CDGPS) gets a lock, starts at `const.CDGPS_LOCK_TIME`, then counts down and stays at 0
         when the gps antenna is pointing towards the GPS constellation the piksi antenna is pointing at the other sattelite (s)
 
 ## get_truth
@@ -166,16 +180,6 @@ actuator commands is a struct with elements:
            should be on, if false, the wheel rate is commanded to zero.
  * `magrod_moment`, commanded x,y,z magnetorquer moments (Am^2)
 
-
-## Test Harness
-Each function will have its own test script in `./test/` called `test_functionName.m` containing:
-    1. Setup of path, constants, and seed.
-    2. Calls to the function.
-    3. Asserts that the outputs are within required accuracy.
-`run_tests.m` is a script that will run all of the test scripts and give a failure summary for each test that failed.
-
-Tests should be completely deterministic, fast, and not have any prints or plots unless they fail.
-
 ## Functions
 
 `config()`: sets up path and constants
@@ -240,6 +244,41 @@ Plotting and visualization functions:
         plots differences in leader and follower orbits.
  * `fancy_animation(main_state_trajectory)`
         creates a fancy animation from the simulation data.
+        
+## Controllers
+ <img src="https://docs.google.com/drawings/d/e/2PACX-1vQ36cMMJu3pSCEW4oTc9ZblkLZlGmEKQNGi2ywjk4QizGxEGnlWA3RTp1Hhh_5vhKp9Q6UxJgSJFVQZ/pub?w=846&amp;h=547">
+
+ <img src="https://docs.google.com/drawings/d/e/2PACX-1vQjQfsUQSmmeXKQT5tWik40ip17f55RgKxIxE-MhlL6FJqcM33Bdasc_leOyrpsiqIZiHovv2fvI1kh/pub?w=900&amp;h=694">
+        
+## Constants
+Constants are stored in the `const` global struct.
+`const` is initialized by `config()`.
+ * const
+   * `mu`(positive scalar), Earth's gravitational constant (m^3/s^2)
+   * `dt`(positive int64), Simulation timestep (ns)
+   * `INITGPS_WN`(positive int), Initial gps week number, epoch for time (weeks)
+   * `R_EARTH`(positive scalar), Equatorial Radius of Earth (m)
+   * `e_earth`(positive scalar), Earth's eccentricity
+   * `tp_earth`(scalar), Time when earth was at perihelion (s)
+   * `period_earth`(positive scalar), Earth orbital period (s)
+   * `quat_eci_perifocal`(quaternion), Quat between earth's perifocal and eci frame.
+   * `PRECESSION_RATE`(3 vector), earth's axis precession rate (rad/s)
+   * `quat_ecef0_eci`(quaternion), ecef0 is ecef frame at time 0.
+   * `earth_rate_ecef`(3 vector), earth's inertial rotation rate in ecef frame (rad/s)
+   * `MAXWHEELRATE`(positive scalar),  Max wheel rate (rad/s)
+   * `MAXWHEELRAMP`(positive scalar), Max wheel ramp (rad/s/s)
+   * `MAXMOMENT`(positive scalar), Max magrod moment on one axis (Am^2)
+   * `MASS`(positive scalar), Dry mass of satellite (kg)
+   * `JB`(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame (kgm^2)
+   * `JBINV`(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kgm^2))
+   * `JWHEEL`(positive scalar),  Wheel Inertia (kgm^2)
+   * `JFUEL_NORM`(positive scalar), Moment of inertia of the fuel/mass of the fuel (m^2)
+   * `SLOSH_DAMPING`(positive scalar), Torque on fuel/difference in angular rates in eci (Nm/(rad/s))
+   * `ATTITUDE_PD_KP`(scalar), Attitude PD controller K_p (Nm)
+   * `ATTITUDE_PD_KD`(scalar), Attitude PD controller K_d (Nm/(rad/s))
+   * `GPS_LOCK_TIME`(positive scalar), Time it takes the GPS to get a lock (s)
+   * `CDGPS_LOCK_TIME`(positive scalar), Time it takes the CDGPS to get a lock (s)
+ 
 
 ## Functions to be implemented in C++
 update_FC_state and any function it uses including:
@@ -249,6 +288,16 @@ update_FC_state and any function it uses including:
 The test scripts for these functions should also be translated into C++.
 See the `/src` and `/include`
 repositories.
+
+
+## Test Harness
+Each function will have its own test script in `./test/` called `test_functionName.m` containing:
+    1. Setup of path, constants, and seed.
+    2. Calls to the function.
+    3. Asserts that the outputs are within required accuracy.
+`run_tests.m` is a script that will run all of the test scripts and give a failure summary for each test that failed.
+
+Tests should be completely deterministic, fast, and not have any prints or plots unless they fail.
 
 
 ## Team Member Responsibilities
@@ -299,57 +348,13 @@ Priority, 0 is most important.
 
 
 
-## Directory Structure
-
- * `./*` - scripts to be called for/during the full simulation.
- * `./utl/*` - utility functions shared across all other MATLAB scripts in
-   this repository.
- * `./environmental_models/*` - environmental functions shared across
-   all other MATLAB scripts in this repository.
- * `./environmental_models/helper_functions/*` - helper functions for environmental functions.
- * `./test/*` - standalone scripts that test almost every function in the simulation.
 
 
-## Constants
-Constants are stored in the "const" global struct.
-"const" is initialized by config().
- * const
-   * mu(positive scalar), Earth's gravitational constant (m^3/s^2)
-   * dt(positive int64), Simulation timestep (ns)
-   * INITGPS_WN(positive int), Initial gps week number, epoch for time (weeks)
-   * R_EARTH(positive scalar), Equatorial Radius of Earth (m)
-   * e_earth(positive scalar), Earth's eccentricity
-   * tp_earth(scalar), Time when earth was at perihelion (s)
-   * period_earth(positive scalar), Earth orbital period (s)
-   * quat_eci_perifocal(quaternion), Quat between earth's perifocal and eci frame.
-   * PRECESSION_RATE(3 vector), earth's axis precession rate (rad/s)
-   * quat_ecef0_eci(quaternion), ecef0 is ecef frame at time 0.
-   * earth_rate_ecef(3 vector), earth's inertial rotation rate in ecef frame (rad/s)
-   * MAXWHEELRATE(positive scalar),  Max wheel rate (rad/s)
-   * MAXWHEELRAMP(positive scalar), Max wheel ramp (rad/s/s)
-   * MAXMOMENT(positive scalar), Max magrod moment on one axis (A*m^2)
-   * MASS(positive scalar), Dry mass of satellite (kg)
-   * JB(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame (kg*m^2)
-   * JBINV(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kg*m^2))
-   * JWHEEL(positive scalar),  Wheel Inertia (kg*m^2)
-   * JFUEL_NORM(positive scalar), Moment of inertia of the fuel/mass of the fuel (m^2)
-   * SLOSH_DAMPING(positive scalar), Torque on fuel/difference in angular rates in eci (Nm/(rad/s))
-   * ATTITUDE_PD_KP(scalar), Attitude PD controller K_p (N*m)
-   * ATTITUDE_PD_KD(scalar), Attitude PD controller K_d (N*m/(rad/s))
-   * GPS_LOCK_TIME(positive scalar), Time it takes the GPS to get a lock (s)
-   * CDGPS_LOCK_TIME(positive scalar), Time it takes the CDGPS to get a lock (s)
+## Matlab Add-Ons
 
-
-## Add-Ons
-
-There are a few required add-ons
+There are a few required Add-Ons for Matlab
 
  * Mapping Toolbox
  * Ephemeris Data for Aerospace Toolbox
  * Aerospace Toolbox
  * Robotics System Toolbox
-
- ## Controllers
- <img src="https://docs.google.com/drawings/d/e/2PACX-1vQ36cMMJu3pSCEW4oTc9ZblkLZlGmEKQNGi2ywjk4QizGxEGnlWA3RTp1Hhh_5vhKp9Q6UxJgSJFVQZ/pub?w=846&amp;h=547">
-
- <img src="https://docs.google.com/drawings/d/e/2PACX-1vQjQfsUQSmmeXKQT5tWik40ip17f55RgKxIxE-MhlL6FJqcM33Bdasc_leOyrpsiqIZiHovv2fvI1kh/pub?w=900&amp;h=694">
