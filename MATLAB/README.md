@@ -1,5 +1,7 @@
 # Pathfinder for Autonomous Navigation MATLAB Simulation README
-Started by Nathan Zimmerberg on Oct 14, 2019.
+Started by Kyle Krol on Sep 4, 2019
+
+**Authors** Nathan Zimmerberg, Kyle Krol
 
 Latest Revision: Oct 19, 2019
 
@@ -202,7 +204,7 @@ main_state_update has a few main helper funtions.
  * `dynamics=dynamics_update(dynamics,actuators)`
         Update the orbital and attitude dynamics, and time using numerical integration.
  * `sensors=sensors_update(sensors,dynamics)`
-        Update the sensor state given dynamics.
+        Update the sensor state given `dynamics`.
 
 update_FC_state is also broken in to a few main helper functions.
  * `[orbit_controller_state, delta_v, delta_time]=get_next_maneuver(orbit_controller_state, current_orbit,target_orbit,current_time)`
@@ -221,16 +223,22 @@ Environmental functions.
  * `[acceleration,potential,hessian]= env_gravity(time,x)`
  * `B= env_magnetic_field(time,x)`
  * `S= env_sun_vector(time)`
+ 
+ Quaternion functions.
+ * `u = utl_rotateframe(q,v)`
+ * `qout = utl_quat_conj(q)`
+ * `q = utl_dcm2quat(a)`
+ * `qout = utl_quat_cross_mult(q1,q2)`
+ * `q_triad = utl_triad(N_sun, N_mag, B_sun, B_mag)`
 
 Testing utility functions:
  * `equal= utl_compare_main_states(main_state1,main_state2)`
-        returns true if main_state1 and main_state2 are close enough.
  * `equal= utl_compare_dynamics(dynamics1,dynamics2)`
-        returns true if dynamics1 and dynamics2 are close enough.
  * `equal= utl_compare_actuators(actuators1,actuators2)`
-        returns true if actuators1 and actuators2 are close enough.
  * `equal= utl_compare_sensors(sensors1,sensors2)`
         returns true if sensors1 and sensors2 are close enough.
+ * `orbit = true_orbit_propagator(orbit,current_time,delta_time)`
+         returns the updated orbit, using drag, j8 and maybe other perturbations.
 
 Plotting and visualization functions:
  * `plot_almost_conserved_values(main_state_trajectory)`
@@ -283,7 +291,8 @@ Constants are stored in the `const` global struct.
 ## Functions to be implemented in C++
 update_FC_state and any function it uses including:
     `get_next_maneuver`, `orbit_propagator`, `estimate_orbits`, `adcs_update`,
-    `env_earth_attitude`, `env_eclipse`, `env_magnetic_field`, `env_sun_vector`.
+    `env_earth_attitude`, `env_eclipse`, `env_magnetic_field`, `env_sun_vector`, `utl_rotateframe`, `utl_quat_conj`, 
+    `utl_dcm2quat`, `utl_quat_cross_mult`, `utl_triad`.
 
 The test scripts for these functions should also be translated into C++.
 See the `/src` and `/include`
@@ -311,17 +320,17 @@ If you need new constants just add them to `config.m` and add the name, descript
 
 ## Current Status
 
-not started, wip, done
+One the Matlab simulation side, next getting a complete version of `sensor_reading`, `actuator_command`, `initialize_main_state`, `sensors_update`, and `adcs_update` is the most important task. On the output and visualization side, `get_truth` is the most important task. On the C++ side, a working version of Kyle's vector library, and quaternion functions are next.
 
 Priority, 0 is most important.
 
 | Function                     | Person  | Priority | Basic Matlab Version | Test Script | C++ Version |
 |------------------------------|---------|----------|----------------------|-------------|-------------|
-| get_truth                    |         |          | not started          | not started | NA          |
+| get_truth                    | Nathan  |          | not started          | not started | NA          |
 | initialize_main_state        | Nathan  |          | wip                  | not started | NA          |
-| sensor_reading               |         |          | wip                  | not started | NA          |
+| sensor_reading               | Kyle    |          | wip                  | not started | NA          |
 | main_state_update            | Nathan  |          | wip                  | not started | NA          |
-| actuator_command             |         |          | wip                  | not started | NA          |
+| actuator_command             | Josh    |          | wip                  | not started | NA          |
 | initialize_computer_states   |         |          | wip                  | not started | NA          |
 | update_FC_state              |         |          | wip                  | not started | NA          |
 | dynamics_update              | Nathan  |          | wip                  | not started | NA          |
@@ -330,16 +339,22 @@ Priority, 0 is most important.
 | orbit_propagator             |         |          | not started          | not started | not started |
 | estimate_orbits              |         |          | not started          | not started | not started |
 | adcs_update                  | Nathan  |          | wip                  | not started | not started |
-| env_atmosphere_density       |         |          | not started          | not started | NA          |
+| env_atmosphere_density       | Sruti   |          | not started          | not started | NA          |
 | env_earth_attitude           | Nathan  |          | done                 | done        | wip         |
 | env_eclipse                  | Nathan  |          | done                 | not started | not started |
 | env_gravity                  |         |          | wip                  | not started | NA          |
 | env_magnetic_field           | Nathan  |          | wip                  | done        | wip         |
 | env_sun_vector               | Nathan  |          | done                 | done        | wip         |
+| utl_rotateframe              | Kyle    |          | done                 | done        | wip         |
+| utl_quat_conj                | Kyle    |          | done                 | done        | wip         |
+| utl_dcm2quat                 | Kyle    |          | done                 | done        | wip         |
+| utl_quat_cross_mult          | Kyle    |          | done                 | done        | wip         |
+| utl_triad                    | Kyle    |          | done                 | done        | wip         |
 | utl_compare_main_states      |         |          | not started          | not started | NA          |
 | utl_compare_dynamics         |         |          | not started          | not started | NA          |
 | utl_compare_actuators        |         |          | not started          | not started | NA          |
 | utl_compare_sensors          |         |          | not started          | not started | NA          |
+| true_orbit_propagator        | Sruti   |          | not started          | not started | NA          |
 | plot_almost_conserved_values |         |          | not started          | NA          | NA          |
 | plot_pointing_errors         |         |          | not started          | NA          | NA          |
 | plot_wheel_rates             |         |          | not started          | NA          | NA          |
