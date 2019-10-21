@@ -92,6 +92,7 @@ delta_time= double(const.dt)*1E-9;
         quat_rate=[y(11:13);0];
         dydt(7:10)= utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
         Lwb= const.JWHEEL*wheelramp(t);
+        
         %calculation of external torques 
         %TODO add drag, solar pressure, and gravity torques
         magnetic_field_body=utl_rotateframe(quat_body_ecef,magnetic_field_zero_order);
