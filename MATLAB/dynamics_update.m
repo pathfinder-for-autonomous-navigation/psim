@@ -20,6 +20,7 @@ function [final_state] = dynamics_update(initial_state,actuators)
 %       wheel_commanded_ramp, commanded x,y,z wheel ramp, units rad/s/s.
 %       magrod_real_moment_body, real magnetorquer moment, units A*m^2
 %
+%#codegen
 global const
 
 delta_time= double(const.dt)*1E-9;
@@ -62,18 +63,7 @@ delta_time= double(const.dt)*1E-9;
         mass=initial_state.fuel_mass;
     end
     [quat_ecef_eci_initial,~]=env_earth_attitude(initial_state.time);
-    [quat_ecef_eci_final,~]=env_earth_attitude(initial_state.time+delta_time);
-    quat_ecef_eci_initial= utl_array2quaternion(quat_ecef_eci_initial);
-    quat_ecef_eci_final= utl_array2quaternion(quat_ecef_eci_final);
-    function quat_ecef_eci= earth_first_order_rotation(t)
-        %returns earths attitude at time t, using a first order
-        %approximation (slerp)
-        %of the rotation from the start to end of delta_time
-        %disp((t-initial_state.time)/delta_time)
-        T=min((t-initial_state.time)/delta_time,1.0);
-        quat_ecef_eci= slerp(quat_ecef_eci_initial,quat_ecef_eci_final,T);
-    end
-    magnetic_field_zero_order=env_magnetic_field(initial_state.time,rotateframe(quat_ecef_eci_initial,initial_state.position_eci')');
+    magnetic_field_zero_order=env_magnetic_field(initial_state.time,utl_rotateframe(quat_ecef_eci_initial,initial_state.position_eci));
     function dydt= state_dot(t,y)
         %y = [x; y; z; xdot; ydot; zdot;q1;q2;q3;q4;ratex;ratey;ratez;
         %     1  2  3  4     5     6    7  8  9  10 11    12    13    
@@ -87,32 +77,32 @@ delta_time= double(const.dt)*1E-9;
         
         dydt=zeros([16,1]);
         dydt(1:3)=y(4:6);
-        quat_ecef_eci= earth_first_order_rotation(t);
-        quat_eci_ecef= conj(quat_ecef_eci);
-        quat_body_eci=utl_array2quaternion(y(7:10));
-        quat_eci_body= conj(quat_body_eci);
-        quat_body_ecef=quat_eci_ecef*quat_body_eci;
+        [quat_ecef_eci,~]=env_earth_attitude(t);
+        quat_eci_ecef= utl_quat_conj(quat_ecef_eci);
+        quat_body_eci=y(7:10);
+        quat_eci_body= utl_quat_conj(quat_body_eci);
+        quat_body_ecef= utl_quat_cross_mult(quat_body_eci,quat_eci_ecef);
         pos_eci=y(1:3);
-        pos_ecef=rotateframe(quat_ecef_eci,pos_eci')';
+        pos_ecef=utl_rotateframe(quat_ecef_eci,pos_eci);
         [g_ecef,~,G_ecef]= env_gravity(t,pos_ecef);
-        g_eci=rotateframe(quat_eci_ecef,g_ecef')';
+        g_eci=utl_rotateframe(quat_eci_ecef,g_ecef);
         %TODO add thruster firings forces and torques
         %TODO add drag and solar pressure forces
         dydt(4:6)= g_eci;
-        quat_rate=quaternion(0,y(11),y(12),y(13));
-        dydt(7:10)= utl_quaternion2array(0.5*quat_body_eci*quat_rate);
+        quat_rate=[y(11:13);0];
+        dydt(7:10)= utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
         Lwb= const.JWHEEL*wheelramp(t);
         %calculation of external torques 
         %TODO add drag, solar pressure, and gravity torques
-        magnetic_field_body=rotateframe(quat_body_ecef,magnetic_field_zero_order')';
+        magnetic_field_body=utl_rotateframe(quat_body_ecef,magnetic_field_zero_order);
         magnetic_torque_body= cross(actuators.magrod_real_moment_body,magnetic_field_body);
         %calculate the difference in the rates of the fuel and the sat
         Jfuel= const.JFUEL_NORM*fuel_mass(t);%moment of inertia of fuel, spherical
         rate_fuel_eci= y(14:16)/Jfuel;
-        rate_sat_eci= rotateframe(quat_eci_body,y(11:13)')';
+        rate_sat_eci= utl_rotateframe(quat_eci_body,y(11:13));
         torque_from_fuel_eci= const.SLOSH_DAMPING*(rate_fuel_eci-rate_sat_eci);
         dydt(14:16)= -torque_from_fuel_eci;
-        Lb=magnetic_torque_body+rotateframe(quat_body_eci,torque_from_fuel_eci')';
+        Lb=magnetic_torque_body+utl_rotateframe(quat_body_eci,torque_from_fuel_eci);
         dydt(11:13)=const.JBINV*( Lb-Lwb-cross(y(11:13),const.JB*y(11:13)+const.JWHEEL*wheelrate(t)));
         %dydt(11:13)=const.JBINV*(-cross(y(11:13),const.JB*y(11:13)));
         %equation 3.147 in Fundamentals of Spacecraft Attitude Determination and Control
@@ -124,10 +114,12 @@ delta_time= double(const.dt)*1E-9;
     init_y(11:13)=initial_state.angular_rate_body;
     init_y(14:16)=initial_state.fuel_net_angular_momentum_eci;
     final_time=initial_state.time+delta_time;
-    opts = odeset('RelTol',1E-12,'AbsTol',1e-9);
+    %opts = odeset('RelTol',1E-12,'AbsTol',1e-9);
     %[~,ys]=ode45(@state_dot,[initial_state.time,final_time],init_y,opts);
     ys=utl_ode2(@state_dot,[initial_state.time,final_time],init_y);
     final_y= ys(end,:)';
+    %final_y= init_y+state_dot(initial_state.time,init_y)*delta_time;
+    
     final_state=initial_state;
     final_state.time_ns= initial_state.time_ns+const.dt;
     final_state.time= double(final_state.time_ns)*1E-9;
