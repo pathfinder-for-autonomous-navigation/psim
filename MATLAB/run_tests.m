@@ -8,6 +8,7 @@ runtests('test_sensor_reading');
 runtests('test_actuator_command');
 runtests('test_initialize_computer_states');
 runtests('test_quaternion_math');
+runtests('test_get_truth');
 
 runtests('test_env_sun_vector');
 runtests('test_env_earth_attitude');
