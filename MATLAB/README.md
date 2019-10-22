@@ -114,50 +114,7 @@ returns the Direction Cosine Matrix(DCM) that rotates vectors from eci to body
 `get_truth('rate body eci body',main_state.follower.dynamics)`
 returns the angular rate of the transform from eci to body in the body frame.
 
-`get_truth('rate body',main_state.follower.dynamics)`
-short hand for 'rate body eci body'
-returns the angular rate of the transform from eci to body in the body frame.
-
-`get_truth('rate body eci eci',main_state.follower.dynamics)`
-returns the angular rate of the transform from eci to body in the eci frame.
-
-`get_truth('velocity eci',main_state.follower.dynamics)`
-returns the velocity of the center of mass of the sat relative to earth in the eci frame.
-
-`get_truth('velocity ecef',main_state.follower.dynamics)`
-velocity measurements take into account additional velocity from rate cross radius.
-returns the velocity of the center of mass of the sat relative to earth in the ecef frame.
-
-`get_truth` has full support for the following frames and associated coordinate systems:
- * `'body'`: The +x face has the antennas, the -z face has the docking magnets.
- * `'eci'`: Earth Centered Inertial, an inertial frame, z axis is close to(but not exactly) the north pole.
- * `'ecef'`: Earth Centered Earth Fixed, rotates with earth, z axis is the north pole.
- * `'lvlh'`: Local Vertical Local Horizontal, x axis is position from earth to sat, z axis is orbit normal
- * `'vbn'`: Velocity Binormal Normal, x axis is sats eci velocity, z axis is orbit normal.
-
-Additional frames and associated coordinate systems can be added as needed, just modify `quaternion_from_string(frame1,frame2)`
-and `rate_from_string(frame)` nested functions in `get_truth`.
-
-`get_truth` supports the following vectors, these have a frame and associated coordinate system:
- * `'rate'`: angular rate (rad/s)
- * `'velocity'`: velocity of the center of mass of the sat relative to earth (m/s)
- * `'position'`: position of the center of mass of the sat relative to earth (m)
- * `'sat2sun'`: the normalized vector from the satellite to the sun (unitless)
- * `'magnetic field'`: (T)
- * `'gravity'`: acceleration from gravity, doesn't account for coriolus effect (m/s^2)
- * `'total angular momentum'`: Total internal angular momentum of the sat (Nms)
- * `'orbital angular momentum'`: Orbital angular momentum of the sat (Nms)
- * `'eccentricity vector'`: Vector pointing from apoapsis to periapsis, using osculating elements with magnitude equal to the orbit's scalar eccentricity (unitless)
-
-`get_truth` also supports the following scalar values, these don't have a frame:
- * `'orbital energy'`: (J)
- * `'rotational energy'`: (J)
- * `'semimajor axis'`: osculating semimajor axis (m)
- * `'eccentricity'`: osculating eccentricity (unitless)
- * `'inclination angle'`: osculating inclination angle (rad)
- * `'right ascension of the ascending node'`: osculating right ascension of the ascending node (rad)
- * `'argument of perigee'`: osculating argument of perigee (rad)
- * `'true anamoly'`: osculating true anamoly (rad)
+Call `get_truth('help')` for complete documentation about supported values
 
 ## Sensor Readings and Actuator Commands
 

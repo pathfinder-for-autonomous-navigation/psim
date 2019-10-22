@@ -35,8 +35,11 @@ if startsWith(name,"help",'IgnoreCase',true)
 '    ''total angular momentum'': Total internal angular momentum of the sat (Nms)'
 '    ''orbital angular momentum'': Orbital angular momentum of the sat (Nms)'
 '    ''eccentricity vector'': Vector pointing from apoapsis to periapsis, using osculating elements with magnitude equal to the orbit''s scalar eccentricity (unitless)'
+'    ''wheel rate'': x,y, and z, wheel angular rates (rad/s)'
 ' '
 'get_truth also supports the following scalar values, these don''t have a frame:'
+'    ''time'': Time since initial GPS week (s)'
+'    ''fuel mass'': The mass of the fuel (kg)'
 '    ''orbital energy'': (J)'
 '    ''rotational energy'': (J)'
 '    ''semimajor axis'': osculating semimajor axis (m)'
@@ -112,6 +115,9 @@ elseif startsWith(name,"eccentricity vector",'IgnoreCase',true)
     e_eci=(v'*v/const.mu - 1/norm(r))*r-r'*v/const.mu*v;
     v= split(name);
     value= rotate_vector_strings(v(end),"eci",e_eci);
+elseif startsWith(name,"wheel rate",'IgnoreCase',true)
+    v=split(name);
+    value= rotate_vector_strings(v(end),"body",dynamics.wheel_rate_body);
 elseif startsWith(name,"orbital energy",'IgnoreCase',true)
     [quat_ecef_eci,~]=env_earth_attitude(dynamics.time);
     [~,PG,~]= env_gravity(dynamics.time,utl_rotateframe(quat_ecef_eci,dynamics.position_eci));
@@ -143,6 +149,10 @@ elseif startsWith(name,"argument of perigee",'IgnoreCase',true)
 elseif startsWith(name,"true anamoly",'IgnoreCase',true)
     [a, eMag, i, O, o, nu, truLon, argLat, lonPer,p] = utl_rv2orb(dynamics.position_eci, dynamics.velocity_eci, const.mu);
     value= nu;
+elseif startsWith(name,"time",'IgnoreCase',true)
+    value= dynamics.time; 
+elseif startsWith(name,"fuel mass",'IgnoreCase',true)
+    value= dynamics.fuel_mass; 
 elseif startsWith(name,"dcm",'IgnoreCase',true)
     v=split(name);
     q=quaternion_from_string(v(end-1),v(end));
@@ -153,7 +163,7 @@ elseif startsWith(name,"quat",'IgnoreCase',true)
     assert(length(v)>=3,"quaternion must have two frames, destination and source")
     value=quaternion_from_string(v(end-1),v(end));
 else
-    error(name+" not avaliable")
+    error(name+" not avaliable Call `get_truth('help')` for complete documentation about supported values")
 end
 
 
