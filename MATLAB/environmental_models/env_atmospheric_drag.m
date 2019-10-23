@@ -16,6 +16,8 @@ del = datetime(0,0,0,0,0,offset);
 del.TimeZone = 'UTCLeapSeconds';
 UTC = UTC_leap - offset;
 
+r = reshape(r,[1,3]); %convert r from collumn vector to row vector for eci2lla
+v = reshape(v,[1,3]); %convert v from collumn vector to row vector for eci2lla
 % r: satellite position in ECI
 %convert ECI coordinates to latitude, longitude, altitude (LLA) geodetic coordinates based on the Universal Coordinated Time (UTC) you specify
 lla = eci2lla(r, [UTC.Year UTC.Month UTC.Day UTC.Hour UTC.Minute UTC.Second]); 
