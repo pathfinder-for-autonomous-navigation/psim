@@ -36,6 +36,8 @@ if startsWith(name,"help",'IgnoreCase',true)
 '    ''orbital angular momentum'': Orbital angular momentum of the sat (Nms)'
 '    ''eccentricity vector'': Vector pointing from apoapsis to periapsis, using osculating elements with magnitude equal to the orbit''s scalar eccentricity (unitless)'
 '    ''wheel rate'': x,y, and z, wheel angular rates (rad/s)'
+'    ''antenna'': GPS and Quake antenna normal (unitless)'
+'    ''docking face'': Docking face normal (unitless)'
 ' '
 'get_truth also supports the following scalar values, these don''t have a frame:'
 '    ''time'': Time since initial GPS week (s)'
@@ -118,6 +120,12 @@ elseif startsWith(name,"eccentricity vector",'IgnoreCase',true)
 elseif startsWith(name,"wheel rate",'IgnoreCase',true)
     v=split(name);
     value= rotate_vector_strings(v(end),"body",dynamics.wheel_rate_body);
+elseif startsWith(name,"antenna",'IgnoreCase',true)
+    v=split(name);
+    value= rotate_vector_strings(v(end),"body",[1;0;0]);
+elseif startsWith(name,"docking face",'IgnoreCase',true)
+    v=split(name);
+    value= rotate_vector_strings(v(end),"body",[0;0;-1]);
 elseif startsWith(name,"orbital energy",'IgnoreCase',true)
     [quat_ecef_eci,~]=env_earth_attitude(dynamics.time);
     [~,PG,~]= env_gravity(dynamics.time,utl_rotateframe(quat_ecef_eci,dynamics.position_eci));

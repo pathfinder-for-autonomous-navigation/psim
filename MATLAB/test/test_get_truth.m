@@ -29,6 +29,8 @@ get_truth('total angular momentum body',d);
 get_truth('orbital angular momentum body',d);
 get_truth('eccentricity vector body',d);
 get_truth('wheel rate body',d);
+get_truth('antenna body',d);
+get_truth('docking face body',d);
 get_truth('time',d);
 get_truth('fuel mass',d);
 get_truth('orbital energy',d);
