@@ -3,3 +3,5 @@
 *.asv
 *.m~
 logs/
+bin*
+build*
