@@ -18,3 +18,37 @@ assert(norm(rotv-rotv_test)<=1E-12,'quaternion rotation is broken')
 rotationMatrix = rotmat(quat,'frame');
 q_test= utl_dcm2quat(rotationMatrix);
 assert(norm(q-q_test)<=1E-12,'dcm2quat is broken')
+
+%special cases for vect_rot2quat
+r1= [1;0;0;];
+r2= [1;0;0;];
+q= utl_vect_rot2quat(r1,r2);
+r1_test=utl_rotateframe(q,r2);
+assert(abs(norm(q)-1)<= 1E-8,'vect_rot2quat is broken')
+assert(norm(r1-r1_test)<=1E-8,'vect_rot2quat is broken')
+r1= [-1;0;0;];
+r2= [1;0;0;];
+q= utl_vect_rot2quat(r1,r2);
+r1_test=utl_rotateframe(q,r2);
+assert(abs(norm(q)-1)<= 1E-8,'vect_rot2quat is broken')
+assert(norm(r1-r1_test)<=1E-8,'vect_rot2quat is broken')
+r1= [-NaN;0;0;];
+r2= [1;0;0;];
+q= utl_vect_rot2quat(r1,r2);
+r1_test=utl_rotateframe(q,r2);
+assert(all(~isfinite(q)),'vect_rot2quat is broken')
+assert(all(~isfinite(q)),'vect_rot2quat is broken')
+%random tests
+N=100;
+for i= 1:N
+    r1= randn(3,1);
+    r2= randn(3,1);
+    r1=r1/norm(r1);
+    r2=r2/norm(r2);
+    q= utl_vect_rot2quat(r1,r2);
+    r1_test=utl_rotateframe(q,r2);
+    assert(abs(norm(q)-1)<= 1E-8,'vect_rot2quat is broken')
+    assert(norm(r1-r1_test)<=1E-8,'vect_rot2quat is broken')
+end
+
+

@@ -1,7 +1,7 @@
 function config
 %{
 
-Script to initialize global variables.
+Script to initialize const global variables.
 
 
 %}
