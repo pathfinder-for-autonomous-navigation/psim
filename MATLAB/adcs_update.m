@@ -1,48 +1,99 @@
-function [final_state,actuators] = update_FC_state(initial_state,sensor_readings)
-% Global variables treated as inputs:
-%  * const
-%  * sensors
-% 
-% Global variables treated as outputs:
-%  * actuators
-%  * 
+function [adcs_state,magrod_moment,wheel_torque,wheel_enable]=adcs_update(adcs_state,angular_momentum_body,time,orbit,target_orbit,quat_body_eci,magnetometer,sat2sun_body,sat2sun_eci,next_main_state)
+% ADCS_UPDATE
+%   updates the attitude determination and control state
 
-% attitude PD controller
-%   calculate commanded wheel torque
-%   update state with commanded wheel torque
+% Attitude determination
 
-global const
-state=initial_state;
-actuators= struct();
+% sat2sun_eci= env_sun_vector(sensor_readings.time);
+% mag_ecef= env_magnetic_field(sensor_readings.time,sensor_readings.position_ecef);
+% [quat_ecef_eci,~]=env_earth_attitude(sensor_readings.time);
+% quat_eci_ecef= utl_quat_conj(quat_ecef_eci);
+% mag_eci =utl_rotateframe(quat_eci_ecef,mag_ecef);
+% quat_body_eci=utl_triad(sat2sun_eci,mag_eci,sensor_readings.sat2sun_body,sensor_readings.magnetometer_body);
+% angular_momentum_body= const.JB*sensor_readings.gyro_body+sensor_readings.wheel_momentum_body;
 
-% Attitude determination %
+% Contollers
 
-sat2sun_eci= env_sun_vector(sensor_readings.time);
-mag_ecef= env_magnetic_field(sensor_readings.time,sensor_readings.position_ecef);
-[quat_ecef_eci,~]=env_earth_attitude(sensor_readings.time);
-quat_eci_ecef= utl_quat_conj(quat_ecef_eci);
-mag_eci =utl_rotateframe(quat_eci_ecef,mag_ecef);
-quat_body_eci=utl_triad(sat2sun_eci,mag_eci,sensor_readings.sat2sun_body,sensor_readings.magnetometer_body);
-angular_momentum_body= const.JB*sensor_readings.gyro_body+sensor_readings.wheel_momentum_body;
 
-next_main_state= 'Detumble';
-[adcs_state,magrod_moment,wheel_torque,wheel_enable]=adcs_update(adcs_state,angular_momentum_body,time,orbit,target_orbit,quat_body_eci,magnetometer,sat2sun,next_main_state)
+if (adcs_state.main_state~=next_main_state)
+    switch next_main_state
+        case 'Off'
+            initOff();
+        case 'Detumble'
+            initDetumble();
+        case 'Standby'
+            initStandby();
+    end
+end
 
-% %% Contollers
-% 
-% 
-% 
-% switch state.adcs_state
-%     case 'init'
-%             actuators.magrod_moment= [0;0;0;];
-%             actuators.wheel_torque = [100;100;100;];
-%             actuators.wheel_enable=[0;0;0;];
-%             state.adcs_state='tumbling';
-%             state.detumbled_trigger_count=0;
-%             state.detumbler_state=0;
-%             state.magrod_moment_cmd= [0;0;0;];
+switch next_main_state
+    case 'Off'
+        doOff();
+    case 'Detumble'
+        doDetumble();
+    case 'Standby'
+        doStandby();
+end
+    
+    function initOff()
+    end
+    
+    function doOff()
+        magrod_moment= [0;0;0;];
+        wheel_torque = [100;100;100;];
+        wheel_enable=[0;0;0;];
+    end
+
+
+    function initDetumble()
+        adcs_state.detumbler_state=0;
+    end
+
+    function doDetumble()
+        switch adcs_state.detumbler_state
+            case 5
+                %save magnetic field reading
+                adcs_state.old_magnetic_field= magnetometer;
+            case 9
+                %calculate finite difference and bang bang controller
+                deltaB= magnetometer-adcs_state.old_magnetic_field;
+                state.magrod_moment_cmd= -sign(deltaB)*const.MAXMOMENT;
+        end
+        adcs_state.detumbler_state= mod(state.detumbler_state + 1,10);
+        magrod_moment= state.magrod_moment_cmd;
+        wheel_torque = [100;100;100;];
+        wheel_enable=[0;0;0;];
+    end
+
+    function initStandby()
+    end
+
+    function doStandby()
+        r_eci= orbit[1:3];
+        r_ecihat= r_eci/norm(r_eci);
+        
+        adcs_state.detumbler_state= mod(state.detumbler_state + 1,10);
+        magrod_moment= state.magrod_moment_cmd;
+        wheel_torque = [100;100;100;];
+        wheel_enable=[0;0;0;];
+    end
+
+
+
+
+
+
+end
+        
+        
+%         
+
+%             adcs_state='tumbling';
+%             detumbled_trigger_count=0;
+%             detumbler_state=0;
+%             magrod_moment_cmd= [0;0;0;];
 %     case 'tumbling'
-%         switch state.detumbler_state
+%         switch adcs_state.detumbler_state
 %             case 5
 %                 %save magnetic field reading
 %                 state.old_magnetic_field= sensor_readings.magnetometer_body;
@@ -100,5 +151,4 @@ next_main_state= 'Detumble';
 %         actuators.wheel_torque = [100;100;100;];
 %         actuators.wheel_enable=[0;0;0;];
 % end
-final_state=state;
-end
+% 
