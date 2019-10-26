@@ -22,6 +22,10 @@ const.INITGPS_WN= 2045;% positive int
 
 const.mu = 3.986e14;% positive scalar 
 % Earth's gravitational constant (m^3/s^2)
+const.mu_moon = 4.9048695E12; % positive scalar 
+% Moon's gravitational constant (m^3/s^2)
+const.mu_sun = 1.32712440018E20; % positive scalar 
+% Sun's gravitational constant (m^3/s^2)
 const.R_EARTH= 6378137.0;
 %Equatorial Radius of Earth (m)*/
 const.dt = int64(1e8);% positive int64
@@ -33,7 +37,10 @@ const.tp_earth = utl_datetime2time(perihelion_date,const.INITGPS_WN);
 % Time when earth was at perihelion (s)
 const.period_earth = 365.256363004*24*60*60; 
 % Earth orbital period (s)
+[rp_earth_moon,vp_earth_moon] = planetEphemeris(juliandate(perihelion_date),'Moon','Earth');
+const.rp_earth_moon = 1E3*p_earth_moon; %positional vector from Moon to Earth; used for 3rd body perturb calcs
 [rp_earth,vp_earth] = planetEphemeris(juliandate(perihelion_date),'Sun','Earth');
+const.rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb calcs
 rp_earth = rp_earth';
 vp_earth = vp_earth';
 h_earth = cross(rp_earth,vp_earth);
