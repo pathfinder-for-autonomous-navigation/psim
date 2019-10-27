@@ -35,7 +35,8 @@ constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> co
 }
 
 template <typename T>
-constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> const &v, lin::Vector<T, 3> &res) {
+constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> const &v,
+    lin::Vector<T, 3> &res) {
   auto const qv = lin::ref<3, 1>(q, 0, 0);
   res = v + lin::cross(
       (static_cast<T>(2.0) * qv).eval(),
@@ -133,6 +134,22 @@ inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
   auto const Q = b1 * lin::transpose(n1) + b2 * lin::transpose(n2) + b3 * lin::transpose(n3);
   dcm_to_quat(Q.eval(), res);
   return 0;
+}
+
+// TODO : More strict tolerancing to determine 'antiparallel'
+template <typename T>
+inline void vec_rot_to_quat(lin::Vector<T, 3> const &u, lin::Vector<T, 3> const &v,
+    lin::Vector<T, 4> &res) {
+  // Handle u and v being near anitparallel
+  T x = lin::dot(u, v);
+  if (abs(x + static_cast<T>(1)) < static_cast<T>(0.0001)) {
+    res = { static_cast<T>(0), static_cast<T>(0), static_cast<T>(1), static_cast<T>(0) };
+  }
+  // Handle the general case
+  else {
+    res(3) = sqrt((static_cast<T>(1) + x) / static_cast<T>(2));
+    lin::ref<3, 1>(res, 0, 0) = lin::cross(u, v) / (static_cast<T>(2) * res(3));
+  }
 }
 }  // namespace utl
 }  // namespace gnc

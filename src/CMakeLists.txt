@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.12)
 
-include_directories(${PSim_SOURCE_DIR}/lin/include)
-include_directories(${PSim_SOURCE_DIR}/include)
+add_library(src
+  gnc_state_estimation.cpp
+)
 
-set(This PSim_sources)
-
-set(Sources
-# TODO once we have sources
+target_include_directories(src PUBLIC
+  ${psim_SOURCE_DIR}/lin/include
+  ${psim_SOURCE_DIR}/include
 )

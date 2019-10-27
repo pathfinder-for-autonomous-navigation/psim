@@ -62,3 +62,29 @@ TEST(UtilitiesTest, DCMToQuaternionCase3Test) {
   lin::Vector4f ans = {0.1825742f, 0.3651484f, 0.5477226f, 0.7302967f};
   ASSERT_VEC_NEAR(q, ans);
 }
+
+TEST(UtilitiesTest, VecToRotQuatTest) {
+  lin::Vector4f q;
+  lin::Vector3f u = {
+    0.6651f,
+    0.7395f,
+    0.1037f
+  };
+  lin::Vector3f v = {
+    0.8190f,
+    0.5670f,
+    0.0875f
+  };
+  utl::vec_rot_to_quat(u, v, q);
+  // Expected answer was calculated in MATLAB
+  lin::Vector4f ans = {0.0030f, 0.0135f, -0.1150f, 0.9933f};
+  ASSERT_VEC_NEAR(q, ans);
+}
+
+TEST(UtilitiesTest, VecToRotQuatAntiparallelTest) {
+  lin::Vector4f q;
+  utl::vec_rot_to_quat({0.0f, 1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, q);
+  // Expected answer for the antiparallel test
+  lin::Vector4f ans = {0.0f, 0.0f, 1.0f, 0.0f};
+  ASSERT_VEC_NEAR(q, ans);
+}
