@@ -14,6 +14,6 @@ matrix:
           script:
               - mkdir build
               - cd build
-              - cmake ../
+              - cmake -DENABLE_CI_BUILD=ON ../
               - cmake --build .
               - ctest --verbose .

@@ -58,13 +58,13 @@ inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &m, lin::Vector<T, 4> &q);
  *  Given a set of vectors in a knows frame (N_*), and a matching set of
  *  measured vectors in an unknown frame (B_*), this function will determine the
  *  quaternion required to rotate the unknown frame to the known frame. This
- *  result is stored in res.
+ *  result is stored in q.
  *  @returns Zero if the function was succesful and false otherwise.
  * 
  *  REQUIRES: N_* and B_* vectors must be unit vectors. */
 template <typename T>
 inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
-    lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &res);
+    lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &q);
 
 /** @fn vec_rot_to_quat
  *  Calculates the quaternion which would rotate vector v onto vector u in the
@@ -74,7 +74,7 @@ inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
  *  REQUIRES: Vectors u and v must both be unit vectors. */
 template <typename T>
 inline void vec_rot_to_quat(lin::Vector<T, 3> const &u, lin::Vector<T, 3> const &v,
-    lin::Vector<T, 4> &res);
+    lin::Vector<T, 4> &q);
 
 }  // namespace utl
 }  // namespace gnc
