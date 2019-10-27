@@ -5,3 +5,7 @@
 logs/
 bin*
 build*
+*.mexa64
+*.mexmaci64
+*.mexw64
+
