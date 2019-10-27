@@ -35,7 +35,8 @@ constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> co
 }
 
 template <typename T>
-constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> const &v, lin::Vector<T, 3> &res) {
+constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> const &v,
+    lin::Vector<T, 3> &res) {
   auto const qv = lin::ref<3, 1>(q, 0, 0);
   res = v + lin::cross(
       (static_cast<T>(2.0) * qv).eval(),
@@ -54,8 +55,8 @@ inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q) {
   // Find the maximum among the diagonal elements and trace
   T max = M(0, 0);
   T trace = M(0, 0);
-  unsigned int idx = 0;
-  for (unsigned int i = 1; i < 3; i++) {
+  lin::size_t idx = 0;
+  for (lin::size_t i = 1; i < 3; i++) {
     trace += M(i, i);
     if (M(i, i) > max) {
       max = M(i, i);
@@ -114,7 +115,7 @@ inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q) {
 // linear system solvers in lin/include/algorithms/*
 template <typename T>
 inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
-    lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &res) {
+    lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &q) {
   // Ensure that sun and magnetic field vectors aren't parallel or anitparallel
   if (abs(lin::dot(N_sun, N_mag)) == static_cast<T>(1.0)) return 1;
   if (abs(lin::dot(B_sun, B_mag)) == static_cast<T>(1.0)) return 2;
@@ -131,8 +132,24 @@ inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
 
   // Calculate the DCM between the two frames and extract the quaternion
   auto const Q = b1 * lin::transpose(n1) + b2 * lin::transpose(n2) + b3 * lin::transpose(n3);
-  dcm_to_quat(Q.eval(), res);
+  dcm_to_quat(Q.eval(), q);
   return 0;
+}
+
+// TODO : More strict tolerancing to determine 'antiparallel'
+template <typename T>
+inline void vec_rot_to_quat(lin::Vector<T, 3> const &u, lin::Vector<T, 3> const &v,
+    lin::Vector<T, 4> &q) {
+  // Handle u and v being near anitparallel
+  T x = lin::dot(u, v);
+  if (abs(x + static_cast<T>(1)) < static_cast<T>(0.0001)) {
+    q = { static_cast<T>(0), static_cast<T>(0), static_cast<T>(1), static_cast<T>(0) };
+  }
+  // Handle the general case
+  else {
+    q(3) = sqrt((static_cast<T>(1) + x) / static_cast<T>(2));
+    lin::ref<3, 1>(q, 0, 0) = lin::cross(u, v) / (static_cast<T>(2) * q(3));
+  }
 }
 }  // namespace utl
 }  // namespace gnc
