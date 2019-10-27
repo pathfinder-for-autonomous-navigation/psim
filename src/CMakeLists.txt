@@ -5,6 +5,5 @@ add_library(src
 )
 
 target_include_directories(src PUBLIC
-  ${psim_SOURCE_DIR}/lin/include
   ${psim_SOURCE_DIR}/include
 )
