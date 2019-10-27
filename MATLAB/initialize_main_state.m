@@ -56,13 +56,7 @@ dynamics.fuel_net_angular_momentum_eci=[0;0;0;];
 dynamics.fuel_mass=0.16;
 
 % actuators
-actuators.firing_start_times= inf(4,1);
-actuators.thrust_vectors_body= zeros(4);
-actuators.centers_of_thrust_body= zeros(4);
-actuators.firing_on_times= zeros(4,1);
-actuators.wheel_commanded_rate= [0;0;0];
-actuators.wheel_commanded_ramp= [0;0;0];
-actuators.magrod_real_moment_body= [0;0;0];
+actuators= actuators_off_state();
 
 % sensors
 sensors.gyro_bias= zeros(3,1);
