@@ -81,6 +81,8 @@ sensors.sunsensor_real_normals= transpose([ 0.9397	0.3420      0
                                     -0.3420	0           0.9397
                                     0       0.3420      0.9397
                                     0       -0.3420     0.9397]);
+sensors.sunsensor_real_voltage_maximums= 3.3 * ones(20, 1);
+sensors.sunsensor_measured_voltage_maximums= sensors.sunsensor_real_voltage_maximums;
 sensors.sunsensor_measured_normals= sensors.sunsensor_real_normals;
 sensors.gps_bias= zeros(6,1);
 sensors.gps_time_till_lock= const.GPS_LOCK_TIME;

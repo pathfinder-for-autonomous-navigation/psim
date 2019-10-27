@@ -3,7 +3,7 @@ Started by Kyle Krol on Sep 4, 2019
 
 **Authors** Nathan Zimmerberg, Kyle Krol
 
-Latest Revision: Oct 19, 2019
+Latest Revision: Oct 27, 2019
 
 Pathfinder for Autonomous Navigation
 
@@ -83,8 +83,10 @@ Each satellites state has the following members and submembers:
  * `sensors`
    * `gyro_bias`, (rad/s)
    * `magnetometer_bias`, (T)
-   * `sunsensor_real_normals`, (V)
-   * `sunsensor_measured_normals`, (V)
+   * `sunsensor_real_normals`, (unitless)
+   * `sunsensor_real_voltage_maximums`, normalization constants for voltage measurements (V)
+   * `sunsensor_measured_normals`, (unitless)
+   * `sunsensor_measured_voltage_maximums`, (V)
    * `gps_bias`,  (m and m/s)
    * `gps_time_till_lock`,
        time till the GPS gets a lock, starts at `const.GPS_LOCK_TIME`, then counts down and stays at 0
@@ -291,7 +293,7 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | dynamics_update              | Nathan  |          | wip                  | not started | NA          |
 | sensors_update               |         |          | not started          | not started | NA          |
 | get_next_maneuver            |         |          | not started          | not started | not started |
-| orbit_propagator             |         |          | not started          | not started | not started |
+| orbit_propagator             | Kyle    |          | wip                  | wip         | wip         |
 | estimate_orbits              |         |          | not started          | not started | not started |
 | adcs_update                  | Nathan  |          | wip                  | not started | not started |
 | env_atmosphere_density       | Sruti   |          | not started          | not started | NA          |
@@ -300,11 +302,12 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | env_gravity                  |         |          | wip                  | not started | NA          |
 | env_magnetic_field           | Nathan  |          | wip                  | done        | wip         |
 | env_sun_vector               | Nathan  |          | done                 | done        | wip         |
-| utl_rotateframe              | Kyle    |          | done                 | done        | wip         |
-| utl_quat_conj                | Kyle    |          | done                 | done        | wip         |
-| utl_dcm2quat                 | Kyle    |          | done                 | done        | wip         |
-| utl_quat_cross_mult          | Kyle    |          | done                 | done        | wip         |
-| utl_triad                    | Kyle    |          | done                 | done        | wip         |
+| utl_rotateframe              | Kyle    |          | done                 | done        | done        |
+| utl_quat_conj                | Kyle    |          | done                 | done        | done        |
+| utl_dcm2quat                 | Kyle    |          | done                 | done        | done        |
+| utl_quat_cross_mult          | Kyle    |          | done                 | done        | done        |
+| utl_triad                    | Kyle    |          | done                 | done        | done        |
+| utl_vect_rot2quat            | Kyle    |          | done                 | done        | done        |
 | utl_compare_main_states      |         |          | not started          | not started | NA          |
 | utl_compare_dynamics         |         |          | not started          | not started | NA          |
 | utl_compare_actuators        |         |          | not started          | not started | NA          |
