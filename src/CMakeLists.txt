@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.12)
 
 add_library(src
-  gnc_state_estimation.cpp
+  gnc_ode.cpp
 )
 
 target_include_directories(src PUBLIC
