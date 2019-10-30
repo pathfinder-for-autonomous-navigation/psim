@@ -1,4 +1,4 @@
-function [F_envdrag,rho,Cd,A,H] = env_atmospheric_drag(time,r_eci,r_ecef,v)
+function [F_envdrag, A] = env_atmospheric_drag(r_eci,r_ecef,v)
 %input: mission time in sec
 % r position in ECI frame in m
 % v velocity in ECI frame in m/s

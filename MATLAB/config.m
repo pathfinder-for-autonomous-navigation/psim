@@ -35,12 +35,20 @@ const.e_earth = 0.0167086;
 perihelion_date = datetime(2019,1,3,5,20,0,'TimeZone','UTCLeapSeconds');
 const.tp_earth = utl_datetime2time(perihelion_date,const.INITGPS_WN);
 % Time when earth was at perihelion (s)
-const.period_earth = 365.256363004*24*60*60; 
+const.period_earth = 365.256363004*24*60*60;
 % Earth orbital period (s)
+const.AU = 149597870700.000000; 
+% Astronomical unit [m]; DE430
+const.c_light   = 299792458.000000000; 
+% Speed of light  [m/s]; DE430
+const.P_Sol = 1367/const.c_light; % [N/m^2] (1367 W/m^2); IERS 96
+% Solar radiation pressure at 1 AU 
+const.Cr = 1; %dimensionless
+%Solar radiation pressure coefficient
 [rp_earth_moon,vp_earth_moon] = planetEphemeris(juliandate(perihelion_date),'Moon','Earth');
-const.rp_earth_moon = 1E3*p_earth_moon; %positional vector from Moon to Earth; used for 3rd body perturb calcs
+const.rp_earth_moon = 1E3*rp_earth_moon; %positional vector from Moon to Earth; used for 3rd body perturb calcs
 [rp_earth,vp_earth] = planetEphemeris(juliandate(perihelion_date),'Sun','Earth');
-const.rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb calcs
+const.rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
 rp_earth = rp_earth';
 vp_earth = vp_earth';
 h_earth = cross(rp_earth,vp_earth);
