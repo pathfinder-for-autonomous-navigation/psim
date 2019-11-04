@@ -15,7 +15,7 @@ except ImportError:
     pass
 
 class SimulationRun(object):
-    def __init__(self, random_seed, sim_duration, data_dir, device_config, radios_config):
+    def __init__(self, random_seed, sim_duration, data_dir, device_config, radios_config, radio_keys_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
 
@@ -25,6 +25,7 @@ class SimulationRun(object):
 
         self.device_config = device_config
         self.radios_config = radios_config
+        self.radio_keys_config = radio_keys_config
 
         self.datastores = {}
         self.loggers = {}
@@ -102,11 +103,12 @@ class SimulationRun(object):
         for radio in self.radios_config:
             try:
                 radio_connected_device = radio["connected_device"]
+                radio_name = radio["connected_device"] + "Radio"
             except:
                 self.stop_all("Invalid configuration file. A radio's connected device was not specified.")
 
-            # Check radio configuration
-            if 'imei' not in radio.keys():
+            # Check radio configuration. adjust path to radio_keys.json config file
+            if 'imei' not in radio_keys_config:
                 self.stop_all(f"IMEI number for radio connected to {radio_connected_device} was not specified.")
             if 'connect' not in radio.keys():
                 self.stop_all(f"Configuration for {radio_connected_device} does not specify whether or not to connect to the radio.")
@@ -115,10 +117,10 @@ class SimulationRun(object):
                 radio_data_name = radio_connected_device + "_radio"
                 radio_datastore = Datastore(radio_data_name, self.simulation_run_dir)
                 radio_logger = Logger(radio_data_name, self.simulation_run_dir)
-                radio_session = RadioSession(radio_connected_device, radio_datastore, radio_logger)
+                radio_session = RadioSession(radio_connected_device, radio_datastore, radio_logger, self.radio_keys_config)
 
                 if radio_session.connect(radio['imei']):
-                    self.radios[radio_connected_device] = radio_session
+                    self.radios[radio_name] = radio_session
                     self.datastores[radio_data_name] = radio_datastore
                     self.loggers[radio_data_name] = radio_logger
 
@@ -137,7 +139,7 @@ class SimulationRun(object):
 
     def set_up_cmd_prompt(self):
         # Set up user command prompt
-        cmd_prompt = StateCmdPrompt(self.devices, self.sim, self.stop_all)
+        cmd_prompt = StateCmdPrompt(self.devices, self.radios, self.sim, self.stop_all)
         cmd_prompt.intro = "Beginning console.\nType \"help\" for a list of commands."
         cmd_prompt.prompt = '> '
         try:
@@ -206,6 +208,8 @@ if __name__ == '__main__':
             sim_duration = config_data["sim_duration"]
             device_config = config_data["devices"]
             radios_config = config_data["radios"]
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/radio_keys.json')) as radio_keys_config_file:
+            radio_keys_config = json.load(radio_keys_config_file)
     except json.JSONDecodeError:
         print("Could not load config file. Exiting.")
         raise SystemExit
@@ -214,5 +218,5 @@ if __name__ == '__main__':
         raise SystemExit
 
     simulation_run = SimulationRun(random_seed, sim_duration, args.data_dir,
-                                   device_config, radios_config)
+                                   device_config, radios_config, radio_keys_config)
     simulation_run.start()

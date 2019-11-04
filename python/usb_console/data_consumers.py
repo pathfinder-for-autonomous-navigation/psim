@@ -1,4 +1,5 @@
 import queue, os, json, threading, time
+from datetime import datetime
 
 
 class DataConsumer(object):
@@ -84,7 +85,6 @@ class Logger(DataConsumer):
 
     def consume_queue_item(self, logline):
         """Add a new line to the log."""
-
         self.log += logline + "\n"
 
     def save(self):
@@ -94,3 +94,7 @@ class Logger(DataConsumer):
         filepath = os.path.join(self.data_dir, filename)
         with open(filepath, 'w') as logfile:
             logfile.write(self.log)
+    
+    def put(self, logline):
+        logline="("+str(datetime.now())+")"+"\n"+logline+"\n"
+        self.queue.put(logline)
