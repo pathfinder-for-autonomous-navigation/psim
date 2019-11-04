@@ -13,7 +13,7 @@
 */
 
 #include "mex.h"
-#include "../../../include/geomag.hpp"
+#include "../../../src/inl/geomag.inl"
 
 void calc_geomag(double dyear, double *x, double *b)
 {
