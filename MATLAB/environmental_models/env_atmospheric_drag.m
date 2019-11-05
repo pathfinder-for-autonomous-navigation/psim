@@ -1,4 +1,4 @@
-function [F_envdrag, A] = env_atmospheric_drag(r_eci,r_ecef,v)
+function [F_envdrag, A] = env_atmospheric_drag(time,r,v)
 %input: mission time in sec
 % r position in ECI frame in m
 % v velocity in ECI frame in m/s
@@ -9,25 +9,25 @@ function [F_envdrag, A] = env_atmospheric_drag(r_eci,r_ecef,v)
 
 global const
 
-% %time conversions (if using r_eci)
-% UTC_leap = utl_time2datetime(time,const.INITGPS_WN);  %converts mission time in secs to datetime in UTCleapseconds
-% %UTC_leap = utl_time2datetime(time,3); test
-% offset = 2*86400; %offset of UTCLeapSeconds to UTC time
-% del = datetime(0,0,0,0,0,offset);
-% del.TimeZone = 'UTCLeapSeconds';
-% UTC = UTC_leap - offset;
+%time conversions (if using r_eci)
+UTC_leap = utl_time2datetime(time,const.INITGPS_WN);  %converts mission time in secs to datetime in UTCleapseconds
+%UTC_leap = utl_time2datetime(time,3); test
+offset = 2*86400; %offset of UTCLeapSeconds to UTC time
+del = datetime(0,0,0,0,0,offset);
+del.TimeZone = 'UTCLeapSeconds';
+UTC = UTC_leap - offset;
 
-r_eci = reshape(r_eci,[1,3]); %convert r from collumn vector to row vector for eci2lla
-r_ecef = reshape(r_ecef,[1,3]); %convert r from collumn vector to row vector for ecef2lla
+r = reshape(r,[1,3]); %convert r from collumn vector to row vector for eci2lla
+%r_ecef = reshape(r_ecef,[1,3]); %convert r from collumn vector to row vector for ecef2lla
 
 v = reshape(v,[1,3]); %convert v from collumn vector to row vector for eci2lla
 % r: satellite position in ECI
 
 %%convert ECI coordinates to latitude, longitude, altitude (LLA) geodetic coordinates based on the Universal Coordinated Time (UTC) you specify
-%lla = eci2lla(r_eci, [UTC.Year UTC.Month UTC.Day UTC.Hour UTC.Minute UTC.Second]); 
+lla = eci2lla(r, [UTC.Year UTC.Month UTC.Day UTC.Hour UTC.Minute UTC.Second]); 
 
 %ECEF coordinates to latitude, longitude, altitude (LLA) geodetic coordinates;  lla is in [degrees degrees meters]; planet model WGS84.
-lla = ecef2lla(r_ecef);
+%lla = ecef2lla(r_ecef);
 
 h = abs(lla(3)); %altitude of Position (m); geocentric altitude = geodetic altitude
 
@@ -35,7 +35,7 @@ h = abs(lla(3)); %altitude of Position (m); geocentric altitude = geodetic altit
 
 Cd = 0.8; %drag coefficient of angled cube
 A = 0.1*sqrt(2)*0.3; %largest planar area of satellite in m^2
-v_rel = v - cross(const.earth_rate_ecef,r_eci); %velocity relative to the rotating atmosphere
+v_rel = v - cross(const.earth_rate_ecef,r); %velocity relative to the rotating atmosphere
 %v_rel = v - cross([0;0;7.2921158553E-5],r); test
 
 F_envdrag = -0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame

@@ -46,7 +46,7 @@ const.P_Sol = 1367/const.c_light; % [N/m^2] (1367 W/m^2); IERS 96
 const.Cr = 1; %dimensionless
 %Solar radiation pressure coefficient
 [rp_earth_moon,vp_earth_moon] = planetEphemeris(juliandate(perihelion_date),'Moon','Earth');
-const.rp_earth_moon = 1E3*rp_earth_moon; %positional vector from Moon to Earth; used for 3rd body perturb calcs
+const.rp_earth_moon = 1E3*rp_earth_moon'; %positional vector from Moon to Earth; used for 3rd body perturb calcs
 [rp_earth,vp_earth] = planetEphemeris(juliandate(perihelion_date),'Sun','Earth');
 const.rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
 rp_earth = rp_earth';
