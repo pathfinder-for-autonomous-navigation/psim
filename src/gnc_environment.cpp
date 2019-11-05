@@ -64,10 +64,10 @@ void sun_vector(double t, lin::Vector3f &s) {
   // Calculate Earth's position in the perifocal frame
   float E = constant::two_pi_f * (static_cast<float>(t) - constant::earth_perihelion_time_f)
       / constant::earth_period_f;
-  E = E + constant::earth_eccentricity_f * sin(E);
+  E = E + constant::earth_eccentricity_f * sinf(E);
   s = {  // Negative of Earth's position (want to point at the Sun)
-    constant::earth_eccentricity_f - cos(E),
-    sin(E) * (0.5f * constant::earth_eccentricity_f * constant::earth_eccentricity_f - 1.0f),
+    constant::earth_eccentricity_f - cosf(E),
+    sinf(E) * (0.5f * constant::earth_eccentricity_f * constant::earth_eccentricity_f - 1.0f),
     0.0f
   };
   s = s / lin::norm(s);  // Puts us in AU (approximately) and is a normalized vector
