@@ -23,7 +23,7 @@ namespace env {
 
 void earth_attitude(double t, lin::Vector4d &q) {
   // Determine a transformation from ecef0 to ecef0p
-  lin::Vector4d q_ecef0p_ecef0({
+  lin::Vector4d q_ecef0p_ecef0({  // Small angle approx sin(x) ~ x
     t * constant::earth_precession_rate(0),
     t * constant::earth_precession_rate(1),
     t * constant::earth_precession_rate(2),
@@ -56,28 +56,23 @@ void earth_angular_rate(double t, lin::Vector3d &w) {
 }
 
 void earth_angular_rate(double t, lin::Vector3f &w) {
-  w = { 0.0f, 0.0f, static_cast<float>(constant::earth_rate_ecef_z) };
+  w = { 0.0f, 0.0f, constant::earth_rate_ecef_z_f };
 }
 
-void sun_vector(double t, lin::Vector3d &s) {
+// t will never get large enough for floating point precession to be an issue
+void sun_vector(double t, lin::Vector3f &s) {
   // Calculate Earth's position in the perifocal frame
-  double E = constant::two_pi * (t - constant::earth_perihelion_time) / constant::earth_period;
-  E = E + constant::earth_eccentricity * sin(E);
+  float E = constant::two_pi_f * (static_cast<float>(t) - constant::earth_perihelion_time_f)
+      / constant::earth_period_f;
+  E = E + constant::earth_eccentricity_f * sin(E);
   s = {  // Negative of Earth's position (want to point at the Sun)
-    constant::earth_eccentricity - cos(E),
-    sin(E) * (0.5 * constant::earth_eccentricity * constant::earth_eccentricity - 1.0),
-    0.0
+    constant::earth_eccentricity_f - cos(E),
+    sin(E) * (0.5f * constant::earth_eccentricity_f * constant::earth_eccentricity_f - 1.0f),
+    0.0f
   };
   s = s / lin::norm(s);  // Puts us in AU (approximately) and is a normalized vector
   // Rotate into ECI
-  utl::rotate_frame(constant::q_eci_perifocal, s);
-}
-
-void sun_vector(double t, lin::Vector3f &s) {
-  lin::Vector3d _s;
-  sun_vector(t, _s);
-  for (lin::size_t i = 0; i < s.size(); i++)
-    s(i) = static_cast<float>(_s(i));
+  utl::rotate_frame(constant::q_eci_perifocal_f, s);
 }
 
 void magnetic_field(double t, lin::Vector3f const &r, lin::Vector3f &b) {

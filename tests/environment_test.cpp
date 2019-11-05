@@ -74,27 +74,27 @@ TEST(EnvironmentTest, EarthAttitudeTest) {
 }
 
 TEST(EnvironmentTest, SunVectorTest) {
-  lin::Vector3d s;
+  lin::Vector3f s;
   // Calculate and check for t=0.0 (comparing against MATLAB)
-  gnc::env::sun_vector(0.0, s);
-  ASSERT_VEC_NEAR(1e-7, s, lin::Vector3d({
-     0.997341623364311,
-    -0.066845783473014,
-    -0.029005646638551
+  gnc::env::sun_vector(0.0f, s);
+  ASSERT_VEC_NEAR(1e-5, s, lin::Vector3f({
+     0.997341623364311f,
+    -0.066845783473014f,
+    -0.029005646638551f
   }));
   // Calculate and check for t=100000.0 (comparing against MATLAB)
   gnc::env::sun_vector(100000.0, s);
-  ASSERT_VEC_NEAR(1e-7, s, lin::Vector3d({
-     0.998604978312986,
-    -0.048435925195477,
-    -0.021025185825087
+  ASSERT_VEC_NEAR(1e-5, s, lin::Vector3f({
+     0.998604978312986f,
+    -0.048435925195477f,
+    -0.021025185825087f
   }));
   // Calculate and check for t=200000.0 (comparing against MATLAB)
   gnc::env::sun_vector(200000.0, s);
-  ASSERT_VEC_NEAR(1e-7, s, lin::Vector3d({
-     0.999464270282190,
-    -0.030018263209437,
-    -0.013041330575474,
+  ASSERT_VEC_NEAR(1e-5, s, lin::Vector3f({
+     0.999464270282190f,
+    -0.030018263209437f,
+    -0.013041330575474f
   }));
 }
 

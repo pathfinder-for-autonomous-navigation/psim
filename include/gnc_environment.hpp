@@ -41,11 +41,6 @@ void earth_angular_rate(double t, lin::Vector3f &w);
 /** @fn sun_vector
  *  @param[in]  t Time in seconds since the PAN epoch.
  *  @param[out] s Normalized vector from Earth the Sun in the ECI frame. */
-void sun_vector(double t, lin::Vector3d &s);
-
-/** @fn sun_vector
- *  @param[in]  t Time in seconds since the PAN epoch.
- *  @param[out] s Normalized vector from Earth the Sun in the ECI frame. */
 void sun_vector(double t, lin::Vector3f &s);
 
 /** @fn magnetic_field
