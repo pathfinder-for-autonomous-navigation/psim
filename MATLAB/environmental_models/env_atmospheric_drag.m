@@ -40,6 +40,7 @@ v_rel = v - cross(const.earth_rate_ecef,r_eci); %velocity relative to the rotati
 
 F_envdrag = -0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
 
+F_envdrag = reshape(F_envdrag,[3,1]);
 end
 
 function [rho,H] = get_rho(h)
