@@ -11,11 +11,12 @@ if(BUILD_FOR_CI)
   add_compile_options(-DCI_BUILD)
 endif()
 
-if(MSVC)
-  add_compile_options(/W4 /WX)
-else()
-  add_compile_options(-Wall -Werror -Wextra)
-endif()
+add_compile_options(
+  -Wall
+  -Werror
+  -Wextra
+  -Wno-error=unused-parameter
+)
 
 add_subdirectory(src)
 
