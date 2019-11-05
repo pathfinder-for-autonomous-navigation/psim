@@ -27,10 +27,10 @@ namespace gnc {
 namespace constant {
 
 /** Good old pi. */
-constexpr static double pi = 3.141592653589793;
+constexpr static double pi = 3.141592653589793L;
 
 /** Two pi. */
-constexpr static double two_pi = 2.0 * pi;
+constexpr static double two_pi = 2.0L * pi;
 
 /** Initial GPS week number that serves as the 'PAN epoch'. */
 constexpr static unsigned short init_gps_week_number = 2045;
@@ -46,40 +46,40 @@ constexpr static unsigned long init_gps_nanoseconds = 0;
 constexpr static double init_dec_year = 2.019205478881278e3;
 
 /** Earth's intertial rotation rate about the z axis in the ECEF frame. */
-constexpr static double earth_rate_ecef_z = 1.0e-04 * 0.729211585530000;
+constexpr static double earth_rate_ecef_z = 1.0e-04L * 0.729211585530000L;
 
 /** Approximate precssion rate of Earth's Axis in radians per second. */
-constexpr static lin::Vector3d earth_precession_rate = 1.0e-11 * lin::Vector3d({
-  0.069896936522494,
-  -0.315732660584366,
-  0.0
+constexpr static lin::Vector3d earth_precession_rate = 1.0e-11L * lin::Vector3d({
+  0.069896936522494L,
+  -0.315732660584366L,
+  0.0L
 });
 
 /** Quaternion to rotate vectors in ECI to ECEF0. ECEF0 is defined to be the
  *  ECEF frame at time zero intertially stuck. */
 constexpr static lin::Vector4d q_ecef0_eci = {
-  0.000917219458782,
-  0.000038843277811,
-  0.998612074831165,
-  0.052660053181324
+  0.000917219458782L,
+  0.000038843277811L,
+  0.998612074831165L,
+  0.052660053181324L
 };
 
 /** Eccentricity of Earth's orbit. */
-constexpr static double earth_eccentricity = 0.0167086;
+constexpr static double earth_eccentricity = 0.0167086L;
 
 /** Time in seconds, relative to the PAN epoch, when Earth was at it's
  *  parihelion. */
-constexpr static double earth_perihelion_time = -6287982.0;
+constexpr static double earth_perihelion_time = -6287982.0L;
 
 /** Earth's orbital period in seconds. */
-constexpr static double earth_period = 365.256363004 * 24.0 * 60.0 * 60.0;
+constexpr static double earth_period = 365.256363004L * 24.0L * 60.0L * 60.0L;
 
 /** Quaternion giving the rotation from Earth's perifocal frame to ECI. */
 constexpr static lin::Vector4d q_eci_perifocal = {
-   0.127456632677880,
-  -0.158124280715206,
-   0.762378784011859,
-  -0.614434787689722
+   0.127456632677880L,
+  -0.158124280715206L,
+   0.762378784011859L,
+  -0.614434787689722L
 };
 }  // namespace constants
 }  // namespace gnc

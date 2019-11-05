@@ -80,15 +80,6 @@ void sun_vector(double t, lin::Vector3f &s) {
     s(i) = static_cast<float>(_s(i));
 }
 
-void magnetic_field(double t, lin::Vector3d const &r, lin::Vector3d &b) {
-  geomag::Vector in, out;
-  in.x = static_cast<float>(r(0));
-  in.y = static_cast<float>(r(1));
-  in.z = static_cast<float>(r(2));
-  out = geomag::GeoMag(constant::init_dec_year + t / (365.0 * 24.0 * 60.0 * 60.0),in, geomag::WMM);
-  b = { static_cast<double>(out.x), static_cast<double>(out.y), static_cast<double>(out.z) };
-}
-
 void magnetic_field(double t, lin::Vector3f const &r, lin::Vector3f &b) {
   geomag::Vector in, out;
   in.x = r(0);

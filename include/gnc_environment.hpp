@@ -51,14 +51,6 @@ void sun_vector(double t, lin::Vector3f &s);
 /** @fn magnetic_field
  *  @param[in]  t Time in seconds since the PAN epoch.
  *  @param[in]  r Position in the ECEF frame with units of meters.
- *  @param[out] b Magnetic field in the ECEF frame with units of Tesla.
- *  NOTE: The double overload of this function provides no extra accuracy over
- *        the float version. */
-void magnetic_field(double t, lin::Vector3d const &r, lin::Vector3d &b);
-
-/** @fn magnetic_field
- *  @param[in]  t Time in seconds since the PAN epoch.
- *  @param[in]  r Position in the ECEF frame with units of meters.
  *  @param[out] b Magnetic field in the ECEF frame with units of Tesla. */
 void magnetic_field(double t, lin::Vector3f const &r, lin::Vector3f &b);
 

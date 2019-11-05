@@ -103,7 +103,7 @@ TEST(EnvironmentTest, MagneticFieldTest) {
   // Calculate and check for t=0.0 (comparing against MATLAB)
   r = { 5.430929361985142e6f, 2.949986114465339e6f, 2.949986114465338e6f };
   gnc::env::magnetic_field(0.0, r, b);
-  ASSERT_VEC_NEAR(1e-5f, b, lin::Vector3f({
+  ASSERT_VEC_NEAR(1e-9f, b, lin::Vector3f({
     -0.258582567767007e-4f,
     -0.123709833133034e-4f,
      0.152313341459376e-4f
@@ -111,7 +111,7 @@ TEST(EnvironmentTest, MagneticFieldTest) {
   // Calculate and check for t=100000.0 (comparing against MATLAB)
   r = { 2.949986114465339e6f, 5.430929361985142e6f, 2.949986114465338e6f };
   gnc::env::magnetic_field(100000.0, r, b);
-  ASSERT_VEC_NEAR(1e-5f, b, lin::Vector3f({
+  ASSERT_VEC_NEAR(1e-9f, b, lin::Vector3f({
     -0.159017272380879e-4f,
     -0.279396062978776e-4f,
      0.147361051858752e-4f
@@ -119,7 +119,7 @@ TEST(EnvironmentTest, MagneticFieldTest) {
   // Calculate and check for t=200000.0 (comparing against MATLAB)
   r = { 2.949986114465338e6f, 2.949986114465339e6f, -5.430929361985142e6f };
   gnc::env::magnetic_field(200000.0, r, b);
-  ASSERT_VEC_NEAR(1e-5f, b, lin::Vector3f({
+  ASSERT_VEC_NEAR(1e-9f, b, lin::Vector3f({
      0.245254032051889e-4f,
      0.101543964774464e-4f,
     -0.167963662534021e-4f
