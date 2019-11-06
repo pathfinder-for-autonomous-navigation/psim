@@ -42,69 +42,69 @@ void test_ode_ode1sho() {
   PAN_GNC_ODEX_TEST_VARS(1)
   gnc::ode1(t, nt, y, ne, bf, fsho);
   // Check against MATLAB output
-  TEST_ASSERT_EQUAL_DOUBLE( 1.000000000000000L, y[1][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.100000000000000L, y[1][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.990000000000000L, y[2][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.200000000000000L, y[2][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.970000000000000L, y[3][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.299000000000000L, y[3][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 1.000000000000000, y[1][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.100000000000000, y[1][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.990000000000000, y[2][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.200000000000000, y[2][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.970000000000000, y[3][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.299000000000000, y[3][1]);
 }
 
 void test_ode_ode2sho() {
   PAN_GNC_ODEX_TEST_VARS(3)
   gnc::ode2(t, nt, y, ne, bf, fsho);
   // Check against MATLAB output
-  TEST_ASSERT_EQUAL_DOUBLE( 0.995000000000000L, y[1][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.100000000000000L, y[1][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.980025000000000L, y[2][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.199000000000000L, y[2][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.955224875000000L, y[3][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.296007500000000L, y[3][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.995000000000000, y[1][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.100000000000000, y[1][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.980025000000000, y[2][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.199000000000000, y[2][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.955224875000000, y[3][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.296007500000000, y[3][1]);
 }
 
 void test_ode_ode3sho() {
   PAN_GNC_ODEX_TEST_VARS(4)
   gnc::ode3(t, nt, y, ne, bf, fsho);
   // Check against MATLAB output
-  TEST_ASSERT_EQUAL_DOUBLE( 0.995000000000000L, y[1][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.099833333333333L, y[1][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.980058305555556L, y[2][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.198668333333333L, y[2][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.955324292083333L, y[3][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.295517479171296L, y[3][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.995000000000000, y[1][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.099833333333333, y[1][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.980058305555556, y[2][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.198668333333333, y[2][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.955324292083333, y[3][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.295517479171296, y[3][1]);
 }
 
 void test_ode_ode4sho() {
   PAN_GNC_ODEX_TEST_VARS(5)
   gnc::ode4(t, nt, y, ne, bf, fsho);
   // Check against MATLAB output
-  TEST_ASSERT_EQUAL_DOUBLE( 0.995004166666667L, y[1][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.099833333333333L, y[1][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.980066597239583L, y[2][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.198669165277778L, y[2][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.955336542863976L, y[3][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.295519962530663L, y[3][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.995004166666667, y[1][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.099833333333333, y[1][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.980066597239583, y[2][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.198669165277778, y[2][1]);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.955336542863976, y[3][0]);
+  TEST_ASSERT_EQUAL_DOUBLE(-0.295519962530663, y[3][1]);
 }
 
 void test_ode_ode23sho() {
   PAN_GNC_ODEXX_TEST_VARS(6);
   int code;
   // Check against cos(1.0) and assert the error code is OK
-  code = gnc::ode23(ti, (double)1.0, yi, yf, ne, bf, (double)1e-4, (double)1e-6, (double)1e-6, 1000, fsho);
+  code = gnc::ode23(ti, 1.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(1.0L), yf[0]);
-  // // Check against cos(5.0) and assert the error code is OK
-  // code = gnc::ode23(ti, 5.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
-  // TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  // TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(5.0L), yf[0]);
-  // // Check against cos(6.5) and assert the error code is OK
-  // code = gnc::ode23(ti, 6.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
-  // TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  // TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(6.5L), yf[0]);
-  // // Check against cos(7.5) and assert the error code is OK
-  // code = gnc::ode23(ti, 7.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 2000, fsho);
-  // TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  // TEST_ASSERT_DOUBLE_WITHIN(2e-3, cos(7.5L), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(1.0), yf[0]);
+  // Check against cos(5.0) and assert the error code is OK
+  code = gnc::ode23(ti, 5.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
+  TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(5.0), yf[0]);
+  // Check against cos(6.5) and assert the error code is OK
+  code = gnc::ode23(ti, 6.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
+  TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(6.5), yf[0]);
+  // Check against cos(7.5) and assert the error code is OK
+  code = gnc::ode23(ti, 7.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 2000, fsho);
+  TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
+  TEST_ASSERT_DOUBLE_WITHIN(2e-3, cos(7.5), yf[0]);
 }
 
 void test() {
