@@ -88,7 +88,7 @@ TEST(OdeTest, Ode4ShoTest) {
   // ASSERT_FLOAT_EQ(y[3][1], -0.295520962530663); Fails as expected
 }
 
-#ifndef ENABLE_CI_BUILD
+#ifndef CI_BUILD
 TEST(OdeTest, Ode23ShoTest) {
   PAN_GNC_ODEXX_TEST_VARS(6);
   int code;
