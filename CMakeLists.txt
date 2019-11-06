@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 option(ENABLE_CI_BUILD "Build for CI testing" OFF)
 
-if(BUILD_FOR_CI)
+if(ENABLE_CI_BUILD)
   add_compile_options(-DCI_BUILD)
 endif()
 
