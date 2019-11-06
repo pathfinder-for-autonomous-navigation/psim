@@ -12,6 +12,9 @@
 
 #include <gnc_ode.hpp>
 
+#include <algorithm>
+#include <cmath>
+
 namespace gnc {
 
 template <typename T,
@@ -157,5 +160,117 @@ void ode4(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
 
 PAN_GNC_ODEX_MULTI_TEMPLATE(ode4, float);
 PAN_GNC_ODEX_MULTI_TEMPLATE(ode4, double);
+
+// Reference:
+//  https://en.wikipedia.org/wiki/Bogacki–Shampine_method
+template <typename T>
+int ode23(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
+    T rel_tol, T abs_tol, unsigned int max_iter, void (*const f)(T, T const *, T *)) {
+  // Table of values
+  constexpr static T a21 = 1.0L / 2.0L, a32 = 3.0L / 4.0L, a41 = 2.0L / 9.0L,
+      a42 = 1.0L / 3.0L, a43 = 4.0L / 9.0L;
+  constexpr static T bs1 = 7.0L / 24.0L, bs2 = 1.0L / 4.0L, bs3 = 1.0L / 3.0L, bs4 = 1.0L / 8.0L;
+  constexpr static T c2 = 1.0L / 2.0L, c3 = 3.0L / 4.0L;
+
+ // Setup scratch buffers
+  T *const k1 = bf;
+  T *const k2 = k1 + ne;
+  T *const k3 = k2 + ne;
+  T *const k4 = k3 + ne;
+  T *const ks = k4 + ne;
+  T *const kz = ks + ne;
+
+  // Initialize local variables
+  bool calc_k1 = true;
+  int err = ODE_ERR_OK;
+  unsigned int iter = 0;
+  T h_next = (tf - ti) / static_cast<T>(10);
+  T t = ti;
+  T delta_max;
+  T h;
+
+  // Copy yi into yf and ensure we still have some time to integrate over
+  for (unsigned int i = 0; i < ne; i++) yf[i] = yi[i];
+  if (ti >= tf) return err | ODE_ERR_BAD_INTERVAL;
+
+  for (;;) {
+
+    // Check iteration bound
+    if (iter++ > max_iter) return err | ODE_ERR_MAX_ITER;
+
+    for (;;) {  // Start error checking loop
+    
+      // Setup
+      h = h_next;
+      if (calc_k1) {
+        f(t, yf, k1);
+        calc_k1 = true;
+      }
+
+      // Step forward
+      for (unsigned int i = 0; i < ne; i++)
+        ks[i] = yf[i] + h * a21 * k1[i];
+      f(t + c2 * h, ks, k2);
+      for (unsigned int i = 0; i < ne; i++)
+        ks[i] = yf[i] + h * a32 * k2[i];
+      f(t + c3 * h, ks, k3);
+      for (unsigned int i = 0; i < ne; i++)  // Third order solution
+        ks[i] = yf[i] + h * (a41 * k1[i] + a42 * k2[i] + a43 * k3[i]);
+      f(t + h, ks, k4);
+      for (unsigned int i = 0; i < ne; i++)  // Second order solution
+        kz[i] = yf[i] + h * (bs1 * k1[i] + bs2 * k2[i] + bs3 * k3[i] + bs4 * k4[i]);
+
+      // Calculate largest error
+      delta_max = static_cast<T>(0);
+      for (unsigned int i = 0; i < ne; i++) {
+        T delta = abs( ks[i] - kz[i] ) /
+            std::max(abs_tol, rel_tol * std::max(abs(ks[i]), abs(kz[i])));
+        if (delta > delta_max) delta_max = delta;
+      }
+
+      // Helpfull constants
+      constexpr static T one = static_cast<T>(1), three = static_cast<T>(3),
+          one_third = one / three;
+      
+      // Extremely small error (prevent divide by zero and bump step size)
+      if (delta_max < static_cast<T>(1e-20)) {
+        h_next = h * three;
+      }
+      // Small error (bump step size a little)
+      else if (delta_max < one_third) {
+        h_next = h * pow(one / delta_max, one_third);
+      }
+      // Large error (shrink step size, ensure it large enough, and continue)
+      else if (delta_max > one) {
+        h_next = h * one_third;
+        if (h_next < h_min) {
+          h_next = h_min;
+          err |= ODE_ERR_MIN_STEP;
+        }
+        continue;
+      }
+      // Step size is working well (don't calculate the next k1 vector)
+      else {
+        for (unsigned int i = 0; i < ne; i++) k1[i] = k4[i];
+        calc_k1 = false;
+        h_next = h;
+      }
+
+      // Exit loop to update yf and t
+      break;
+
+    }  // End errror checking loop
+
+    // Step forward time, see if we're done, and prevent to large of a step
+    t += h;
+    for (unsigned int i = 0; i < ne; i++) yf[i] = ks[i];
+    if (t >= tf) return err;
+    if (t + h_next >= tf) h_next = tf - t;
+    
+  }
+}
+
+PAN_GNC_ODEXX_TEMPLATE(ode23, float);
+PAN_GNC_ODEXX_TEMPLATE(ode23, double);
 
 }  // namespace gnc
