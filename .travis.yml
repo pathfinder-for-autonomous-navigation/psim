@@ -1,19 +1,22 @@
 matrix:
-    include:
-        - language: python
-          python: 3.6
-          sudo: false
-          before_install:
-              - cd python
-          install:
-              - pip install -r requirements.txt
-          script:
-              - python -m pytest
-        - language: cpp
-          sudo: false
-          script:
-              - mkdir build
-              - cd build
-              - cmake -DENABLE_CI_BUILD=ON ../
-              - cmake --build .
-              - ctest --verbose .
+  include:
+    - language: python
+      python: 3.6
+      sudo: false
+      before_install:
+        - cd python
+      install:
+        - pip install -r requirements.txt
+      script:
+        - python -m pytest
+    - language: python
+      python: 2.7
+      sudo: false
+      cache:
+        directories:
+          - "~/.platformio"
+      install:
+        - pip install -U platformio
+        - platformio update
+      script:
+        - platformio test --verbose --environment ci_github
