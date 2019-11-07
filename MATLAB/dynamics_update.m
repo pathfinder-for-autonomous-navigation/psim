@@ -77,8 +77,9 @@ delta_time= double(const.dt)*1E-9;
         [g_ecef,~,G_ecef]= env_gravity(t,pos_ecef);
         g_eci=utl_rotateframe(quat_eci_ecef,g_ecef);
         %TODO add thruster firings forces and torques
+        thruster_acceleration_eci= utl_rotateframe(quat_eci_body,actuators.current_thruster_force_body/(fuel_mass(t)+const.MASS));
         %TODO add drag and solar pressure forces
-        dydt(4:6)= g_eci;
+        dydt(4:6)= g_eci+thruster_acceleration_eci;
         quat_rate=[y(11:13);0];
         dydt(7:10)= utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
         Lwb= const.JWHEEL*wheelramp(t);
@@ -92,7 +93,7 @@ delta_time= double(const.dt)*1E-9;
         rate_sat_eci= utl_rotateframe(quat_eci_body,y(11:13));
         torque_from_fuel_eci= const.SLOSH_DAMPING*(rate_fuel_eci-rate_sat_eci);
         dydt(14:16)= -torque_from_fuel_eci;
-        Lb=magnetic_torque_body+utl_rotateframe(quat_body_eci,torque_from_fuel_eci);
+        Lb=magnetic_torque_body+utl_rotateframe(quat_body_eci,torque_from_fuel_eci)+actuators.current_thruster_torque_body;
         dydt(11:13)=const.JBINV*( Lb-Lwb-cross(y(11:13),const.JB*y(11:13)+const.JWHEEL*wheelrate(t)));
         %dydt(11:13)=const.JBINV*(-cross(y(11:13),const.JB*y(11:13)));
         %equation 3.147 in Fundamentals of Spacecraft Attitude Determination and Control
