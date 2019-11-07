@@ -14,10 +14,10 @@ function actuators = actuators_off_state()
 %    * `ground_velocity_ecef`(3x1 matrix): ground known estimated velocity of the gps reciever of the satellite (m/s)
 %    * `ground_time`(scalar): ground known estimated time since initial GPS week (s)
 actuators=struct();
-actuators.firing_start_times= inf(4,1);
 actuators.thrust_vectors_body= zeros(3,4);
 actuators.centers_of_thrust_body= zeros(3,4);
-actuators.firing_on_times= zeros(4,1);
+actuators.current_thruster_force_body= zeros(3,1);
+actuators.current_thruster_torque_body= zeros(3,1);
 actuators.wheel_commanded_rate= zeros(3,1);
 actuators.wheel_commanded_ramp= inf(3,1);
 actuators.magrod_real_moment_body= zeros(3,1);

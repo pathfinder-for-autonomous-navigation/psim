@@ -47,16 +47,6 @@ delta_time= double(const.dt)*1E-9;
         real_commanded_rate=max(min(actuators.wheel_commanded_rate,const.MAXWHEELRATE),-const.MAXWHEELRATE);
         ramp= sign(real_commanded_rate-wheelrate(t)).*real_ramp;
     end
-    function force= thrust_force(t)
-        %thrust force at time t in the body frame
-        %TODO add actual thrust
-        force=0.0;
-    end
-    function torque= thrust_torque(t)
-        %thrust torque at time t in the body frame
-        %TODO add actual thrust
-        torque=0.0;
-    end
     function mass= fuel_mass(t)
         %fuel_mass at time t
         %TODO add actual fuel change
