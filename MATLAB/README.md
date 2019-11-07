@@ -77,10 +77,8 @@ Each satellites state has the following members and submembers:
    * `fuel_net_angular_momentum_eci`, Net angular momentum of the fuel (Nms)
    * `fuel_mass`, The mass of the fuel (kg)
  * `actuators`
-   * `firing_start_times`(4x1 matrix): Times since initial GPS week to start firing each thruster (s)
    * `thrust_vectors_body`(3x4 matrix): each thruster's force vector (N)
    * `centers_of_thrust_body`(3x4 matrix): Center of thrust of each truster (m)
-   * `firing_on_times`(4x1 matrix): How long each thruster firing lasts (s)
    * `wheel_commanded_rate`(3x1 matrix): Commanded x,y,z wheel rate (rad/s)
    * `wheel_commanded_ramp`(3x1 matrix): Commanded x,y,z wheel ramp (rad/s/s)
    * `magrod_real_moment_body`(3x1 matrix): Real magnetorquer moment (Am^2)
@@ -88,6 +86,8 @@ Each satellites state has the following members and submembers:
    * `ground_position_ecef`(3x1 matrix): ground known estimated position of the satellite (m)
    * `ground_velocity_ecef`(3x1 matrix): ground known estimated velocity of the gps reciever of the satellite (m/s)
    * `ground_time`(scalar): ground known estimated time since initial GPS week (s)
+   * `current_thruster_force_body` (3x1 matrix): Net thruster force vector at current timestep (N)
+   * `current_thruster_torque_body` (3x1 matrix): Net thruster torque vector at current timestep (N-m)
  * `sensors`
    * `gyro_bias`: (rad/s)
    * `magnetometer_bias`: (T)
@@ -183,7 +183,7 @@ update_FC_state is also broken into a few main helper functions.
  * `state = adcs_mag_bias_est(state,SdotB_true,SdotB_measured,S)`
  * `[state,magrod_moment_cmd,wheel_torque_cmd]=adcs_pointer(state, angular_momentum_body, magnetic_field_body, primary_current_direction_body, primary_desired_direction_body, secondary_current_direction_body, secondary_desired_direction_body, rate_body)`
  * `[state,magrod_moment_cmd] = adcs_detumbler(state,magnetometer_body)`
- 
+
 Environmental functions.
  * `[quat_ecef_eci,rate_ecef]= env_earth_attitude(time)`
  * `eclipse = env_eclipse(earth2sat,sat2sun)`
@@ -263,7 +263,7 @@ Constants are stored in the `const` global struct.
    * `ATTITUDE_PD_KD`(scalar), Attitude PD controller K_d (Nm/(rad/s))
    * `detumble_safety_factor`(scalar range (0,1)):
 The fraction of max wheel momentum detumbling ends at.
-### GPS sensor constants 
+### GPS sensor constants
    * `GPS_LOCK_TIME`(positive scalar): Time it takes the GPS to get a lock (s)
    * `CDGPS_LOCK_TIME`(positive scalar): Time it takes the CDGPS to get a lock (s)
    * `gps_max_angle`(positive scalar): Max angle of gps antenna to radia out where gps can work (rad)
@@ -276,11 +276,11 @@ also can get regular gps.
    * `gps_velocity_bias_sdiv`(positive scalar): standard diviation of bias of gps velocity measurements (m/s)
    * `gps_position_noise_sdiv`(positive scalar): standard diviation of gps position measurements (m)
    * `gps_velocity_noise_sdiv`(positive scalar): standard diviation of gps position measurements (m)
-   * `magnetometer_bias_readings_min`(positive int): number of readings per axis to get a 
+   * `magnetometer_bias_readings_min`(positive int): number of readings per axis to get a
 good magnetometer bias estimate.
-   * `magnetometer_noise_sdiv`(positive scalar): 
+   * `magnetometer_noise_sdiv`(positive scalar):
 standard diviation of the magnetometer noise (T)
-   * `magnetometer_bias_sdiv`(positive scalar): 
+   * `magnetometer_bias_sdiv`(positive scalar):
 standard diviation of the magnetometer bias (T)
    * `gyro_noise_sdiv`(positive scalar):
 standard diviation of the gyro noise (rad/s)
