@@ -19,4 +19,4 @@ matrix:
         - pip install -U platformio
         - platformio update
       script:
-        - platformio test --verbose --environment ci_native
+        - platformio test --verbose --environment ci_github
