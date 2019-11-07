@@ -223,8 +223,8 @@ int ode23(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
       // Calculate largest error
       delta_max = static_cast<T>(0);
       for (unsigned int i = 0; i < ne; i++) {
-        T delta = abs( ks[i] - kz[i] ) /
-            std::max(abs_tol, rel_tol * std::max(abs(ks[i]), abs(kz[i])));
+        T delta = std::abs( ks[i] - kz[i] ) /
+            std::max(abs_tol, rel_tol * std::max(std::abs(ks[i]), std::abs(kz[i])));
         if (delta > delta_max) delta_max = delta;
       }
 
@@ -238,7 +238,7 @@ int ode23(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
       }
       // Small error (bump step size a little)
       else if (delta_max < one_third) {
-        h_next = h * pow(one / delta_max, one_third);
+        h_next = h * std::pow(one / delta_max, one_third);
       }
       // Large error (shrink step size, ensure it large enough, and continue)
       else if (delta_max > one) {
