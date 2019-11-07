@@ -2,10 +2,10 @@ function [state,actuators] = update_FC_state(state,sensor_readings)
 % Global variables treated as inputs:
 %  * const
 %  * sensors
-% 
+%
 % Global variables treated as outputs:
 %  * actuators
-%  * 
+%  *
 
 % attitude PD controller
 %   calculate commanded wheel torque
@@ -33,7 +33,7 @@ estimator.time= double(estimator.time_ns)*1E-9;
     estimator.time_ns, ...
     sensor_readings.target_position_ecef, ...
     sensor_readings.target_velocity_ecef, ...
-    int64(sensor_readings.target_time*1E9)); 
+    int64(sensor_readings.target_time*1E9));
 estimator.target_position_ecef= estimator.self2target_r_ecef+estimator.position_ecef;
 estimator.target_velocity_ecef= estimator.self2target_v_ecef+estimator.velocity_ecef;
 
@@ -89,20 +89,20 @@ if strcmp(state.main_state,'hardware setup')
     %move to next state if all sub systems are setup
     if true
         state.main_state='initialization hold';
-    end 
+    end
 end
 if strcmp(state.main_state,'initialization hold')
     %move to next state if initialization time has passed
     if state.on_time>(30*60*1E9)
         state.main_state='detumble';
-    end 
+    end
 end
 if strcmp(state.main_state,'detumble')
     %detumble
     if norm(estimator.angular_momentum_body)<const.MAXWHEELRATE*const.JWHEEL*const.detumble_safety_factor
         state.main_state='get gps';
         %on real sat send command to condition magnetometers here
-    end 
+    end
 end
 return2detumble= estimator.tumbling || estimator.low_power;
 if strcmp(state.main_state,'get gps')
@@ -120,8 +120,8 @@ if strcmp(state.main_state,'get gps')
 end
 return2detumble= return2detumble || estimator.eclipse || ~estimator.valid_gps;
 for i=1:3
-    %These modes rotate the sat around to estimate the magnetometer bias. 
-    %There are three modes, each one points a different axis at the sun, 
+    %These modes rotate the sat around to estimate the magnetometer bias.
+    %There are three modes, each one points a different axis at the sun,
     %so the mag bias on that axis can be estimated accurately.
     if strcmp(state.main_state,"calibrate magnetometer "+i)
         axis= zeros(3,1);
@@ -137,13 +137,13 @@ for i=1:3
             else
                 state.main_state= 'get target orbit';
             end
-        end 
+        end
         %calculate pointing strategy
         state.primary_current_direction_body= estimator.sat2sun_body/norm(estimator.sat2sun_body);
-        state.primary_desired_direction_body= axis; 
+        state.primary_desired_direction_body= axis;
         state.secondary_current_direction_body= NaN(3,1);
         state.secondary_desired_direction_body= NaN(3,1);
-    end   
+    end
 end
 
 if strcmp(state.main_state,'get target orbit')
@@ -151,7 +151,7 @@ if strcmp(state.main_state,'get target orbit')
         state.main_state='detumble';
     elseif estimator.valid_target_gps
         state.main_state='rendezvous';
-    end 
+    end
     %calculate pointing strategy
     r_hat_eci= estimator.position_eci/norm(estimator.position_eci);
     r_hat_body= utl_rotateframe(estimator.quat_body_eci,r_hat_eci);
@@ -169,7 +169,7 @@ if strcmp(state.main_state,'rendezvous')
         state.main_state='detumble';
     elseif norm(estimator.target_position_eci-estimator.position_eci)<0.1 && norm(estimator.target_velocity_eci-estimator.velocity_eci)<0.01
         state.main_state='docking';
-    end 
+    end
     %calculate pointing strategy
     r_hat_eci= estimator.position_eci/norm(estimator.position_eci);
     sat2target_r_eci= -estimator.position_eci+estimator.target_position_eci;
@@ -211,7 +211,7 @@ elseif all(isfinite([state.primary_current_direction_body; state.primary_desired
         state.secondary_desired_direction_body,...
         estimator.angular_rate_body);
 else
-    actuators.wheel_torque=zeros(3,1);%hold instead of stopping wheels 
+    actuators.wheel_torque=zeros(3,1);%hold instead of stopping wheels
 end
 if startsWith(state.main_state,"calibrate magnetometer ")
     if ~startsWith(previous_main_state,"calibrate magnetometer ")
