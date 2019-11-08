@@ -244,6 +244,30 @@ int ode23(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
 PAN_GNC_ODEXX_EXTERN_TEMPLATE(ode23, float);
 PAN_GNC_ODEXX_EXTERN_TEMPLATE(ode23, double);
 
+/** @fn ode45
+ *  @param[in]  ti       Initial conditions for the independant variable.
+ *  @param[in]  tf       Desired final state for the independant variable.
+ *  @param[in]  yi       Initial conditions of the dependant variables.
+ *  @param[out] yf       Final state of the system (dependant variables).
+ *  @param[in]  ne       Number of dependant variables.
+ *  @param[in]  bf       Buffer of length (9 * ne).
+ *  @param[in]  h_min    Minimum timestep allowed.
+ *  @param[in]  rel_tol  Relative tolerance.
+ *  @param[in]  abs_tol  Absolute tolerance.
+ *  @param[in]  max_iter Maximum number of allowed iterations.
+ *  @param[in]  f        Dependant variable update function.
+ *  @returns Zero on success (see implementation for more details).
+ *  Integrates the system using a variable step size fourth-fifth order method
+ *  from (ti, yi) -> (tf, yf) where yf is essentially the output. The step size
+ *  is bounded from below by h_min.
+ *  NOTE: Template specializations are provided for double and float types. */
+template <typename T>
+int ode45(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
+    T rel_tol, T abs_tol, unsigned int max_iter, void (*const f)(T, T const *, T *));
+
+PAN_GNC_ODEXX_EXTERN_TEMPLATE(ode45, float);
+PAN_GNC_ODEXX_EXTERN_TEMPLATE(ode45, double);
+
 }  // namespace gnc
 
 #endif

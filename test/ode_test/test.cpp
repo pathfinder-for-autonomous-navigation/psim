@@ -107,10 +107,32 @@ void test_ode_ode23sho() {
   TEST_ASSERT_DOUBLE_WITHIN(2e-3, cos(7.5), yf[0]);
 }
 
+void test_ode_ode45sho() {
+  PAN_GNC_ODEXX_TEST_VARS(9);
+  int code;
+  // Check against cos(1.0) and assert the error code is OK
+  code = gnc::ode45(ti, 1.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
+  TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(1.0), yf[0]);
+  // Check against cos(5.0) and assert the error code is OK
+  code = gnc::ode45(ti, 5.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
+  TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(5.0), yf[0]);
+  // Check against cos(6.5) and assert the error code is OK
+  code = gnc::ode45(ti, 6.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
+  TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(6.5), yf[0]);
+  // Check against cos(7.5) and assert the error code is OK
+  code = gnc::ode45(ti, 7.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 2000, fsho);
+  TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
+  TEST_ASSERT_DOUBLE_WITHIN(2e-3, cos(7.5), yf[0]);
+}
+
 void test() {
   RUN_TEST(test_ode_ode1sho);
   RUN_TEST(test_ode_ode2sho);
   RUN_TEST(test_ode_ode3sho);
   RUN_TEST(test_ode_ode4sho);
   RUN_TEST(test_ode_ode23sho);
+  RUN_TEST(test_ode_ode45sho);
 }
