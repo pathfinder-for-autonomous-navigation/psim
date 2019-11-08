@@ -86,7 +86,6 @@ void test_ode_ode4sho() {
   TEST_ASSERT_EQUAL_DOUBLE(-0.295519962530663, y[3][1]);
 }
 
-#ifndef CI_BUILD
 void test_ode_ode23sho() {
   PAN_GNC_ODEXX_TEST_VARS(6);
   int code;
@@ -107,14 +106,11 @@ void test_ode_ode23sho() {
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
   TEST_ASSERT_DOUBLE_WITHIN(2e-3, cos(7.5), yf[0]);
 }
-#endif
 
 void test() {
   RUN_TEST(test_ode_ode1sho);
   RUN_TEST(test_ode_ode2sho);
   RUN_TEST(test_ode_ode3sho);
   RUN_TEST(test_ode_ode4sho);
-#ifndef CI_BUILD
   RUN_TEST(test_ode_ode23sho);
-#endif
 }
