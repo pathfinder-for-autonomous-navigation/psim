@@ -81,9 +81,13 @@ void estimate_attitude(AttitudeEstimatorState &state,
   if (data.t - state.t > 1.0) state = AttitudeEstimatorState();
 
   // Query the magnetic field and sun vector environmental models
-  lin::Vector3f b_eci, s_eci;
+  lin::Vector3f b_eci, s_eci, r_ecef = {
+    static_cast<float>(data.r_ecef(0)),
+    static_cast<float>(data.r_ecef(1)),
+    static_cast<float>(data.r_ecef(2))
+  };
   env::sun_vector(data.t, s_eci);
-  env::magnetic_field(data.t, data.r_ecef, b_eci);
+  env::magnetic_field(data.t, r_ecef, b_eci);
 
   // Perform triad and check result
   lin::Vector4f q_body_eci;
