@@ -15,6 +15,7 @@
 #endif
 #define PAN_PSIM_TEST_TEST_HPP_
 
+#define UNITY_EXCLUDE_MATH_H
 #include <unity.h>
 
 #define TEST_ASSERT_DOUBLE_VEC_NEAR(t, u, v) \

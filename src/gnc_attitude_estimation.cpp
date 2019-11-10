@@ -15,7 +15,6 @@
 #include <gnc_utilities.hpp>
 
 #include <cmath>
-#include <limits>
 
 static_assert(std::numeric_limits<double>::has_quiet_NaN,
     "GNC code requires quiet NaN's to be available.");

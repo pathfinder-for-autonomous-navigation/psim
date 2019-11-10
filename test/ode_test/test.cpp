@@ -13,6 +13,7 @@
 #include "../test.hpp"
 
 #include <gnc_ode.hpp>
+#include <cmath>
 
 #define PAN_GNC_ODEX_TEST_VARS(n) \
     unsigned int const nt = 4; \
@@ -92,19 +93,19 @@ void test_ode_ode23sho() {
   // Check against cos(1.0) and assert the error code is OK
   code = gnc::ode23(ti, 1.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(1.0), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, std::cos(1.0), yf[0]);
   // Check against cos(5.0) and assert the error code is OK
   code = gnc::ode23(ti, 5.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(5.0), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, std::cos(5.0), yf[0]);
   // Check against cos(6.5) and assert the error code is OK
   code = gnc::ode23(ti, 6.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(6.5), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, std::cos(6.5), yf[0]);
   // Check against cos(7.5) and assert the error code is OK
   code = gnc::ode23(ti, 7.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 2000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(2e-3, cos(7.5), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(2e-3, std::cos(7.5), yf[0]);
 }
 
 void test_ode_ode45sho() {
@@ -113,19 +114,19 @@ void test_ode_ode45sho() {
   // Check against cos(1.0) and assert the error code is OK
   code = gnc::ode45(ti, 1.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(1.0), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, std::cos(1.0), yf[0]);
   // Check against cos(5.0) and assert the error code is OK
   code = gnc::ode45(ti, 5.0, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(5.0), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, std::cos(5.0), yf[0]);
   // Check against cos(6.5) and assert the error code is OK
   code = gnc::ode45(ti, 6.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 1000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(1e-3, cos(6.5), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(1e-3, std::cos(6.5), yf[0]);
   // Check against cos(7.5) and assert the error code is OK
   code = gnc::ode45(ti, 7.5, yi, yf, ne, bf, 1e-4, 1e-6, 1e-6, 2000, fsho);
   TEST_ASSERT_EQUAL_INT(gnc::ODE_ERR_OK, code);
-  TEST_ASSERT_DOUBLE_WITHIN(2e-3, cos(7.5), yf[0]);
+  TEST_ASSERT_DOUBLE_WITHIN(2e-3, std::cos(7.5), yf[0]);
 }
 
 void test() {

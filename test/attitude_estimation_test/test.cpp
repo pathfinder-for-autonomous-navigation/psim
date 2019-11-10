@@ -13,7 +13,6 @@
 #include "../test.hpp"
 
 #include <gnc_attitude_estimation.hpp>
-
 #include <cmath>
 
 void test_nan_intputs() {
