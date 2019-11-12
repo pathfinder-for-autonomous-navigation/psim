@@ -48,7 +48,8 @@ AttitudeEstimate::AttitudeEstimate() {
  *  quaternion q_body_eci. */
 static int estimate_q_body_eci(double t, lin::Vector3d const &r_ecef,
     lin::Vector3f const &s_body, lin::Vector3f const &b_body, lin::Vector4f &q_body_eci) {
-  // Setup the rest of the triad inputs
+  // Setup the rest of the triad inputs (including expected sun and magnetic
+  // field vectors in ECI)
   lin::Vector3f s_eci, b_eci, r_ecef_f({
     static_cast<float>(r_ecef(0)),
     static_cast<float>(r_ecef(1)),

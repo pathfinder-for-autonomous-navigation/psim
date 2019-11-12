@@ -1,5 +1,5 @@
 //
-// test/ode_test/test.cpp
+// test/test_all/ode_test.cpp
 // PSim
 //
 // Contributors:
@@ -10,7 +10,8 @@
 // Cornell Univeristy
 //
 
-#include "../test.hpp"
+#include "test.hpp"
+#include "ode_test.hpp"
 
 #include <gnc_ode.hpp>
 #include <cmath>
@@ -39,7 +40,7 @@ static void fsho(double t, double const *y, double *dy) {
   dy[1] = -y[0];
 }
 
-void test_ode_ode1sho() {
+void test_ode_ode1_sho() {
   PAN_GNC_ODEX_TEST_VARS(1)
   gnc::ode1(t, nt, y, ne, bf, fsho);
   // Check against MATLAB output
@@ -51,7 +52,7 @@ void test_ode_ode1sho() {
   TEST_ASSERT_EQUAL_DOUBLE(-0.299000000000000, y[3][1]);
 }
 
-void test_ode_ode2sho() {
+void test_ode_ode2_sho() {
   PAN_GNC_ODEX_TEST_VARS(3)
   gnc::ode2(t, nt, y, ne, bf, fsho);
   // Check against MATLAB output
@@ -63,7 +64,7 @@ void test_ode_ode2sho() {
   TEST_ASSERT_EQUAL_DOUBLE(-0.296007500000000, y[3][1]);
 }
 
-void test_ode_ode3sho() {
+void test_ode_ode3_sho() {
   PAN_GNC_ODEX_TEST_VARS(4)
   gnc::ode3(t, nt, y, ne, bf, fsho);
   // Check against MATLAB output
@@ -75,7 +76,7 @@ void test_ode_ode3sho() {
   TEST_ASSERT_EQUAL_DOUBLE(-0.295517479171296, y[3][1]);
 }
 
-void test_ode_ode4sho() {
+void test_ode_ode4_sho() {
   PAN_GNC_ODEX_TEST_VARS(5)
   gnc::ode4(t, nt, y, ne, bf, fsho);
   // Check against MATLAB output
@@ -87,7 +88,7 @@ void test_ode_ode4sho() {
   TEST_ASSERT_EQUAL_DOUBLE(-0.295519962530663, y[3][1]);
 }
 
-void test_ode_ode23sho() {
+void test_ode_ode23_sho() {
   PAN_GNC_ODEXX_TEST_VARS(6);
   int code;
   // Check against cos(1.0) and assert the error code is OK
@@ -108,7 +109,7 @@ void test_ode_ode23sho() {
   TEST_ASSERT_DOUBLE_WITHIN(2e-3, std::cos(7.5), yf[0]);
 }
 
-void test_ode_ode45sho() {
+void test_ode_ode45_sho() {
   PAN_GNC_ODEXX_TEST_VARS(9);
   int code;
   // Check against cos(1.0) and assert the error code is OK
@@ -129,11 +130,11 @@ void test_ode_ode45sho() {
   TEST_ASSERT_DOUBLE_WITHIN(2e-3, std::cos(7.5), yf[0]);
 }
 
-void test() {
-  RUN_TEST(test_ode_ode1sho);
-  RUN_TEST(test_ode_ode2sho);
-  RUN_TEST(test_ode_ode3sho);
-  RUN_TEST(test_ode_ode4sho);
-  RUN_TEST(test_ode_ode23sho);
-  RUN_TEST(test_ode_ode45sho);
+void ode_test() {
+  RUN_TEST(test_ode_ode1_sho);
+  RUN_TEST(test_ode_ode2_sho);
+  RUN_TEST(test_ode_ode3_sho);
+  RUN_TEST(test_ode_ode4_sho);
+  RUN_TEST(test_ode_ode23_sho);
+  RUN_TEST(test_ode_ode45_sho);
 }

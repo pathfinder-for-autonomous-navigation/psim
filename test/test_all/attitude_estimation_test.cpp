@@ -1,5 +1,5 @@
 //
-// test/attitude_estimation_test/test.cpp
+// test/test_all/attitude_estimation_test.cpp
 // PSim
 //
 // Contributors:
@@ -10,12 +10,12 @@
 // Cornell Univeristy
 //
 
-#include "../test.hpp"
+#include "test.hpp"
+#include "attitude_estimation_test.hpp"
 
 #include <gnc_attitude_estimation.hpp>
-#include <cmath>
 
-void test_nan_intputs() {
+void test_attitude_estimation_nan_inputs() {
   gnc::AttitudeEstimatorState state;
   gnc::AttitudeEstimatorData data;
   gnc::AttitudeEstimate estimate;
@@ -25,6 +25,6 @@ void test_nan_intputs() {
   TEST_ASSERT_TRUE(std::isnan(estimate.w_body(0)));
 }
 
-void test() {
-  RUN_TEST(test_nan_intputs);
+void attitude_estimation_test() {
+  RUN_TEST(test_attitude_estimation_nan_inputs);
 }

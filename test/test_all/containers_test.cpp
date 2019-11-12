@@ -1,5 +1,5 @@
 //
-// test/containers_test/test.cpp
+// test/test_all/containers_test.cpp
 // PSim
 //
 // Contributors:
@@ -10,7 +10,8 @@
 // Cornell Univeristy
 //
 
-#include "../test.hpp"
+#include "test.hpp"
+#include "containers_test.hpp"
 
 #include <gnc_containers.hpp>
 
@@ -45,7 +46,7 @@ void subtest_circular_buffer(gnc::CircularBuffer<float, 3> &buffer) {
   TEST_ASSERT_EQUAL_FLOAT(buffer[2], 3.0f);
 }
 
-void test_circular_buffer() {
+void test_containers_circular_buffer() {
   gnc::CircularBuffer<float, 3> buffer;
   for (unsigned int i = 0; i < 4; i++) { // Test many starting offsets
     subtest_circular_buffer(buffer);
@@ -53,6 +54,6 @@ void test_circular_buffer() {
   }
 }
 
-void test() {
-  RUN_TEST(test_circular_buffer);
+void containers_test() {
+  RUN_TEST(test_containers_circular_buffer);
 }

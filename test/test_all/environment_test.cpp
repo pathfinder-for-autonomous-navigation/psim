@@ -1,5 +1,5 @@
 //
-// test/environment_test/test.cpp
+// test/test_all/environment_test.cpp
 // PSim
 //
 // Contributors:
@@ -10,7 +10,8 @@
 // Cornell Univeristy
 //
 
-#include "../test.hpp"
+#include "test.hpp"
+#include "environment_test.hpp"
 
 #include <gnc_constants.hpp>
 #include <gnc_environment.hpp>
@@ -24,7 +25,7 @@ static_assert(gnc::constant::init_gps_time_of_week == 0,
 static_assert(gnc::constant::init_gps_nanoseconds == 0,
     "Tests are only applicable if the GPS nanoseconds is 0!");
 
-void test_env_earth_attitude() {
+void test_environment_earth_attitude() {
   lin::Vector3d w;
   lin::Vector4d q;
   // Calculate and check for t=0.0 (comparing against MATLAB)
@@ -71,7 +72,7 @@ void test_env_earth_attitude() {
   }));
 }
 
-void test_env_sun_vector() {
+void test_environment_sun_vector() {
   lin::Vector3f s;
   // Calculate and check for t=0.0 (comparing against MATLAB)
   gnc::env::sun_vector(0.0L, s);
@@ -96,7 +97,7 @@ void test_env_sun_vector() {
   }));
 }
 
-void test_env_magnetic_field() {
+void test_environment_magnetic_field() {
   lin::Vector3f b, r;
   // Calculate and check for t=0.0 (comparing against MATLAB)
   r = { 5.430929361985142e6f, 2.949986114465339e6f, 2.949986114465338e6f };
@@ -124,8 +125,8 @@ void test_env_magnetic_field() {
   }));
 }
 
-void test() {
-  RUN_TEST(test_env_earth_attitude);
-  RUN_TEST(test_env_sun_vector);
-  RUN_TEST(test_env_magnetic_field);
+void environment_test() {
+  RUN_TEST(test_environment_earth_attitude);
+  RUN_TEST(test_environment_sun_vector);
+  RUN_TEST(test_environment_magnetic_field);
 }
