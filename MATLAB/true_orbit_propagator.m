@@ -10,13 +10,6 @@ function [t_array, states, orb_elemsf] = true_orbit_propagator(r,v,start_time,du
     state0(1:3)= r;
     state0(4:6)= v;
     
-%     %intialize for initial gravitational acceleration
-%     [quat_ecef_eci_initial,~]=env_earth_attitude(current_time);
-%     [quat_ecef_eci_final,~]=env_earth_attitude(current_time+delta_time);
-%     quat_ecef_eci_initial= utl_array2quaternion(quat_ecef_eci_initial);
-%     quat_ecef_eci_final= utl_array2quaternion(quat_ecef_eci_final);
-%     state0(7:10) = quat_body_eci
-    
     
     %create tarray
     opts = odeset('RelTol', 1E-12, 'AbsTol', 1E-3);
@@ -53,7 +46,7 @@ function statef = state_dot(t, state0)
         acc_solrad = env_solradpressure(r,const.rp_earth,A,const.MASS); %returns acceleration in ECI
         
         %use perihelion date instead of t_array?
-        datetime = utl_time2datetimeUTC(t,0); %second input should be init_GPS_week_number(int): initial GPS week number.  
+        datetime = utl_time2datetimeUTC(t,const.INITGPS_WN); 
         
         [rp_earth_moon,~] = planetEphemeris(juliandate(datetime),'Moon','Earth');
         rp_earth_moon = 1E3*rp_earth_moon'; %positional vector from Moon to Earth; used for 3rd body perturb calcs
@@ -74,15 +67,15 @@ function statef = state_dot(t, state0)
         acc_Js = gravitysphericalharmonic(r', 'EGM2008',10);
         
 %         % gravitational force in ECI
-%         quat_ecef_eci= earth_first_order_rotation(t_array);
-%         quat_eci_ecef= conj(quat_ecef_eci);
-%         quat_body_eci=utl_array2quaternion(state0(7:10));
-%         quat_eci_body= conj(quat_body_eci);
-%         quat_body_ecef=quat_eci_ecef*quat_body_eci;
-%         pos_eci=state0(1:3);
-%         pos_ecef=rotateframe(quat_ecef_eci,pos_eci')';
-%         [g_ecef,~,G_ecef]= env_gravity(t_array,pos_ecef);
-%         g_eci=rotateframe(quat_eci_ecef,g_ecef')';
+        quat_ecef_eci= earth_first_order_rotation(t_array);
+        quat_eci_ecef= conj(quat_ecef_eci);
+        quat_body_eci=utl_array2quaternion(state0(7:10));
+        quat_eci_body= conj(quat_body_eci);
+        quat_body_ecef=quat_eci_ecef*quat_body_eci;
+        pos_eci=state0(1:3);
+        pos_ecef=rotateframe(quat_ecef_eci,pos_eci')';
+        [g_ecef,~,G_ecef]= env_gravity(t_array,pos_ecef);
+        g_eci=rotateframe(quat_eci_ecef,g_ecef')';
 
         statef = zeros([6,1]);
         statef(1:3)=state0(4:6);

@@ -9,10 +9,9 @@ global const
 %convert to from ECEF --> ECI
 for i = 1:num_states
    %convert time to Julian Date Vector
-   datetime = utl_time2datetimeUTC(data(i,1),0); %second input should be init_GPS_week_number(int): initial GPS week number.  
-   jd = juliandate(datetime); %default timezone is UTC
+   pantime = utl_grace2pantime(data(i,1));
    
-   [r_ECI, v_ECI] = ECEFtoECI(jd,data(i,2:4)',data(i,8:10)');
+   [r_ECI, v_ECI] = ECEFtoECI(pantime,data(i,2:4)',data(i,8:10)');
    data(i,2:4) = r_ECI; %convert position in ECEF to ECI
    data(i,8:10) = v_ECI; %convert velocity in ECEF to ECI
 end
@@ -199,5 +198,5 @@ avg_zdoterr = mean(err(:,6));
 % ylabel('p'); 
 % xlabel('time (s)');
 % title('p semilatus rectum');
-%  
+ 
 toc
