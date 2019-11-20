@@ -10,6 +10,7 @@ import imaplib
 import base64
 import os
 import email
+import requests
 
 
 class RadioSession(object):
@@ -56,7 +57,7 @@ class RadioSession(object):
         self.mtmsn=-1
         self.confirmation_mtmsn=-1
         #send_uplinks keeps track of if the ground can send more uplinks. This allows us to make sure we are only sending one uplink at a time.
-        self.send_uplinks=True;
+        self.send_uplinks=True
 
         self.statefields={
             #dummy variable for statefields
@@ -96,7 +97,7 @@ class RadioSession(object):
 
         while self.running_logger:
             #.search() searches from mail. Data gives id's of all emails.
-            type, data = mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
+            _, data = mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
             mail_ids = data[0]
             id_list = mail_ids.split()
             self.processEmails(id_list, mail)
@@ -109,7 +110,7 @@ class RadioSession(object):
         for num in id_list:
             #.fetch() fetches the mail for given id where 'RFC822' is an Internet 
             # Message Access Protocol.
-            typ, data = mail.fetch(num,'(RFC822)')
+            _, data = mail.fetch(num,'(RFC822)')
                 
             #go through each component of data
             for response_part in data:

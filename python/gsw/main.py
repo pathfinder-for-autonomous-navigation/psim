@@ -1,4 +1,5 @@
-from flask import Flask
+from flask import Flask, request
+from argparse import ArgumentParser
 import threading
 import time
 import datetime
@@ -9,7 +10,7 @@ import os
 import email
 
 class readIridium(object):
-    def __init__(self, device_name, datastore, logger, radio_keys_config):
+    def __init__(self, radio_keys_config):
         '''
         Initialize session with the Quake radio.
         Args:
@@ -17,13 +18,6 @@ class readIridium(object):
         datastore: Datastore to which telemetry data will be published
         logger: Logger to which log lines should be committed
         '''
-
-        # Device connection
-        self.device_name = device_name
-
-        # Data logging
-        self.datastore = datastore
-        self.logger = logger
 
         #email
         self.username=radio_keys_config["email_username"]
@@ -54,10 +48,7 @@ class readIridium(object):
         '''
         self.imei = imei
         self.check_email_thread = threading.Thread(target=self.check_for_email)
-        self.running_logger = True
         self.check_email_thread.start()
-
-        print(f"Opened connection to {self.device_name} radio.")
         return True
 
     def check_for_email(self):
@@ -67,20 +58,18 @@ class readIridium(object):
         '''
             
         #connect to PAN email account  
-        try:
-            mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
-            mail.login(self.username, self.password)
-            mail.select('Inbox')
-            self.logger.put("Connected to Email")
-        except:
-            self.logger.put("Unable to connect to email")
+        mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+        mail.login(self.username, self.password)
+        mail.select('Inbox')
+        #self.logger.put("Connected to Email")
+        #self.logger.put("Unable to connect to email")
 
-        while self.running_logger:
-            #.search() searches from mail. Data gives id's of all emails.
-            type, data = mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
-            mail_ids = data[0]
-            id_list = mail_ids.split()
-            self.processEmails(id_list, mail)
+        #while self.running_logger:
+        #.search() searches from mail. Data gives id's of all emails.
+        _, data = mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
+        mail_ids = data[0]
+        id_list = mail_ids.split()
+        self.processEmails(id_list, mail)
 
     #This is just deserializing JSON for now, but in the future will be replaced with the actual deserialization scheme for downlink packets
     def process_downlink_packet(self, data):
@@ -90,7 +79,7 @@ class readIridium(object):
         for num in id_list:
             #.fetch() fetches the mail for given id where 'RFC822' is an Internet 
             # Message Access Protocol.
-            typ, data = mail.fetch(num,'(RFC822)')
+            _, data = mail.fetch(num,'(RFC822)')
                     
             #go through each component of data
             for response_part in data:
@@ -158,9 +147,10 @@ class readIridium(object):
                                         entry['field'] = key
                                         entry['val'] = data[key]
                                         entry['time'] = datetime.datetime.now()
-                                        self.datastore.consume_queue_item(entry)
+                                        #instead of putting it in datastore, send json object over http
+                                        #self.datastore.consume_queue_item(entry)
 
-# TODO post data from downlinks
+# TODO continuously post data from downlinks. the radio session is responsible for putting that info down into logs
 
 
 app = Flask(__name__)
@@ -171,6 +161,17 @@ def home():
 
 if __name__ == "__main__":
     #create a read Iridium object. 
-    #Do I create the object here on in State Session? Do I change state session so that it runs the flask server????
-    #readIridium = readIridium(radio_connected_device, radio_datastore, radio_logger, self.radio_keys_config)
+
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/radio_keys.json')) as radio_keys_config_file:
+            radio_keys_config = json.load(radio_keys_config_file)
+    except json.JSONDecodeError:
+        print("Could not load config file. Exiting.")
+        raise SystemExit
+    except KeyError:
+        print("Malformed config file. Exiting.")
+        raise SystemExit
+
+    readIridium = readIridium(radio_keys_config)
+    
     app.run(debug=True)
