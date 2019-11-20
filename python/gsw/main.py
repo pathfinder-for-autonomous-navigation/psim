@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from argparse import ArgumentParser
 import threading
 import time
@@ -40,13 +40,12 @@ class readIridium(object):
             #dummy variable for statefields
         }
         
-    def connect(self, imei):
+    def connect(self):
         '''
-        Starts serial connection to the desired device.
+        Starts checking for emails related to desired device.
         Args:
         - imei: IMEI number of Quake to connect to.
         '''
-        self.imei = imei
         self.check_email_thread = threading.Thread(target=self.check_for_email)
         self.check_email_thread.start()
         return True
@@ -148,22 +147,21 @@ class readIridium(object):
                                         entry['val'] = data[key]
                                         entry['time'] = datetime.datetime.now()
                                         #instead of putting it in datastore, send json object over http
-                                        #self.datastore.consume_queue_item(entry)
 
 # TODO continuously post data from downlinks. the radio session is responsible for putting that info down into logs
 
 
 app = Flask(__name__)
 
-@app.route("/")
+@app.route("/", methods=['GET'])
 def home():
-    return "Hello, World!"
+    return "Hello there!"
 
 if __name__ == "__main__":
-    #create a read Iridium object. 
-
+    #get data for connecting to Quake radio
     try:
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/radio_keys.json')) as radio_keys_config_file:
+        #
+        with open(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../usb_console/configs/radio_keys.json')))as radio_keys_config_file:
             radio_keys_config = json.load(radio_keys_config_file)
     except json.JSONDecodeError:
         print("Could not load config file. Exiting.")
@@ -171,7 +169,9 @@ if __name__ == "__main__":
     except KeyError:
         print("Malformed config file. Exiting.")
         raise SystemExit
-
+    
+    #create a readIridium object and start checking for emails related to the Quake
     readIridium = readIridium(radio_keys_config)
+    readIridium.connect()
     
     app.run(debug=True)

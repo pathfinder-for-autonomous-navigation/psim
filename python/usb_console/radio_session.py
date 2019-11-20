@@ -61,6 +61,7 @@ class RadioSession(object):
 
         self.statefields={
             #dummy variable for statefields
+            "field":35
         }
 
     def connect(self, imei):
@@ -182,10 +183,14 @@ class RadioSession(object):
 
     def read_state(self, field, timeout=None):
         '''
-        Read state.
+        Read state by sending a request for data from Flask server
         
         Read the latest value of the state field received via downlink with the name "field".
         '''
+        #use try except for logging errors (SEE: status codes https://scotch.io/tutorials/getting-started-with-python-requests-get-requests)
+        #i can now connect to the server and request strings. need to change this to get json
+        res = requests.get('http://127.0.0.1:5000/')
+        print(res.text)
         return self.statefields[field]
 
     def write_multiple_states(self, fields, vals, timeout=None):
