@@ -64,11 +64,11 @@ class readIridium(object):
         #self.logger.put("Unable to connect to email")
 
         #while self.running_logger:
-        #.search() searches from mail. Data gives id's of all emails.
-        _, data = mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
+        #.search() searches from mail. Data gives id's of all emails. sbdservice@sbd.iridium.com
+        _, data = mail.search(None, '(FROM "fy56@cornell.edu")', '(UNSEEN)')
         mail_ids = data[0]
         id_list = mail_ids.split()
-        self.processEmails(id_list, mail)
+        return self.processEmails(id_list, mail)
 
     #This is just deserializing JSON for now, but in the future will be replaced with the actual deserialization scheme for downlink packets
     def process_downlink_packet(self, data):
@@ -87,7 +87,7 @@ class readIridium(object):
                     msg = email.message_from_string(response_part[1].decode('utf-8'))
                     email_subject = msg['subject']
 
-                    #handles uplinks
+                    #handles uplink confirmations
                     if email_subject.find("SBD Mobile Terminated Message Queued for Unit: "+str(self.imei))==0:
                         for part in msg.walk():
                                 
@@ -105,7 +105,8 @@ class readIridium(object):
                                         self.mtmsn=int(line[line.find("MTMSN")+9:line.find("MTMSN")+11])
 
                     #handles downlinks
-                    if email_subject.find("SBD Msg From Unit: "+str(self.imei))==0:
+                    if 1==1:
+                    #if email_subject.find("SBD Msg From Unit: "+str(self.imei))==0:
                         #go through the email contents
                         for part in msg.walk():
                                 
@@ -129,49 +130,49 @@ class readIridium(object):
                                         else:
                                             #allow radio session to send more uplinks
                                             self.stop_uplinks=True
-                                                
 
                             #check if there is an email attachment
                             if part.get_filename() is not None:
                                 #get data from email attachment
                                 attachmentContents=part.get_payload(decode=True).decode('utf8')
                                 data=self.process_downlink_packet(attachmentContents)
+                                #this kinda works! server get contents of emails IF there is an unread email. now i need to send it to radiosession
+                                return data
                                     
                                 #iterate through each statefield key of the dictionary
                                 entry={}
                                 for key in self.statefields:
                                     #if the value for a statefield exists in the json object recieved, update the dictionary and add entry to datastore
-                                    if data.get(key)is not None:
-                                        self.statefields[key]=data[key]
+                                    #if data.get(key)is not None:
+                                    if 1==1:
+                                        #self.statefields[key]=data[key]
                                         entry['field'] = key
                                         entry['val'] = data[key]
                                         entry['time'] = datetime.datetime.now()
-                                        #instead of putting it in datastore, send json object over http
-
-# TODO continuously post data from downlinks. the radio session is responsible for putting that info down into logs
-
+                                        #return entry
 
 app = Flask(__name__)
 
 @app.route("/", methods=['GET'])
 def home():
-    return "Hello there!"
-
-if __name__ == "__main__":
-    #get data for connecting to Quake radio
+    #get keys for connecting to email and Quake radio
     try:
-        #
         with open(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../usb_console/configs/radio_keys.json')))as radio_keys_config_file:
             radio_keys_config = json.load(radio_keys_config_file)
     except json.JSONDecodeError:
-        print("Could not load config file. Exiting.")
+        print("Could not load radio keys. Exiting.")
         raise SystemExit
     except KeyError:
         print("Malformed config file. Exiting.")
         raise SystemExit
     
     #create a readIridium object and start checking for emails related to the Quake
-    readIridium = readIridium(radio_keys_config)
-    readIridium.connect()
-    
+    readIr = readIridium(radio_keys_config)
+    data=readIr.check_for_email()
+    if data is not None:
+        return data
+    else:
+        return "No email"
+
+if __name__ == "__main__":
     app.run(debug=True)
