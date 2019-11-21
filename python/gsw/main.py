@@ -136,7 +136,7 @@ class readIridium(object):
                                 #get data from email attachment
                                 attachmentContents=part.get_payload(decode=True).decode('utf8')
                                 data=self.process_downlink_packet(attachmentContents)
-                                #this kinda works! server get contents of emails IF there is an unread email. now i need to send it to radiosession
+                                #this works! server get contents of emails if there is an unread email and send json to radiosession
                                 return data
                                     
                                 #iterate through each statefield key of the dictionary
