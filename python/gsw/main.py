@@ -38,6 +38,7 @@ class readIridium(object):
 
         self.statefields={
             #dummy variable for statefields
+            "field": 20
         }
         
     def connect(self):
@@ -136,20 +137,17 @@ class readIridium(object):
                                 #get data from email attachment
                                 attachmentContents=part.get_payload(decode=True).decode('utf8')
                                 data=self.process_downlink_packet(attachmentContents)
-                                #this works! server get contents of emails if there is an unread email and send json to radiosession
-                                return data
                                     
                                 #iterate through each statefield key of the dictionary
                                 entry={}
                                 for key in self.statefields:
                                     #if the value for a statefield exists in the json object recieved, update the dictionary and add entry to datastore
-                                    #if data.get(key)is not None:
-                                    if 1==1:
-                                        #self.statefields[key]=data[key]
+                                    if data.get(key)is not None:
+                                        self.statefields[key]=data[key]
                                         entry['field'] = key
                                         entry['val'] = data[key]
                                         entry['time'] = datetime.datetime.now()
-                                        #return entry
+                                        return entry
 
 app = Flask(__name__)
 
@@ -169,6 +167,7 @@ def home():
     #create a readIridium object and start checking for emails related to the Quake
     readIr = readIridium(radio_keys_config)
     data=readIr.check_for_email()
+    
     if data is not None:
         return data
     else:

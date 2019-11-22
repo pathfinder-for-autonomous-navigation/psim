@@ -119,7 +119,8 @@ class SimulationRun(object):
                 radio_logger = Logger(radio_data_name, self.simulation_run_dir)
                 radio_session = RadioSession(radio_connected_device, radio_datastore, radio_logger, self.radio_keys_config)
 
-                if radio_session.connect(radio['imei']):
+                #if radio_session.connect(radio['imei']):
+                if radio_session.connect():
                     self.radios[radio_name] = radio_session
                     self.datastores[radio_data_name] = radio_datastore
                     self.loggers[radio_data_name] = radio_logger
