@@ -11,6 +11,7 @@
 //
 
 #include <gnc_attitude_estimation.hpp>
+#include <gnc_constants.hpp>
 #include <gnc_environment.hpp>
 #include <gnc_utilities.hpp>
 
@@ -45,20 +46,37 @@ AttitudeEstimate::AttitudeEstimate() {
  *  @returns Zero of success.
  *  Attempts to determine attitude given time, position, a sun vector, and
  *  magnetic field vector. The result, if succesful, is written into the
- *  quaternion q_body_eci. */
+ *  quaternion q_body_eci.
+ *  Prior to running triad, we ensure the following conditions are met:
+ *   - Magnitude of the expected magnetic field measurement is above the noise
+ *     floor of the magnetometer.
+ *   - Magnitude of the measured magnetic field is above the noise floor of the
+ *     magnetometer. */
 static int estimate_q_body_eci(double t, lin::Vector3d const &r_ecef,
     lin::Vector3f const &s_body, lin::Vector3f const &b_body, lin::Vector4f &q_body_eci) {
+
   // Setup the rest of the triad inputs (including expected sun and magnetic
   // field vectors in ECI)
-  lin::Vector3f s_eci, b_eci, r_ecef_f({
+  lin::Vector3f s_eci, b_eci, b_u_body, r_ecef_f({
     static_cast<float>(r_ecef(0)),
     static_cast<float>(r_ecef(1)),
     static_cast<float>(r_ecef(2))
   });
   env::sun_vector(t, s_eci);
   env::magnetic_field(t, r_ecef_f, b_eci);
+
+  // Verify magnetic field vectors have are large enough
+  if (lin::fro(b_eci) <= constant::b_noise_floor_f * constant::b_noise_floor_f ||
+      lin::fro(b_body) <= constant::b_noise_floor_f * constant::b_noise_floor_f)
+    return 1;
+
+  // Convert to unit vectors
+  b_eci = b_eci / lin::norm(b_eci);
+  b_u_body = b_body / lin::norm(b_body);
+
   // Perform triad and return the result code (result is written to q_body_eci)
-  return utl::triad(s_eci, b_eci, s_body, b_body, q_body_eci);
+  return utl::triad(s_eci, b_eci, s_body, b_u_body, q_body_eci);
+
 }
 
 /** @fn estimate_w_body
@@ -66,12 +84,15 @@ static int estimate_q_body_eci(double t, lin::Vector3d const &r_ecef,
  *  time t and a quaternion q_n measured at a time t + dt. */
 static void estimate_w_body(double dt, lin::Vector4f const &q_m,
     lin::Vector4f const &q_n, lin::Vector3f &w) {
+
   // Find the 'difference' between the two quaternions
   lin::Vector4f q_n_conj, dq;
   utl::quat_conj(q_n, q_n_conj);
   utl::quat_cross_mult(q_m, q_n_conj, dq);
+
   // Approximate w_body
-  w = lin::ref<3, 1>((2.0f / static_cast<float>(dt)) * dq, 0, 0);
+  w = ( dq(3) < 0.0f ? -1.0f : 1.0f ) * lin::ref<3, 1>((2.0f / static_cast<float>(dt)) * dq, 0, 0);
+
 }
 
 void estimate_attitude(AttitudeEstimatorState &state,
@@ -81,9 +102,10 @@ void estimate_attitude(AttitudeEstimatorState &state,
   if (data.t - state.t > 0.5) state = AttitudeEstimatorState();
 
   // Default everything to NaN and ensure the magnetic field vector, sun vector,
-  // and ECEF position were given
+  // ECEF position, and time were given
   estimate = AttitudeEstimate();
-  if (std::isnan(data.b_body(0)) || std::isnan(data.s_body(0)) || std::isnan(data.r_ecef(0)))
+  if (std::isnan(data.b_body(0)) || std::isnan(data.s_body(0)) || std::isnan(data.r_ecef(0)) ||
+      std::isnan(data.t))
     return;
 
   // Estimate the attitude quaternion
