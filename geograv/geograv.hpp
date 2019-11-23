@@ -473,9 +473,5 @@ inline real_t GeoGrav(Vector position_itrs, Vector& acceleration, const Coeff<NM
     return pot*f;
   }
 
-// Model parameters
-constexpr Coeff<0> J2={0.6378136300E+07L,0.3986004415E+15L,-4.841694573200E-04L,{0},{0},{1}};
-
-
 }
 #endif /* GEOGRAV_HPP */
