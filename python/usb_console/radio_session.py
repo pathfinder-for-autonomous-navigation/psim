@@ -66,16 +66,17 @@ class RadioSession(object):
 
     def connect(self):
         '''
-        Starts http connection to flask server
+        Starts http connection to flask server. Later change this to backend server
         '''
         self.check_updates_thread = threading.Thread(target=self.check_for_updates)
         self.running_logger = True
         self.check_updates_thread.start()
     
     def check_for_updates(self):
-        #get a get request to the flask server
+        #send a get request to the flask server
         while self.running_logger:
             try:
+                #change this server instead of root later
                 req = requests.get('http://127.0.0.1:5000/')
                 print(req.text)
             except:

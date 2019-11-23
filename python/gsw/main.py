@@ -43,9 +43,7 @@ class readIridium(object):
         
     def connect(self):
         '''
-        Starts checking for emails related to desired device.
-        Args:
-        - imei: IMEI number of Quake to connect to.
+        Starts checking for emails
         '''
         self.check_email_thread = threading.Thread(target=self.check_for_email)
         self.check_email_thread.start()
@@ -53,18 +51,14 @@ class readIridium(object):
 
     def check_for_email(self):
         '''
-        Read device output for debug messages and state variable updates. Record debug messages
-        to the logging file, and update the console's record of the state.
+        Add description here later
         '''
             
         #connect to PAN email account  
         mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
         mail.login(self.username, self.password)
         mail.select('Inbox')
-        #self.logger.put("Connected to Email")
-        #self.logger.put("Unable to connect to email")
 
-        #while self.running_logger:
         #.search() searches from mail. Data gives id's of all emails. sbdservice@sbd.iridium.com
         _, data = mail.search(None, '(FROM "fy56@cornell.edu")', '(UNSEEN)')
         mail_ids = data[0]
@@ -89,7 +83,7 @@ class readIridium(object):
                     email_subject = msg['subject']
 
                     #handles uplink confirmations
-                    if email_subject.find("SBD Mobile Terminated Message Queued for Unit: "+str(self.imei))==0:
+                    if email_subject.find("SBD Mobile Terminated Message Queued for Unit: "==0:
                         for part in msg.walk():
                                 
                             if part.get_content_maintype() == 'multipart':
@@ -107,7 +101,7 @@ class readIridium(object):
 
                     #handles downlinks
                     if 1==1:
-                    #if email_subject.find("SBD Msg From Unit: "+str(self.imei))==0:
+                    #if email_subject.find("SBD Msg From Unit: "==0:
                         #go through the email contents
                         for part in msg.walk():
                                 
@@ -137,8 +131,10 @@ class readIridium(object):
                                 #get data from email attachment
                                 attachmentContents=part.get_payload(decode=True).decode('utf8')
                                 data=self.process_downlink_packet(attachmentContents)
+                                return data
                                     
-                                #iterate through each statefield key of the dictionary
+                                # not sure if we need this part anymore
+                                # iterate through each statefield key of the dictionary.
                                 entry={}
                                 for key in self.statefields:
                                     #if the value for a statefield exists in the json object recieved, update the dictionary and add entry to datastore
@@ -147,31 +143,38 @@ class readIridium(object):
                                         entry['field'] = key
                                         entry['val'] = data[key]
                                         entry['time'] = datetime.datetime.now()
-                                        return entry
+                                        #return entry
 
 app = Flask(__name__)
 
-@app.route("/", methods=['GET'])
-def home():
-    #get keys for connecting to email and Quake radio
-    try:
-        with open(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../usb_console/configs/radio_keys.json')))as radio_keys_config_file:
-            radio_keys_config = json.load(radio_keys_config_file)
-    except json.JSONDecodeError:
-        print("Could not load radio keys. Exiting.")
-        raise SystemExit
-    except KeyError:
-        print("Malformed config file. Exiting.")
-        raise SystemExit
+#get keys for connecting to email and Quake radio
+try:
+    with open(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../usb_console/configs/radio_keys.json')))as radio_keys_config_file:
+        radio_keys_config = json.load(radio_keys_config_file)
+except json.JSONDecodeError:
+    print("Could not load radio keys. Exiting.")
+    raise SystemExit
+except KeyError:
+    print("Malformed config file. Exiting.")
+    raise SystemExit
     
-    #create a readIridium object and start checking for emails related to the Quake
-    readIr = readIridium(radio_keys_config)
+#create a readIridium object and start checking for emails related to the Quake
+readIr = readIridium(radio_keys_config)
+
+#keep on posting data to clojure backend
+@app.route("/", methods=['POST'])
+def home():
     data=readIr.check_for_email()
     
     if data is not None:
-        return data
+        #url is api endpoint. i'm not sure what port it would be?
+        url='206.189.193.31:'
+        #need to figure out how to get login authorization since key/token expires
+        key=""
+        r = requests.post(url, data) 
+        return r.text
     else:
-        return "No email"
+        return ""
 
 if __name__ == "__main__":
     app.run(debug=True)
