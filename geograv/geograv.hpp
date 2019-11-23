@@ -242,7 +242,13 @@ struct Coeff{
     real_t _sqrttable[std::max(2*NMAX+ 5, 15) + 1];
 
     /**
-    returns the sqrt of an integer range 0 to std::max(2*NMAX+ 5, 15)
+    returns the maximum degree and order of the model.
+    */
+    constexpr int max_degree() const
+    { return NMAX; }
+
+    /**
+    returns the sqrt of an integer range 0 to std::max(2*NMAX+ 5, 15).
     */
     inline real_t intsqrt(int i) const
     {return _sqrttable[i];}
@@ -254,7 +260,7 @@ struct Coeff{
      * @param[in] m the order.
      * @return the one-dimensional index.
      **********************************************************************/
-    inline int index(int n, int m) const
+    constexpr int index(int n, int m) const
     { return ((((NMAX<<1) - m + 1)*m)>>1) + n; }
 
     /**
@@ -278,9 +284,9 @@ struct Coeff{
     cast the Coeff to a Coeff with different maximum degree and order
     */
     template<int OTHER_NMAX>//new Coeff maximum degree and order
-    explicit operator Coeff<OTHER_NMAX>() const{
+    constexpr operator Coeff<OTHER_NMAX>() const{
       static_assert(OTHER_NMAX<=NMAX,"new max order and degree must be equal or lower");
-      Coeff<OTHER_NMAX> other;
+      Coeff<OTHER_NMAX> other={0,0,0,{0},{0},{0}};
       other.earth_radius= earth_radius;
       other.earth_gravity_constant= earth_gravity_constant;
       other.J2= J2;
