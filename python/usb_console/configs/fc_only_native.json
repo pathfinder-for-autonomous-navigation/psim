@@ -1,14 +1,6 @@
 {
     "seed" : 2,
     "sim_duration" : 0,
-    "server" : "206.189.193.31" ,
-    "auth": [
-        {
-            "username":"user",
-            "password":"pass"
-        }
-
-    ],
     "devices" : [
         {
             "name": "FlightController",

@@ -83,7 +83,7 @@ class readIridium(object):
                     email_subject = msg['subject']
 
                     #handles uplink confirmations
-                    if email_subject.find("SBD Mobile Terminated Message Queued for Unit: "==0:
+                    if email_subject.find("SBD Mobile Terminated Message Queued for Unit: ")==0:
                         for part in msg.walk():
                                 
                             if part.get_content_maintype() == 'multipart':
@@ -132,8 +132,8 @@ class readIridium(object):
                                 attachmentContents=part.get_payload(decode=True).decode('utf8')
                                 data=self.process_downlink_packet(attachmentContents)
                                 return data
-                                    
-                                # not sure if we need this part anymore
+
+                                '''
                                 # iterate through each statefield key of the dictionary.
                                 entry={}
                                 for key in self.statefields:
@@ -144,6 +144,7 @@ class readIridium(object):
                                         entry['val'] = data[key]
                                         entry['time'] = datetime.datetime.now()
                                         #return entry
+                                '''
 
 app = Flask(__name__)
 
@@ -151,8 +152,10 @@ app = Flask(__name__)
 try:
     with open(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../usb_console/configs/radio_keys.json')))as radio_keys_config_file:
         radio_keys_config = json.load(radio_keys_config_file)
+    with open(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../usb_console/configs/server_keys.json')))as server_keys_config_file:
+        server_keys_config = json.load(server_keys_config_file)
 except json.JSONDecodeError:
-    print("Could not load radio keys. Exiting.")
+    print("Could not load config files. Exiting.")
     raise SystemExit
 except KeyError:
     print("Malformed config file. Exiting.")
@@ -160,6 +163,10 @@ except KeyError:
     
 #create a readIridium object and start checking for emails related to the Quake
 readIr = readIridium(radio_keys_config)
+server = radio_keys_config["server"]
+auth = radio_keys_config["auth"]
+username = auth["user"]
+password = auth["password"]
 
 #keep on posting data to clojure backend
 @app.route("/", methods=['POST'])
