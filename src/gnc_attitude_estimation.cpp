@@ -66,8 +66,8 @@ static int estimate_q_body_eci(double t, lin::Vector3d const &r_ecef,
   env::magnetic_field(t, r_ecef_f, b_eci);
 
   // Verify magnetic field vectors have are large enough
-  if (lin::fro(b_eci) <= constant::b_noise_floor_f * constant::b_noise_floor_f ||
-      lin::fro(b_body) <= constant::b_noise_floor_f * constant::b_noise_floor_f)
+  constexpr static float threshhold = constant::b_noise_floor_f * constant::b_noise_floor_f;
+  if (lin::fro(b_eci) <= threshhold || lin::fro(b_body) <= threshhold)
     return 1;
 
   // Convert to unit vectors
