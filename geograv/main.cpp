@@ -14,7 +14,7 @@ using namespace GeographicLib;
 
 
 
-
+constexpr geograv::Coeff<20> EGM96_trunc(EGM96);
 
 int main() {
   try {
@@ -33,7 +33,7 @@ int main() {
     r_test.y=y;
     r_test.z=z;
     geograv::Vector g_test;
-    double pot_test=geograv::GeoGrav(r_test, g_test,EGM96,true);
+    double pot_test=geograv::GeoGrav(r_test, g_test,EGM96_trunc,true);
     // g_test.x+=-6.385064555426945e+00;
     // g_test.y+=-4.941552915469322e+00;
     // g_test.z+=2.408670177909601e+00;

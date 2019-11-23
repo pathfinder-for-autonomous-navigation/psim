@@ -1,7 +1,7 @@
 #include "geograv.hpp"
 #include "EGM96.hpp"
 
-geograv::Coeff<20> EGM96_truncated= geograv::Coeff<20>(EGM96);
+
 void setup() {
     // put your setup code here, to run once:
     pinMode(1,INPUT);
@@ -20,6 +20,7 @@ void loop() {
     geograv::Vector g_test;
     int starttime=micros();
     int starttimemil=millis();
+    static constexpr geograv::Coeff<20> EGM96_truncated(EGM96);
     double pot_test=geograv::GeoGrav(r_test, g_test,EGM96_truncated,true);
     int endtime=micros();
     int endtimemil=millis();
