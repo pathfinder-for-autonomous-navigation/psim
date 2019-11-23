@@ -14,7 +14,7 @@ using namespace GeographicLib;
 
 
 
-constexpr geograv::Coeff<20> EGM96_trunc(EGM96);
+const geograv::Coeff<400> EGM96_trunc(EGM96);
 
 int main() {
   try {

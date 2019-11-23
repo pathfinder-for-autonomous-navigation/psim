@@ -285,7 +285,7 @@ struct Coeff{
     */
     template<int OTHER_NMAX>//new Coeff maximum degree and order
     constexpr operator Coeff<OTHER_NMAX>() const{
-      static_assert(OTHER_NMAX<=NMAX,"new max order and degree must be equal or lower");
+      //static_assert(OTHER_NMAX<=NMAX,"new max order and degree must be equal or lower");
       Coeff<OTHER_NMAX> other={0,0,0,{0},{0},{0}};
       other.earth_radius= earth_radius;
       other.earth_gravity_constant= earth_gravity_constant;
@@ -302,7 +302,10 @@ struct Coeff{
         }
       }
       for (int i=0; i< (std::max(2*OTHER_NMAX+ 5, 15) + 1); i++){
-        other._sqrttable[i]=_sqrttable[i];
+        if (i>std::max(2*NMAX+ 5, 15)){
+          other._sqrttable[i]=std::sqrt(double(i));
+        }else
+          other._sqrttable[i]=_sqrttable[i];
       }
       return other;
     }
