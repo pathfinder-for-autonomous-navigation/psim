@@ -9,3 +9,4 @@ logs/
 *.mexa64
 *.mexmaci64
 *.mexw64
+geograv/build/*
