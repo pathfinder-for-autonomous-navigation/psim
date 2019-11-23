@@ -22,6 +22,8 @@ const.mu = 3.986e14;% positive scalar
 % Earth's gravitational constant (m^3/s^2)
 const.mu_moon = 4.9048695E12; % positive scalar 
 % Moon's gravitational constant (m^3/s^2)
+const.satArea = 0.1*sqrt(2)*0.3;
+%largest planar area of satellite in m^2
 const.mu_sun = 1.32712440018E20; % positive scalar 
 % Sun's gravitational constant (m^3/s^2)
 const.R_EARTH= 6378137.0;
@@ -93,5 +95,5 @@ const.GPS_LOCK_TIME=15*60;% positive scalar
 %Time it takes the GPS to get a lock (s)
 const.CDGPS_LOCK_TIME=15*60;% positive scalar
 %Time it takes the CDGPS to get a lock (s)
-
+ 
 end

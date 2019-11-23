@@ -1,4 +1,4 @@
-function a = env_solradpressure(r,r_Sun,Area,mass)
+function a = env_solradpressure(r,r_Sun,mass)
 
 %References:
 % Montenbruck O., Gill E.; Satellite Orbits: Models, Methods and 
@@ -53,7 +53,7 @@ else
 end
 
 % acceleration 
-a = nu*Cr*(Area/mass)*P_Sol*(AU*AU)*r/(norm(r)^3); %acceleration in ECI
+a = nu*Cr*(const.satArea/mass)*P_Sol*(AU*AU)*r/(norm(r)^3); %acceleration in ECI
 end
 
 
