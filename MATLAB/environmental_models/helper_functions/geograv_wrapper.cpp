@@ -13,8 +13,8 @@
 */
 
 #include "mex.h"
-#include "../../../src/inl/geograv.hpp"
-#include "../../../src/inl/EGM96.hpp"
+#include "../../../geograv/include/geograv.hpp"
+#include "../../../geograv/include/EGM96.hpp"
 
 constexpr geograv::Coeff<30> EGM96_trunc(EGM96);
 

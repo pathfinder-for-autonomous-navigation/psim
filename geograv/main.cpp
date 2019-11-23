@@ -4,8 +4,8 @@
 #include <iostream>
 #include <exception>
 #include <GeographicLib/GravityModel.hpp>
-#include "geograv.hpp"
-#include "EGM96.hpp"
+#include "include/geograv.hpp"
+#include "include/EGM96.hpp"
 using namespace std;
 using namespace GeographicLib;
 
