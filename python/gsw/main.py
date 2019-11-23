@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import requests
 from argparse import ArgumentParser
 import threading
 import time
@@ -163,8 +164,8 @@ except KeyError:
     
 #create a readIridium object and start checking for emails related to the Quake
 readIr = readIridium(radio_keys_config)
-server = radio_keys_config["server"]
-auth = radio_keys_config["auth"]
+server = server_keys_config["server"]
+auth = server_keys_config["auth"]
 username = auth["user"]
 password = auth["password"]
 
