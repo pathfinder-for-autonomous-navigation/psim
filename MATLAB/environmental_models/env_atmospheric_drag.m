@@ -1,4 +1,4 @@
-function [F_envdrag, A] = env_atmospheric_drag(time,r,v)
+function F_envdrag = env_atmospheric_drag(time,r,v)
 %input: mission time in sec
 % r position in ECI frame in m
 % v velocity in ECI frame in m/s
@@ -34,7 +34,7 @@ h = abs(lla(3)); %altitude of Position (m); geocentric altitude = geodetic altit
 [rho,H] = get_rho(h);
 
 Cd = 0.8; %drag coefficient of angled cube
-A = 0.1*sqrt(2)*0.3; %largest planar area of satellite in m^2
+A = const.satArea; %largest planar area of satellite in m^2
 v_rel = v - cross(const.earth_rate_ecef,r); %velocity relative to the rotating atmosphere
 %v_rel = v - cross([0;0;7.2921158553E-5],r); test
 

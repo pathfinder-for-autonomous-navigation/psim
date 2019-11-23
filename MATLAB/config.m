@@ -16,33 +16,35 @@ addpath(strcat(filepath, '/adcs'));
 
 
 %Time
-const.INITGPS_WN= 2045;% positive int 
+const.INITGPS_WN= 2045;% positive int
 % initial gps week number, epoch for time.
 const.INIT_DYEAR= decyear(utl_time2datetime(0.0,const.INITGPS_WN));
 
-const.mu = 3986004.415e8;%3.986e14;% positive scalar 
+const.mu = 3986004.415e8;%3.986e14;% positive scalar
 % Earth's gravitational constant (m^3/s^2)
-const.mu_moon = 4.9048695E12; % positive scalar 
+const.mu_moon = 4.9048695E12; % positive scalar
 % Moon's gravitational constant (m^3/s^2)
-const.mu_sun = 1.32712440018E20; % positive scalar 
+const.satArea = 0.1*sqrt(2)*0.3;
+%largest planar area of satellite in m^2
+const.mu_sun = 1.32712440018E20; % positive scalar
 % Sun's gravitational constant (m^3/s^2)
 const.R_EARTH= 6378137.0;
 %Equatorial Radius of Earth (m)*/
 const.dt = int64(1e8);% positive int64
 % Simulation timestep            (ns)
-const.e_earth = 0.0167086; 
+const.e_earth = 0.0167086;
 % Earth's eccentricity.
 perihelion_date = datetime(2019,1,3,5,20,0,'TimeZone','UTCLeapSeconds');
 const.tp_earth = utl_datetime2time(perihelion_date,const.INITGPS_WN);
 % Time when earth was at perihelion (s)
 const.period_earth = 365.256363004*24*60*60;
 % Earth orbital period (s)
-const.AU = 149597870700.000000; 
+const.AU = 149597870700.000000;
 % Astronomical unit [m]; DE430
-const.c_light   = 299792458.000000000; 
+const.c_light   = 299792458.000000000;
 % Speed of light  [m/s]; DE430
 const.P_Sol = 1367/const.c_light; % [N/m^2] (1367 W/m^2); IERS 96
-% Solar radiation pressure at 1 AU 
+% Solar radiation pressure at 1 AU
 const.Cr = 1; %dimensionless
 %Solar radiation pressure coefficient
 [rp_earth_moon,vp_earth_moon] = planetEphemeris(juliandate(perihelion_date),'Moon','Earth');
@@ -78,9 +80,9 @@ const.JB=[1/12*const.MASS*(0.3^2+0.1^2) 0 0;
           0 1/12*const.MASS*(0.3^2+0.1^2) 0;
           0 0 1/12*const.MASS*(0.1^2+0.1^2);];% 3x3 symmetric matrix
 %dry moment of inertia of the satellite in body frame (kg*m^2)
-const.JWHEEL=135.0e-7;% positive scalar     
+const.JWHEEL=135.0e-7;% positive scalar
 % Wheel Inertia kg*m^2
-const.JFUEL_NORM=0.1^2;% positive scalar 
+const.JFUEL_NORM=0.1^2;% positive scalar
 % Moment of inertia of the fuel/mass of the fuel m^2.
 const.SLOSH_DAMPING=0.0;% positive scalar
 % Torque on fuel/difference in angular rates in eci Nm/(rad/s).
@@ -98,7 +100,7 @@ const.GPS_LOCK_TIME=15*60;% positive scalar
 const.CDGPS_LOCK_TIME=15*60;% positive scalar
 %Time it takes the CDGPS to get a lock (s)
 
-const.magnetometer_bias_readings_min=50;% (positive int): 
+const.magnetometer_bias_readings_min=50;% (positive int):
 %number of readings per axis to get a good magnetometer bias estimate.
 const.magnetometer_noise_sdiv= 2E-6;% (positive scalar):
 %standard diviation of the magnetometer noise (T)

@@ -1,9 +1,10 @@
-function [t_array, states, orb_elemsf] = true_orbit_propagator(r,v,start_time,duration)
-    %INPUT r, v in ECI coordinates in m and m/s
-    %OUTPUTS r, v in ECI coordinates in m and m/s at time = current_time + delta_time
+function [t_array, states, orb_elemsf] = true_orbit_propagator(r,v,start_time,duration, perturbs)
+    % INPUT r, v in ECI coordinates in m and m/s
+    % start time of mission; gps_time in continuous seconds past 01-Jan-2000 11:59:47 UTC
+    % duration is mission duration you want to look at; in seconds
+    % OUTPUTS r, v in ECI coordinates in m and m/s at time = current_time + delta_time
 
     global const
-    
 
     %package initial state to call ODE45
     state0 = zeros([6,1]);
@@ -12,8 +13,9 @@ function [t_array, states, orb_elemsf] = true_orbit_propagator(r,v,start_time,du
     
     
     %create tarray
-    opts = odeset('RelTol', 1E-12, 'AbsTol', 1E-3);
-    [t_array, states] = ode113(@state_dot, [start_time, (start_time + duration)], state0, opts);
+    opts = odeset('RelTol', 1E-12, 'AbsTol', 1E-3, 'OutputFcn','odephas3');
+    tspan = [0,duration];
+    [t_array, states] = ode113(@state_dot, tspan, state0, opts, perturbs, start_time);
     %statef = utl_ode2(@state_dot,[current_time,(current_time + delta_time)],state0);
     
     orb_elemsf = zeros(length(t_array)); 
@@ -31,61 +33,73 @@ function [t_array, states, orb_elemsf] = true_orbit_propagator(r,v,start_time,du
     end
 end
 
-function statef = state_dot(t, state0)
+function statef = state_dot(t, state0, perturbs, start_time)
         %y = [x; y; z; xdot; ydot; zdot]
         
         global const
         
         % unpack
         r = state0(1:3);  v = state0(4:6);
-    
+        
+        %if user wants to investigate affect of only certain perturbing forces
+        
         %calculate drag force
-        [F_envdrag, A] = env_atmospheric_drag(t, r,v); 
-
+        if perturbs.drag == 1
+            F_envdrag = env_atmospheric_drag(t, r,v);
+        else
+            F_envdrag = zeros(3,1);
+        end
+        
         %calculate solar pressure acceleration
-        acc_solrad = env_solradpressure(r,const.rp_earth,A,const.MASS); %returns acceleration in ECI
+        if perturbs.solrad == 1
+            acc_solrad = env_solradpressure(r,const.rp_earth,const.MASS); %returns acceleration in ECI
+        else
+            acc_solrad = zeros(3,1);
+        end
         
-        %use perihelion date instead of t_array?
-        datetime = utl_time2datetimeUTC(t,const.INITGPS_WN); 
-        
-        [rp_earth_moon,~] = planetEphemeris(juliandate(datetime),'Moon','Earth');
-        rp_earth_moon = 1E3*rp_earth_moon'; %positional vector from Moon to Earth; used for 3rd body perturb calcs
-        [rp_earth,~] = planetEphemeris(juliandate(datetime),'Sun','Earth');
-        rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
-    
-
         %secular perturbations from Moon (third body in circular orbit)
-        acc_tbmoon = -const.mu_moon*(((r-rp_earth_moon)/norm(r-rp_earth_moon)^3) - (rp_earth_moon/norm(rp_earth_moon)^3));
         %returns acceleration in ECI
-
-        %secular perturbations from Sun (third body in circular orbit)
-        acc_tbsun = -const.mu_sun*(((r-rp_earth')/norm(r-rp_earth')^3) - (rp_earth'/norm(rp_earth')^3));
-        %returns acceleration in ECI
-
-        % perturbations due to J-coefficients
-        %returns acceleration in ECI
-        acc_Js = gravitysphericalharmonic(r', 'EGM2008',10);
+        if perturbs.bodmoon == 1
+            now = start_time + t; %current time in seconds
+            datetime = utl_time2datetimeUTC(now,const.INITGPS_WN); 
+            [rp_earth_moon,~] = planetEphemeris(juliandate(datetime),'Moon','Earth','421');
+            rp_earth_moon = 1E3*rp_earth_moon'; %positional vector from Moon to Earth; used for 3rd body perturb calcs
+            acc_tbmoon = -const.mu_moon*(((r-rp_earth_moon)/norm(r-rp_earth_moon)^3) - (rp_earth_moon/norm(rp_earth_moon)^3)); 
+        else
+            acc_tbmoon = zeros(3,1);
+        end
         
-%         % gravitational force in ECI
-        quat_ecef_eci= earth_first_order_rotation(t_array);
-        quat_eci_ecef= conj(quat_ecef_eci);
-        quat_body_eci=utl_array2quaternion(state0(7:10));
-        quat_eci_body= conj(quat_body_eci);
-        quat_body_ecef=quat_eci_ecef*quat_body_eci;
-        pos_eci=state0(1:3);
-        pos_ecef=rotateframe(quat_ecef_eci,pos_eci')';
-        [g_ecef,~,G_ecef]= env_gravity(t_array,pos_ecef);
-        g_eci=rotateframe(quat_eci_ecef,g_ecef')';
+        %secular perturbations from Sun (third body in circular orbit)
+        %returns acceleration in ECI
+        if perturbs.bodsun == 1
+            now = start_time + t; %current time in seconds
+            datetime = utl_time2datetimeUTC(now,const.INITGPS_WN); 
+            [rp_earth,~] = planetEphemeris(juliandate(datetime),'Sun','Earth','421');
+            rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
+            acc_tbsun = -const.mu_sun*(((r-rp_earth')/norm(r-rp_earth')^3) - (rp_earth'/norm(rp_earth')^3)); 
+        else
+            acc_tbsun = zeros(3,1);
+        end
+
+        % gravitational force in ECI
+        [quat_ecef_eci,~]=env_earth_attitude(t);
+        quat_eci_ecef= utl_quat_conj(quat_ecef_eci);
+        pos_eci=r;
+        pos_ecef=utl_rotateframe(quat_ecef_eci,pos_eci);
+        %[g_ecef,~,G_ecef]= env_gravity(t,pos_ecef);
+        %g_eci=utl_rotateframe(quat_eci_ecef,g_ecef);
+        
+        % perturbations due to J-coefficients; returns acceleration in ECEF
+        [gx,gy,gz]  = gravitysphericalharmonic(pos_ecef', 'EGM2008',perturbs.numJs);
+        %convert to ECI
+        acc_Js =utl_rotateframe(quat_eci_ecef,[gx,gy,gz]');        
 
         statef = zeros([6,1]);
         statef(1:3)=state0(4:6);
         
-        
         %acceration in m/s^2, ECI coords
         statef(4:6) = F_envdrag./(const.MASS) + acc_solrad + acc_tbmoon + acc_tbsun + acc_Js;
         %statef(4:6) = F_envdrag./(const.MASS) + acc_solrad + acc_tbmoon + acc_tbsun;
-        
-        %statef(7:10) = 
         
         
 end
