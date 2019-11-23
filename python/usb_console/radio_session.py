@@ -76,8 +76,8 @@ class RadioSession(object):
         #send a get request to the flask server
         while self.running_logger:
             try:
-                #change this server to backend api. not sure what port this would be
-                req = requests.get('206.189.193.31:')
+                #send a get request to backend server
+                req = requests.get('')
                 print(req.text)
             except:
                 self.logger.put("Unable to connect to server")

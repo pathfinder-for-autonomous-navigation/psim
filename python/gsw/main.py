@@ -167,8 +167,8 @@ def home():
     data=readIr.check_for_email()
     
     if data is not None:
-        #url is api endpoint. i'm not sure what port it would be?
-        url='206.189.193.31:'
+        #url is backend api endpoint.
+        url=''
         #need to figure out how to get login authorization since key/token expires
         key=""
         r = requests.post(url, data) 
