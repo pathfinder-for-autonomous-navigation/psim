@@ -40,7 +40,6 @@ class read_iridium(object):
 
     def testing(self):
         while self.run_email_thread==True:
-            #print('This is an output', file=sys.stderr)
             print("woah", flush=True)
 
     def process_downlink_packet(self, data):
@@ -113,6 +112,7 @@ class read_iridium(object):
                                     #get data from email attachment
                                     attachmentContents=part.get_payload(decode=True).decode('utf8')
                                     data=self.process_downlink_packet(attachmentContents)
+                                    #post the data to the backend api endpoint
                                     r=requests.post(server,data)
 
     def disconnect(self):
