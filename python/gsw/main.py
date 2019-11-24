@@ -16,7 +16,7 @@ class read_iridium(object):
         self.username=radio_keys_config["email_username"]
         self.password=radio_keys_config["email_password"]
 
-        #updates MOMSN aand MTMSN numbers sent/recieved
+        #updates MOMSN and MTMSN numbers sent/recieved
         self.momsn=-1
         self.mtmsn=-1
         self.confirmation_mtmsn=-1
@@ -34,19 +34,16 @@ class read_iridium(object):
     def connect(self):
         #start email thread
         #self.check_email_thread = threading.Thread(target=self.check_for_email)
-        self.check_email_thread = threading.Thread(target=self.testing)
+        self.check_email_thread = threading.Thread(target=self.check_for_email)
         self.run_email_thread = True
         self.check_email_thread.start()
-
-    def testing(self):
-        while self.run_email_thread==True:
-            print("woah", flush=True)
 
     def process_downlink_packet(self, data):
         return json.loads(data)
 
     def check_for_email(self):
         while self.run_email_thread==True:
+            #look for all new emails from iridium
             _, data = self.mail.search(None, '(FROM "fy56@cornell.edu")', '(UNSEEN)')
             mail_ids = data[0]
             id_list = mail_ids.split()
