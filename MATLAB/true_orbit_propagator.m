@@ -35,6 +35,7 @@ end
 
 function statef = state_dot(t, state0, perturbs, start_time)
         %y = [x; y; z; xdot; ydot; zdot]
+        fprintf('%f \n',t)
         
         global const
         
