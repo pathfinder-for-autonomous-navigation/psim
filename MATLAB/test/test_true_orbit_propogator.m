@@ -4,12 +4,12 @@ config();
 data = csvread('graceClean.csv',1,0);
 
 %duration of the mission you want to simulate
-num_states = 1.577E7; %1.5 hours i.e approximately 1 orbit %length(data) for 1 day
+num_states = 100; %1.5 hours i.e approximately 1 orbit %length(data) for 1 day
 
 global const
 
 %convert to from ECEF --> ECI
-for i = 1:length(data)
+for i = 1:num_states+1
    %GRACE time is gps_time in continuous seconds past 01-Jan-2000 11:59:47 UTC
    
    %convert GRACE time to PAN time
@@ -50,18 +50,19 @@ fprintf('got GRACE orbital elements \n')
 
 
 %simplest model, J2 only
-% tic
-% perturbs.drag = 0;
-% perturbs.solrad = 0;
-% perturbs.bodmoon = 0;
-% perturbs.bodsun = 0;
-% perturbs.numJs = 2;
-% 
-% [t_array1, states1, orb_elemsf1] = true_orbit_propagator(data(1,2:4), data(1,8:10), data(1,1), num_states, perturbs);
+tic
+perturbs.drag = 1;
+perturbs.solrad = 0;
+perturbs.bodmoon = 1;
+perturbs.bodsun = 1;
+perturbs.numJs = 10;
+
+[t_array1, states1, orb_elemsf1] = true_orbit_propagator(data(1,2:4), data(1,8:10), data(1,1), num_states, perturbs);
 % err1 = get_error(data, states1);
-% saveas(gcf,'test1.png')
-% time1 = toc;
-% 
+error_r= data(num_states+1,2:4)-states1(end,1:3)
+saveas(gcf,'test1.png')
+time1 = toc;
+
 % %J4
 % tic
 % perturbs.drag = 0;
@@ -102,17 +103,17 @@ fprintf('got GRACE orbital elements \n')
 % time4 = toc;
 % 
 %J10
-tic
-perturbs.drag = 1;
-perturbs.solrad = 0;
-perturbs.bodmoon = 0;
-perturbs.bodsun = 0;
-perturbs.numJs = 10;
-
-[t_array5, states5, orb_elemsf5] = true_orbit_propagator(data(1,2:4), data(1,8:10), data(1,1), num_states, perturbs);
-err5 = get_error(data, states5);
-saveas(gcf,'test5.png')
-time5 = toc;
+% tic
+% perturbs.drag = 1;
+% perturbs.solrad = 0;
+% perturbs.bodmoon = 0;
+% perturbs.bodsun = 0;
+% perturbs.numJs = 10;
+% 
+% [t_array5, states5, orb_elemsf5] = true_orbit_propagator(data(1,2:4), data(1,8:10), data(1,1), num_states, perturbs);
+% err5 = get_error(data, states5);
+% saveas(gcf,'test5.png')
+% time5 = toc;
 % 
 % %test drag
 % tic

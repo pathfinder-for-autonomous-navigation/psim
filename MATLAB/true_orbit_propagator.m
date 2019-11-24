@@ -65,7 +65,7 @@ function statef = state_dot(t, state0, perturbs, start_time)
             datetime = utl_time2datetimeUTC(now,const.INITGPS_WN); 
             [rp_earth_moon,~] = planetEphemeris(juliandate(datetime),'Moon','Earth','421');
             rp_earth_moon = 1E3*rp_earth_moon'; %positional vector from Moon to Earth; used for 3rd body perturb calcs
-            acc_tbmoon = -const.mu_moon*(((r-rp_earth_moon)/norm(r-rp_earth_moon)^3) - (rp_earth_moon/norm(rp_earth_moon)^3)); 
+            acc_tbmoon = -const.mu_moon*(((r+rp_earth_moon)/norm(r+rp_earth_moon)^3) - (rp_earth_moon/norm(rp_earth_moon)^3)); 
         else
             acc_tbmoon = zeros(3,1);
         end
@@ -77,13 +77,14 @@ function statef = state_dot(t, state0, perturbs, start_time)
             datetime = utl_time2datetimeUTC(now,const.INITGPS_WN); 
             [rp_earth,~] = planetEphemeris(juliandate(datetime),'Sun','Earth','421');
             rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
-            acc_tbsun = -const.mu_sun*(((r-rp_earth')/norm(r-rp_earth')^3) - (rp_earth'/norm(rp_earth')^3)); 
+            acc_tbsun = -const.mu_sun*(((r+rp_earth')/norm(r+rp_earth')^3) - (rp_earth'/norm(rp_earth')^3)); 
         else
             acc_tbsun = zeros(3,1);
         end
 
         % gravitational force in ECI
-        [quat_ecef_eci,~]=env_earth_attitude(t);
+        now = start_time + t; %current time in seconds
+        [quat_ecef_eci,~]=env_earth_attitude(now);
         quat_eci_ecef= utl_quat_conj(quat_ecef_eci);
         pos_eci=r;
         pos_ecef=utl_rotateframe(quat_ecef_eci,pos_eci);
