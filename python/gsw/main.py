@@ -16,6 +16,12 @@ class read_iridium(object):
         self.username=radio_keys_config["email_username"]
         self.password=radio_keys_config["email_password"]
 
+        #backend server
+        self.server = server_keys_config["server"]
+        self.auth = server_keys_config["auth"]
+        #username = auth["user"]
+        #password = auth["password"]
+
         #updates MOMSN and MTMSN numbers sent/recieved
         self.momsn=-1
         self.mtmsn=-1
@@ -33,7 +39,6 @@ class read_iridium(object):
 
     def connect(self):
         #start email thread
-        #self.check_email_thread = threading.Thread(target=self.check_for_email)
         self.check_email_thread = threading.Thread(target=self.check_for_email)
         self.run_email_thread = True
         self.check_email_thread.start()
@@ -110,7 +115,7 @@ class read_iridium(object):
                                     attachmentContents=part.get_payload(decode=True).decode('utf8')
                                     data=self.process_downlink_packet(attachmentContents)
                                     #post the data to the backend api endpoint
-                                    r=requests.post(server,data)
+                                    r=requests.post(self.server,data)
 
     def disconnect(self):
         self.run_email_thread=False
@@ -129,16 +134,12 @@ except KeyError:
     print("Malformed config file. Exiting.")
     raise SystemExit
 
-#get keys for connecting to server
-server = server_keys_config["server"]
-auth = server_keys_config["auth"]
-#username = auth["user"]
-#password = auth["password"]
-
+#create a read_iridium object 
 readIr=read_iridium(radio_keys_config, server_keys_config)
 
 @app.route("/")
 def home():
+    #open check_email_thread and start posting data
     readIr.connect()
 
 if __name__ == "__main__":
