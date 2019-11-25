@@ -1,5 +1,5 @@
 #include "geograv.hpp"
-#include "EGM96.hpp"
+#include "GGM05S.hpp"
 
 
 void setup() {
@@ -20,8 +20,8 @@ void loop() {
     geograv::Vector g_test;
     int starttime=micros();
     int starttimemil=millis();
-    static constexpr geograv::Coeff<20> EGM96_truncated(EGM96);
-    double pot_test=geograv::GeoGrav(r_test, g_test,EGM96_truncated,true);
+    static constexpr geograv::Coeff<10> GGM05S_truncated(GGM05S);
+    double pot_test=geograv::GeoGrav(r_test, g_test,GGM05S_truncated,true);
     int endtime=micros();
     int endtimemil=millis();
     Serial.printf("gx_test: %.15e\n",g_test.x+6.390258966905924e+00L);
