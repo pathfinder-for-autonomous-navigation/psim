@@ -39,21 +39,30 @@ function a = env_solradpressure(r,r_Sun,mass)
 
 global const 
 
-Cr = const.Cr;        %Solar radiation pressure coefficient
-P_Sol = const.P_Sol;      %Solar radiation pressure at 1 AU in N/m^2
-AU = const.AU;         %Length of one Astronomical Unit
-    
-e_Sun = r_Sun / norm(r_Sun);   % Sun direction unit vector
-s     = dot ( r, e_Sun );      % Projection of s/c position 
+Fs = 1367; %solar constant
+c = 3E8; %speed of light
+A = const.satArea;
+q = 1; %conservative
+i = 0; %conservative
 
-if ( s>0 || norm(r-s*e_Sun)>const.R_EARTH )
-    nu = 1;
-else
-    nu = 0;
-end
+Fmag = (Fs/c)*A*(1+q)*cos(i);
+
+
+% Cr = const.Cr;        %Solar radiation pressure coefficient
+% P_Sol = const.P_Sol;      %Solar radiation pressure at 1 AU in N/m^2
+% AU = const.AU;         %Length of one Astronomical Unit
+%     
+% e_Sun = r_Sun / norm(r_Sun);   % Sun direction unit vector
+% s     = dot ( r, e_Sun );      % Projection of s/c position 
+% 
+% if ( s>0 || norm(r-s*e_Sun)>const.R_EARTH )
+%     nu = 1;
+% else
+%     nu = 0;
+% end
 
 % acceleration 
-a = nu*Cr*(const.satArea/mass)*P_Sol*(AU*AU)*r/(norm(r)^3); %acceleration in ECI
+a = Fmag*r/(norm(r)^3); %acceleration in ECI
 end
 
 
