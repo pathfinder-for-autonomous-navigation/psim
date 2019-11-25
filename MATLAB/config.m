@@ -18,7 +18,7 @@ const.INITGPS_WN= 2045;% positive int
 % initial gps week number, epoch for time.
 const.INIT_DYEAR= decyear(utl_time2datetime(0.0,const.INITGPS_WN));
 
-const.mu = 3.986e14;% positive scalar 
+const.mu = 3986004.415e8;%3.986e14;% positive scalar 
 % Earth's gravitational constant (m^3/s^2)
 const.mu_moon = 4.9048695E12; % positive scalar 
 % Moon's gravitational constant (m^3/s^2)
