@@ -285,7 +285,7 @@ struct Coeff{
     */
     template<int OTHER_NMAX>//new Coeff maximum degree and order
     constexpr operator Coeff<OTHER_NMAX>() const{
-      static_assert(OTHER_NMAX<=NMAX,"new max order and degree must be equal or lower");
+      //static_assert(OTHER_NMAX<=NMAX,"new max order and degree must be equal or lower");
       Coeff<OTHER_NMAX> other={0,0,0,{0},{0},{0}};
       other.earth_radius= earth_radius;
       other.earth_gravity_constant= earth_gravity_constant;
@@ -302,7 +302,10 @@ struct Coeff{
         }
       }
       for (int i=0; i< (std::max(2*OTHER_NMAX+ 5, 15) + 1); i++){
-        other._sqrttable[i]=_sqrttable[i];
+        if (i>std::max(2*NMAX+ 5, 15)){
+          other._sqrttable[i]=std::sqrt(double(i));
+        }else
+          other._sqrttable[i]=_sqrttable[i];
       }
       return other;
     }
@@ -335,12 +338,14 @@ const real_t eps= std::numeric_limits<real_t>::epsilon() *
 
 
 
-/** Return the magnetic field in International Terrestrial Reference System coordinates, units Tesla.
- INPUT:
-    position_itrs(Above the surface of earth): The location where the field is predicted, units m.
-    c(): gravity model to use.
+/** Return the gravity potential in International Terrestrial Reference System coordinates, units J/kg.
+ @param[in] position_itrs(Above the surface of earth): The location where the gravity is calculated, units m.
+ @param[in]  c(): gravity model to use.
+ @param[in]  add_pointmass_gravity(): if true, calculate the full gravity, if false, only calculate the non point mass part.
+ @param[out] acceleration: The acceleration due to gravity, units m/s^2.
 
-    using code copied from https://geographiclib.sourceforge.io/ and slightly modified
+    Using code copied from https://geographiclib.sourceforge.io/ and slightly modified to run in mixed precision and use static memory.
+    J2 and J0(point mass) terms are calculated in double precision, while the higher order terms are calculated in single precision.
  */
 template<int NMAX>
 inline real_t GeoGrav(Vector position_itrs, Vector& acceleration, const Coeff<NMAX>& c,bool add_pointmass_gravity){
@@ -469,10 +474,6 @@ inline real_t GeoGrav(Vector position_itrs, Vector& acceleration, const Coeff<NM
       acceleration.z*=f;
     return pot*f;
   }
-
-// Model parameters
-constexpr Coeff<0> J2={0.6378136300E+07L,0.3986004415E+15L,-4.841694573200E-04L,{0},{0},{1}};
-
 
 }
 #endif /* GEOGRAV_HPP */
