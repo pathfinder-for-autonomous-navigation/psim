@@ -24,7 +24,8 @@ class StateCmdPrompt(Cmd):
 
         # By default, if it's available, set the prompt to be commanding the Flight Controller.
         try:
-            self.cmded_device = self.devices['FlightController']
+            self.cmded_device = self.devices['FlightControllerLeader']
+
         except KeyError:
             self.cmded_device = random.choice(list(self.devices.values()))
 

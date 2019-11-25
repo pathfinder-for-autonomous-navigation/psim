@@ -140,7 +140,8 @@ class SimulationRun(object):
     def set_up_cmd_prompt(self):
         # Set up user command prompt
         cmd_prompt = StateCmdPrompt(self.devices, self.radios, self.sim, self.stop_all)
-        cmd_prompt.intro = "Beginning console.\nType \"help\" for a list of commands."
+        cmd_prompt.intro = "Beginning console.\nType \"help\" for a list of commands.\n" \
+                           "NOTE: You are currently connected to the {}.".format(cmd_prompt.cmded_device.device_name)
         cmd_prompt.prompt = '> '
         try:
             cmd_prompt.cmdloop()
