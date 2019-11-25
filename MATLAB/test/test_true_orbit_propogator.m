@@ -8,12 +8,16 @@ num_states = 100; %1.5 hours i.e approximately 1 orbit %length(data) for 1 day
 
 global const
 
+starttime = utl_grace2pantime(data(1,1));
+
 %convert to from ECEF --> ECI
 for i = 1:num_states+1
    %GRACE time is gps_time in continuous seconds past 01-Jan-2000 11:59:47 UTC
    
    %convert GRACE time to PAN time
-   pantime = utl_grace2pantime(data(i,1));
+   %pantime = utl_grace2pantime(data(i,1));
+   pantime = starttime + 1;
+   starttime = pantime;
    [r_ECI, v_ECI] = ECEFtoECI(pantime,data(i,2:4)',data(i,8:10)');
 
    %[r_ECI, v_ECI] = ECEFtoECI(data(i,1),data(i,2:4)',data(i,8:10)');
