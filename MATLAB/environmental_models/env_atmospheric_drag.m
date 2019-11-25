@@ -38,7 +38,8 @@ A = const.satArea; %largest planar area of satellite in m^2
 v_rel = v - cross(const.earth_rate_ecef,r); %velocity relative to the rotating atmosphere
 %v_rel = v - cross([0;0;7.2921158553E-5],r); test
 
-F_envdrag = -0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
+%scaled up for GRACE
+F_envdrag = 57*-0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
 
 F_envdrag = reshape(F_envdrag,[3,1]);
 end
