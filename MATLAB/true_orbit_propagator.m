@@ -90,11 +90,12 @@ function statef = state_dot(t, state0, perturbs, start_time)
         pos_ecef=utl_rotateframe(quat_ecef_eci,pos_eci);
         %[g_ecef,~,G_ecef]= env_gravity(t,pos_ecef);
         %g_eci=utl_rotateframe(quat_eci_ecef,g_ecef);
-        
+        g_ecef= zeros(3,1);
         % perturbations due to J-coefficients; returns acceleration in ECEF
-        [gx,gy,gz]  = gravitysphericalharmonic(pos_ecef', 'EGM96',perturbs.numJs);
+        %[g_ecef(1),g_ecef(2),g_ecef(3)]  = gravitysphericalharmonic(pos_ecef', 'EGM96',perturbs.numJs);
+        g_ecef=env_gravity(now,pos_ecef);
         %convert to ECI
-        acc_Js =utl_rotateframe(quat_eci_ecef,[gx,gy,gz]');        
+        acc_Js =utl_rotateframe(quat_eci_ecef,g_ecef);        
 
         statef = zeros([6,1]);
         statef(1:3)=state0(4:6);

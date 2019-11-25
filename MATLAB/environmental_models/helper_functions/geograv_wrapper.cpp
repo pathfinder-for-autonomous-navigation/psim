@@ -14,9 +14,9 @@
 
 #include "mex.h"
 #include "../../../geograv/include/geograv.hpp"
-#include "../../../geograv/include/EGM96.hpp"
+#include "../../../geograv/include/GGM05S.hpp"
 
-constexpr geograv::Coeff<30> EGM96_trunc(EGM96);
+constexpr geograv::Coeff<100> GGM05S_trunc(GGM05S);
 
 void calc_geograv(double *x, double *out)
 {
@@ -25,7 +25,7 @@ void calc_geograv(double *x, double *out)
   in.x= x[0];
   in.y= x[1];
   in.z= x[2];
-  double pot=geograv::GeoGrav(in, g,EGM96_trunc,true);
+  double pot=geograv::GeoGrav(in, g,GGM05S_trunc,true);
   out[3]=pot;
   out[0]=g.x;
   out[1]=g.y;
