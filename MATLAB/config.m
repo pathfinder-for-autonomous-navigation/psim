@@ -11,6 +11,7 @@ global const
 addpath(strcat(filepath, '/utl'));
 addpath(strcat(filepath, '/environmental_models'));
 addpath(strcat(filepath, '/environmental_models/helper_functions'));
+addpath(strcat(filepath, '/plot'));
 
 
 %Time
@@ -78,5 +79,6 @@ const.GPS_LOCK_TIME=15*60;% positive scalar
 %Time it takes the GPS to get a lock (s)
 const.CDGPS_LOCK_TIME=15*60;% positive scalar
 %Time it takes the CDGPS to get a lock (s)
+
 
 end

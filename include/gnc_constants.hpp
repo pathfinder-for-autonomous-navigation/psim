@@ -130,6 +130,13 @@ constexpr static lin::Vector4f q_eci_perifocal_f = {
   static_cast<float>(q_eci_perifocal(2)),
   static_cast<float>(q_eci_perifocal(3))
 };
+
+/** Noise floor of the magnetometer in units of T. */
+constexpr static double b_noise_floor = 0.0L;
+
+/** Noise floor of the magnetometer in units of T (float version). */
+constexpr static float b_noise_floor_f = static_cast<float>(b_noise_floor);
+
 }  // namespace constants
 }  // namespace gnc
 

@@ -1,5 +1,5 @@
 //
-// test/utilities_test/test.cpp
+// test/test_all/utilities_test.cpp
 // PSim
 //
 // Contributors:
@@ -10,12 +10,13 @@
 // Cornell Univeristy
 //
 
-#include "../test.hpp"
+#include "test.hpp"
+#include "utilities_test.hpp"
 
-#include <lin.hpp>
 #include <gnc_utilities.hpp>
+#include <lin.hpp>
 
-void test_utl_quatconj() {
+void test_utilities_quatconj() {
   lin::Vector4f q = {2.0f, 1.0f, -2.5f, 1.0f};
   lin::Vector4f q_conj;
   gnc::utl::quat_conj(q, q_conj);
@@ -25,7 +26,7 @@ void test_utl_quatconj() {
   TEST_ASSERT_EQUAL_FLOAT( 1.0f, q_conj(3));
 }
 
-void test_utl_quat_cross_mult() {
+void test_utilities_quat_cross_mult() {
   lin::Vector4f q1 = {1.0f, 2.0f, 3.0f, 4.0f};
   lin::Vector4f q2 = {5.0f, 2.0f, 23.0f, -4.0f};
   lin::Vector4f q3;
@@ -35,7 +36,7 @@ void test_utl_quat_cross_mult() {
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, q3, ans);
 }
 
-void test_utl_rotate_frame() {
+void test_utilities_rotate_frame() {
   lin::Vector4f q1 = {1.0f, 2.0f, 3.0f, 4.0f};
   q1 = q1 / lin::norm(q1);
   lin::Vector3f v = {3.0f, 50.0f, -23.0f};
@@ -45,7 +46,7 @@ void test_utl_rotate_frame() {
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, v, ans);
 }
 
-void test_utl_dcm_to_quat_case0() {
+void test_utilities_dcm_to_quat_case0() {
   lin::Vector4f q;
   lin::Matrix3x3f Q = {
     0.2449f,  0.8723f,  0.4233f,
@@ -58,7 +59,7 @@ void test_utl_dcm_to_quat_case0() {
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, q, ans);
 }
 
-void test_utl_dcm_to_quat_case1() {
+void test_utilities_dcm_to_quat_case1() {
   lin::Vector4f q;
   lin::Matrix3x3f Q = {
     0.0283f,  0.9952f, -0.0933f,
@@ -71,7 +72,7 @@ void test_utl_dcm_to_quat_case1() {
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, q, ans);
 }
 
-void test_utl_dcm_to_quat_case2() {
+void test_utilities_dcm_to_quat_case2() {
   lin::Vector4f q;
   lin::Matrix3x3f Q = {
     0.4773f,  0.6765f, -0.5608f,
@@ -85,7 +86,7 @@ void test_utl_dcm_to_quat_case2() {
 }
 
 // TODO : Add testcases for the other switch statement cases in dcm_to_quat
-void test_utl_dcm_to_quat_case3() {
+void test_utilities_dcm_to_quat_case3() {
   lin::Vector4f q;
   lin::Matrix3x3f Q = {
      0.1333333f, 0.9333333f, -0.3333333f,
@@ -98,7 +99,7 @@ void test_utl_dcm_to_quat_case3() {
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, q, ans);
 }
 
-void test_utl_triad() {
+void test_utilities_triad() {
   // Randomly generated DCM in MATLAB using MGS
   lin::Matrix3x3f Q = {
     0.2449f,  0.8723f,  0.4233f,
@@ -121,7 +122,7 @@ void test_utl_triad() {
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, q, ans);
 }
 
-void test_utl_vec_rot_to_quat() {
+void test_utilities_vec_rot_to_quat() {
   lin::Vector4f q;
   lin::Vector3f u = {
     0.6651f,
@@ -139,7 +140,7 @@ void test_utl_vec_rot_to_quat() {
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, q, ans);
 }
 
-void test_utl_vec_rot_to_quat_antiparallel() {
+void test_utilities_vec_rot_to_quat_antiparallel() {
   lin::Vector4f q;
   gnc::utl::vec_rot_to_quat({0.0f, 1.0f, 0.0f}, {0.0f, -1.0f, 0.0f}, q);
   // Expected answer for the antiparallel test
@@ -147,15 +148,16 @@ void test_utl_vec_rot_to_quat_antiparallel() {
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f,q, ans);
 }
 
-void test() {
-  RUN_TEST(test_utl_quatconj);
-  RUN_TEST(test_utl_quat_cross_mult);
-  RUN_TEST(test_utl_rotate_frame);
-  RUN_TEST(test_utl_dcm_to_quat_case0);
-  RUN_TEST(test_utl_dcm_to_quat_case1);
-  RUN_TEST(test_utl_dcm_to_quat_case2);
-  RUN_TEST(test_utl_dcm_to_quat_case3);
-  RUN_TEST(test_utl_triad);
-  RUN_TEST(test_utl_vec_rot_to_quat);
-  RUN_TEST(test_utl_vec_rot_to_quat_antiparallel);
+void utilities_test() {
+  RUN_TEST(test_utilities_quatconj);
+  RUN_TEST(test_utilities_quat_cross_mult);
+  RUN_TEST(test_utilities_rotate_frame);
+  RUN_TEST(test_utilities_dcm_to_quat_case0);
+  RUN_TEST(test_utilities_dcm_to_quat_case1);
+  RUN_TEST(test_utilities_dcm_to_quat_case2);
+  RUN_TEST(test_utilities_dcm_to_quat_case3);
+  RUN_TEST(test_utilities_triad);
+  RUN_TEST(test_utilities_vec_rot_to_quat);
+  RUN_TEST(test_utilities_vec_rot_to_quat_antiparallel);
 }
+
