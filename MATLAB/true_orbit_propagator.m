@@ -62,7 +62,7 @@ function statef = state_dot(t, state0, perturbs, start_time)
         %returns acceleration in ECI
         if perturbs.bodmoon == 1
             now = start_time + t; %current time in seconds
-            datetime = utl_time2datetimeUTC(now,const.INITGPS_WN); 
+            datetime = utl_time2datetime(now,const.INITGPS_WN); 
             [rp_earth_moon,~] = planetEphemeris(juliandate(datetime),'Moon','Earth','421');
             rp_earth_moon = 1E3*rp_earth_moon'; %positional vector from Moon to Earth; used for 3rd body perturb calcs
             acc_tbmoon = -const.mu_moon*(((r+rp_earth_moon)/norm(r+rp_earth_moon)^3) - (rp_earth_moon/norm(rp_earth_moon)^3)); 
@@ -74,7 +74,7 @@ function statef = state_dot(t, state0, perturbs, start_time)
         %returns acceleration in ECI
         if perturbs.bodsun == 1
             now = start_time + t; %current time in seconds
-            datetime = utl_time2datetimeUTC(now,const.INITGPS_WN); 
+            datetime = utl_time2datetime(now,const.INITGPS_WN); 
             [rp_earth,~] = planetEphemeris(juliandate(datetime),'Sun','Earth','421');
             rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
             acc_tbsun = -const.mu_sun*(((r+rp_earth')/norm(r+rp_earth')^3) - (rp_earth'/norm(rp_earth')^3)); 
@@ -92,7 +92,7 @@ function statef = state_dot(t, state0, perturbs, start_time)
         %g_eci=utl_rotateframe(quat_eci_ecef,g_ecef);
         
         % perturbations due to J-coefficients; returns acceleration in ECEF
-        [gx,gy,gz]  = gravitysphericalharmonic(pos_ecef', 'EGM2008',perturbs.numJs);
+        [gx,gy,gz]  = gravitysphericalharmonic(pos_ecef', 'EGM96',perturbs.numJs);
         %convert to ECI
         acc_Js =utl_rotateframe(quat_eci_ecef,[gx,gy,gz]');        
 
@@ -104,13 +104,4 @@ function statef = state_dot(t, state0, perturbs, start_time)
         %statef(4:6) = F_envdrag./(const.MASS) + acc_solrad + acc_tbmoon + acc_tbsun;
         
         
-end
-
-function quat_ecef_eci= earth_first_order_rotation(t, current_time, delta_time)
-    %returns earths attitude at time t, using a first order
-    %approximation (slerp)
-    %of the rotation from the start to end of delta_time
-    %disp((t-initial_state.time)/delta_time)
-    T=min((t-current_time)/delta_time,1.0);
-    quat_ecef_eci= slerp(quat_ecef_eci_initial,quat_ecef_eci_final,T);
 end
