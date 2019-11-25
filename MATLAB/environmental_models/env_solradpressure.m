@@ -45,7 +45,7 @@ A = const.satArea;
 q = 1; %conservative
 i = 0; %conservative
 
-Fmag = (Fs/c)*A*(1+q)*cos(i);
+Fmag = 57* (Fs/c)*A*(1+q)*cos(i); %scaled up for GRACE
 
 
 % Cr = const.Cr;        %Solar radiation pressure coefficient
