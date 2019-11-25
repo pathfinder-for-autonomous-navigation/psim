@@ -13,14 +13,14 @@ class StateCmdPrompt(Cmd):
     Teensies and simulation devices.
     '''
 
-    def __init__(self, devices, sim, exit_fn):
-        self.devices = devices
+    def __init__(self, devices, radios, sim, exit_fn):
+        self.devices = {**devices, **radios}
         self.sim = sim
         self.exit_fn = exit_fn
 
         if not self.devices:
             # There's no flight controller to connect with.
-            raise SystemExit
+            self.do_exit(None)
 
         # By default, if it's available, set the prompt to be commanding the Flight Controller.
         try:

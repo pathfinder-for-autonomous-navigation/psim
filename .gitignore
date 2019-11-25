@@ -1,6 +1,11 @@
 .DS_Store
 .vscode
+.pioenvs
+.piolibdeps
+.pio
 *.asv
 *.m~
 logs/
+*.mexa64
 *.mexmaci64
+*.mexw64

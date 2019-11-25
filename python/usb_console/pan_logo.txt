@@ -6,5 +6,5 @@
 |_____||____| |____||_____|\____|                              
                                                                 
 Pathfinder for Autonomous Navigation                            
-Space Systems Design Studio, Cornell Unversity       
+Space Systems Design Studio, Cornell University       
 Console Software | Version 1.0

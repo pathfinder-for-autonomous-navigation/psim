@@ -59,13 +59,7 @@ dynamics.fuel_net_angular_momentum_eci=[0;0;0;];
 dynamics.fuel_mass=0.16;
 
 % actuators
-actuators.firing_start_times= inf(4,1);
-actuators.thrust_vectors_body= zeros(4);
-actuators.centers_of_thrust_body= zeros(4);
-actuators.firing_on_times= zeros(4,1);
-actuators.wheel_commanded_rate= [0;0;0];
-actuators.wheel_commanded_ramp= [0;0;0];
-actuators.magrod_real_moment_body= [0;0;0];
+actuators= actuators_off_state();
 
 % sensors
 sensors.gyro_bias= zeros(3,1);
@@ -90,6 +84,8 @@ sensors.sunsensor_real_normals= transpose([ 0.9397	0.3420      0
                                     -0.3420	0           0.9397
                                     0       0.3420      0.9397
                                     0       -0.3420     0.9397]);
+sensors.sunsensor_real_voltage_maximums= 3.3 * ones(20, 1);
+sensors.sunsensor_measured_voltage_maximums= sensors.sunsensor_real_voltage_maximums;
 sensors.sunsensor_measured_normals= sensors.sunsensor_real_normals;
 sensors.gps_bias= zeros(6,1);
 sensors.gps_time_till_lock= const.GPS_LOCK_TIME;

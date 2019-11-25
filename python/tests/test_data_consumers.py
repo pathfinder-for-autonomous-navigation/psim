@@ -1,5 +1,5 @@
 from usb_console.data_consumers import Datastore, Logger
-import os, json, tempfile, time
+import os, json, tempfile, time, datetime
 
 def test_datastore():
     tempdir = tempfile.mkdtemp() + "/datastore_test_dir"
@@ -25,9 +25,10 @@ def test_logger():
     logger = Logger("test_device", tempdir)
     logger.start()
     logger.put("Hello world")
+    currentTime=str(datetime.datetime.now())
     time.sleep(1.5) # Allow for some time for the data to be processed by the queue processor
     logger.stop()
 
     with open(tempdir + "/test_device-log.txt", "r") as logfile:
         log = logfile.read()
-        assert log == "Hello world\n"
+        assert log.find("Hello world\n") != -1
