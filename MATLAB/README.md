@@ -56,6 +56,7 @@ Most Matlab types are compatible with python types: [Python to Matlab function i
    all other MATLAB scripts in this repository.
  * `./environmental_models/helper_functions/*` - helper functions for environmental functions.
  * `./test/*` - standalone scripts that test almost every function in the simulation.
+ * `./plot/*` - functions to create plots of the `main_state_trajectory`
 
 ## Main State Data Structure
 
@@ -180,7 +181,7 @@ Environmental functions.
  * `[acceleration,potential,hessian]= env_gravity(time,x)`
  * `B= env_magnetic_field(time,x)`
  * `S= env_sun_vector(time)`
- 
+
  Quaternion functions.
  * `u = utl_rotateframe(q,v)`
  * `qout = utl_quat_conj(q)`
@@ -198,23 +199,32 @@ Testing utility functions:
          returns the updated orbit, using drag, j8 and maybe other perturbations.
 
 Plotting and visualization functions:
+ * `plot_get_truth(main_state_trajectory,name,sat_name)`
+        Create a plot over time of `name` truth value from `sat_name`.
+        `name` must be an acceptable input to `get_truth()`,
+        `sat_name` should be either `'follower'` or `'leader'`
+        For example:
+
+        `plot_get_truth(main_state_trajectory,'wheel rate leader (rad/s) body','leader')`
+
+        plots the `'wheel rate'` of the `leader` and its norm in the `body` frame
  * `plot_almost_conserved_values(main_state_trajectory)`
         creates plots of angular momentums in eci and total energies,
         if these have a huge jump, there is a problem with physics.
  * `plot_pointing_errors(main_state_trajectory)`
         plots magnitude of error of where the sats are pointing vs where they should be pointing.
- * `plot_wheel_rates(main_state_trajectory)`
-        plots reaction wheel rates.
+ * `plot_power(main_state_trajectory)`
+        plots power stuff.
  * `plot_orbit_error(main_state_trajectory)`
         plots differences in leader and follower orbits.
  * `fancy_animation(main_state_trajectory)`
         creates a fancy animation from the simulation data.
-        
+
 ## Controllers
  <img src="https://docs.google.com/drawings/d/e/2PACX-1vQ36cMMJu3pSCEW4oTc9ZblkLZlGmEKQNGi2ywjk4QizGxEGnlWA3RTp1Hhh_5vhKp9Q6UxJgSJFVQZ/pub?w=846&amp;h=547">
 
  <img src="https://docs.google.com/drawings/d/e/2PACX-1vQjQfsUQSmmeXKQT5tWik40ip17f55RgKxIxE-MhlL6FJqcM33Bdasc_leOyrpsiqIZiHovv2fvI1kh/pub?w=900&amp;h=694">
-        
+
 ## Constants
 Constants are stored in the `const` global struct.
 `const` is initialized by `config()`.
@@ -243,12 +253,12 @@ Constants are stored in the `const` global struct.
    * `ATTITUDE_PD_KD`(scalar), Attitude PD controller K_d (Nm/(rad/s))
    * `GPS_LOCK_TIME`(positive scalar), Time it takes the GPS to get a lock (s)
    * `CDGPS_LOCK_TIME`(positive scalar), Time it takes the CDGPS to get a lock (s)
- 
+
 
 ## Functions to be implemented in C++
 update_FC_state and any function it uses including:
     `get_next_maneuver`, `orbit_propagator`, `estimate_orbits`, `adcs_update`,
-    `env_earth_attitude`, `env_eclipse`, `env_magnetic_field`, `env_sun_vector`, `utl_rotateframe`, `utl_quat_conj`, 
+    `env_earth_attitude`, `env_eclipse`, `env_magnetic_field`, `env_sun_vector`, `utl_rotateframe`, `utl_quat_conj`,
     `utl_dcm2quat`, `utl_quat_cross_mult`, `utl_triad`.
 
 The test scripts for these functions should also be translated into C++.

@@ -16,6 +16,9 @@ main_state.follower.dynamics=dynamics;
 main_state.follower.actuators=actuators;
 main_state.follower.sensors=sensors;
 
+%perturb follower orbit
+main_state.follower.dynamics.velocity_eci=main_state.leader.dynamics.velocity_eci+randn(3,1)*0.1;
+
 end
 
 function [dynamics,actuators,sensors] = initialize_states(condition)

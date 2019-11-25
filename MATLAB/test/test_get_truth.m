@@ -41,3 +41,5 @@ get_truth('inclination angle',d);
 get_truth('right ascension of the ascending node',d);
 get_truth('argument of perigee',d);
 get_truth('true anamoly',d);
+get_truth('eclipse',d);
+get_truth('solar panel area in sun',d);

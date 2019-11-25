@@ -50,6 +50,8 @@ if startsWith(name,"help",'IgnoreCase',true)
 '    ''right ascension of the ascending node'': osculating right ascension of the ascending node (rad)'
 '    ''argument of perigee'': osculating argument of perigee (rad)'
 '    ''true anamoly'': osculating true anamoly (rad)'
+'    ''eclipse'': 1 if in eclipse (boolean)'
+'    ''solar panel area in sun'': projected area of solar panels in sun light (m^2)'
 };
 
 elseif startsWith(name,"rate",'IgnoreCase',true)
@@ -161,6 +163,21 @@ elseif startsWith(name,"time",'IgnoreCase',true)
     value= dynamics.time; 
 elseif startsWith(name,"fuel mass",'IgnoreCase',true)
     value= dynamics.fuel_mass; 
+elseif startsWith(name,"eclipse",'IgnoreCase',true)
+    value=env_eclipse(dynamics.position_eci,env_sun_vector(dynamics.time));
+elseif startsWith(name,"solar panel area in sun",'IgnoreCase',true)
+    if get_truth("eclipse",dynamics)
+        value=0;
+    else
+        sat2sun_body= get_truth("sat2sun body",dynamics); 
+        solar_panel_normals=[0.03 0 0;%+X
+                             -0.03 0 0;%-X
+                             0 0.03 0;%+Y
+                             0 -0.03 0;%-Y
+                             0 0 0.01;];%+Z
+        solar_panel_areas_in_sun=max(solar_panel_normals*sat2sun_body,0);
+        value=sum(solar_panel_areas_in_sun);
+    end
 elseif startsWith(name,"dcm",'IgnoreCase',true)
     v=split(name);
     q=quaternion_from_string(v(end-1),v(end));
