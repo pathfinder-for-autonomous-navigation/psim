@@ -13,3 +13,4 @@ runtests('test_get_truth');
 runtests('test_env_sun_vector');
 runtests('test_env_earth_attitude');
 runtests('test_env_magnetic_field');
+runtests('test_env_gravity');
