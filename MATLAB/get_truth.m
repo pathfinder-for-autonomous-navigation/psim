@@ -49,7 +49,7 @@ if startsWith(name,"help",'IgnoreCase',true)
 '    ''inclination angle'': osculating inclination angle (rad)'
 '    ''right ascension of the ascending node'': osculating right ascension of the ascending node (rad)'
 '    ''argument of perigee'': osculating argument of perigee (rad)'
-'    ''true anamoly'': osculating true anamoly (rad)'
+'    ''true anomaly'': osculating true anomaly (rad)'
 '    ''eclipse'': 1 if in eclipse (boolean)'
 '    ''solar panel area in sun'': projected area of solar panels in sun light (m^2)'
 };
@@ -156,7 +156,7 @@ elseif startsWith(name,"right ascension of the ascending node",'IgnoreCase',true
 elseif startsWith(name,"argument of perigee",'IgnoreCase',true)
     [a, eMag, i, O, o, nu, truLon, argLat, lonPer,p] = utl_rv2orb(dynamics.position_eci, dynamics.velocity_eci, const.mu);
     value= o;
-elseif startsWith(name,"true anamoly",'IgnoreCase',true)
+elseif startsWith(name,"true anomaly",'IgnoreCase',true)
     [a, eMag, i, O, o, nu, truLon, argLat, lonPer,p] = utl_rv2orb(dynamics.position_eci, dynamics.velocity_eci, const.mu);
     value= nu;
 elseif startsWith(name,"time",'IgnoreCase',true)
