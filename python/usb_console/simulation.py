@@ -139,7 +139,7 @@ class Simulation(object):
         with open(data_dir + "/simulation_log.txt", "w") as fp:
             fp.write(self.log)
 
-class SingleSimulation(Simulation):
+class SingleSatSimulation(Simulation):
     """
     Mission simulation with only a single spacecraft.
     """

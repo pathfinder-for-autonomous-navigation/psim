@@ -5,7 +5,7 @@ from state_session import StateSession
 from radio_session import RadioSession
 from cmdprompt import StateCmdPrompt
 from data_consumers import Logger, Datastore
-from simulation import Simulation, SingleSimulation
+from simulation import Simulation, SingleSatSimulation
 import json, sys, os, tempfile, time
 
 try:
@@ -133,7 +133,7 @@ class SimulationRun(object):
     def set_up_sim(self):
         if self.sim_duration > 0:
             if self.single_sim:
-                self.sim = SingleSimulation(self.devices, self.random_seed)
+                self.sim = SingleSatSimulation(self.devices, self.random_seed)
             else:
                 self.sim = Simulation(self.devices, self.random_seed)
             self.sim.start(self.sim_duration)
