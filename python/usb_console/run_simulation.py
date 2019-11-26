@@ -15,10 +15,10 @@ except ImportError:
     pass
 
 class SimulationRun(object):
-    def __init__(self, random_seed, sim_duration, single_sim, data_dir, device_config, radios_config, radio_keys_config):
+    def __init__(self, random_seed, sim_duration, single_sat_sim, data_dir, device_config, radios_config, radio_keys_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
-        self.single_sim = single_sim
+        self.single_sat_sim = single_sat_sim
 
         self.simulation_run_dir = os.path.join(data_dir, time.strftime("%Y%m%d-%H%M%S"))
         # Create directory for run data
@@ -132,7 +132,7 @@ class SimulationRun(object):
 
     def set_up_sim(self):
         if self.sim_duration > 0:
-            if self.single_sim:
+            if self.single_sat_sim:
                 self.sim = SingleSatSimulation(self.devices, self.random_seed)
             else:
                 self.sim = Simulation(self.devices, self.random_seed)
@@ -211,7 +211,7 @@ if __name__ == '__main__':
             config_data = json.load(config_file)
             random_seed = config_data["seed"]
             sim_duration = config_data["sim_duration"]
-            single_sim = config_data["single_sim"]
+            single_sat_sim = config_data["single_sat_sim"]
             device_config = config_data["devices"]
             radios_config = config_data["radios"]
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/radio_keys.json')) as radio_keys_config_file:
@@ -223,6 +223,7 @@ if __name__ == '__main__':
         print("Malformed config file. Exiting.")
         raise SystemExit
 
-    simulation_run = SimulationRun(random_seed, sim_duration, single_sim, args.data_dir,
-                                   device_config, radios_config, radio_keys_config)
+    simulation_run = SimulationRun(random_seed, sim_duration, single_sat_sim,
+                                   args.data_dir, device_config, radios_config,
+                                   radio_keys_config)
     simulation_run.start()
