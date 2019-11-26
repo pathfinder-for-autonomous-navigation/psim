@@ -3,14 +3,19 @@
     "sim_duration" : 0,
     "devices" : [
         {
-            "name": "FlightController",
+            "name": "FlightControllerLeader",
             "run_mode" : "native",
-            "binary_filepath" : "/Users/fatimayousuf/Desktop/repositories/FlightSoftware/.pio/build/native/program"
+            "binary_filepath" : "/Users/tanishqaggarwal/Documents/pan/repositories/FlightSoftware/.pio/build/native/program"
+        },
+        {
+            "name": "FlightControllerFollower",
+            "run_mode": "native",
+            "binary_filepath": "/Users/tanishqaggarwal/Documents/pan/repositories/FlightSoftware/.pio/build/native/program"
         }
     ],
     "radios" : [
         {
-            "connected_device" : "FlightController",
+            "connected_device" : "FlightControllerLeader",
             "imei" : "",
             "connect": true
         }
