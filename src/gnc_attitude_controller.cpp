@@ -59,6 +59,7 @@ void control_detumble(DetumbleControllerState &state,
       constant::max_mtr_moment_f * (db(1) > 0.0f ? -1.0f : 1.0f),
       constant::max_mtr_moment_f * (db(2) > 0.0f ? -1.0f : 1.0f)
     };
+    state.b_body_buffer.clear();
   }
 
   // Assign the most recently calculated magetorquer command
