@@ -70,6 +70,7 @@ const.SLOSH_DAMPING=0.0;% positive scalar
 % Torque on fuel/difference in angular rates in eci Nm/(rad/s).
 const.ATTITUDE_PD_KP = 75e-4; % imported from simulink
 const.ATTITUDE_PD_KD = 32.5e-4; % imported from simulink
+const.ATTITUDE_PD_derivative_buffer_size=1;
 
 %derived constants
 const.JBINV=inv(const.JB);% 3x3 symmetric matrix

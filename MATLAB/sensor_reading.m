@@ -12,7 +12,7 @@ true_state=my_satellite_state.dynamics;
 
 %% quaternions
 
-[quat_ecef_eci,~]=env_earth_attitude(true_state.time);
+[quat_ecef_eci,rate_ecef]=env_earth_attitude(true_state.time);
 quat_body_eci= true_state.quat_body_eci;
 quat_eci_ecef= utl_quat_conj(quat_ecef_eci);
 quat_body_ecef= utl_quat_cross_mult(quat_body_eci,quat_eci_ecef);
@@ -48,8 +48,14 @@ sensor_readings.wheel_momentum_body= true_state.wheel_rate_body*const.JWHEEL;
 
 sensor_readings.time= true_state.time;
 sensor_readings.position_ecef= position_ecef;
-%TODO get velocity in ECEF
+sensor_readings.velocity_ecef= utl_rotateframe(quat_ecef_eci, true_state.velocity_eci)-cross(rate_ecef,position_ecef);
 
+
+%in reality this is not how cd cps works
+target_position_eci= other_satellite_state.dynamics.position_eci;
+sensor_readings.target_position_ecef= utl_rotateframe(quat_ecef_eci,target_position_eci);
+target_velocity_eci= other_satellite_state.dynamics.velocity_eci;
+sensor_readings.target_velocity_ecef= utl_rotateframe(quat_ecef_eci, target_velocity_eci)-cross(rate_ecef,sensor_readings.target_position_ecef);
 
 end
 
@@ -102,7 +108,7 @@ if (~eclipse)
             Y(j) = voltages(i);
         end
     end
-    if j >= 4  % TODO : Perhaps play with this parameter
+    if j >= 3  % TODO : Perhaps play with this parameter
         A = A(1:j, :);
         Y = Y(1:j, :);
         [Q, R] = qr(A);

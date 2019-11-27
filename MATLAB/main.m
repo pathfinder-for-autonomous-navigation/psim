@@ -9,12 +9,12 @@ global computer_state_follower_trajectory
 global computer_state_leader_trajectory
 
 dt=double(const.dt) * 1e-9;
-t_max = 2000;% Amount of time simulated (s)
+t_max = 20000;% Amount of time simulated (s)
 t_int = 10.0;% Sampling interval        (s)
 num_steps = floor(t_max/dt);
 sample_rate = t_int/dt;
 N = floor(num_steps /sample_rate);  % Number of samples
-main_state= initialize_main_state(1,'not_detumbled');
+main_state= initialize_main_state(1,'detumbled');
 [computer_state_follower,computer_state_leader]= initialize_computer_states('not_detumbled');
 main_state_trajectory = cell(1,N);
 main_state_trajectory{1} = main_state;
