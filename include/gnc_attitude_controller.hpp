@@ -22,9 +22,8 @@ namespace gnc {
  *  Contains internal state information needed by the control_detumble function.
  *  */
 struct DetumbleControllerState {
-  double t;
-  lin::Vector3f b_body;
-  CircularBuffer<lin::Vector3f, 5> db_buffer;
+  lin::Vector3f mtr_body_cmd;
+  CircularBuffer<lin::Vector3f, 10> b_body_buffer;
   /** Defaults everything's value to NaN. */
   DetumbleControllerState();
 };
@@ -33,10 +32,6 @@ struct DetumbleControllerState {
  *  Essentially serves as the inputs to the control_detumble function. See
  *  member documentation for more details. */
 struct DetumbleControllerData {
-  /** Timestamp for the rest of the data in this struct and the time for which
-   *  an attitude actuation will be calculated. This should be in seconds since
-   *  the 'PAN epoch'. */
-  double t;
   /** Observed magnetic field in the body frame of the spacecraft. */
   lin::Vector3f b_body;
   /** Defaults everything's value to NaN. */

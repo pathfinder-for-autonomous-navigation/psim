@@ -23,13 +23,11 @@ static_assert(std::numeric_limits<float>::has_quiet_NaN,
 namespace gnc {
 
 DetumbleControllerState::DetumbleControllerState() {
-  this->t = std::numeric_limits<double>::quiet_NaN();
-  this->b_body = lin::nans<decltype(this->b_body)>();
-  this->db_buffer = CircularBuffer<lin::Vector3f, 5>();
+  this->mtr_body_cmd = lin::nans<decltype(this->mtr_body_cmd)>();
+  this->b_body_buffer = CircularBuffer<lin::Vector3f, 10>();
 }
 
 DetumbleControllerData::DetumbleControllerData() {
-  this->t = std::numeric_limits<double>::quiet_NaN();
   this->b_body = lin::nans<decltype(this->b_body)>();
 }
 
@@ -40,33 +38,31 @@ DetumbleActuation::DetumbleActuation() {
 void control_detumble(DetumbleControllerState &state,
     DetumbleControllerData const &data, DetumbleActuation &actuation) {
 
-  // Clear the state if it's outdated (more than ~5 control cycles old)
-  if (data.t - state.t > 0.5) state = DetumbleControllerState();
+  // Default everything to nan
+  actuation = DetumbleActuation();
 
-  // Default everything to NaN and ensure a magnetic field vector and time were
-  // given
-  if (std::isnan(data.b_body(0)) || std::isnan(data.t)) return;
+  // We should always get a valid magnetic field reading otherwise the mission
+  // is pretty much over
+  if (std::isnan(data.b_body(0))) return;
 
-  // If we don't have an old estimate just write the current one into state and
-  // wait till the next call to estimate w_body
-  if (std::isnan(state.t) || std::isnan(state.b_body(0))) {
-    state.t = data.t;
-    state.b_body = data.b_body;
+  // Push the new magnetic field into the buffer
+  state.b_body_buffer.push(data.b_body);
+
+  // We're ready to calculate a new magnetic torque rod command
+  if (state.b_body_buffer.size() == state.b_body_buffer.max_size()) {
+    // Look in the middle of the buffer to ignore transients from the previous
+    // adjustment to the magnetorquers
+    auto size = state.b_body_buffer.size();
+    auto db = state.b_body_buffer[size - 1] - state.b_body_buffer[size / 2];
+    state.mtr_body_cmd = {
+      constant::max_mtr_moment_f * (db(0) > 0.0f ? -1.0f : 1.0f),
+      constant::max_mtr_moment_f * (db(1) > 0.0f ? -1.0f : 1.0f),
+      constant::max_mtr_moment_f * (db(2) > 0.0f ? -1.0f : 1.0f)
+    };
   }
 
-  // Calculate db and calculate its moving average
-  lin::Vector3f db = (data.b_body - state.b_body) / (data.t - state.t);
-  state.db_buffer.push(db);
-  db = lin::zeros<float, 3, 1>();
-  for (std::size_t i = 0; i < state.db_buffer.size(); i++)
-    db = db + state.db_buffer[i];
-  db = db / static_cast<float>(state.db_buffer.size());
+  // Assign the most recently calculated magetorquer command
+  actuation.mtr_body_cmd = state.mtr_body_cmd;
 
-  // Run the bang-bang controller
-  actuation.mtr_body_cmd = {
-    constant::max_mtr_moment_f * (db(0) > 0.0f ? -1.0f : 1.0f),
-    constant::max_mtr_moment_f * (db(1) > 0.0f ? -1.0f : 1.0f),
-    constant::max_mtr_moment_f * (db(2) > 0.0f ? -1.0f : 1.0f)
-  };
 }
 }  // namespace gnc
