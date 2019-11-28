@@ -5,7 +5,7 @@ from state_session import StateSession
 from radio_session import RadioSession
 from cmdprompt import StateCmdPrompt
 from data_consumers import Logger, Datastore
-from simulation import Simulation
+from simulation import Simulation, SingleSatSimulation
 import json, sys, os, tempfile, time
 
 try:
@@ -15,9 +15,10 @@ except ImportError:
     pass
 
 class SimulationRun(object):
-    def __init__(self, random_seed, sim_duration, data_dir, device_config, radios_config, radio_keys_config):
+    def __init__(self, random_seed, sim_duration, single_sat_sim, data_dir, device_config, radios_config, radio_keys_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
+        self.single_sat_sim = single_sat_sim
 
         self.simulation_run_dir = os.path.join(data_dir, time.strftime("%Y%m%d-%H%M%S"))
         # Create directory for run data
@@ -117,7 +118,7 @@ class SimulationRun(object):
                 radio_data_name = radio_connected_device + "_radio"
                 radio_datastore = Datastore(radio_data_name, self.simulation_run_dir)
                 radio_logger = Logger(radio_data_name, self.simulation_run_dir)
-                radio_session = RadioSession(radio_connected_device, radio_datastore, radio_logger, self.radio_keys_config)
+                radio_session = RadioSession(radio_name, radio_datastore, radio_logger, self.radio_keys_config)
 
                 if radio_session.connect(radio['imei']):
                     self.radios[radio_name] = radio_session
@@ -131,7 +132,10 @@ class SimulationRun(object):
 
     def set_up_sim(self):
         if self.sim_duration > 0:
-            self.sim = Simulation(self.devices, self.random_seed)
+            if self.single_sat_sim:
+                self.sim = SingleSatSimulation(self.devices, self.random_seed)
+            else:
+                self.sim = Simulation(self.devices, self.random_seed)
             self.sim.start(self.sim_duration)
         else:
             self.sim = lambda: None # Create empty object
@@ -207,6 +211,7 @@ if __name__ == '__main__':
             config_data = json.load(config_file)
             random_seed = config_data["seed"]
             sim_duration = config_data["sim_duration"]
+            single_sat_sim = config_data["single_sat_sim"]
             device_config = config_data["devices"]
             radios_config = config_data["radios"]
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/radio_keys.json')) as radio_keys_config_file:
@@ -218,6 +223,7 @@ if __name__ == '__main__':
         print("Malformed config file. Exiting.")
         raise SystemExit
 
-    simulation_run = SimulationRun(random_seed, sim_duration, args.data_dir,
-                                   device_config, radios_config, radio_keys_config)
+    simulation_run = SimulationRun(random_seed, sim_duration, single_sat_sim,
+                                   args.data_dir, device_config, radios_config,
+                                   radio_keys_config)
     simulation_run.start()
