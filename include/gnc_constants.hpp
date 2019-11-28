@@ -137,6 +137,14 @@ constexpr static double b_noise_floor = 0.0L;
 /** Noise floor of the magnetometer in units of T (float version). */
 constexpr static float b_noise_floor_f = static_cast<float>(b_noise_floor);
 
+/** Largest magnetic moment along a single axis that can be commanded of the
+ *  ADCS system in units of Am^2. */
+constexpr static double max_mtr_moment = 0.113337L / 2.0L;  // For one MTR
+
+/** Largest magnetic moment along a single axis that can be commanded of the
+ *  ADCS system in units of Am^2 (float version). */
+constexpr static float max_mtr_moment_f = static_cast<float>(max_mtr_moment);
+
 }  // namespace constants
 }  // namespace gnc
 
