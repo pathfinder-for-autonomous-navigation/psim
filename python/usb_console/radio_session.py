@@ -84,10 +84,10 @@ class RadioSession(object):
 
     def read_state(self, field, timeout=None):
         '''
-        Read state by sending a request for data from Flask server
-        
-        Read the latest value of the state field received via downlink with the name "field".
+        Read state by sending a request for data from backend API
         '''
+        req = requests.get('')
+        #return req.text
         return self.statefields[field]
 
     def write_multiple_states(self, fields, vals, timeout=None):

@@ -18,9 +18,7 @@ class read_iridium(object):
 
         #backend server
         self.server = server_keys_config["server"]
-        self.auth = server_keys_config["auth"]
-        #username = auth["user"]
-        #password = auth["password"]
+        self.port = server_keys_config["backend_port"]
 
         #updates MOMSN and MTMSN numbers sent/recieved
         self.momsn=-1
@@ -47,7 +45,8 @@ class read_iridium(object):
         return json.loads(data)
 
     def check_for_email(self):
-        while self.run_email_thread==True:
+        if 1==1:
+        #while self.run_email_thread==True:
             #look for all new emails from iridium
             _, data = self.mail.search(None, '(FROM "fy56@cornell.edu")', '(UNSEEN)')
             mail_ids = data[0]
@@ -114,8 +113,7 @@ class read_iridium(object):
                                     #get data from email attachment
                                     attachmentContents=part.get_payload(decode=True).decode('utf8')
                                     data=self.process_downlink_packet(attachmentContents)
-                                    #post the data to the backend api endpoint
-                                    r=requests.post(self.server,data)
+                                    return data
 
     def disconnect(self):
         self.run_email_thread=False
@@ -133,14 +131,42 @@ except json.JSONDecodeError:
 except KeyError:
     print("Malformed config file. Exiting.")
     raise SystemExit
+username=server_keys_config["username"]
+password=server_keys_config["password"]
 
 #create a read_iridium object 
 readIr=read_iridium(radio_keys_config, server_keys_config)
 
 @app.route("/")
 def home():
-    #open check_email_thread and start posting data
-    readIr.connect()
+    #get token for session
+    #'''
+    headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    login={
+        "username":username,
+        "password":password
+    }
+    login_json=json.dumps(login)
+    response = requests.post('http://'+readIr.server+":"+readIr.port+"/auth/login", headers=headers, data=login_json)
+    response_body=json.loads(response.text)
+    token=response_body["token"]
+    #'''
+
+    #Post data to server
+    #'''
+    data=readIr.check_for_email()
+    if data is not None:
+        data["JWT"]=token
+        req_data=json.dumps(data)
+        req=requests.post('http://'+readIr.server+":"+readIr.port+"/telemetry/rockblock", headers=headers, data=req_data)
+        return req.text
+    else:
+        return "" 
+    #'''
+
 
 if __name__ == "__main__":
     app.run(debug=True)
