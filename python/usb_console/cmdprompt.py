@@ -4,7 +4,6 @@ except ImportError:
     # We're on Windows, so readline doesn't exist
     pass
 from cmd import Cmd
-import random
 import timeit
 
 class StateCmdPrompt(Cmd):
@@ -26,7 +25,10 @@ class StateCmdPrompt(Cmd):
         try:
             self.cmded_device = self.devices['FlightController']
         except KeyError:
-            self.cmded_device = random.choice(list(self.devices.values()))
+            try:
+                self.cmded_device = self.devices['FlightControllerLeader']
+            except KeyError:
+                self.cmded_device = list(self.devices.values())[0]
 
         Cmd.__init__(self)
 
