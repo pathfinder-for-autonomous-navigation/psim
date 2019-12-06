@@ -1,7 +1,7 @@
-summary: "Echo an input posted over HTTP"
+summary: "Send telemetry data to the ElasticSearch server in field-value-time tuples"
 tags: 
-  - "Test Posting Telemetry Data to ElasticSearch"
-description: "This is used for testing the SwaggerUI API and ensuring post requests work"
+  - "Post Telemetry Data to ElasticSearch"
+description: "This is used for sending and indexing telemetry data to the ElasticSearch server. Note that this will not generate an iridium report"
 consumes:
   - "application/json"
 produces:
