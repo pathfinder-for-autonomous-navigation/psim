@@ -127,18 +127,20 @@ class read_iridium(object):
         If there is a statefield report, index the statefield report and 
         create and index an iridium report.
         '''
-        while self.run_email_thread==True:
-            #connect to elasticsearch
-            es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
+        #connect to elasticsearch
+        es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
 
+        while self.run_email_thread==True:
             sf_report=readIr.check_for_email()
             if sf_report is not None:
+                print("Got report: "+str(sf_report)+"\n")
+
                 #index statefield report in elasticsearch
                 statefield_res = es.index(index='statefield_report', doc_type='report', body=sf_report)
 
                 # Create an iridium report and add that to the iridium_report index in elasticsearch. 
                 # We only want to add Iridium reports when we recieve an email, which is why we wait until there is a statefield report
-                ir_report=json.dumps({"momsn":readIr.momsn, "mtmsn":readIr.mtmsn})
+                ir_report=json.dumps({"momsn":self.momsn, "mtmsn":self.mtmsn})
                 iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
 
                 #print whether or not indexing was successful
