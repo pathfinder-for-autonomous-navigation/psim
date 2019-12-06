@@ -1,0 +1,22 @@
+summary: "Return the most recent value of a given statefield"
+tags: 
+  - "Search Statefield Reports"
+description: "This is used for searching for the most recent value of a given statefield."
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: "body"
+    name: "body"
+    description: "Accepts a Statefield Name"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        statefield:
+          type: "string"
+          example: "transport"
+responses: 
+  405:
+    description: "Invalid input"

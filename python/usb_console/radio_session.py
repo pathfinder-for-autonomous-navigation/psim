@@ -59,40 +59,33 @@ class RadioSession(object):
         #send_uplinks keeps track of if the ground can send more uplinks. This allows us to make sure we are only sending one uplink at a time.
         self.send_uplinks=True
 
-        self.statefields={
-            #dummy variable for statefields
-            "field":35
-        }
-
     def connect(self):
         '''
         Starts http connection to backend api.
         '''
-        self.check_updates_thread = threading.Thread(target=self.check_for_updates)
-        self.running_logger = True
-        self.check_updates_thread.start()
-    
-    def check_for_updates(self):
-        #send a get request to the flask server
-        while self.running_logger:
-            try:
-                #send a get request to backend server
-                req = requests.get('')
-                print(req.text)
-            except:
-                self.logger.put("Unable to connect to server")
+        return True
 
     def read_state(self, field, timeout=None):
         '''
-        Read state by sending a request for data from backend API
+        Read state by posting a request for data to the Flask server
         '''
-        req = requests.get('')
-        #return req.text
-        return self.statefields[field]
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'text/html',
+        }
+
+        data = {
+            "statefield": field
+        }
+
+        response = requests.post('http://127.0.0.1:5000/search-statefields', headers=headers, data=json.dumps(data))
+        return response.text
 
     def write_multiple_states(self, fields, vals, timeout=None):
         '''
         Uplink multiple state variables. Return success of write.
+        Idea: Read from the Iridium Report index the most recent mtmsn/confirmation mtmsn numbers.
+        If they match, then you can send the uplink. If they don't match, then you are thrown an error.
         '''
         assert len(fields) == len(vals)
 
@@ -127,4 +120,3 @@ class RadioSession(object):
 
         # End threads if there was actually a connection to the radio
         self.running_logger = False
-        self.check_updates_thread.join()

@@ -1,0 +1,22 @@
+summary: "Return the most recent value of a given field from the Iridium report index"
+tags: 
+  - "Search Iridium Reports"
+description: "This is used for searching for the most recent value of a given field."
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: "body"
+    name: "body"
+    description: "Accepts a Field Name"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        field:
+          type: "string"
+          example: "momsn"
+responses: 
+  405:
+    description: "Invalid input"

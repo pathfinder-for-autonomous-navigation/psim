@@ -29,7 +29,6 @@ class read_iridium(object):
         self.confirmation_mtmsn=-1
 
         #send_uplinks, keeps track of if the ground can send more uplinks. This allows us to make sure we are only sending one uplink at a time.
-        #need to move this function to radioSession
         self.send_uplinks=False
 
         #connect to email
@@ -99,10 +98,10 @@ class read_iridium(object):
                                     if line.find("MTMSN")!=-1:
                                         self.mtmsn=int(line[line.find("MTMSN")+9:line.find("MTMSN")+11])
 
-                    #handles downlinks
+                    # Handles downlinks
                     if True:
-                    #if email_subject.find("SBD Msg From Unit: "==0:
-                        #go through the email contents
+                    # If email_subject.find("SBD Msg From Unit: "==0:
+                        # Go through the email contents
                         for part in msg.walk():
                                         
                             if part.get_content_maintype() == 'multipart':
@@ -111,7 +110,7 @@ class read_iridium(object):
                             if part.get('Content-Disposition') is None:
                                 continue
                                             
-                            #get the body text of the email and look for the MOMSN/MTMSN number
+                            # Get the body text of the email and look for the MOMSN/MTMSN number
                             if part.get_content_type() == "text/plain":
                                 email_body = part.get_payload(decode=True).decode('utf8')
                                 for line in email_body.splitlines():
@@ -126,9 +125,9 @@ class read_iridium(object):
                                             #allow radio session to send more uplinks
                                             self.send_uplinks=True
 
-                            #check if there is an email attachment
+                            # Check if there is an email attachment
                             if part.get_filename() is not None:
-                                #get data from email attachment
+                                # Get data from email attachment
                                 attachmentContents=part.get_payload(decode=True).decode('utf8')
                                 statefield_report=self.process_downlink_packet(attachmentContents)
                                 return statefield_report
@@ -139,26 +138,32 @@ class read_iridium(object):
         If there is a statefield report, index the statefield report and 
         create and index an iridium report.
         '''
-        #connect to elasticsearch
+        # Connect to elasticsearch
         es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
 
         while self.run_email_thread==True:
-            #print the report recieved by email 
             sf_report=readIr.check_for_email()
 
             if sf_report is not None:
-                print("Got report: "+str(sf_report)+"\n\n")
+                # Print the statefield report recieved
+                print("Got report: "+str(sf_report)+"\n")
 
-                #index statefield report in elasticsearch
+                # Index statefield report in elasticsearch
                 statefield_res = es.index(index='statefield_report', doc_type='report', body=sf_report)
 
                 # Create an iridium report and add that to the iridium_report index in elasticsearch. 
                 # We only want to add Iridium reports when we recieve an email, which is why we wait until there is a statefield report
-                ir_report=json.dumps({"momsn":self.momsn, "mtmsn":self.mtmsn})
+                ir_report=json.dumps({
+                    "momsn":self.momsn,
+                    "mtmsn":self.mtmsn, 
+                    "confirmation-mtmsn": self.confirmation_mtmsn,
+                    "send-uplinks": self.send_uplinks
+                })
                 iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
 
-                #print whether or not indexing was successful
-                print(statefield_res['result']+"\n"+iridium_res['result'])
+                # Print whether or not indexing was successful
+                print("Statefield Report Status: "+statefield_res['result'])
+                print("Iridium Report Status: "+iridium_res['result']+"\n\n")
 
     def disconnect(self):
         '''
@@ -168,7 +173,7 @@ class read_iridium(object):
         self.run_email_thread=False
         self.check_email_thread.join()
 
-#get keys for connecting to email account and elasticsearch server
+# Get keys for connecting to email account and elasticsearch server
 try:
     with open(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../usb_console/configs/radio_keys.json')))as radio_keys_config_file:
         radio_keys_config = json.load(radio_keys_config_file)
@@ -181,12 +186,12 @@ except KeyError:
     print("Malformed config file. Exiting.")
     raise SystemExit
 
-#create a read_iridium object
+# Create a read_iridium object
 readIr=read_iridium(radio_keys_config, server_keys_config)
-#start checking emails and posting reports
+# Start checking emails and posting reports
 readIr.connect()
 
-#set up the SwaggerUI API
+# Set up the SwaggerUI API
 swagger_config={
     "headers":[],
     "specs":[
@@ -203,7 +208,8 @@ swagger_config={
 }
 swagger=Swagger(app, config=swagger_config)
 
-#Endpoint for testing post requests
+# Endpoint for testing post requests
+# Mostly for testing purposes. We don't use this to actually post data to elasticsearch
 @app.route("/test", methods=["POST"])
 @swag_from("endpoint_configs/echo_config.yml")
 def echo():
@@ -212,7 +218,7 @@ def echo():
     res={"Recieved": message}
     return json.dumps(res)
 
-#endpoint for indexing telemetry data in elasticsearch
+# Endpoint for requesting data from elasicsearch. 
 @app.route("/telemetry", methods=["POST"])
 @swag_from("endpoint_configs/telemetry_config.yml")
 def index_sf_report():
@@ -225,24 +231,63 @@ def index_sf_report():
     res={"Report Status": sf_res['result']}
     return res
 
+# Endpoint for getting data from statefield reports
+@app.route("/search-statefields", methods=["POST"])
+@swag_from("endpoint_configs/search_statefields_config.yml")
+def get_statefield():
+    # Connect to elasticsearch
+    input_json=request.get_json()
+    field=str(input_json["statefield"])
+    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+    # Get the most recent document in the statefield index which has a given statefield in it
+    search_object={
+        'query': {
+            'exists': {
+                'field': field
+            }
+        },
+        "sort": [
+            {
+                "at": {
+                    "order": "desc"
+                }
+            }
+        ],
+        "size": 1
+    }
+    res = es.search(index='statefield_report', body=json.dumps(search_object))
+    # Get the value of that statefield from the document
+    most_recent_field=res["hits"]["hits"][0]["_source"][field]
+    return most_recent_field
+
+# Endpoint for getting data from iridium reports. Will be used to check if we are allowed to send uplinks
+@app.route("/search-iridium", methods=["POST"])
+@swag_from("endpoint_configs/search_iridium_config.yml")
+def get_iridium_field():
+    # Connect to elasticsearch
+    input_json=request.get_json()
+    field=str(input_json["field"])
+    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+    # Get the most recent document in the statefield index which has a given statefield in it
+    search_object={
+        'query': {
+            'exists': {
+                'field': field
+            }
+        },
+        "sort": [
+            {
+                "at": {
+                    "order": "desc"
+                }
+            }
+        ],
+        "size": 1
+    }
+    res = es.search(index='iridium_report', body=json.dumps(search_object))
+    # Get the value of that statefield from the document
+    most_recent_field=res["hits"]["hits"][0]["_source"][field]
+    return most_recent_field
+
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
-#gets token for session. honestly doesn't seem like we even need this, but we shall see?
-'''
-headers = {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-}
-login={
-    "username":username,
-    "password":password
-}
-login_json=json.dumps(login)
-response = requests.post('http://'+readIr.server+":"+readIr.port+"/auth/login", headers=headers, data=login_json)
-response_body=json.loads(response.text)
-token=response_body["token"]
-'''
