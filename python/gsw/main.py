@@ -12,11 +12,11 @@ app = Flask(__name__)
 
 class read_iridium(object):
     def __init__(self, radio_keys_config, server_keys_config):
-        #server
+        #elasticsearch server
         self.es_server=server_keys_config["server"]
         self.es_port=server_keys_config["port"]
 
-        #email
+        #pan email
         self.username=radio_keys_config["email_username"]
         self.password=radio_keys_config["email_password"]
 
@@ -38,12 +38,22 @@ class read_iridium(object):
         self.run_email_thread = False
 
     def connect(self):
-        #start email thread
+        '''
+        Starts a thread which will continuously
+        check the PAN email and post reports to 
+        elasticsearch 
+        '''
         self.check_email_thread = threading.Thread(target=self.post_to_es)
         self.run_email_thread = True
         self.check_email_thread.start()
 
     def process_downlink_packet(self, data):
+        '''
+        Converts the email attachment data into a 
+        JSON object. This is because elasticsearch
+        only takes in JSON data. I will add to this
+        once downlink producer is finished
+        '''
         return json.loads(data)
 
     def check_for_email(self):
@@ -130,9 +140,11 @@ class read_iridium(object):
         es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
 
         while self.run_email_thread==True:
+            #print the report recieved by email 
             sf_report=readIr.check_for_email()
+
             if sf_report is not None:
-                print("Got report: "+str(sf_report)+"\n")
+                print("Got report: "+str(sf_report)+"\n\n")
 
                 #index statefield report in elasticsearch
                 statefield_res = es.index(index='statefield_report', doc_type='report', body=sf_report)
@@ -146,6 +158,10 @@ class read_iridium(object):
                 print(statefield_res['result']+"\n"+iridium_res['result'])
 
     def disconnect(self):
+        '''
+        Stops the thread which is checking emails
+        and posting reports to elasticsearch
+        '''
         self.run_email_thread=False
         self.check_email_thread.join()
 
