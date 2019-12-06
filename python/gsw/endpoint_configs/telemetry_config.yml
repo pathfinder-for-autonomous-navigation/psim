@@ -1,0 +1,28 @@
+summary: "Echo an input posted over HTTP"
+tags: 
+  - "Test Posting Telemetry Data to ElasticSearch"
+description: "This is used for testing the SwaggerUI API and ensuring post requests work"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: "body"
+    name: "body"
+    description: "Accepts a Field-Value-Time Tuple"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        time:
+          type: "string"
+          example: "11/12/13"
+        field:
+          type: "string"
+          example: "control cycle count"
+        value:
+          type: "integer"
+          example: 6
+responses: 
+  405:
+    description: "Invalid input"
