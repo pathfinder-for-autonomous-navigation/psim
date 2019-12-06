@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from elasticsearch import Elasticsearch
 import requests
 import threading
 import json
@@ -15,10 +16,6 @@ class read_iridium(object):
         #email
         self.username=radio_keys_config["email_username"]
         self.password=radio_keys_config["email_password"]
-
-        #backend server
-        self.server = server_keys_config["server"]
-        self.port = server_keys_config["backend_port"]
 
         #updates MOMSN and MTMSN numbers sent/recieved
         self.momsn=-1
@@ -112,14 +109,14 @@ class read_iridium(object):
                                 if part.get_filename() is not None:
                                     #get data from email attachment
                                     attachmentContents=part.get_payload(decode=True).decode('utf8')
-                                    data=self.process_downlink_packet(attachmentContents)
-                                    return data
+                                    statefield_report=self.process_downlink_packet(attachmentContents)
+                                    return statefield_report
 
     def disconnect(self):
         self.run_email_thread=False
         self.check_email_thread.join()
 
-#get keys for connecting to email and Quake radio
+#get keys for connecting to email account and elasticsearch server
 try:
     with open(os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), '../usb_console/configs/radio_keys.json')))as radio_keys_config_file:
         radio_keys_config = json.load(radio_keys_config_file)
@@ -133,14 +130,16 @@ except KeyError:
     raise SystemExit
 username=server_keys_config["username"]
 password=server_keys_config["password"]
+es_server=server_keys_config["server"]
+es_port=server_keys_config["port"]
 
 #create a read_iridium object 
 readIr=read_iridium(radio_keys_config, server_keys_config)
 
 @app.route("/")
 def home():
-    #get token for session
-    #'''
+    #get token for session. honestly doesn't seem like we even need this, but we shall see?
+    '''
     headers = {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -153,19 +152,23 @@ def home():
     response = requests.post('http://'+readIr.server+":"+readIr.port+"/auth/login", headers=headers, data=login_json)
     response_body=json.loads(response.text)
     token=response_body["token"]
-    #'''
+    '''
 
-    #Post data to server
-    #'''
-    data=readIr.check_for_email()
-    if data is not None:
-        data["JWT"]=token
-        req_data=json.dumps(data)
-        req=requests.post('http://'+readIr.server+":"+readIr.port+"/telemetry/rockblock", headers=headers, data=req_data)
-        return req.text
+    #connect to elasticsearch
+    es=Elasticsearch([{'host':es_server,'port':es_port}])
+
+    #check email and post data to elasticsearch
+    sf_report=readIr.check_for_email()
+    if sf_report is not None:
+        statefield_res = es.index(index='statefield_report', doc_type='report', body=sf_report)
+        # Create an iridium report and add that to the Iridium report index in elasticsearch. 
+        # We only want to add Iridium reports when we recieve an email, which is why we wait until there is a statefield report
+        ir_report={"momsn":readIr.momsn, "mtmsn":readIr.mtmsn}
+        iridium_res = es.index(index='iridium_report', doc_type='report', body=json.dumps(ir_report))
+        return statefield_res['result']+"\n"+iridium_res['result']
     else:
-        return "" 
-    #'''
+        return "no email found"
+
 
 
 if __name__ == "__main__":
