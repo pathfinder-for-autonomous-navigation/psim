@@ -212,12 +212,13 @@ def echo():
     res={"Recieved": message}
     return json.dumps(res)
 
+#endpoint for indexing telemetry data in elasticsearch
 @app.route("/telemetry", methods=["POST"])
 @swag_from("endpoint_configs/telemetry_config.yml")
 def index_sf_report():
     #connect to elasticsearch
     es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
-    
+
     sf_report=request.get_json()
     #index statefield report in elasticsearch
     sf_res = es.index(index='statefield_report', doc_type='report', body=sf_report)
