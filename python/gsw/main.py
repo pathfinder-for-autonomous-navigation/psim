@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify
+from flasgger import Swagger
+from flasgger.utils import swag_from
 from elasticsearch import Elasticsearch
 import threading
 import json
@@ -9,7 +11,8 @@ import email
 import logging
 
 app = Flask(__name__)
-
+app.config["SWAGGER"]={"title": "PAN Ground Software", "uiversion": 2}
+ 
 class read_iridium(object):
     def __init__(self, radio_keys_config, server_keys_config):
         #elasticsearch server
@@ -182,6 +185,32 @@ except KeyError:
 readIr=read_iridium(radio_keys_config, server_keys_config)
 #start checking emails and posting reports
 readIr.connect()
+
+#set up the SwaggerUI API
+swagger_config={
+    "headers":[],
+    "specs":[
+        {
+            "endpoint":"apispec_1",
+            "route":"/apispec_1.json",
+            "rule_filter":lambda rule:True,
+            "model_filter":lambda tag:True
+        }
+    ],
+    "static_url_path": "/flassger_static",
+    "swagger_ui":True,
+    "specs_route":"/swagger/"
+}
+swagger=Swagger(app, config=swagger_config)
+
+#Endpoint for testing post requests
+@app.route("/test", methods=["POST"])
+@swag_from("endpoint_configs/echo_config.yml")
+def echo():
+    input_json=request.get_json()
+    message=str(input_json["message"])
+    res={"Recieved": message}
+    return json.dumps(res)
 
 if __name__ == "__main__":
     app.run(debug=True)

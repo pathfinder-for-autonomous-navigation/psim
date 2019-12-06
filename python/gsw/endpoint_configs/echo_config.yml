@@ -1,0 +1,22 @@
+summary: "Echo an input posted over HTTP"
+tags: 
+  - "Test Post Requests"
+description: "This is used for testing the SwaggerUI API and ensuring post requests work"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+parameters:
+  - in: "body"
+    name: "body"
+    description: "Accepts a String"
+    required: true
+    schema:
+      type: "object"
+      properties:
+        message:
+          type: "string"
+          example: "Hello, there!"
+responses: 
+  405:
+    description: "Invalid input"
