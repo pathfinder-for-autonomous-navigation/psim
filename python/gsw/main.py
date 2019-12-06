@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from elasticsearch import Elasticsearch
-import requests
 import threading
 import json
 import imaplib
