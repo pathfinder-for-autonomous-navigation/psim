@@ -73,6 +73,8 @@ class read_iridium(object):
             #.fetch() fetches the mail for given id where 'RFC822' is an Internet 
             # Message Access Protocol.
             _, data = self.mail.fetch(num,'(RFC822)')
+            #mark the email message as read. I think this works?
+            self.mail.store(num, '+FLAGS', '(\\Seen)')
 
             #go through each component of data
             for response_part in data:
@@ -150,6 +152,8 @@ class read_iridium(object):
 
                 # Index statefield report in elasticsearch
                 statefield_res = es.index(index='statefield_report', doc_type='report', body=sf_report)
+                # Print whether or not indexing was successful
+                print("Statefield Report Status: "+statefield_res['result'])
 
                 # Create an iridium report and add that to the iridium_report index in elasticsearch. 
                 # We only want to add Iridium reports when we recieve an email, which is why we wait until there is a statefield report
@@ -159,10 +163,10 @@ class read_iridium(object):
                     "confirmation-mtmsn": self.confirmation_mtmsn,
                     "send-uplinks": self.send_uplinks
                 })
-                iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
 
+                # Index iridium report in elasticsearch
+                iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
                 # Print whether or not indexing was successful
-                print("Statefield Report Status: "+statefield_res['result'])
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
 
     def disconnect(self):
