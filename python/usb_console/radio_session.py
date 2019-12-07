@@ -25,7 +25,7 @@ class RadioSession(object):
     between the check_for_downlink and the read_state functions.
     '''
 
-    def __init__(self, device_name, datastore, logger, radio_keys_config):
+    def __init__(self, device_name, datastore, logger, radio_keys_config, flask_keys_config):
         '''
         Initializes state session with the Quake radio.
 
@@ -37,6 +37,10 @@ class RadioSession(object):
 
         # Device connection
         self.device_name = device_name
+
+        #Flask server connection
+        self.flask_server=flask_keys_config["server"]
+        self.flask_port=flask_keys_config["port"]
 
         # Data logging
         self.datastore = datastore
@@ -78,7 +82,7 @@ class RadioSession(object):
             "statefield": field
         }
 
-        response = requests.post('http://127.0.0.1:5000/search-statefields', headers=headers, data=json.dumps(data))
+        response = requests.post('http://'+self.flask_server+':'+self.flask_port+'/search-statefields', headers=headers, data=json.dumps(data))
         return response.text
 
     def write_multiple_states(self, fields, vals, timeout=None):
@@ -98,7 +102,7 @@ class RadioSession(object):
             "field": "send-uplinks"
         }
 
-        response = requests.post('http://127.0.0.1:5000/search-iridium', headers=headers, data=json.dumps(data))
+        response = requests.post('http://'+self.flask_server+':'+self.flask_port+'/search-iridium', headers=headers, data=json.dumps(data))
         print(response.text)
 
         if response.text=="True":
@@ -113,7 +117,7 @@ class RadioSession(object):
             with open('uplink.json', 'w') as json_uplink:
                 json.dump(updated_fields, json_uplink)
             if self.send_uplinks==True:
-                yag.send('sbdservice@sbd.iridium.com', 'Data', 'uplink.json')
+                yag.send('sbdservice@sbd.iridium.com', self.imei, 'uplink.json')
             else:
                 self.logger.put("Unable to send uplink")
             return True

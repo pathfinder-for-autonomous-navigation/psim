@@ -15,7 +15,7 @@ except ImportError:
     pass
 
 class SimulationRun(object):
-    def __init__(self, random_seed, sim_duration, data_dir, device_config, radios_config, radio_keys_config):
+    def __init__(self, random_seed, sim_duration, data_dir, device_config, radios_config, radio_keys_config, flask_keys_config):
         self.random_seed = random_seed
         self.sim_duration = sim_duration
 
@@ -26,6 +26,7 @@ class SimulationRun(object):
         self.device_config = device_config
         self.radios_config = radios_config
         self.radio_keys_config = radio_keys_config
+        self.flask_keys_config = flask_keys_config
 
         self.datastores = {}
         self.loggers = {}
@@ -117,7 +118,7 @@ class SimulationRun(object):
                 radio_data_name = radio_connected_device + "_radio"
                 radio_datastore = Datastore(radio_data_name, self.simulation_run_dir)
                 radio_logger = Logger(radio_data_name, self.simulation_run_dir)
-                radio_session = RadioSession(radio_connected_device, radio_datastore, radio_logger, self.radio_keys_config)
+                radio_session = RadioSession(radio_connected_device, radio_datastore, radio_logger, self.radio_keys_config, self.flask_keys_config)
 
                 #if radio_session.connect(radio['imei']):
                 if radio_session.connect():
@@ -211,6 +212,8 @@ if __name__ == '__main__':
             radios_config = config_data["radios"]
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/radio_keys.json')) as radio_keys_config_file:
             radio_keys_config = json.load(radio_keys_config_file)
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/flask_keys.json')) as flask_keys_config_file:
+            flask_keys_config = json.load(flask_keys_config_file)
     except json.JSONDecodeError:
         print("Could not load config file. Exiting.")
         raise SystemExit
@@ -219,5 +222,5 @@ if __name__ == '__main__':
         raise SystemExit
 
     simulation_run = SimulationRun(random_seed, sim_duration, args.data_dir,
-                                   device_config, radios_config, radio_keys_config)
+                                   device_config, radios_config, radio_keys_config, flask_keys_config)
     simulation_run.start()

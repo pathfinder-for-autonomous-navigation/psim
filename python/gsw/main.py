@@ -102,7 +102,8 @@ class read_iridium(object):
                                         self.mtmsn=int(line[line.find("MTMSN")+9:line.find("MTMSN")+11])
 
                     # Handles downlinks
-                    if email_subject.find("SBD Msg From Unit: "==0:
+                    if True:
+                    #if email_subject.find("SBD Msg From Unit: ")==0:
                         # Go through the email contents
                         for part in msg.walk():
                                         

@@ -1,6 +1,7 @@
 #Confidential Information
 radio_keys.json
 server_keys.json
+flask_keys.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
