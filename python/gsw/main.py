@@ -55,6 +55,7 @@ class read_iridium(object):
         Converts the email attachment data into a 
         JSON object. This is because elasticsearch
         only takes in JSON data. I will add to this
+        and organize the attachment contents more
         once downlink producer is finished. 
         '''
         return json.loads(data)
@@ -62,8 +63,9 @@ class read_iridium(object):
     def check_for_email(self):
         '''
         Checks the PAN email account. Updates the most recent MOMSN 
-        and MTMSN numbers. Returns the contents of the email attachement
-        of the most recent unread email from the Iridium email account.
+        and MTMSN numbers. Checks whether or not radioSession can send uplinks.
+        Returns the contents of the email attachment of the most recent 
+        unread email from the Iridium email account.
         '''
         #look for all new emails from iridium
         _, data = self.mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
@@ -74,7 +76,7 @@ class read_iridium(object):
             #.fetch() fetches the mail for given id where 'RFC822' is an Internet 
             # Message Access Protocol.
             _, data = self.mail.fetch(num,'(RFC822)')
-            #mark the email message as read. I think this works?
+            #mark the email message as read.
             self.mail.store(num, '+FLAGS', '(\\Seen)')
 
             #go through each component of data
@@ -101,9 +103,16 @@ class read_iridium(object):
                                     if line.find("MTMSN")!=-1:
                                         self.mtmsn=int(line[line.find("MTMSN")+9:line.find("MTMSN")+11])
 
+                                        #Verify whether or not RadioSession can send uplinks
+                                        if self.confirmation_mtmsn != self.mtmsn:
+                                            #stop radio session from sending any more uplinks
+                                            self.send_uplinks=False
+                                        else:
+                                            #allow radio session to send more uplinks
+                                            self.send_uplinks=True
+
                     # Handles downlinks
-                    if True:
-                    #if email_subject.find("SBD Msg From Unit: ")==0:
+                    if email_subject.find("SBD Msg From Unit: ")==0:
                         # Go through the email contents
                         for part in msg.walk():
                                         
@@ -121,12 +130,14 @@ class read_iridium(object):
                                         self.momsn=int(line[7:])
                                     if line.find("MTMSN")!=-1:
                                         self.confirmation_mtmsn=int(line[7:])
-                                        if self.confirmation_mtmsn != self.mtmsn:
-                                            #stop radio session from sending any more uplinks
-                                            self.send_uplinks=False
-                                        else:
-                                            #allow radio session to send more uplinks
-                                            self.send_uplinks=True
+                            
+                            #Verify whether or not radioSession can send uplinks
+                            if self.confirmation_mtmsn != self.mtmsn:
+                                #stop radio session from sending any more uplinks
+                                self.send_uplinks=False
+                            else:
+                                #allow radio session to send more uplinks
+                                self.send_uplinks=True
 
                             # Check if there is an email attachment
                             if part.get_filename() is not None:
