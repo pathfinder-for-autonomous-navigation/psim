@@ -5,6 +5,11 @@ Here you can find some template configurations. I recommend copy-pasting a templ
 ## Items
 - `seed` : Randomization seed for simulation.
 - `sim_duration` : Number of seconds to run the simulation. If this is set to zero, the simulation is never started.
+- `single_sat_sim`
+  - If set to true, the MATLAB simulation expects there to be one device, `FlightController`, so that
+    it can run a mission simulation on just one satellite.
+  - If set to false, the MATLAB simulation expects there to be two devices, `FlightControllerLeader` and
+    `FlightControllerFollower` to be defined, so that a full mission simulation may be carried out.
 - `devices`: A list of device configuration objects, each with the following data:
   - `name` of device.
   - `run_mode`: Either set to `teensy` or `native`, depending on whether the device is connected via a Teensy or if the device should be emulated with a desktop binary.
