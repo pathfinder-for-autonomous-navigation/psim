@@ -165,7 +165,7 @@ class read_iridium(object):
         '''
         Check for the most recent email from iridium. 
         There are two conditions under which we would create an Iridium report: 
-        1) When we recieve a statefield 
+        1) When we recieve a statefield report
         2) when we recieve an uplink confirmation.
         - If there is a statefield report, index the statefield report and 
         create and index an iridium report.
@@ -202,9 +202,6 @@ class read_iridium(object):
                 # Print whether or not indexing was successful
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
 
-                # Record that we have not just recieved an uplink confirmation, as we just indexed an Iridium report
-                self.recieved_uplink_confirmation=False
-
             elif self.recieved_uplink_confirmation:
                 # Create an iridium report and add that to the iridium_report index in elasticsearch. 
                 ir_report=json.dumps({
@@ -217,8 +214,6 @@ class read_iridium(object):
 
                 # Index iridium report in elasticsearch
                 iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
-                # Record that we have not recieved an uplink confirmation, as we just indexed the most recent one
-                self.recieved_uplink_confirmation=False
                 # Print whether or not indexing was successful
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
 
@@ -266,7 +261,6 @@ swagger_config={
 swagger=Swagger(app, config=swagger_config)
 
 # Endpoint for testing post requests
-# Mostly for testing purposes. We don't use this to actually post data to elasticsearch
 @app.route("/test", methods=["POST"])
 @swag_from("endpoint_configs/echo_config.yml")
 def echo():
