@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flasgger import Swagger
 from flasgger.utils import swag_from
 from elasticsearch import Elasticsearch
+from datetime import datetime
 import threading
 import json
 import imaplib
@@ -54,7 +55,7 @@ class read_iridium(object):
         Converts the email attachment data into a 
         JSON object. This is because elasticsearch
         only takes in JSON data. I will add to this
-        once downlink producer is finished
+        once downlink producer is finished. 
         '''
         return json.loads(data)
 
@@ -101,8 +102,7 @@ class read_iridium(object):
                                         self.mtmsn=int(line[line.find("MTMSN")+9:line.find("MTMSN")+11])
 
                     # Handles downlinks
-                    if True:
-                    # If email_subject.find("SBD Msg From Unit: "==0:
+                    if email_subject.find("SBD Msg From Unit: "==0:
                         # Go through the email contents
                         for part in msg.walk():
                                         
@@ -144,6 +144,7 @@ class read_iridium(object):
         es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
 
         while self.run_email_thread==True:
+            #get the most recent statefield report
             sf_report=readIr.check_for_email()
 
             if sf_report is not None:
@@ -161,7 +162,8 @@ class read_iridium(object):
                     "momsn":self.momsn,
                     "mtmsn":self.mtmsn, 
                     "confirmation-mtmsn": self.confirmation_mtmsn,
-                    "send-uplinks": self.send_uplinks
+                    "send-uplinks": self.send_uplinks,
+                    "time": str(datetime.now().isoformat())
                 })
 
                 # Index iridium report in elasticsearch
@@ -240,9 +242,11 @@ def index_sf_report():
 @swag_from("endpoint_configs/search_statefields_config.yml")
 def get_statefield():
     # Connect to elasticsearch
+    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+
     input_json=request.get_json()
     field=str(input_json["statefield"])
-    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+
     # Get the most recent document in the statefield index which has a given statefield in it
     search_object={
         'query': {
@@ -269,9 +273,11 @@ def get_statefield():
 @swag_from("endpoint_configs/search_iridium_config.yml")
 def get_iridium_field():
     # Connect to elasticsearch
+    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+
     input_json=request.get_json()
     field=str(input_json["field"])
-    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+    
     # Get the most recent document in the statefield index which has a given statefield in it
     search_object={
         'query': {
@@ -281,7 +287,7 @@ def get_iridium_field():
         },
         "sort": [
             {
-                "at": {
+                "time": {
                     "order": "desc"
                 }
             }
@@ -291,7 +297,7 @@ def get_iridium_field():
     res = es.search(index='iridium_report', body=json.dumps(search_object))
     # Get the value of that statefield from the document
     most_recent_field=res["hits"]["hits"][0]["_source"][field]
-    return most_recent_field
+    return str(most_recent_field)
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -89,21 +89,36 @@ class RadioSession(object):
         '''
         assert len(fields) == len(vals)
 
-        #create dictionary object with new fields and vals
-        updated_fields={}
-        for i in range(len(fields)):
-            updated_fields[fields[i]]=vals[i]
+        headers = {
+            'Content-Type': 'application/json',
+            'Accept': 'text/html',
+        }
 
-        #connect to PAN email account
-        yag = yagmail.SMTP(self.username, self.password)
-        #create a JSON file with the updated statefields and send it to the iridium email
-        with open('uplink.json', 'w') as json_uplink:
-            json.dump(updated_fields, json_uplink)
-        if self.send_uplinks==True:
-            yag.send('sbdservice@sbd.iridium.com', 'Data', 'uplink.json')
+        data = {
+            "field": "send-uplinks"
+        }
+
+        response = requests.post('http://127.0.0.1:5000/search-iridium', headers=headers, data=json.dumps(data))
+        print(response.text)
+
+        if response.text=="True":
+            #create dictionary object with new fields and vals
+            updated_fields={}
+            for i in range(len(fields)):
+                updated_fields[fields[i]]=vals[i]
+
+            #connect to PAN email account
+            yag = yagmail.SMTP(self.username, self.password)
+            #create a JSON file with the updated statefields and send it to the iridium email
+            with open('uplink.json', 'w') as json_uplink:
+                json.dump(updated_fields, json_uplink)
+            if self.send_uplinks==True:
+                yag.send('sbdservice@sbd.iridium.com', 'Data', 'uplink.json')
+            else:
+                self.logger.put("Unable to send uplink")
+            return True
         else:
-            self.logger.put("Unable to send uplink")
-        return True
+            self.logger.put("Wait for confirmation MTMSN")
 
     def write_state(self, field, val, timeout=None):
         '''
