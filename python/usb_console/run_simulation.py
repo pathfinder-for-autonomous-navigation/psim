@@ -120,16 +120,12 @@ class SimulationRun(object):
                 radio_logger = Logger(radio_data_name, self.simulation_run_dir)
                 radio_session = RadioSession(radio_connected_device, radio_datastore, radio_logger, self.radio_keys_config, self.flask_keys_config)
 
-                #if radio_session.connect(radio['imei']):
-                if radio_session.connect():
-                    self.radios[radio_name] = radio_session
-                    self.datastores[radio_data_name] = radio_datastore
-                    self.loggers[radio_data_name] = radio_logger
+                self.radios[radio_name] = radio_session
+                self.datastores[radio_data_name] = radio_datastore
+                self.loggers[radio_data_name] = radio_logger
 
-                    radio_datastore.start()
-                    radio_logger.start()
-                else:
-                    self.stop_all(f"Unable to connect to radio for {radio_connected_device}.")
+                radio_datastore.start()
+                radio_logger.start()
 
     def set_up_sim(self):
         if self.sim_duration > 0:
