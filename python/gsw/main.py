@@ -81,8 +81,6 @@ class read_iridium(object):
             #.fetch() fetches the mail for given id where 'RFC822' is an Internet 
             # Message Access Protocol.
             _, data = self.mail.fetch(num,'(RFC822)')
-            #mark the email message as read.
-            self.mail.store(num, '+FLAGS', '(\\Seen)')
 
             #go through each component of data
             for response_part in data:
@@ -108,13 +106,13 @@ class read_iridium(object):
                                     if line.find("MTMSN")!=-1:
                                         self.mtmsn=int(line[line.find("MTMSN")+9:line.find("MTMSN")+11])
 
-                                        #Verify whether or not RadioSession can send uplinks
-                                        if self.confirmation_mtmsn != self.mtmsn:
-                                            #stop radio session from sending any more uplinks
-                                            self.send_uplinks=False
-                                        else:
-                                            #allow radio session to send more uplinks
-                                            self.send_uplinks=True
+                            #Verify whether or not RadioSession can send uplinks
+                            if self.confirmation_mtmsn != self.mtmsn:
+                                #stop radio session from sending any more uplinks
+                                self.send_uplinks=False
+                            else:
+                                #allow radio session to send more uplinks
+                                self.send_uplinks=True
                                     
                         # Record that we just recieved an uplink confirmation
                         self.recieved_uplink_confirmation=True
@@ -216,6 +214,8 @@ class read_iridium(object):
                 iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
                 # Print whether or not indexing was successful
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
+                # Record that we have not recently recieved any uplinks as we just indexed the most recent one
+                self.recieved_uplink_confirmation=False
 
     def disconnect(self):
         '''
