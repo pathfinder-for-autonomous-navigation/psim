@@ -275,7 +275,8 @@ def echo():
     res={"Recieved": message}
     return json.dumps(res)
 
-# Endpoint for requesting data from elasicsearch. 
+# Endpoint for indexing data in elasticsearch
+# Mostly for testing purposes. We don't use this to actually index data in elasticsearch
 @app.route("/telemetry", methods=["POST"])
 @swag_from("endpoint_configs/telemetry_config.yml")
 def index_sf_report():
@@ -288,7 +289,7 @@ def index_sf_report():
     res={"Report Status": sf_res['result']}
     return res
 
-# Endpoint for getting data from statefield reports
+# Endpoint for getting data from the statefield reports index in elasticsearch
 @app.route("/search-statefields", methods=["POST"])
 @swag_from("endpoint_configs/search_statefields_config.yml")
 def get_statefield():
@@ -319,7 +320,8 @@ def get_statefield():
     most_recent_field=res["hits"]["hits"][0]["_source"][field]
     return most_recent_field
 
-# Endpoint for getting data from iridium reports. Will be used to check if we are allowed to send uplinks
+# Endpoint for getting data from iridium reports index in elasticsearch. 
+# Will be used to check if we are allowed to send uplinks in radiosession
 @app.route("/search-iridium", methods=["POST"])
 @swag_from("endpoint_configs/search_iridium_config.yml")
 def get_iridium_field():
@@ -329,7 +331,7 @@ def get_iridium_field():
     input_json=request.get_json()
     field=str(input_json["field"])
     
-    # Get the most recent document in the statefield index which has a given statefield in it
+    # Get the most recent document in the iridium index which has a given statefield in it
     search_object={
         'query': {
             'exists': {
