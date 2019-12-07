@@ -82,8 +82,8 @@ class RadioSession(object):
     def write_multiple_states(self, fields, vals, timeout=None):
         '''
         Uplink multiple state variables. Return success of write.
-        Idea: Read from the Iridium Report index the most recent mtmsn/confirmation mtmsn numbers.
-        If they match, then you can send the uplink. If they don't match, then you are thrown an error.
+        Reads from the most recent Iridium Report whether or
+        not RadioSession is able to send uplinks
         '''
         assert len(fields) == len(vals)
 

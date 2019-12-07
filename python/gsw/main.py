@@ -31,6 +31,7 @@ class read_iridium(object):
 
         #send_uplinks, keeps track of if the ground can send more uplinks. This allows us to make sure we are only sending one uplink at a time.
         self.send_uplinks=False
+        self.recieved_uplink_confirmation=False
 
         #connect to email
         self.mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
@@ -62,10 +63,14 @@ class read_iridium(object):
 
     def check_for_email(self):
         '''
-        Checks the PAN email account. Updates the most recent MOMSN 
-        and MTMSN numbers. Checks whether or not radioSession can send uplinks.
-        Returns the contents of the email attachment of the most recent 
-        unread email from the Iridium email account.
+        Reads the most recent unread email from the Iridium email account. 
+
+        If it is a downlink, the function returns a statefield report. If it is an uplink 
+        confirmation, the function records that we recieved an uplink confirmation and returns
+        None. If there is neither a downlink or an uplink, the function returns None.
+
+        If either a downlink or an uplink is recieved, the function will update the most recent MOMSN 
+        and MTMSN numbers and check whether or not radioSession can send uplinks.
         '''
         #look for all new emails from iridium
         _, data = self.mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
@@ -95,7 +100,7 @@ class read_iridium(object):
 
                             if part.get('Content-Disposition') is None:
                                 continue
-                                            
+
                             #get the body text of the email and look for the MOMSN/MTMSN number
                             if part.get_content_type() == "text/plain":
                                 email_body = part.get_payload(decode=True).decode('utf8')
@@ -110,6 +115,13 @@ class read_iridium(object):
                                         else:
                                             #allow radio session to send more uplinks
                                             self.send_uplinks=True
+                                    
+                        # Record that we just recieved an uplink confirmation
+                        self.recieved_uplink_confirmation=True
+                        
+                    else:
+                        # Record that we did not recieve an uplink confirmation
+                        self.recieved_uplink_confirmation=False
 
                     # Handles downlinks
                     if email_subject.find("SBD Msg From Unit: ")==0:
@@ -145,12 +157,20 @@ class read_iridium(object):
                                 attachmentContents=part.get_payload(decode=True).decode('utf8')
                                 statefield_report=self.process_downlink_packet(attachmentContents)
                                 return statefield_report
+                        
+                    #if we have not recieved a downlink, return None
+                    return None
 
     def post_to_es(self):
         '''
-        Check for the most recent email from iridium.
-        If there is a statefield report, index the statefield report and 
+        Check for the most recent email from iridium. 
+        There are two conditions under which we would create an Iridium report: 
+        1) When we recieve a statefield 
+        2) when we recieve an uplink confirmation.
+        - If there is a statefield report, index the statefield report and 
         create and index an iridium report.
+        - If there is not a statefield report but we recently recieved an uplink
+        confirmation, then create and index an iridium report.
         '''
         # Connect to elasticsearch
         es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
@@ -169,7 +189,6 @@ class read_iridium(object):
                 print("Statefield Report Status: "+statefield_res['result'])
 
                 # Create an iridium report and add that to the iridium_report index in elasticsearch. 
-                # We only want to add Iridium reports when we recieve an email, which is why we wait until there is a statefield report
                 ir_report=json.dumps({
                     "momsn":self.momsn,
                     "mtmsn":self.mtmsn, 
@@ -180,6 +199,26 @@ class read_iridium(object):
 
                 # Index iridium report in elasticsearch
                 iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
+                # Print whether or not indexing was successful
+                print("Iridium Report Status: "+iridium_res['result']+"\n\n")
+
+                # Record that we have not just recieved an uplink confirmation, as we just indexed an Iridium report
+                self.recieved_uplink_confirmation=False
+
+            elif self.recieved_uplink_confirmation:
+                # Create an iridium report and add that to the iridium_report index in elasticsearch. 
+                ir_report=json.dumps({
+                    "momsn":self.momsn,
+                    "mtmsn":self.mtmsn, 
+                    "confirmation-mtmsn": self.confirmation_mtmsn,
+                    "send-uplinks": self.send_uplinks,
+                    "time": str(datetime.now().isoformat())
+                })
+
+                # Index iridium report in elasticsearch
+                iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
+                # Record that we have not recieved an uplink confirmation, as we just indexed the most recent one
+                self.recieved_uplink_confirmation=False
                 # Print whether or not indexing was successful
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
 
