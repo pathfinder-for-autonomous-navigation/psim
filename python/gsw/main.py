@@ -66,7 +66,7 @@ class read_iridium(object):
         of the most recent unread email from the Iridium email account.
         '''
         #look for all new emails from iridium
-        _, data = self.mail.search(None, '(FROM "fy56@cornell.edu")', '(UNSEEN)')
+        _, data = self.mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
         mail_ids = data[0]
         id_list = mail_ids.split()
 
