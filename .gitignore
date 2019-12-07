@@ -9,3 +9,5 @@ logs/
 *.mexa64
 *.mexmaci64
 *.mexw64
+geograv/build/*
+*EGM2008_to2190_ZeroTide
