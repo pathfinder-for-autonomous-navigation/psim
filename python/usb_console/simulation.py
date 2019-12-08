@@ -6,7 +6,7 @@
 import time, timeit
 import math
 import threading
-#import matlab.engine
+import matlab.engine
 import datetime
 import os
 import json

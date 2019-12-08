@@ -260,15 +260,6 @@ swagger_config={
 }
 swagger=Swagger(app, config=swagger_config)
 
-# Endpoint for testing post requests
-@app.route("/test", methods=["POST"])
-@swag_from("endpoint_configs/echo_config.yml")
-def echo():
-    input_json=request.get_json()
-    message=str(input_json["message"])
-    res={"Recieved": message}
-    return json.dumps(res)
-
 # Endpoint for indexing data in elasticsearch
 # Mostly for testing purposes. We don't use this to actually index data in elasticsearch
 @app.route("/telemetry", methods=["POST"])

@@ -56,13 +56,6 @@ class RadioSession(object):
         # Simulation
         self.overriden_variables = set()
 
-        #updates MOMSN aand MTMSN numbers sent/recieved
-        self.momsn=-1
-        self.mtmsn=-1
-        self.confirmation_mtmsn=-1
-        #send_uplinks keeps track of if the ground can send more uplinks. This allows us to make sure we are only sending one uplink at a time.
-        self.send_uplinks=True
-
     def read_state(self, field, timeout=None):
         '''
         Read state by posting a request for data to the Flask server
