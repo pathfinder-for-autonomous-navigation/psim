@@ -21,6 +21,9 @@ class read_iridium(object):
         self.es_server=server_keys_config["server"]
         self.es_port=server_keys_config["port"]
 
+        # Open connection to elasticsearch
+        self.es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
+
         #pan email
         self.username=radio_keys_config["email_username"]
         self.password=radio_keys_config["email_password"]
@@ -171,8 +174,6 @@ class read_iridium(object):
         - If there is not a statefield report but we recently recieved an uplink
         confirmation, then create and index an iridium report.
         '''
-        # Connect to elasticsearch
-        es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
 
         while self.run_email_thread==True:
             #get the most recent statefield report
@@ -183,7 +184,7 @@ class read_iridium(object):
                 print("Got report: "+str(sf_report)+"\n")
 
                 # Index statefield report in elasticsearch
-                statefield_res = es.index(index='statefield_report', doc_type='report', body=sf_report)
+                statefield_res = self.es.index(index='statefield_report', doc_type='report', body=sf_report)
                 # Print whether or not indexing was successful
                 print("Statefield Report Status: "+statefield_res['result'])
 
@@ -197,7 +198,7 @@ class read_iridium(object):
                 })
 
                 # Index iridium report in elasticsearch
-                iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
+                iridium_res = self.es.index(index='iridium_report', doc_type='report', body=ir_report)
                 # Print whether or not indexing was successful
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
 
@@ -212,7 +213,7 @@ class read_iridium(object):
                 })
 
                 # Index iridium report in elasticsearch
-                iridium_res = es.index(index='iridium_report', doc_type='report', body=ir_report)
+                iridium_res = self.es.index(index='iridium_report', doc_type='report', body=ir_report)
                 # Print whether or not indexing was successful
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
                 # Record that we have not recently recieved any uplinks as we just indexed the most recent one
@@ -268,7 +269,7 @@ swagger=Swagger(app, config=swagger_config)
 @swag_from("endpoint_configs/telemetry_config.yml")
 def index_sf_report():
     #connect to elasticsearch
-    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+    es=readIr.es
 
     sf_report=request.get_json()
     #index statefield report in elasticsearch
@@ -281,7 +282,7 @@ def index_sf_report():
 @swag_from("endpoint_configs/search_statefields_config.yml")
 def get_statefield():
     # Connect to elasticsearch
-    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+    es=readIr.es
 
     input_json=request.get_json()
     field=str(input_json["statefield"])
@@ -316,7 +317,7 @@ def get_statefield():
 @swag_from("endpoint_configs/search_iridium_config.yml")
 def get_iridium_field():
     # Connect to elasticsearch
-    es=Elasticsearch([{'host':readIr.es_server,'port':readIr.es_port}])
+    es=readIr.es
 
     input_json=request.get_json()
     field=str(input_json["field"])
