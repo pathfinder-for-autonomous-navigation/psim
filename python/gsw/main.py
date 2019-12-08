@@ -9,6 +9,7 @@ import imaplib
 import base64
 import os
 import email
+import time
 import logging
 
 app = Flask(__name__)
@@ -216,6 +217,7 @@ class read_iridium(object):
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
                 # Record that we have not recently recieved any uplinks as we just indexed the most recent one
                 self.recieved_uplink_confirmation=False
+            time.sleep(1)
 
     def disconnect(self):
         '''
