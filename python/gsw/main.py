@@ -314,13 +314,17 @@ def get_statefield():
         ],
         "size": 1
     }
-    res = es.search(index='statefield_report_'+str(imei), body=json.dumps(search_object))
+    
     # Get the value of that statefield from the document
-    if len(res["hits"]["hits"])!=0:
-        most_recent_field=res["hits"]["hits"][0]["_source"][statefield]
-        return most_recent_field
+    if es.indices.exists(index='statefield_report_'+str(imei)):
+        res = es.search(index='statefield_report_'+str(imei), body=json.dumps(search_object))
+        if len(res["hits"]["hits"])!=0:
+            most_recent_field=res["hits"]["hits"][0]["_source"][statefield]
+            return most_recent_field
+        else:
+            return "Unable to find field in index: "+"statefield_report_"+str(imei)
     else:
-        return "Unable to find field"
+        return "Unable to find index: "+"statefield_report_"+str(imei)
 
 # Endpoint for getting data from iridium reports index in elasticsearch. 
 # Will be used to check if we are allowed to send uplinks in radiosession
@@ -350,13 +354,17 @@ def get_iridium_field():
         ],
         "size": 1
     }
-    res = es.search(index='iridium_report_'+str(imei), body=json.dumps(search_object))
+    
     # Get the value of that statefield from the document
-    if len(res["hits"]["hits"])!=0:
-        most_recent_field=res["hits"]["hits"][0]["_source"][field]
-        return str(most_recent_field)
+    if es.indices.exists(index='iridium_report_'+str(imei)):
+        res = es.search(index='iridium_report_'+str(imei), body=json.dumps(search_object))
+        if len(res["hits"]["hits"])!=0:
+            most_recent_field=res["hits"]["hits"][0]["_source"][field]
+            return str(most_recent_field)
+        else:
+            return "Unable to find field in index: "+"iridium_report_"+str(imei)
     else:
-        return "Unable to find field"
+        return "Unable to find index: "+"iridium_report_"+str(imei)
 
 if __name__ == "__main__":
     app.run(debug=True)
