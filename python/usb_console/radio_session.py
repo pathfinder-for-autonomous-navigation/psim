@@ -61,15 +61,10 @@ class RadioSession(object):
         Read state by posting a request for data to the Flask server
         '''
         headers = {
-            'Content-Type': 'application/json',
             'Accept': 'text/html',
         }
 
-        data = {
-            "statefield": field
-        }
-
-        response = requests.post('http://'+self.flask_server+':'+self.flask_port+'/search-statefields', headers=headers, data=json.dumps(data))
+        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-statefields?imei='+str(self.imei)+'&field='+str(field), headers=headers)
         return response.text
 
     def write_multiple_states(self, fields, vals, timeout=None):
@@ -81,15 +76,10 @@ class RadioSession(object):
         assert len(fields) == len(vals)
 
         headers = {
-            'Content-Type': 'application/json',
             'Accept': 'text/html',
         }
 
-        data = {
-            "field": "send-uplinks"
-        }
-
-        response = requests.post('http://'+self.flask_server+':'+self.flask_port+'/search-iridium', headers=headers, data=json.dumps(data))
+        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-iridium?imei='+str(self.imei)+'&field=send-uplinks', headers=headers)
         print(response.text)
 
         if response.text=="True":

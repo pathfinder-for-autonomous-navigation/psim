@@ -7,16 +7,16 @@ consumes:
 produces:
   - "application/json"
 parameters:
-  - in: "body"
-    name: "body"
-    description: "Accepts a Statefield Name"
+  - name: imei
+    in: query
+    type: integer
     required: true
-    schema:
-      type: "object"
-      properties:
-        statefield:
-          type: "string"
-          example: "transport"
+    description: The IMEI of the radio
+  - name: statefield
+    in: query
+    type: string
+    required: true
+    description: The statefield requested
 responses: 
   405:
     description: "Invalid input"

@@ -7,16 +7,16 @@ consumes:
 produces:
   - "application/json"
 parameters:
-  - in: "body"
-    name: "body"
-    description: "Accepts a Field Name"
+  - name: imei
+    in: query
+    type: integer
     required: true
-    schema:
-      type: "object"
-      properties:
-        field:
-          type: "string"
-          example: "momsn"
+    description: The IMEI of the radio
+  - name: field
+    in: query
+    type: string
+    required: true
+    description: The field requested
 responses: 
   405:
     description: "Invalid input"

@@ -37,6 +37,9 @@ class read_iridium(object):
         self.send_uplinks=False
         self.recieved_uplink_confirmation=False
 
+        #imei number of the radio that sent the most recent email
+        self.imei=-1
+
         #connect to email
         self.mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
         self.mail.login(self.username, self.password)
@@ -63,6 +66,7 @@ class read_iridium(object):
         and organize the attachment contents more
         once downlink producer is finished. 
         '''
+        data["time"]=str(datetime.now().isoformat())
         return json.loads(data)
 
     def check_for_email(self):
@@ -76,8 +80,8 @@ class read_iridium(object):
         If either a downlink or an uplink is recieved, the function will update the most recent MOMSN 
         and MTMSN numbers and check whether or not radioSession can send uplinks.
         '''
-        #look for all new emails from iridium
-        _, data = self.mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
+        #look for all new emails from iridium sbdservice@sbd.iridium.com
+        _, data = self.mail.search(None, '(FROM "fy56@cornell.edu")', '(UNSEEN)')
         mail_ids = data[0]
         id_list = mail_ids.split()
 
@@ -95,6 +99,9 @@ class read_iridium(object):
 
                     #handles uplink confirmations
                     if email_subject.find("SBD Mobile Terminated Message Queued for Unit: ")==0:
+                        # Get imei number of the radio that recieved the uplink
+                        self.imei=int(email_subject[47:])
+
                         for part in msg.walk():
                                             
                             if part.get_content_maintype() == 'multipart':
@@ -126,7 +133,10 @@ class read_iridium(object):
                         self.recieved_uplink_confirmation=False
 
                     # Handles downlinks
-                    if email_subject.find("SBD Msg From Unit: ")==0:
+                    if email_subject.find("SBD Msg From Unit:")==0:
+                        # Get imei number of the radio that sent the downlink
+                        self.imei=int(email_subject[19:])
+
                         # Go through the email contents
                         for part in msg.walk():
                                         
@@ -184,11 +194,11 @@ class read_iridium(object):
                 print("Got report: "+str(sf_report)+"\n")
 
                 # Index statefield report in elasticsearch
-                statefield_res = self.es.index(index='statefield_report', doc_type='report', body=sf_report)
+                statefield_res = self.es.index(index='statefield_report_'+str(self.imei), doc_type='report', body=sf_report)
                 # Print whether or not indexing was successful
                 print("Statefield Report Status: "+statefield_res['result'])
 
-                # Create an iridium report and add that to the iridium_report index in elasticsearch. 
+                # Create an iridium report 
                 ir_report=json.dumps({
                     "momsn":self.momsn,
                     "mtmsn":self.mtmsn, 
@@ -198,7 +208,7 @@ class read_iridium(object):
                 })
 
                 # Index iridium report in elasticsearch
-                iridium_res = self.es.index(index='iridium_report', doc_type='report', body=ir_report)
+                iridium_res = self.es.index(index='iridium_report_'+str(self.imei), doc_type='report', body=ir_report)
                 # Print whether or not indexing was successful
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
 
@@ -213,11 +223,12 @@ class read_iridium(object):
                 })
 
                 # Index iridium report in elasticsearch
-                iridium_res = self.es.index(index='iridium_report', doc_type='report', body=ir_report)
+                iridium_res = self.es.index(index='iridium_report_'+str(self.imei), doc_type='report', body=ir_report)
                 # Print whether or not indexing was successful
                 print("Iridium Report Status: "+iridium_res['result']+"\n\n")
                 # Record that we have not recently recieved any uplinks as we just indexed the most recent one
                 self.recieved_uplink_confirmation=False
+
             time.sleep(1)
 
     def disconnect(self):
@@ -278,49 +289,50 @@ def index_sf_report():
     return res
 
 # Endpoint for getting data from the statefield reports index in elasticsearch
-@app.route("/search-statefields", methods=["POST"])
+@app.route("/search-statefields", methods=["GET"])
 @swag_from("endpoint_configs/search_statefields_config.yml")
 def get_statefield():
     # Connect to elasticsearch
     es=readIr.es
 
-    input_json=request.get_json()
-    field=str(input_json["statefield"])
+    imei = int(request.args.get('imei'))
+    statefield = str(request.args.get('statefield'))
 
     # Get the most recent document in the statefield index which has a given statefield in it
     search_object={
         'query': {
             'exists': {
-                'field': field
+                'field': statefield
             }
         },
         "sort": [
             {
-                "at": {
+                "time": {
                     "order": "desc"
                 }
             }
         ],
         "size": 1
     }
-    res = es.search(index='statefield_report', body=json.dumps(search_object))
+    res = es.search(index='statefield_report_'+str(imei), body=json.dumps(search_object))
     # Get the value of that statefield from the document
     if len(res["hits"]["hits"])!=0:
-        most_recent_field=res["hits"]["hits"][0]["_source"][field]
+        most_recent_field=res["hits"]["hits"][0]["_source"][statefield]
         return most_recent_field
     else:
         return "Unable to find field"
 
 # Endpoint for getting data from iridium reports index in elasticsearch. 
 # Will be used to check if we are allowed to send uplinks in radiosession
-@app.route("/search-iridium", methods=["POST"])
+@app.route("/search-iridium", methods=["GET"])
 @swag_from("endpoint_configs/search_iridium_config.yml")
 def get_iridium_field():
     # Connect to elasticsearch
     es=readIr.es
 
-    input_json=request.get_json()
-    field=str(input_json["field"])
+    #get imei number of the radio that radiosession is connected to
+    imei = int(request.args.get('imei'))
+    field = str(request.args.get('field'))
     
     # Get the most recent document in the iridium index which has a given statefield in it
     search_object={
@@ -338,7 +350,7 @@ def get_iridium_field():
         ],
         "size": 1
     }
-    res = es.search(index='iridium_report', body=json.dumps(search_object))
+    res = es.search(index='iridium_report_'+str(imei), body=json.dumps(search_object))
     # Get the value of that statefield from the document
     if len(res["hits"]["hits"])!=0:
         most_recent_field=res["hits"]["hits"][0]["_source"][field]
