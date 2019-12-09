@@ -25,7 +25,7 @@ class RadioSession(object):
     between the check_for_downlink and the read_state functions.
     '''
 
-    def __init__(self, device_name, datastore, logger, radio_keys_config, flask_keys_config):
+    def __init__(self, device_name, imei, datastore, logger, radio_keys_config, flask_keys_config):
         '''
         Initializes state session with the Quake radio.
 
@@ -37,6 +37,7 @@ class RadioSession(object):
 
         # Device connection
         self.device_name = device_name
+        self.imei=imei
 
         #Flask server connection
         self.flask_server=flask_keys_config["server"]
@@ -49,9 +50,6 @@ class RadioSession(object):
         #email
         self.username=radio_keys_config["email_username"]
         self.password=radio_keys_config["email_password"]
-
-        #imei
-        self.imei=radio_keys_config["imei"]
 
         # Simulation
         self.overriden_variables = set()
