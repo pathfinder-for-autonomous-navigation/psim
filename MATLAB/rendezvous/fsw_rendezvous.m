@@ -1,13 +1,13 @@
 
-M = 5.0; % Mass (kg)
-J_min = 2e-4; % Min impulse (Ns)
-J_max = 2e2;%2e-2; % Max impulse (Ns)
-V_rel   = 0.5; % Relative velocity at deployment (m/s)
+% Satellite properaties
+M = 5.0;               % Mass (kg)
+J_min = 2e-4;          % Min impulse (Ns)
+J_max = 2e-2;          % Max impulse (Ns)
+dt_fire = 5.0 * 60.0;  % Minimum time between firings (s)
+
+% Deployment properties
+V_rel   = 0.1;               % Relative velocity at deployment (m/s)
 t_drift = 5.0 * 90.0 * 60.0; % Drift time (s)
-dt_fire = 60.0; % Minimum time between firings (s)
-N = 110; % Gives a horizon a little over an orbit
-% dx_tol = 1e-1; % x' * x must be less than this to stop the simulation
-% max_iter = floor(2.0 * 30.0 * 24.0 * 3600.0 / dt_fire); % About two months
 
 a  = 6793137.0;  % Semimajor axis                        (m)
 e  = 0.0;        % Eccentricity                          (unitless)
@@ -15,110 +15,104 @@ i  = 45*pi/180;  % Inclination angle                     (rad)
 O  = 0.0;        % Right ascension of the ascending node (rad)
 o  = 0.0;        % Argument of perigee                   (rad)
 nu = 0*pi/180;   % True anamoly                          (rad)
-[   r1,...  % Position (m)   [eci]
-    v1,...  % Velocity (m/s) [eci]
+[   r1,...
+    v1,...
 ] = utl_orb2rv(a * (1 - e), e, i, O, o, nu, 3.986e14);
+n = sqrt(3.986e14 / (a * a * a));  % Orbital rate (rad/s)
+w_hill = [0.0; 0.0; n];            % Angular rate of the hill frame
 
-n = sqrt(3.986e14 / (a * a * a));     % Orbital rate
-w_hill = [0.0; 0.0; n];
-
-% Add initial velocity difference
-r2 = r1;
-v2 = randn(3, 1);
-v2 = v1 + V_rel * v2 / norm(v2);
-
-% Allow spacecraft to drift apart
-[~, r1, v1, r2, v2] = drift_phase(r1, v1, r2, v2, t_drift, 0);
-
-eps   = 1e-4; % Tolerance value (value from Standford paper was 1e-5 but has convergence issues)
-rho   = 1.0;  % Penalty weigth (value from Stanford paper)
-alpha = 1.0;  % L1 cost factor (value from Stanford paper)
+% Rendezvous algorithm properties
+N = 27;          % Number of nodes (gives horizon of ~1.5 orbits)
+eps = 1e-4;      % Tolerance value
+rho = 1.0;       % Penalty weigth
+alpha = 1.0;     % L1 cost factor
 [rr, rv, vr, vv] = clohessywiltshire(dt_fire, n); % State update matrices
 A = [rr, rv; vr, vv];
 B = [rv; vv] ./ M;
 Qn = 1000.0 .* eye(6);  % Final state cost
 Q  =    0.0 .* eye(6);  % Intermediate state cost
 
-Q_transform = eci_to_lvlh(r1, v1);
-r_hill = Q_transform * (r2 - r1);
-v_hill = Q_transform * (v2 - v1) - cross(w_hill, r_hill);
-[X, U] = l1cost(Qn, Q, alpha, A, B, N, [r_hill; v_hill], rho, eps);
+% Simulation properties
+sim_tol = 1e-1;       % Error bound in position and velocity to stop the sim
+sim_max_iter = 250;  % Maximum number of sim iterations
 
-figure
-hold on
-plot(X(1, :), '-r')
-plot(X(2, :), '-g')
-plot(X(3, :), '-b')
-hold off
-title('Planned Relative Position of Satellite Two (rgb ~ xyz LVLH)')
-xlabel('Time (s)')
-ylabel('Position (m)')
+% Add initial velocity difference and perform the drift phase
+r2 = r1;
+v2 = randn(3, 1);
+v2 = v1 + V_rel * v2 / norm(v2);
+[~, r1, v1, r2, v2] = drift_phase(r1, v1, r2, v2, t_drift, 0);
 
-figure
-hold on
-plot(X(4, :), '-r')
-plot(X(5, :), '-g')
-plot(X(6, :), '-b')
-hold off
-title('Planned Relative Velocity of Satellite Two (rgb ~ xyz LVLH)')
-xlabel('Time (s)')
-ylabel('Velocity (m/s)')
+X = zeros(6, sim_max_iter);
+U = zeros(3, sim_max_iter);
 
-figure
-hold on
-plot(U(1, :), '-r')
-plot(U(2, :), '-g')
-plot(U(3, :), '-b')
-hold off
-title('Actuation of Satellite Two (rgb ~ xyz LVLH)')
-xlabel('Time (s)')
-ylabel('Impulse (Ns)')
+% Calculate our initial state
+Q_eci_hill = eci_to_hill(r1, v1);
+r_hill = Q_eci_hill * (r2 - r1);
+v_hill = Q_eci_hill * (v2 - v1) - cross(w_hill, r_hill);
 
-
-Q_transform = eci_to_lvlh(r1, v1);
-r_hill = Q_transform * (r2 - r1);
-v_hill = Q_transform * (v2 - v1) - cross(w_hill, r_hill);
 X(:, 1) = [r_hill; v_hill];
+U(:, 1) = [0.0; 0.0; 0.0];
+iter = 1;
+
 opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
-for i = 1:(N - 1)
-    
-    % Apply actuation
-    v2 = v2 + Q_transform' * U(:, i) / M;
-    
-    % Simulate dynamics
+while norm(r_hill) + norm(v_hill) > sim_tol && iter < sim_max_iter
+    iter = iter + 1
+
+    % Determine the next actuation
+    [~, u] = l1cost(Qn, Q, alpha, A, B, N, [r_hill; v_hill], rho, eps);
+    u(:, 1) = (abs(u(:, 1)) > J_min) .* u(:, 1);
+    u(:, 1) = max(u(:, 1), -J_max);
+    u(:, 1) = min(u(:, 1),  J_max);
+
+    % Apply the actuation
+    v2 = v2 + Q_eci_hill' * u(:, 1) ./ M;
+
+    % Simulate the dynamics
     [~, y] = ode45(@frhs, [0.0, dt_fire], [r1; v1; r2; v2], opt);
     r1 = y(end, 1:3)';
     v1 = y(end, 4:6)';
     r2 = y(end, 7:9)';
     v2 = y(end, 10:12)';
     
-    % Calculate new state
-    Q_transform = eci_to_lvlh(r1, v1);
-    r_hill = Q_transform * (r2 - r1);
-    v_hill = Q_transform * (v2 - v1) - cross(w_hill, r_hill);
-    X(:, i + 1) = [r_hill; v_hill];
+    % Recalculate hill frame information
+    Q_eci_hill = eci_to_hill(r1, v1);
+    r_hill = Q_eci_hill * (r2 - r1);
+    v_hill = Q_eci_hill * (v2 - v1) - cross(w_hill, r_hill);
+    
+    X(:, iter) = [r_hill; v_hill];
+    U(:, iter) = u(:, 1);
     
 end
 
 figure
 hold on
-plot(X(1, :), '-r')
-plot(X(2, :), '-g')
-plot(X(3, :), '-b')
+plot(X(1, 1:iter), '-r')
+plot(X(2, 1:iter), '-g')
+plot(X(3, 1:iter), '-b')
 hold off
-title('Resulting Relative Position of Satellite Two (rgb ~ xyz LVLH)')
+title('Relative Position of Satellite Two (rgb ~ xyz LVLH)')
 xlabel('Time (s)')
 ylabel('Position (m)')
 
 figure
 hold on
-plot(X(4, :), '-r')
-plot(X(5, :), '-g')
-plot(X(6, :), '-b')
+plot(X(4, 1:iter), '-r')
+plot(X(5, 1:iter), '-g')
+plot(X(6, 1:iter), '-b')
 hold off
-title('Resulting Relative Velocity of Satellite Two (rgb ~ xyz LVLH)')
+title('Relative Velocity of Satellite Two (rgb ~ xyz LVLH)')
 xlabel('Time (s)')
 ylabel('Velocity (m/s)')
+
+figure
+hold on
+plot(U(1, 1:iter), '-r')
+plot(U(2, 1:iter), '-g')
+plot(U(3, 1:iter), '-b')
+hold off
+title('Actuation of Satellite Two (rgb ~ xyz LVLH)')
+xlabel('Time (s)')
+ylabel('Impulse (Ns)')
 
 
 function [t, r1, v1, r2, v2] = drift_phase(r1, v1, r2, v2, t_drift, plot_flag)
@@ -159,7 +153,7 @@ v2 = y(end, 10:12)';
 end
 
 
-function Q = eci_to_lvlh(r, v)
+function Q = eci_to_hill(r, v)
 
 r_hat = -r / norm(r);
 n_hat = cross(r, v) / norm(cross(r, v));

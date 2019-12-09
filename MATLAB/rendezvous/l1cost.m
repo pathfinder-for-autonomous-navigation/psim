@@ -11,7 +11,7 @@ Y = zeros(ur, N - 1);
 L = zeros(ur, N - 1);
 
 iter = 1;
-max_iter = 25000;
+max_iter = 5000;
 
 [X, U] = optctrl(Qn, Q, A, B, N, xo, rho, L, Y);
 Y = softthresh(U, L, alpha, rho);
