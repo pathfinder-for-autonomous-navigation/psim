@@ -6,7 +6,7 @@ J_max = 2e-2;          % Max impulse (Ns)
 dt_fire = 5.0 * 60.0;  % Minimum time between firings (s)
 
 % Deployment properties
-V_rel   = 0.1;               % Relative velocity at deployment (m/s)
+V_rel   = 0.6;               % Relative velocity at deployment (m/s)
 t_drift = 5.0 * 90.0 * 60.0; % Drift time (s)
 
 a  = 6793137.0;  % Semimajor axis                        (m)
@@ -22,7 +22,7 @@ n = sqrt(3.986e14 / (a * a * a));  % Orbital rate (rad/s)
 w_hill = [0.0; 0.0; n];            % Angular rate of the hill frame
 
 % Rendezvous algorithm properties
-N = 27;          % Number of nodes (gives horizon of ~1.5 orbits)
+N = 18;          % Number of nodes (gives horizon of ~1 orbit)
 eps = 1e-4;      % Tolerance value
 rho = 1.0;       % Penalty weigth
 alpha = 1.0;     % L1 cost factor
@@ -33,8 +33,8 @@ Qn = 1000.0 .* eye(6);  % Final state cost
 Q  =    0.0 .* eye(6);  % Intermediate state cost
 
 % Simulation properties
-sim_tol = 1e-1;       % Error bound in position and velocity to stop the sim
-sim_max_iter = 250;  % Maximum number of sim iterations
+sim_tol = 1.0;       % Error bound in position and velocity to stop the sim
+sim_max_iter = 2500; % Maximum number of sim iterations
 
 % Add initial velocity difference and perform the drift phase
 r2 = r1;
@@ -44,6 +44,8 @@ v2 = v1 + V_rel * v2 / norm(v2);
 
 X = zeros(6, sim_max_iter);
 U = zeros(3, sim_max_iter);
+% x_err = zeros(1, sim_max_iter);
+dv_tot = zeros(1, sim_max_iter);
 
 % Calculate our initial state
 Q_eci_hill = eci_to_hill(r1, v1);
@@ -52,6 +54,8 @@ v_hill = Q_eci_hill * (v2 - v1) - cross(w_hill, r_hill);
 
 X(:, 1) = [r_hill; v_hill];
 U(:, 1) = [0.0; 0.0; 0.0];
+% x_err(1) = norm(r_hill) + norm(v_hill);
+dv_tot(1) = 0.0;
 iter = 1;
 
 opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
@@ -81,6 +85,8 @@ while norm(r_hill) + norm(v_hill) > sim_tol && iter < sim_max_iter
     
     X(:, iter) = [r_hill; v_hill];
     U(:, iter) = u(:, 1);
+    % x_err(iter) = norm(r_hill) + norm(v_hill);
+    dv_tot(iter) = dv_tot(iter - 1) + norm(u(:, 1)) / M;
     
 end
 
@@ -113,6 +119,18 @@ hold off
 title('Actuation of Satellite Two (rgb ~ xyz LVLH)')
 xlabel('Time (s)')
 ylabel('Impulse (Ns)')
+
+% figure
+% plot(x_err(1:iter), '-b')
+% title('State Error (rgb ~ xyz LVLH)')
+% xlabel('Time (s)')
+% ylabel('Error')
+
+figure
+plot(dv_tot(1:iter), '-b')
+title('Total Delta V Used')
+xlabel('Time (s)')
+ylabel('Delta V (m/s)')
 
 
 function [t, r1, v1, r2, v2] = drift_phase(r1, v1, r2, v2, t_drift, plot_flag)
