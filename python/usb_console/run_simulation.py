@@ -106,6 +106,7 @@ class SimulationRun(object):
             try:
                 radio_connected_device = radio["connected_device"]
                 radio_name = radio["connected_device"] + "Radio"
+                imei = radio["imei"]
             except:
                 self.stop_all("Invalid configuration file. A radio's connected device was not specified.")
 
@@ -119,7 +120,7 @@ class SimulationRun(object):
                 radio_data_name = radio_connected_device + "_radio"
                 radio_datastore = Datastore(radio_data_name, self.simulation_run_dir)
                 radio_logger = Logger(radio_data_name, self.simulation_run_dir)
-                radio_session = RadioSession(radio_name, radio_datastore, radio_logger, self.radio_keys_config, self.flask_keys_config)
+                radio_session = RadioSession(radio_name, imei, radio_datastore, radio_logger, self.radio_keys_config, self.flask_keys_config)
 
                 self.radios[radio_name] = radio_session
                 self.datastores[radio_data_name] = radio_datastore
