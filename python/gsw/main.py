@@ -80,8 +80,8 @@ class read_iridium(object):
         If either a downlink or an uplink is recieved, the function will update the most recent MOMSN 
         and MTMSN numbers and check whether or not radioSession can send uplinks.
         '''
-        #look for all new emails from iridium sbdservice@sbd.iridium.com
-        _, data = self.mail.search(None, '(FROM "fy56@cornell.edu")', '(UNSEEN)')
+        #look for all new emails from iridium
+        _, data = self.mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
         mail_ids = data[0]
         id_list = mail_ids.split()
 
