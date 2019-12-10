@@ -16,7 +16,7 @@
 
 #include <cmath>
 
-#include "inl/geomag.inl"
+#include "inl/geomag.hpp"
 
 namespace gnc {
 namespace env {
@@ -80,7 +80,7 @@ void magnetic_field(double t, lin::Vector3f const &r, lin::Vector3f &b) {
   in.x = r(0);
   in.y = r(1);
   in.z = r(2);
-  out = geomag::GeoMag(constant::init_dec_year + t / (365.0 * 24.0 * 60.0 * 60.0),in, geomag::WMM);
+  out = geomag::GeoMag(constant::init_dec_year + t / (365.0 * 24.0 * 60.0 * 60.0),in, geomag::WMM2020);
   b = { out.x, out.y, out.z };
 }
 }  // namespace env
