@@ -12,9 +12,6 @@ import email
 import time
 import logging
 
-app = Flask(__name__)
-app.config["SWAGGER"]={"title": "PAN Ground Software", "uiversion": 2}
- 
 class read_iridium(object):
     def __init__(self, radio_keys_config, server_keys_config):
         #elasticsearch server
@@ -117,7 +114,7 @@ class read_iridium(object):
                                     if line.find("MTMSN")!=-1:
                                         self.mtmsn=int(line[line.find("MTMSN")+9:line.find("MTMSN")+11])
 
-                            #Verify whether or not RadioSession can send uplinks
+                            #Set whether or not RadioSession can send uplinks
                             if self.confirmation_mtmsn != self.mtmsn:
                                 #stop radio session from sending any more uplinks
                                 self.send_uplinks=False
@@ -155,7 +152,7 @@ class read_iridium(object):
                                     if line.find("MTMSN")!=-1:
                                         self.confirmation_mtmsn=int(line[7:])
                             
-                            #Verify whether or not radioSession can send uplinks
+                            #Set whether or not radioSession can send uplinks
                             if self.confirmation_mtmsn != self.mtmsn:
                                 #stop radio session from sending any more uplinks
                                 self.send_uplinks=False
@@ -172,6 +169,24 @@ class read_iridium(object):
                         
                     #if we have not recieved a downlink, return None
                     return None
+
+    def create_iridium_report(self):
+        '''
+        Creates and indexes an Iridium Report
+        '''
+        # Create an iridium report 
+        ir_report=json.dumps({
+            "momsn":self.momsn,
+            "mtmsn":self.mtmsn, 
+            "confirmation-mtmsn": self.confirmation_mtmsn,
+            "send-uplinks": self.send_uplinks,
+            "time": str(datetime.now().isoformat())
+        })
+
+        # Index iridium report in elasticsearch
+        iridium_res = self.es.index(index='iridium_report_'+str(self.imei), doc_type='report', body=ir_report)
+        # Print whether or not indexing was successful
+        print("Iridium Report Status: "+iridium_res['result']+"\n\n")
 
     def post_to_es(self):
         '''
@@ -198,34 +213,11 @@ class read_iridium(object):
                 # Print whether or not indexing was successful
                 print("Statefield Report Status: "+statefield_res['result'])
 
-                # Create an iridium report 
-                ir_report=json.dumps({
-                    "momsn":self.momsn,
-                    "mtmsn":self.mtmsn, 
-                    "confirmation-mtmsn": self.confirmation_mtmsn,
-                    "send-uplinks": self.send_uplinks,
-                    "time": str(datetime.now().isoformat())
-                })
-
-                # Index iridium report in elasticsearch
-                iridium_res = self.es.index(index='iridium_report_'+str(self.imei), doc_type='report', body=ir_report)
-                # Print whether or not indexing was successful
-                print("Iridium Report Status: "+iridium_res['result']+"\n\n")
+                self.create_iridium_report()
 
             elif self.recieved_uplink_confirmation:
                 # Create an iridium report and add that to the iridium_report index in elasticsearch. 
-                ir_report=json.dumps({
-                    "momsn":self.momsn,
-                    "mtmsn":self.mtmsn, 
-                    "confirmation-mtmsn": self.confirmation_mtmsn,
-                    "send-uplinks": self.send_uplinks,
-                    "time": str(datetime.now().isoformat())
-                })
-
-                # Index iridium report in elasticsearch
-                iridium_res = self.es.index(index='iridium_report_'+str(self.imei), doc_type='report', body=ir_report)
-                # Print whether or not indexing was successful
-                print("Iridium Report Status: "+iridium_res['result']+"\n\n")
+                self.create_iridium_report()
                 # Record that we have not recently recieved any uplinks as we just indexed the most recent one
                 self.recieved_uplink_confirmation=False
 
@@ -256,6 +248,9 @@ except KeyError:
 readIr=read_iridium(radio_keys_config, server_keys_config)
 # Start checking emails and posting reports
 readIr.connect()
+
+app = Flask(__name__)
+app.config["SWAGGER"]={"title": "PAN Ground Software", "uiversion": 2}
 
 # Set up the SwaggerUI API
 swagger_config={
@@ -295,7 +290,7 @@ def get_statefield():
     # Connect to elasticsearch
     es=readIr.es
 
-    imei = int(request.args.get('imei'))
+    imei = request.args.get('imei')
     statefield = str(request.args.get('statefield'))
 
     # Get the most recent document in the statefield index which has a given statefield in it
@@ -322,9 +317,9 @@ def get_statefield():
             most_recent_field=res["hits"]["hits"][0]["_source"][statefield]
             return most_recent_field
         else:
-            return "Unable to find field in index: "+"statefield_report_"+str(imei)
+            return f"Unable to find field in index: statefield_report_{imei}"
     else:
-        return "Unable to find index: "+"statefield_report_"+str(imei)
+        return f"Unable to find index: statefield_report_{imei}"
 
 # Endpoint for getting data from iridium reports index in elasticsearch. 
 # Will be used to check if we are allowed to send uplinks in radiosession
@@ -362,9 +357,9 @@ def get_iridium_field():
             most_recent_field=res["hits"]["hits"][0]["_source"][field]
             return str(most_recent_field)
         else:
-            return "Unable to find field in index: "+"iridium_report_"+str(imei)
+            return f"Unable to find field in index: iridium_report_{imei}"
     else:
-        return "Unable to find index: "+"iridium_report_"+str(imei)
+        return f"Unable to find index: iridium_report_{imei}"
 
 if __name__ == "__main__":
     app.run(debug=True)

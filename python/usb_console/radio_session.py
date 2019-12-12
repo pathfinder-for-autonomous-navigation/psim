@@ -6,10 +6,6 @@ import json
 import traceback
 import queue
 import yagmail
-import imaplib
-import base64
-import os
-import email
 import requests
 
 
@@ -61,8 +57,12 @@ class RadioSession(object):
         headers = {
             'Accept': 'text/html',
         }
+        payload = {
+            "imei" : str(self.imei),
+            "statefield" : str(field)
+        }
 
-        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-statefields?imei='+str(self.imei)+'&field='+str(field), headers=headers)
+        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-statefields', params=payload, headers=headers)
         return response.text
 
     def write_multiple_states(self, fields, vals, timeout=None):
@@ -76,9 +76,13 @@ class RadioSession(object):
         headers = {
             'Accept': 'text/html',
         }
+        payload = {
+            "imei" : str(self.imei),
+            "field" : "send-uplinks"
+        }
 
-        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-iridium?imei='+str(self.imei)+'&field=send-uplinks', headers=headers)
-        print(response.text)
+        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-iridium', params=payload, headers=headers)
+        self.logger.put("Send Uplinks: "+str(response.text))
 
         if response.text=="True":
             #create dictionary object with new fields and vals
