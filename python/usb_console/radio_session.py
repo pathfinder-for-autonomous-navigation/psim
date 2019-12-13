@@ -58,11 +58,11 @@ class RadioSession(object):
             'Accept': 'text/html',
         }
         payload = {
-            "imei" : str(self.imei),
-            "statefield" : str(field)
+            "index" : "statefield_report_"+str(self.imei),
+            "field" : str(field)
         }
 
-        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-statefields', params=payload, headers=headers)
+        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-es', params=payload, headers=headers)
         return response.text
 
     def write_multiple_states(self, fields, vals, timeout=None):
@@ -77,11 +77,11 @@ class RadioSession(object):
             'Accept': 'text/html',
         }
         payload = {
-            "imei" : str(self.imei),
+            "index" : "iridium_report_"+str(self.imei),
             "field" : "send-uplinks"
         }
 
-        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-iridium', params=payload, headers=headers)
+        response = requests.get('http://'+self.flask_server+':'+self.flask_port+'/search-es', params=payload, headers=headers)
         self.logger.put("Send Uplinks: "+str(response.text))
 
         if response.text=="True":

@@ -292,50 +292,14 @@ def index_sf_report():
     }
     return res
 
-# Endpoint for getting data from the statefield reports index in elasticsearch
-@app.route("/search-statefields", methods=["GET"])
-@swag_from("endpoint_configs/search_statefields_config.yml")
-def get_statefield():
-    imei = request.args.get('imei')
-    statefield = str(request.args.get('statefield'))
+# Endpoint for getting data from ElasticSearch
+@app.route("/search-es", methods=["GET"])
+@swag_from("endpoint_configs/search_es_config.yml")
+def search_es():
+    index = request.args.get('index')
+    field = str(request.args.get('field'))
 
     # Get the most recent document in the statefield index which has a given statefield in it
-    search_object={
-        'query': {
-            'exists': {
-                'field': statefield
-            }
-        },
-        "sort": [
-            {
-                "time": {
-                    "order": "desc"
-                }
-            }
-        ],
-        "size": 1
-    }
-    # Get the value of that statefield from the document
-    if es.indices.exists(index='statefield_report_'+str(imei)):
-        res = es.search(index='statefield_report_'+str(imei), body=json.dumps(search_object))
-        if len(res["hits"]["hits"])!=0:
-            most_recent_field=res["hits"]["hits"][0]["_source"][statefield]
-            return str(most_recent_field)
-        else:
-            return f"Unable to find field in index: statefield_report_{imei}"
-    else:
-        return f"Unable to find index: statefield_report_{imei}"
-
-# Endpoint for getting data from iridium reports index in elasticsearch. 
-# Will be used to check if we are allowed to send uplinks in radiosession
-@app.route("/search-iridium", methods=["GET"])
-@swag_from("endpoint_configs/search_iridium_config.yml")
-def get_iridium_field():
-    #get imei number of the radio that radiosession is connected to
-    imei = int(request.args.get('imei'))
-    field = str(request.args.get('field'))
-    
-    # Get the most recent document in the iridium index which has a given statefield in it
     search_object={
         'query': {
             'exists': {
@@ -351,17 +315,16 @@ def get_iridium_field():
         ],
         "size": 1
     }
-    
     # Get the value of that statefield from the document
-    if es.indices.exists(index='iridium_report_'+str(imei)):
-        res = es.search(index='iridium_report_'+str(imei), body=json.dumps(search_object))
+    if es.indices.exists(index=index):
+        res = es.search(index=index, body=json.dumps(search_object))
         if len(res["hits"]["hits"])!=0:
             most_recent_field=res["hits"]["hits"][0]["_source"][field]
             return str(most_recent_field)
         else:
-            return f"Unable to find field in index: iridium_report_{imei}"
+            return f"Unable to find field: {field} in index: {index}"
     else:
-        return f"Unable to find index: iridium_report_{imei}"
+        return f"Unable to find index: {index}"
 
 if __name__ == "__main__":
     app.run(debug=True)
