@@ -13,13 +13,9 @@ import time
 import logging
 
 class read_iridium(object):
-    def __init__(self, radio_keys_config, server_keys_config):
-        #elasticsearch server
-        self.es_server=server_keys_config["server"]
-        self.es_port=server_keys_config["port"]
-
-        # Open connection to elasticsearch
-        self.es=Elasticsearch([{'host':self.es_server,'port':self.es_port}])
+    def __init__(self, radio_keys_config, elastic_search):
+        # Connection to elasticsearch
+        self.es=elastic_search
 
         #pan email
         self.username=radio_keys_config["email_username"]
@@ -244,8 +240,14 @@ except KeyError:
     print("Malformed config file. Exiting.")
     raise SystemExit
 
+
+# Open a connection to elasticsearch
+es_server = server_keys_config["server"]
+es_port = server_keys_config["port"]
+es = Elasticsearch([{'host':es_server,'port':es_port}])
+
 # Create a read_iridium object
-readIr=read_iridium(radio_keys_config, server_keys_config)
+readIr = read_iridium(radio_keys_config, es)
 # Start checking emails and posting reports
 readIr.connect()
 
@@ -274,27 +276,26 @@ swagger=Swagger(app, config=swagger_config)
 @app.route("/telemetry", methods=["POST"])
 @swag_from("endpoint_configs/telemetry_config.yml")
 def index_sf_report():
-    #connect to elasticsearch
-    es=readIr.es
-
     sf_report=request.get_json()
     imei=sf_report["imei"]
     data=json.dumps({
         sf_report["field"]: sf_report["value"],
         "time": str(datetime.now().isoformat())
     })
+
     #index statefield report in elasticsearch
     sf_res = es.index(index='statefield_report_'+str(imei), doc_type='report', body=data)
-    res={"Report Status": sf_res['result']}
+    res={
+        "Report Status": sf_res['result'],
+        "Report": json.loads(data),
+        "Index": 'statefield_report_'+str(imei)
+    }
     return res
 
 # Endpoint for getting data from the statefield reports index in elasticsearch
 @app.route("/search-statefields", methods=["GET"])
 @swag_from("endpoint_configs/search_statefields_config.yml")
 def get_statefield():
-    # Connect to elasticsearch
-    es=readIr.es
-
     imei = request.args.get('imei')
     statefield = str(request.args.get('statefield'))
 
@@ -330,9 +331,6 @@ def get_statefield():
 @app.route("/search-iridium", methods=["GET"])
 @swag_from("endpoint_configs/search_iridium_config.yml")
 def get_iridium_field():
-    # Connect to elasticsearch
-    es=readIr.es
-
     #get imei number of the radio that radiosession is connected to
     imei = int(request.args.get('imei'))
     field = str(request.args.get('field'))
