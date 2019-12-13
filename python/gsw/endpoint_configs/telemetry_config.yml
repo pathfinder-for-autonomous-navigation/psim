@@ -8,21 +8,21 @@ produces:
   - "application/json"
 parameters:
   - in: "body"
-    name: "body"
-    description: "Accepts a Field-Value-Time Tuple"
+    name: "data"
+    description: "Accepts a Field-Value Pair and an IMEI number"
     required: true
     schema:
       type: "object"
       properties:
-        time:
-          type: "string"
-          example: "11/12/13"
         field:
           type: "string"
           example: "control cycle count"
         value:
           type: "integer"
           example: 6
+        imei:
+          type: "integer"
+          example: 123456789
 responses: 
   405:
     description: "Invalid input"

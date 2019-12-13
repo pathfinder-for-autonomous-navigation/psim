@@ -278,8 +278,13 @@ def index_sf_report():
     es=readIr.es
 
     sf_report=request.get_json()
+    imei=sf_report["imei"]
+    data=json.dumps({
+        sf_report["field"]: sf_report["value"],
+        "time": str(datetime.now().isoformat())
+    })
     #index statefield report in elasticsearch
-    sf_res = es.index(index='statefield_report', doc_type='report', body=sf_report)
+    sf_res = es.index(index='statefield_report_'+str(imei), doc_type='report', body=data)
     res={"Report Status": sf_res['result']}
     return res
 
@@ -309,13 +314,12 @@ def get_statefield():
         ],
         "size": 1
     }
-    
     # Get the value of that statefield from the document
     if es.indices.exists(index='statefield_report_'+str(imei)):
         res = es.search(index='statefield_report_'+str(imei), body=json.dumps(search_object))
         if len(res["hits"]["hits"])!=0:
             most_recent_field=res["hits"]["hits"][0]["_source"][statefield]
-            return most_recent_field
+            return str(most_recent_field)
         else:
             return f"Unable to find field in index: statefield_report_{imei}"
     else:
