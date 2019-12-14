@@ -176,7 +176,7 @@ class RadioSession(object):
                                         self.statefields[key]=data[key]
                                         entry['field'] = key
                                         entry['val'] = data[key]
-                                        entry['time'] = datetime.datetime.now()
+                                        entry['time'] = str(datetime.datetime.now())
                                         self.datastore.put(entry)
 
     def read_state(self, field, timeout=None):

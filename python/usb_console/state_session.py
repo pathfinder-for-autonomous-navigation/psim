@@ -92,7 +92,7 @@ class StateSession(object):
                 else:
                     continue
 
-                data['time'] = self.start_time + datetime.timedelta(milliseconds=data['t'])
+                data['time'] = str(self.start_time + datetime.timedelta(milliseconds=data['t']))
 
                 if 'msg' in data:
                     # The logline represents a debugging message created by Flight Software. Report the message to the logger.
