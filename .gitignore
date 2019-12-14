@@ -11,3 +11,5 @@ logs/
 *.mexw64
 geograv/build/*
 *EGM2008_to2190_ZeroTide
+
+venv/
