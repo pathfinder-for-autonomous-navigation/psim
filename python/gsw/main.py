@@ -217,7 +217,7 @@ class read_iridium(object):
                 # Record that we have not recently recieved any uplinks as we just indexed the most recent one
                 self.recieved_uplink_confirmation=False
 
-            time.sleep(1)
+            time.sleep(10)
 
     def disconnect(self):
         '''
