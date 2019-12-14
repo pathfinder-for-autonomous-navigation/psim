@@ -10,12 +10,13 @@ import matlab.engine
 import datetime
 import os
 import json
+from gpstime import GPSTime
 
 class Simulation(object):
     """
     Full mission simulation, including both spacecraft.
     """
-    def __init__(self,devices,seed,print_log=True):
+    def __init__(self, devices, seed, print_log=True):
         """
         Initializes self
 
@@ -26,11 +27,14 @@ class Simulation(object):
                        just to a file.
         """
         self.devices = devices
-        self.flight_controller_leader = self.devices['FlightControllerLeader']
-        self.flight_controller_follower = self.devices['FlightControllerFollower']
         self.seed = seed
         self.log = ""
         self.print_log = print_log
+        self.setup_flight_controller()
+
+    def setup_flight_controller(self):
+        self.flight_controller_leader = self.devices['FlightControllerLeader']
+        self.flight_controller_follower = self.devices['FlightControllerFollower']
 
     def start(self, duration):
         '''
@@ -68,6 +72,9 @@ class Simulation(object):
         self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states('not_detumbled', nargout=2)
         self.main_state_trajectory = []
 
+        self.eng.workspace['const']['dt'] = 120e6  # Control cycle time = 120 ms = 120e6 ns
+        self.dt = self.eng.workspace['const']['dt'] * 1e-9  # 170 ms
+
         elapsed_time = timeit.default_timer() - start_time
 
         self.add_to_log(
@@ -79,9 +86,8 @@ class Simulation(object):
         Runs the simulation for the time interval specified in start().
         """
 
-        dt = self.eng.workspace['const']['dt'] * 1E-9
-        num_steps = int(self.sim_duration/dt)
-        sample_rate = int(10.0 / dt) # Sample once every ten seconds
+        num_steps = int(self.sim_duration / self.dt)
+        sample_rate = int(10.0 / self.dt) # Sample once every ten seconds
         step = 0
 
         start_time = time.time()
@@ -102,11 +108,11 @@ class Simulation(object):
             self.computer_state_leader, self.actuator_commands_leader = \
                 self.eng.update_FC_state(self.computer_state_leader,self.sensor_readings_leader, nargout=2)
 
-            # Step 3.2. Send inputs and read outputs from Flight Computer
-
-            # Step 3.3. Tell flight computer to run its cycle
-            self.flight_controller_leader.write_state("cycle.start", "true")
-            self.flight_controller_follower.write_state("cycle.start", "true")
+            # Step 3.2. Send inputs, read outputs from Flight Computer
+            self.interact_fc()
+            # Step 3.3. Allow HOOTL test case to do its own meddling with the flight computer.
+            # This item is a work in progress. Currently all it does is read the cycle count.
+            self.interact_fc_custom()
 
             # Step 5. Command actuators in simulation
             self.main_state = main_state_promise.result()
@@ -119,19 +125,67 @@ class Simulation(object):
                     json.loads(self.eng.jsonencode(self.main_state, nargout=1)))
 
             step += 1
-            time.sleep(dt - ((time.time() - start_time) % dt))
+            time.sleep(self.dt - ((time.time() - start_time) % self.dt))
 
         self.running = False
         self.add_to_log("Simulation ended.")
         self.eng.quit()
 
+    def interact_fc(self):
+        self.interact_fc_onesat(self.flight_controller_follower, self.sensor_readings_follower)
+        self.interact_fc_onesat(self.flight_controller_leader, self.sensor_readings_leader)
+        self.flight_controller_follower.write_state("cycle.start", "true")
+        self.flight_controller_leader.write_state("cycle.start", "true")
+
+    def interact_fc_onesat(self, fc, sensor_readings):
+        """
+        Exchange simulation state variables with the one of the flight controllers.
+        """
+        # Step 3.2.2 Send inputs to Flight Controller
+        self.write_adcs_estimator_inputs(fc, sensor_readings)
+        # Step 3.2.3 Read outputs from previous control cycle
+        self.read_adcs_estimator_outputs(fc)
+
+    def write_adcs_estimator_inputs(self, flight_controller, sensor_readings):
+        """Write the inputs required for ADCS state estimation."""
+
+        # Convert mission time to GPS time
+        current_gps_time = GPSTime(sensor_readings["time"])
+        current_gps_time.wn += int(self.eng.workspace['const']['INITGPS_WN'])
+
+        # Clean up sensor readings to be in a format usable by Flight Software
+        position_ecef = ",".join(["%.9f" % x[0] for x in sensor_readings["position_ecef"]])
+        sat2sun_body = ",".join(["%.9f" % x[0] for x in sensor_readings["sat2sun_body"]])
+        magnetometer_body = ",".join(["%.9f" % x[0] for x in sensor_readings["magnetometer_body"]])
+
+        # Send values to flight software
+        flight_controller.write_state("piksi.time", str(current_gps_time))
+        flight_controller.write_state("piksi.pos", position_ecef)
+        flight_controller.write_state("adcs_box.sun_vec", sat2sun_body)
+        flight_controller.write_state("adcs_box.mag_vec", magnetometer_body)
+
+    def read_adcs_estimator_outputs(self, flight_controller):
+        """
+        Read and store estimates from the ADCS estimator onboard flight software.
+
+        The estimates are automatically stored in the Flight Controller telemetry log
+        by calling read_state.
+        """
+
+        q_body_eci = flight_controller.read_state("attitude_estimator.q_body_eci")
+        w_body = flight_controller.read_state("attitude_estimator.w_body")
+
+    def interact_fc_custom(self):
+        # Get cycle count purely for diagnostic purposes
+        self.cycle_no_follower = self.flight_controller_follower.read_state("pan.cycle_no")
+        self.cycle_no_leader = self.flight_controller_leader.read_state("pan.cycle_no")
+
     def stop(self, data_dir):
         """
         Stops a run of the simulation and saves run data to disk.
         """
-        if self.running:
-            self.running = False
-            self.sim_thread.join()
+        self.running = False
+        self.sim_thread.join()
 
         with open(data_dir + "/simulation_data_main.txt", "w") as fp:
             json.dump(self.main_state_trajectory, fp)
@@ -143,76 +197,13 @@ class SingleSatSimulation(Simulation):
     """
     Mission simulation with only a single spacecraft.
     """
-    def __init__(self,devices,seed,print_log=True):
-        """
-        Initializes self
-
-        Args:
-            devices: Connected Teensy devices that are controllable
-            seed(int or None) random number generator seed or None
-            print_log: If true, prints logging messages to the console rather than
-                       just to a file.
-        """
-        self.devices = devices
+    def setup_flight_controller(self):
         self.flight_controller = self.devices['FlightController']
-        self.seed = seed
-        self.log = ""
-        self.print_log = print_log
 
-    def run(self):
-        """
-        Runs the simulation for the time interval specified in start().
-        """
+    def interact_fc(self):
+        self.interact_fc_onesat(self.flight_controller, self.sensor_readings_follower)
+        self.flight_controller.write_state("cycle.start", "true")
 
-        dt = self.eng.workspace['const']['dt'] * 1E-9
-        num_steps = int(self.sim_duration / dt)
-        sample_rate = int(10.0 / dt)  # Sample once every ten seconds
-        step = 0
-
-        start_time = time.time()
-        while step < num_steps and self.running:
-            self.sim_time = self.main_state['follower']['dynamics']['time']
-
-            # Step 1. Get sensor readings from simulation
-            self.sensor_readings = self.eng.sensor_reading(
-                self.main_state['follower'],
-                self.main_state['leader'],
-                nargout=1)
-
-            # Step 2. Update dynamics
-            main_state_promise = self.eng.main_state_update(
-                self.main_state, nargout=1, background=True)
-
-            # Step 3. Simulate flight computers
-            # Step 3.1. Use MATLAB simulation as a base
-            self.computer_state_follower, self.actuator_commands = \
-                self.eng.update_FC_state(self.computer_state_follower,self.sensor_readings, nargout=2)
-
-            # Step 3.2. Send inputs and read outputs from Flight Computer
-
-            # Step 3.3. Tell flight computer to run its cycle
-            self.flight_controller.write_state("cycle.start", "true")
-
-            # Step 5. Command actuators in simulation
-            self.main_state = main_state_promise.result()
-            self.main_state['follower'] = self.eng.actuator_command(
-                self.actuator_commands,
-                self.main_state['follower'],
-                nargout=1)
-            self.main_state['leader'] = self.eng.actuator_command(
-                self.actuator_commands,
-                self.main_state['leader'],
-                nargout=1)
-
-            # Step 6. Store trajectory
-            if step % sample_rate == 0:
-                self.main_state_trajectory.append(
-                    json.loads(
-                        self.eng.jsonencode(self.main_state, nargout=1)))
-
-            step += 1
-            time.sleep(dt - ((time.time() - start_time) % dt))
-
-        self.running = False
-        self.add_to_log("Simulation ended.")
-        self.eng.quit()
+    def interact_fc_custom(self):
+        # Get cycle count purely for diagnostic purposes
+        self.cycle_no = self.flight_controller.read_state("pan.cycle_no")
