@@ -11,7 +11,7 @@ import base64
 import os
 import email
 
-from data_consumers import Datastore, Logger
+from .data_consumers import Datastore, Logger
 
 class RadioSession(object):
     '''

@@ -2,10 +2,10 @@
 
 from argparse import ArgumentParser
 from cerberus import Validator
-from state_session import StateSession
-from radio_session import RadioSession
-from cmdprompt import StateCmdPrompt
-from simulation import Simulation, SingleSatSimulation
+from .state_session import StateSession
+from .radio_session import RadioSession
+from .cmdprompt import StateCmdPrompt
+from .simulation import Simulation, SingleSatSimulation
 import json, sys, os, tempfile, time, threading, signal
 
 try:

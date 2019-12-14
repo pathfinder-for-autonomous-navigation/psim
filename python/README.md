@@ -61,7 +61,7 @@ Change the port to the COM port Teensy is connected to
 
 Run the main script:
 
-      python usb_console/run_simulation.py -c usb_console/configs/fc_only_teensy.json
+      python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
 
 **Running with software only**
 
@@ -77,11 +77,11 @@ for the Flight Software. You can find these binaries [here](https://github.com/p
 
 2. Then, run the main script. On Windows you must run
 
-         python usb_console/run_simulation.py -c usb_console/configs/fc_only_teensy.json
+         python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
 
       since psim for Windows currently only supports connections to actual Teensy devices. On Mac you may run
 
-         python usb_console/run_simulation.py -c usb_console/configs/fc_only_native.json
+         python -m usb_console.run_simulation -c usb_console/configs/fc_only_native.json
 
       To connect to a desktop binary.
 
