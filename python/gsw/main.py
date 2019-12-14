@@ -299,7 +299,7 @@ def search_es():
     index = request.args.get('index')
     field = str(request.args.get('field'))
 
-    # Get the most recent document in the statefield index which has a given statefield in it
+    # Get the most recent document in the given index which has a given statefield in it
     search_object={
         'query': {
             'exists': {
