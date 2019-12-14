@@ -1,4 +1,7 @@
 import queue, os, json, threading, time, datetime
+from tinydb import TinyDB, Query
+from tinydb.storages import JSONStorage
+from tinydb.middlewares import CachingMiddleware
 
 class DataConsumer(object):
     def __init__(self, device_name, data_dir):
@@ -53,28 +56,34 @@ class DataConsumer(object):
 class Datastore(DataConsumer):
     def __init__(self, device_name, data_dir):
         super().__init__(device_name, data_dir)
-        self.data = {}
+        filename = f"{self.device_name}-telemetry.txt"
+        self.data = TinyDB(f"/{data_dir}/{filename}",
+            storage=CachingMiddleware(JSONStorage))
 
     def consume_queue_item(self, datapoint):
-        """ Adds a single data point to the telemetry log."""
-
-        time_value_pair = (str(datapoint['time']), datapoint['val'])
+        """
+        Adds a single data point to the telemetry log.
+        """
         field_name = datapoint['field']
 
-        if not self.data.get(field_name):
-            self.data[field_name] = []
+        self.data.insert({
+            "field" : field_name,
+            "time": str(datapoint['time']),
+            "val": datapoint['val']
+        })
 
-        self.data[field_name].append(time_value_pair)
+    def get_field_data(self, field):
+        query = self.data.search(Query().field == field)
+        response = []
+        for row in query:
+            response.append((row["time"], row["val"]))
+
+        return response
 
     def save(self):
         """ Save telemetry log to a file. """
-
-        filename = f"{self.device_name}-telemetry.txt"
-        filepath = os.path.join(self.data_dir, filename)
-
-        with open(filepath, 'w') as datafile:
-            json.dump(self.data, datafile)
-
+        self.data.storage.flush()
+        self.data.close()
 
 class Logger(DataConsumer):
     def __init__(self, device_name, data_dir):

@@ -17,6 +17,7 @@ pytest==5.2.0
 python-dateutil==2.8.0
 schema==0.7.1
 six==1.12.0
+tinydb==3.15.1
 wcwidth==0.1.7
 yagmail==0.11.224
 zipp==0.6.0

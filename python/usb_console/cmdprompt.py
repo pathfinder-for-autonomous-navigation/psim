@@ -7,6 +7,8 @@ from cmd import Cmd
 import pylab as plt
 import matplotlib.dates as mdates
 import timeit
+import time
+import copy
 from .gpstime import GPSTime
 
 class StateCmdPrompt(Cmd):
@@ -171,6 +173,10 @@ class StateCmdPrompt(Cmd):
         '''
         Plot the given state fields. See state_session.py for documentation.
         '''
+        args = args.split()
+        if len(args) == 0:
+            print("Need to specify fields to plot.")
+            return
 
         # Clear plot and set plotting ticker parameters
         plt.clf()
@@ -178,18 +184,18 @@ class StateCmdPrompt(Cmd):
         plt.gca().xaxis.set_major_formatter(mdates.AutoDateFormatter(date_locator))
         plt.gca().xaxis.set_major_locator(date_locator)
 
-        args = args.split()
         field_histories = []
         for field in args:
-            field_data = self.cmded_device.datastore.data.get(field)
-            if field_data is None:
-                print(f"Could not find field with name {field} on {self.cmded_device.device_name}.")
+            # Request data from datastore
+            field_data = self.cmded_device.datastore.get_field_data(field)
+            if len(field_data) == 0:
+                print(f"Could not find field with name \"{field}\" on {self.cmded_device.device_name}.")
                 return
 
+            # Process times in data
             data_t = [mdates.datestr2num(datapoint[0]) for datapoint in field_data]
 
-            print(field_data[0][1])
-            print(field_data[0][1].count(","))
+            # Process values in data
             if field_data[0][1].count(",") == 2:
                 # It's a GPS time
                 data_vals = [GPSTime(datapoint[1]).to_ns() for datapoint in field_data]
