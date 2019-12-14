@@ -8,7 +8,7 @@ supported by Python may include, but is not limited to:
  * Real time graphing utilities and other data visulation tools to be used in
    conjunction with a real time simulation. To use this utility run
 
-      python -m usb_console.plotter -d /path/to/data/file
+       python -m usb_console.plotter -d /path/to/data/file
 
    after running the installation steps below. The `/path/to/data/file` needs to be
    produced by the simulation.
@@ -59,13 +59,13 @@ To install the Python MATLAB engine, you must:
 
 Open the config file:
 
-      psim/python/usb_console/configs
+    psim/python/usb_console/configs
 
 Change the port to the COM port Teensy is connected to
 
 Run the main script:
 
-      python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
+    python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
 
 **Running with software only**
 
@@ -81,11 +81,11 @@ for the Flight Software. You can find these binaries [here](https://github.com/p
 
 2. Then, run the main script. On Windows you must run
 
-         python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
+       python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
 
       since psim for Windows currently only supports connections to actual Teensy devices. On Mac you may run
 
-         python -m usb_console.run_simulation -c usb_console/configs/fc_only_native.json
+       python -m usb_console.run_simulation -c usb_console/configs/fc_only_native.json
 
       To connect to a desktop binary.
 
