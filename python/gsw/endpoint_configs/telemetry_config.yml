@@ -23,6 +23,3 @@ parameters:
         imei:
           type: "integer"
           example: 123456789
-responses: 
-  405:
-    description: "Invalid input"
