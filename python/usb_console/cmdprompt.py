@@ -6,7 +6,7 @@ except ImportError:
 from cmd import Cmd
 import timeit
 import tinydb
-from .plotter import StateFieldPlotter
+from .plotter import PlotterClient
 
 class StateCmdPrompt(Cmd):
     '''
@@ -170,27 +170,8 @@ class StateCmdPrompt(Cmd):
         '''
         Plot the given state fields. See state_session.py for documentation.
         '''
-        args = args.split()
-        if len(args) == 0:
-            print("Need to specify a state field to read.")
-            return
-
-        plotter = StateFieldPlotter()
-        for field in args:
-            field_data = []
-            query = self.cmded_device.datastore.db.search(tinydb.Query().field == field)
-            for row in query:
-                field_data.append((row["time"], row["val"]))
-
-            if len(field_data) == 0:
-                print(
-                    f"Could not find any data for field with name \"{field}\" on {self.cmded_device.device_name}."
-                )
-                return
-
-            plotter.add_timeseries(field, field_data)
-
-        plotter.display()
+        plotter = PlotterClient(self.cmded_device.datastore.db)
+        plotter.do_plot(args)
 
     def do_quit(self, args):
         '''
