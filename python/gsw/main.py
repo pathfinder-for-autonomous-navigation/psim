@@ -315,7 +315,7 @@ def search_es():
         ],
         "size": 1
     }
-    # Get the value of that statefield from the document
+    # Get the value of that field from the document
     if es.indices.exists(index=index):
         res = es.search(index=index, body=json.dumps(search_object))
         if len(res["hits"]["hits"])!=0:

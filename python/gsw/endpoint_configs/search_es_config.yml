@@ -17,6 +17,3 @@ parameters:
     type: string
     required: true
     description: The field requested
-responses: 
-  405:
-    description: "Invalid input"
