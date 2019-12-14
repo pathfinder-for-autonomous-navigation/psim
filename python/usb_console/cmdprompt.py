@@ -4,7 +4,10 @@ except ImportError:
     # We're on Windows, so readline doesn't exist
     pass
 from cmd import Cmd
+import pylab as plt
+import matplotlib.dates as mdates
 import timeit
+from .gpstime import GPSTime
 
 class StateCmdPrompt(Cmd):
     '''
@@ -26,9 +29,13 @@ class StateCmdPrompt(Cmd):
             self.cmded_device = self.devices['FlightController']
         except KeyError:
             try:
-                self.cmded_device = self.devices['FlightControllerLeader']
+                self.cmded_device = self.devices['FlightControllerFollower']
             except KeyError:
                 self.cmded_device = list(self.devices.values())[0]
+
+        self.intro = "Beginning console.\nType \"help\" for a list of commands.\n" \
+                    "NOTE: You are currently connected to the {}.".format(self.cmded_device.device_name)
+        self.prompt = '> '
 
         Cmd.__init__(self)
 
@@ -36,13 +43,13 @@ class StateCmdPrompt(Cmd):
         # Don't do anything with an empty line input
         pass
 
-    def do_cc(self, args):
+    def do_checkcomp(self, args):
         '''
         Lists the Teensy currently being interacted with by the user.
         '''
         print(f"Currently interacting with {self.cmded_device.device_name}")
 
-    def do_lc(self, args):
+    def do_listcomp(self, args):
         '''
         Lists all available Teensies.
         '''
@@ -50,7 +57,7 @@ class StateCmdPrompt(Cmd):
         for device_name in self.devices.keys():
             print(device_name)
 
-    def do_sc(self, args):
+    def do_switchcomp(self, args):
         '''
         Switches the Teensy that the user is controlling by the command line.
         '''
@@ -160,14 +167,85 @@ class StateCmdPrompt(Cmd):
         args = args.split()
         self.cmded_device.release_override(args[0])
 
+    def do_plot(self, args):
+        '''
+        Plot the given state fields. See state_session.py for documentation.
+        '''
+
+        # Clear plot and set plotting ticker parameters
+        plt.clf()
+        date_locator = mdates.AutoDateLocator()
+        plt.gca().xaxis.set_major_formatter(mdates.AutoDateFormatter(date_locator))
+        plt.gca().xaxis.set_major_locator(date_locator)
+
+        args = args.split()
+        field_histories = []
+        for field in args:
+            field_data = self.cmded_device.datastore.data.get(field)
+            if field_data is None:
+                print(f"Could not find field with name {field} on {self.cmded_device.device_name}.")
+                return
+
+            data_t = [mdates.datestr2num(datapoint[0]) for datapoint in field_data]
+
+            print(field_data[0][1])
+            print(field_data[0][1].count(","))
+            if field_data[0][1].count(",") == 2:
+                # It's a GPS time
+                data_vals = [GPSTime(datapoint[1]).to_ns() for datapoint in field_data]
+                plt.plot(data_t, data_vals, label=field)
+            elif field_data[0][1].count(",") == 3:
+                # It's a vector
+                data_vals = [datapoint[1].split(",") for datapoint in field_data]
+                data_vals_x = [float(dataval[0]) for dataval in data_vals]
+                data_vals_y = [float(dataval[1]) for dataval in data_vals]
+                data_vals_z = [float(dataval[2]) for dataval in data_vals]
+                plt.plot(data_t, data_vals_x, label=field + ".x")
+                plt.plot(data_t, data_vals_y, label=field + ".y")
+                plt.plot(data_t, data_vals_z, label=field + ".z")
+            elif field_data[0][1].count(",") == 4:
+                # It's a quaternion
+                data_vals = [datapoint[1].split(",") for datapoint in field_data]
+                data_vals_w = [float(dataval[0]) for dataval in data_vals]
+                data_vals_x = [float(dataval[1]) for dataval in data_vals]
+                data_vals_y = [float(dataval[2]) for dataval in data_vals]
+                data_vals_z = [float(dataval[3]) for dataval in data_vals]
+                plt.plot(data_t, data_vals_w, label=field + ".w")
+                plt.plot(data_t, data_vals_x, label=field + ".x")
+                plt.plot(data_t, data_vals_y, label=field + ".y")
+                plt.plot(data_t, data_vals_z, label=field + ".z")
+            else:
+                if field_data[0][1] in ["true", "false"]:
+                    # It's a boolean
+                    data_vals = [(1 if datapoint == "true" else 0) for datapoint in field_data]
+                else:
+                    try:
+                        # It might be an integer
+                        data_vals = [int(datapoint[1]) for datapoint in field_data]
+                    except ValueError:
+                        try:
+                            # It's a float or double
+                            data_vals = [float(datapoint[1]) for datapoint in field_data]
+                        except ValueError:
+                            print(f"Field {field} is not of a plottable type.")
+                            return
+
+                plt.plot(data_t, data_vals, label=field)
+
+        plt.gcf().autofmt_xdate()
+        plt.legend()
+        plt.show()
+
     def do_quit(self, args):
         '''
         Exits the command line and terminates connections with the flight computer(s).
         '''
-        self.exit_fn('Exiting command line.')
+        self.exit_fn('Exiting command line.', is_error=False)
+        return True
 
     def do_exit(self, args):
         '''
         Exits the command line and terminates connections with the flight computer(s).
         '''
         self.do_quit(None)
+        return True
