@@ -10,7 +10,7 @@ import matlab.engine
 import datetime
 import os
 import json
-from gpstime import GPSTime
+from .gpstime import GPSTime
 
 class Simulation(object):
     """
