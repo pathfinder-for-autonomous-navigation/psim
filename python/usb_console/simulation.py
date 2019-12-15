@@ -172,8 +172,8 @@ class Simulation(object):
         by calling read_state.
         """
 
-        q_body_eci = flight_controller.read_state("attitude_estimator.q_body_eci")
-        w_body = flight_controller.read_state("attitude_estimator.w_body")
+        flight_controller.read_state("attitude_estimator.q_body_eci")
+        flight_controller.read_state("attitude_estimator.w_body")
 
     def interact_fc_custom(self):
         # Get cycle count purely for diagnostic purposes
