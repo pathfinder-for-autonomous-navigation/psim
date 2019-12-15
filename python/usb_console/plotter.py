@@ -6,7 +6,6 @@ from tinydb import TinyDB, Query
 from argparse import ArgumentParser
 import cmd, sys
 
-
 class StateFieldPlotter(object):
     """
     Plotting utility for processing data, both live during the simulation and in

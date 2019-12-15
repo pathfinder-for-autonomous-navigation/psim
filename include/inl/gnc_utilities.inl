@@ -131,8 +131,9 @@ inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
   lin::Vector<T, 3> const  b3 = lin::cross(b1, b2);
 
   // Calculate the DCM between the two frames and extract the quaternion
-  auto const Q = b1 * lin::transpose(n1) + b2 * lin::transpose(n2) + b3 * lin::transpose(n3);
-  dcm_to_quat(Q.eval(), q);
+  lin::Matrix<T, 3, 3> const Q =
+      b1 * lin::transpose(n1) + b2 * lin::transpose(n2) + b3 * lin::transpose(n3);
+  dcm_to_quat(Q, q);
   return 0;
 }
 
