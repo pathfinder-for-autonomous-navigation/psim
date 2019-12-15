@@ -6,9 +6,13 @@ supported by Python may include, but is not limited to:
 
  * Running a simulation in real time with one or two satellites.
  * Real time graphing utilities and other data visulation tools to be used in
-   conjunction with a real time simulation. See the following URLS:
-   * https://stackoverflow.com/questions/11874767/how-do-i-plot-in-real-time-in-a-while-loop-using-matplotlib
-   * https://learn.sparkfun.com/tutorials/graph-sensor-data-with-python-and-matplotlib/update-a-graph-in-real-time
+   conjunction with a real time simulation. To use this utility run
+
+      python -m usb_console.plotter -d /path/to/data/file
+
+   after running the installation steps below. The `/path/to/data/file` needs to be
+   produced by the simulation.
+
  * Hardware/Sim interface for SHITLs.
 
 # Installing
@@ -61,7 +65,7 @@ Change the port to the COM port Teensy is connected to
 
 Run the main script:
 
-      python usb_console/run_simulation.py -c usb_console/configs/fc_only_teensy.json
+      python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
 
 **Running with software only**
 
@@ -77,11 +81,11 @@ for the Flight Software. You can find these binaries [here](https://github.com/p
 
 2. Then, run the main script. On Windows you must run
 
-         python usb_console/run_simulation.py -c usb_console/configs/fc_only_teensy.json
+         python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
 
       since psim for Windows currently only supports connections to actual Teensy devices. On Mac you may run
 
-         python usb_console/run_simulation.py -c usb_console/configs/fc_only_native.json
+         python -m usb_console.run_simulation -c usb_console/configs/fc_only_native.json
 
       To connect to a desktop binary.
 
