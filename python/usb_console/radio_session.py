@@ -8,6 +8,7 @@ import queue
 import yagmail
 import requests
 
+from .data_consumers import Datastore, Logger
 
 class RadioSession(object):
     '''
@@ -21,7 +22,8 @@ class RadioSession(object):
     between the check_for_downlink and the read_state functions.
     '''
 
-    def __init__(self, device_name, imei, datastore, logger, radio_keys_config, flask_keys_config):
+
+    def __init__(self, device_name, imei, simulation_run_dir, radio_keys_config, flask_keys_config):
         '''
         Initializes state session with the Quake radio.
 
@@ -40,15 +42,12 @@ class RadioSession(object):
         self.flask_port=flask_keys_config["port"]
 
         # Data logging
-        self.datastore = datastore
-        self.logger = logger
+        self.datastore = Datastore(device_name, simulation_run_dir)
+        self.logger = Logger(device_name, simulation_run_dir)
 
         #email
         self.username=radio_keys_config["email_username"]
         self.password=radio_keys_config["email_password"]
-
-        # Simulation
-        self.overriden_variables = set()
 
     def read_state(self, field, timeout=None):
         '''
@@ -117,4 +116,6 @@ class RadioSession(object):
         )
 
         # End threads if there was actually a connection to the radio
+        self.datastore.stop()
+        self.logger.stop()
         self.running_logger = False
