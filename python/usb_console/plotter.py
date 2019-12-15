@@ -1,9 +1,11 @@
 import pylab as plt
 import matplotlib.dates as mdates
+import mplcursors
 from .gpstime import GPSTime
 from tinydb import TinyDB, Query
 from argparse import ArgumentParser
 import cmd, sys
+
 
 class StateFieldPlotter(object):
     """
@@ -16,6 +18,7 @@ class StateFieldPlotter(object):
 
         # Clear plot and set plotting ticker parameters
         date_locator = mdates.AutoDateLocator()
+        plt.clf()
         plt.gca().xaxis.set_major_formatter(
             mdates.AutoDateFormatter(date_locator))
         plt.gca().xaxis.set_major_locator(date_locator)
@@ -55,16 +58,16 @@ class StateFieldPlotter(object):
             data_vals = [
                 GPSTime(datapoint[1]).to_ns() for datapoint in field_data
             ]
-            plt.plot(data_t, data_vals, label=field)
+            plt.plot(data_t, data_vals, label=field, marker='o', markersize=2)
         elif field_data[0][1].count(",") == 3:
             # It's a vector
             data_vals = [datapoint[1].split(",") for datapoint in field_data]
             data_vals_x = [float(dataval[0]) for dataval in data_vals]
             data_vals_y = [float(dataval[1]) for dataval in data_vals]
             data_vals_z = [float(dataval[2]) for dataval in data_vals]
-            plt.plot(data_t, data_vals_x, label=field + ".x")
-            plt.plot(data_t, data_vals_y, label=field + ".y")
-            plt.plot(data_t, data_vals_z, label=field + ".z")
+            plt.plot(data_t, data_vals_x, label=field + ".x", marker='o', markersize=2)
+            plt.plot(data_t, data_vals_y, label=field + ".y", marker='o', markersize=2)
+            plt.plot(data_t, data_vals_z, label=field + ".z", marker='o', markersize=2)
         elif field_data[0][1].count(",") == 4:
             # It's a quaternion
             data_vals = [datapoint[1].split(",") for datapoint in field_data]
@@ -72,10 +75,10 @@ class StateFieldPlotter(object):
             data_vals_x = [float(dataval[1]) for dataval in data_vals]
             data_vals_y = [float(dataval[2]) for dataval in data_vals]
             data_vals_z = [float(dataval[3]) for dataval in data_vals]
-            plt.plot(data_t, data_vals_w, label=field + ".w")
-            plt.plot(data_t, data_vals_x, label=field + ".x")
-            plt.plot(data_t, data_vals_y, label=field + ".y")
-            plt.plot(data_t, data_vals_z, label=field + ".z")
+            plt.plot(data_t, data_vals_w, label=field + ".w", marker='o', markersize=2)
+            plt.plot(data_t, data_vals_x, label=field + ".x", marker='o', markersize=2)
+            plt.plot(data_t, data_vals_y, label=field + ".y", marker='o', markersize=2)
+            plt.plot(data_t, data_vals_z, label=field + ".z", marker='o', markersize=2)
         else:
             if field_data[0][1] in ["true", "false"]:
                 # It's a boolean
@@ -93,41 +96,42 @@ class StateFieldPlotter(object):
                         ]
                     except ValueError:
                         print(f"Field {field} is not of a plottable type.")
-                        return
+                        return False
 
-            plt.plot(data_t, data_vals, label=field)
+            plt.plot(data_t, data_vals, label=field, marker='o', markersize=2)
 
         return True
 
     def display(self):
+        mplcursors.cursor()
         plt.gcf().autofmt_xdate()
         plt.legend()
         plt.show()
-        plt.clf()
 
 class PlotterClient(cmd.Cmd):
     def __init__(self, db):
         self.db = db
-        self.plotter = StateFieldPlotter(self.db)
 
         self.intro = "Type \"plot x\" to plot state field \"x\".\n"
         self.prompt = "> "
         super().__init__()
 
-    def do_plot(self, args):
-        args = args.split()
-        print(args)
-        if len(args) == 0:
+    def do_plot(self, fields):
+        fields = fields.split()
+        if len(fields) == 0:
             print("Need to specify at least one state field to plot.")
             return
 
-        for field in args:
-            field_data = self.plotter.find_timeseries(field, self.db)
+        plt.clf()
+        plotter = StateFieldPlotter(self.db)
+        for field in fields:
+            field_data = plotter.find_timeseries(field, self.db)
             if not field_data:
                 return
-            self.plotter.add_timeseries(field, field_data)
-
-        self.plotter.display()
+            field_plotted = plotter.add_timeseries(field, field_data)
+            if not field_plotted:
+                return
+        plotter.display()
 
     def do_exit(self, args):
         sys.exit()

@@ -73,7 +73,7 @@ class Simulation(object):
         self.main_state_trajectory = []
 
         self.eng.workspace['const']['dt'] = 120e6  # Control cycle time = 120 ms = 120e6 ns
-        self.dt = self.eng.workspace['const']['dt'] * 1e-9  # 170 ms
+        self.dt = self.eng.workspace['const']['dt'] * 1e-9  # 120 ms
 
         elapsed_time = timeit.default_timer() - start_time
 
