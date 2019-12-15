@@ -121,7 +121,6 @@ class PlotterClient(cmd.Cmd):
             print("Need to specify at least one state field to plot.")
             return
 
-        plt.clf()
         plotter = StateFieldPlotter(self.db)
         for field in fields:
             field_data = plotter.find_timeseries(field, self.db)
