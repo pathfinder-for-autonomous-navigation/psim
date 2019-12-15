@@ -1,5 +1,5 @@
 from usb_console.data_consumers import Datastore, Logger
-import os, json, tempfile, time, datetime
+import os, json, tempfile, time, tinydb
 
 def test_datastore():
     tempdir = tempfile.mkdtemp() + "/datastore_test_dir"
@@ -10,14 +10,11 @@ def test_datastore():
     time.sleep(1.5) # Allow for some time for the data to be processed by the queue processor
     datastore.stop()
 
-    with open(tempdir + "/test_device-telemetry.txt","r") as datafile:
-        data = json.load(datafile)
-        assert 'test_field' in data.keys()
-        assert len(data['test_field']) == 1
-
-        datapoint = data['test_field'][0]
-        assert datapoint[0] == "2"
-        assert datapoint[1] == "val"
+    datastore = Datastore("test_device", tempdir)
+    results = datastore.db.search(tinydb.Query().field == "test_field")
+    assert len(results) == 1
+    assert results[0]["time"] == "2"
+    assert results[0]["val"] == "val"
 
 def test_logger():
     tempdir = tempfile.mkdtemp() + "/logger_test_dir"
@@ -25,10 +22,11 @@ def test_logger():
     logger = Logger("test_device", tempdir)
     logger.start()
     logger.put("Hello world")
-    currentTime=str(datetime.datetime.now())
+    logger.put("Hello world2", add_time = False)
     time.sleep(1.5) # Allow for some time for the data to be processed by the queue processor
     logger.stop()
 
     with open(tempdir + "/test_device-log.txt", "r") as logfile:
         log = logfile.read()
-        assert log.find("Hello world\n") != -1
+        assert log.find("Hello world") != -1
+        assert log.find("Hello world2") != -1

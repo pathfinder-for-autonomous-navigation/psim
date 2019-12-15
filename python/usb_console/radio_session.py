@@ -11,6 +11,7 @@ import base64
 import os
 import email
 
+from .data_consumers import Datastore, Logger
 
 class RadioSession(object):
     '''
@@ -24,7 +25,7 @@ class RadioSession(object):
     between the check_for_downlink and the read_state functions.
     '''
 
-    def __init__(self, device_name, datastore, logger, radio_keys_config):
+    def __init__(self, device_name, simulation_run_dir, radio_keys_config):
         '''
         Initializes state session with the Quake radio.
 
@@ -38,8 +39,8 @@ class RadioSession(object):
         self.device_name = device_name
 
         # Data logging
-        self.datastore = datastore
-        self.logger = logger
+        self.datastore = Datastore(device_name, simulation_run_dir)
+        self.logger = Logger(device_name, simulation_run_dir)
 
         #email
         self.username=radio_keys_config["email_username"]
@@ -47,9 +48,6 @@ class RadioSession(object):
 
         #imei
         self.imei=radio_keys_config["imei"]
-
-        # Simulation
-        self.overriden_variables = set()
 
         #updates MOMSN aand MTMSN numbers sent/recieved
         self.momsn=-1
@@ -71,6 +69,8 @@ class RadioSession(object):
         '''
         self.imei = imei
         self.check_email_thread = threading.Thread(target=self.check_for_email)
+        self.datastore.start()
+        self.logger.start()
         self.running_logger = True
         self.check_email_thread.start()
 
@@ -176,8 +176,8 @@ class RadioSession(object):
                                         self.statefields[key]=data[key]
                                         entry['field'] = key
                                         entry['val'] = data[key]
-                                        entry['time'] = datetime.datetime.now()
-                                        self.datastore.consume_queue_item(entry)
+                                        entry['time'] = str(datetime.datetime.now())
+                                        self.datastore.put(entry)
 
     def read_state(self, field, timeout=None):
         '''
@@ -201,7 +201,7 @@ class RadioSession(object):
         #connect to PAN email account
         yag = yagmail.SMTP(self.username, self.password)
         #create a JSON file with the updated statefields and send it to the iridium email
-        with open('uplink.json', 'w') as json_uplink:
+        with open('uplink.sbd', 'w') as json_uplink:
             json.dump(updated_fields, json_uplink)
         if self.send_uplinks==True:
             yag.send('sbdservice@sbd.iridium.com', 'Data', 'uplink.json')
@@ -223,5 +223,7 @@ class RadioSession(object):
         )
 
         # End threads if there was actually a connection to the radio
+        self.datastore.stop()
+        self.logger.stop()
         self.running_logger = False
         self.check_email_thread.join()
