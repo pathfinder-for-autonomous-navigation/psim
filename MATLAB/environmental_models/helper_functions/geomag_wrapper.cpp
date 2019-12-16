@@ -13,7 +13,7 @@
 */
 
 #include "mex.h"
-#include "../../../src/inl/geomag.inl"
+#include "../../../src/inl/geomag.hpp"
 
 void calc_geomag(double dyear, double *x, double *b)
 {
@@ -22,7 +22,7 @@ void calc_geomag(double dyear, double *x, double *b)
   in.x= (float)x[0];
   in.y= (float)x[1];
   in.z= (float)x[2];
-  out= geomag::GeoMag(dyear,in, geomag::WMM);
+  out= geomag::GeoMag(dyear,in, geomag::WMM2020);
   b[0]=out.x;
   b[1]=out.y;
   b[2]=out.z;
