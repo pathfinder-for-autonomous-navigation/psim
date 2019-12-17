@@ -111,8 +111,6 @@ class SimulationRun(object):
                 self.stop_all("Invalid configuration file. A radio's connected device was not specified.")
 
             # Check radio configuration. adjust path to radio_keys.json config file
-            if 'imei' not in radio_keys_config:
-                self.stop_all(f"IMEI number for radio connected to {radio_connected_device} was not specified.")
             if 'connect' not in radio.keys():
                 self.stop_all(f"Configuration for {radio_connected_device} does not specify whether or not to connect to the radio.")
 
