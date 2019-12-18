@@ -73,7 +73,11 @@ class SimulationRun(object):
             if device['run_mode'] == 'native':
                 try:
                     master_fd, slave_fd = pty.openpty()
-                    binary_process = subprocess.Popen(device['binary_filepath'], stdout=master_fd, stderr=master_fd, stdin=master_fd)
+                    binary_filepath = device['binary_filepath']
+                    if "CI" in os.environ:
+                        cwd = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+                        binary_filepath = os.path.join(cwd, binary_filepath)
+                    binary_process = subprocess.Popen(binary_filepath, stdout=master_fd, stderr=master_fd, stdin=master_fd)
                     self.binaries.append({
                         "device_name" : device["name"],
                         "subprocess": binary_process,

@@ -9,7 +9,6 @@ matrix:
       install:
         - pip install -r requirements.txt
         - wget https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases/download/v0.11/linux-x86_64_hootl
-        - cp linux-x86_64_hootl /linux-x86_64_hootl
       script:
         - python -m pytest
         - python -m usb_console.run_simulation
