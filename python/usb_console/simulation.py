@@ -16,7 +16,7 @@ class Simulation(object):
     """
     Full mission simulation, including both spacecraft.
     """
-    def __init__(self, devices, seed, print_log=True):
+    def __init__(self, devices, seed, testcase_runner, print_log=True):
         """
         Initializes self
 
@@ -28,9 +28,11 @@ class Simulation(object):
         """
         self.devices = devices
         self.seed = seed
+        self.testcase_runner = testcase_runner
         self.log = ""
         self.print_log = print_log
         self.setup_flight_controller()
+        self.is_single_sat_sim = False
 
     def setup_flight_controller(self):
         self.flight_controller_leader = self.devices['FlightControllerLeader']
@@ -112,7 +114,7 @@ class Simulation(object):
             self.interact_fc()
             # Step 3.3. Allow HOOTL test case to do its own meddling with the flight computer.
             # This item is a work in progress. Currently all it does is read the cycle count.
-            self.interact_fc_custom()
+            self.testcase_runner(self)
 
             # Step 5. Command actuators in simulation
             self.main_state = main_state_promise.result()
@@ -175,11 +177,6 @@ class Simulation(object):
         flight_controller.read_state("attitude_estimator.q_body_eci")
         flight_controller.read_state("attitude_estimator.w_body")
 
-    def interact_fc_custom(self):
-        # Get cycle count purely for diagnostic purposes
-        self.cycle_no_follower = self.flight_controller_follower.read_state("pan.cycle_no")
-        self.cycle_no_leader = self.flight_controller_leader.read_state("pan.cycle_no")
-
     def stop(self, data_dir):
         """
         Stops a run of the simulation and saves run data to disk.
@@ -197,13 +194,13 @@ class SingleSatSimulation(Simulation):
     """
     Mission simulation with only a single spacecraft.
     """
+    def __init__(self, devices, seed, testcase_runner, print_log=True):
+        super().__init__(devices, seed, testcase_runner, print_log)
+        self.is_single_sat_sim = True
+
     def setup_flight_controller(self):
         self.flight_controller = self.devices['FlightController']
 
     def interact_fc(self):
         self.interact_fc_onesat(self.flight_controller, self.sensor_readings_follower)
         self.flight_controller.write_state("cycle.start", "true")
-
-    def interact_fc_custom(self):
-        # Get cycle count purely for diagnostic purposes
-        self.cycle_no = self.flight_controller.read_state("pan.cycle_no")

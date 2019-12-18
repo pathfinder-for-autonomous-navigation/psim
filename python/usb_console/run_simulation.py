@@ -6,7 +6,7 @@ from .state_session import StateSession
 from .radio_session import RadioSession
 from .cmdprompt import StateCmdPrompt
 from .simulation import Simulation, SingleSatSimulation
-import json, sys, os, tempfile, time, threading, signal
+import json, sys, os, tempfile, time, threading, importlib, traceback
 
 try:
     import pty, subprocess
@@ -15,7 +15,8 @@ except ImportError:
     pass
 
 class SimulationRun(object):
-    def __init__(self, config_data, data_dir, radio_keys_config):
+    def __init__(self, config_data, testcase_name, data_dir, radio_keys_config):
+        self.testcase_name = testcase_name
         self.random_seed = config_data["seed"]
         self.sim_duration = config_data["sim_duration"]
         self.single_sat_sim = config_data["single_sat_sim"]
@@ -111,8 +112,6 @@ class SimulationRun(object):
                 self.stop_all("Invalid configuration file. A radio's connected device was not specified.")
 
             # Check radio configuration. adjust path to radio_keys.json config file
-            if 'imei' not in radio_keys_config:
-                self.stop_all(f"IMEI number for radio connected to {radio_connected_device} was not specified.")
             if 'connect' not in radio.keys():
                 self.stop_all(f"Configuration for {radio_connected_device} does not specify whether or not to connect to the radio.")
 
@@ -126,9 +125,19 @@ class SimulationRun(object):
                     self.stop_all(f"Unable to connect to radio for {radio_connected_device}.")
 
     def set_up_sim(self):
+        _ = __import__("usb_console.cases")
+        testcases = getattr(_, "cases")
+        try:
+            testcase_runner = getattr(testcases, self.testcase_name)
+        except:
+            self.stop_all(f"Nonexistent test case: {self.testcase_name}")
+
+        if self.single_sat_sim and not testcase_runner.single_sat_sim_compatible:
+            self.stop_all(f"Testcase {self.testcase_name} is not compatible with a single-satellite simulation.")
+
         if self.sim_duration > 0:
             if self.single_sat_sim:
-                self.sim = SingleSatSimulation(self.devices, self.random_seed)
+                self.sim = SingleSatSimulation(self.devices, self.random_seed, testcase_runner)
             else:
                 self.sim = Simulation(self.devices, self.random_seed)
             self.sim.start(self.sim_duration)
@@ -193,8 +202,11 @@ if __name__ == '__main__':
     Interactive console allows sending state commands to PAN Teensy devices, and parses console output 
     from Teensies into human-readable, storable logging information.''')
 
-    parser.add_argument('-c', '--conf', action='store', help='JSON file listing serial ports and Teensy computer names. Default is config.json.',
-                        default = 'config.json')
+    parser.add_argument('-t', '--testcase', action='store', help='Name of mission testcase, specified in cases/.',
+                        required = True)
+
+    parser.add_argument('-c', '--conf', action='store', help='JSON file listing serial ports and Teensy computer names.',
+                        required = True)
 
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
     parser.add_argument('-d', '--data-dir', action='store',
@@ -263,5 +275,5 @@ if __name__ == '__main__':
         print("Malformed config file. Exiting.")
         raise SystemExit
 
-    simulation_run = SimulationRun(config_data, args.data_dir, radio_keys_config)
+    simulation_run = SimulationRun(config_data, args.testcase, args.data_dir, radio_keys_config)
     simulation_run.start()
