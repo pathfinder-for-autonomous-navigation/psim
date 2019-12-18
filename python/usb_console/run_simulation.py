@@ -260,14 +260,14 @@ if __name__ == '__main__':
         if "CI" in os.environ:
             with open(args.radio_conf, "w") as radio_keys_config_file:
                 json.dump({
-                    "email_username" : "",
-                    "email_password" : ""
+                    "email_username" : os.environ["IRIDIUM_EMAIL_USERNAME"],
+                    "email_password" : os.environ["IRIDIUM_EMAIL_PASSWORD"],
                 }, radio_keys_config_file)
 
             with open(args.ground_conf, "w") as flask_keys_config_file:
                 json.dump({
-                    "server" : "",
-                    "port" : ""
+                    "server" : os.environ["GSW_SERVER"],
+                    "port" : os.environ["GSW_PORT"]
                 }, flask_keys_config_file)
 
         with open(args.radio_conf) as radio_keys_config_file:

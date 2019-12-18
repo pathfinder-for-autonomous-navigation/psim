@@ -9,5 +9,11 @@
             "binary_filepath": "linux-x86_64_hootl"
         }
     ],
-    "radios" : []
+    "radios" : [
+        {
+            "connected_device": "FlightController",
+            "imei": "",
+            "connect": true
+        }
+    ]
 }
