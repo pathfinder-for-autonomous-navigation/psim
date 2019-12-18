@@ -8,7 +8,7 @@ matrix:
         - export CI
       install:
         - pip install -r requirements.txt
-        - wget -o https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases/download/v0.11/linux-x86_64_hootl
+        - wget https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases/download/v0.11/linux-x86_64_hootl
         - cp linux-x86_64_hootl /linux-x86_64_hootl
       script:
         - python -m pytest
