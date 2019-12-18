@@ -3,18 +3,12 @@ matrix:
     - language: python
       name: "USB console initialization and unit tests"
       python: 3.6
-      sudo: false
       before_install:
         - cd python
         - export CI
       install:
         - pip install -r requirements.txt
-        - >
-            curl -s https://api.github.com/repos/pathfinder-for-autonomous-navigation/FlightSoftware/releases/latest \
-            | grep "linux-x86_64_hootl" \
-            | cut -d : -f 2,3 \
-            | tr -d \" \
-            | wget -qi -
+        - wget -o https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases/download/v0.11/linux-x86_64_hootl
         - cp linux-x86_64_hootl /linux-x86_64_hootl
       script:
         - python -m pytest
@@ -23,7 +17,6 @@ matrix:
     - language: python
       name: "GNC C++ software unit tests"
       python: 2.7
-      sudo: false
       cache:
         directories:
           - "~/.platformio"
