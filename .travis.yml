@@ -9,7 +9,8 @@ matrix:
         - export CI
       install:
         - pip install -r requirements.txt
-        - curl -s https://api.github.com/repos/pathfinder-for-autonomous-navigation/FlightSoftware/releases/latest \
+        - >
+            curl -s https://api.github.com/repos/pathfinder-for-autonomous-navigation/FlightSoftware/releases/latest \
             | grep "linux-x86_64_hootl" \
             | cut -d : -f 2,3 \
             | tr -d \" \
