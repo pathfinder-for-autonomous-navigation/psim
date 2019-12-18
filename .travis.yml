@@ -5,6 +5,8 @@ matrix:
       before_install:
         - export CI
       install:
+        - pip install -U platformio
+        - platformio update
         - wget https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases/download/v0.11/linux-x86_64_hootl
         - cp linux-x86_64_hootl python/linux-x86_64_hootl
         - cd python
