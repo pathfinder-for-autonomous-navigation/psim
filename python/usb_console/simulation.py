@@ -72,8 +72,8 @@ class Simulation(object):
         self.eng.generate_mex_code(nargout=0)
         self.eng.eval("global const", nargout=0)
 
-        self.main_state = self.eng.initialize_main_state(self.seed, 'not_detumbled', nargout=1)
-        self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states('not_detumbled', nargout=2)
+        self.main_state = self.eng.initialize_main_state(self.seed, 'detumbled', nargout=1)
+        self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states('detumbled', nargout=2)
         self.main_state_trajectory = []
 
         self.eng.workspace['const']['dt'] = 120e6  # Control cycle time = 120 ms = 120e6 ns
