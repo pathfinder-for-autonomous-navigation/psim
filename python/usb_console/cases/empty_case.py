@@ -2,8 +2,6 @@
 from .base import FlexibleSimCase
 
 class EmptyCase(FlexibleSimCase):
-    single_sat_sim_compatible = True
-
     def run_case_singlesat(self, simulation):
         simulation.cycle_no = simulation.flight_controller.read_state("pan.cycle_no")
 
