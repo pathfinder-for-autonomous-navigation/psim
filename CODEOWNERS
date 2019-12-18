@@ -1,0 +1,14 @@
+.travis.yml tanishqaggarwal kkrol27 nhz2
+
+MATLAB/*  nhz2
+geograv/* nhz2
+
+python/*     tanishqaggarwal
+python/gsw/* fatimayousuf
+
+include/*      kkrol27
+src/*          kkrol27
+test/*         kkrol27
+platformio.ini kkrol27
+Dockerfile/*   kkrol27
+tools/*        kkrol27
