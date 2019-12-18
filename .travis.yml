@@ -12,7 +12,7 @@ matrix:
         - chmod +x linux-x86_64_hootl
       script:
         - python -m pytest
-        - python -m usb_console.run_simulation
+        #- python -m usb_console.run_simulation To be done at a later time.
 
     - language: python
       name: "GNC C++ software unit tests"
