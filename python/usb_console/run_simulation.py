@@ -128,16 +128,14 @@ class SimulationRun(object):
         _ = __import__("usb_console.cases")
         testcases = getattr(_, "cases")
         try:
-            testcase_runner = getattr(testcases, self.testcase_name)
+            testcase = getattr(testcases, self.testcase_name)
         except:
             self.stop_all(f"Nonexistent test case: {self.testcase_name}")
-
-        if self.single_sat_sim and not testcase_runner.single_sat_sim_compatible:
-            self.stop_all(f"Testcase {self.testcase_name} is not compatible with a single-satellite simulation.")
+        print(f"Running mission testcase {self.testcase_name}.")
 
         if self.sim_duration > 0:
             if self.single_sat_sim:
-                self.sim = SingleSatSimulation(self.devices, self.random_seed, testcase_runner)
+                self.sim = SingleSatSimulation(self.devices, self.random_seed, testcase())
             else:
                 self.sim = Simulation(self.devices, self.random_seed)
             self.sim.start(self.sim_duration)
@@ -203,7 +201,7 @@ if __name__ == '__main__':
     from Teensies into human-readable, storable logging information.''')
 
     parser.add_argument('-t', '--testcase', action='store', help='Name of mission testcase, specified in cases/.',
-                        required = True)
+                        default = "EmptyCase")
 
     parser.add_argument('-c', '--conf', action='store', help='JSON file listing serial ports and Teensy computer names.',
                         required = True)

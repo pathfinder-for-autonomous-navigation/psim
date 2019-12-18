@@ -1,14 +1,12 @@
-# Empty test case
+# Empty test case. Gets cycle count purely for diagnostic purposes
+from .base import FlexibleSimCase
 
-class EmptyCase(object):
+class EmptyCase(FlexibleSimCase):
     single_sat_sim_compatible = True
 
-    @staticmethod
-    def case_runner(simulation):
-        # Get cycle count purely for diagnostic purposes
+    def run_case_singlesat(self, simulation):
+        simulation.cycle_no = simulation.flight_controller.read_state("pan.cycle_no")
 
-        if simulation.is_single_sat_sim:
-            simulation.cycle_no = simulation.flight_controller.read_state("pan.cycle_no")
-        else:
-            simulation.cycle_no_follower = simulation.flight_controller_follower.read_state("pan.cycle_no")
-            simulation.cycle_no_leader = simulation.flight_controller_leader.read_state("pan.cycle_no")
+    def run_case_fullmission(self, simulation):
+        simulation.cycle_no_follower = simulation.flight_controller_follower.read_state("pan.cycle_no")
+        simulation.cycle_no_leader = simulation.flight_controller_leader.read_state("pan.cycle_no")

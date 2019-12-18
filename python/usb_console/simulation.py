@@ -114,7 +114,7 @@ class Simulation(object):
             self.interact_fc()
             # Step 3.3. Allow HOOTL test case to do its own meddling with the flight computer.
             # This item is a work in progress. Currently all it does is read the cycle count.
-            self.testcase_runner(self)
+            self.testcase_runner.run_case(self)
 
             # Step 5. Command actuators in simulation
             self.main_state = main_state_promise.result()
