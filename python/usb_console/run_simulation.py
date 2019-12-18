@@ -15,8 +15,9 @@ except ImportError:
     pass
 
 class SimulationRun(object):
-    def __init__(self, config_data, testcase_name, data_dir, radio_keys_config):
+    def __init__(self, config_data, testcase_name, data_dir, radio_keys_config, flask_keys_config):
         self.testcase_name = testcase_name
+
         self.random_seed = config_data["seed"]
         self.sim_duration = config_data["sim_duration"]
         self.single_sat_sim = config_data["single_sat_sim"]
@@ -28,6 +29,7 @@ class SimulationRun(object):
         self.device_config = config_data["devices"]
         self.radios_config = config_data["radios"]
         self.radio_keys_config = radio_keys_config
+        self.flask_keys_config = flask_keys_config
 
         self.devices = {}
         self.radios = {}
@@ -105,24 +107,14 @@ class SimulationRun(object):
 
     def set_up_radios(self):
         for radio in self.radios_config:
-            try:
-                radio_connected_device = radio["connected_device"]
-                radio_name = radio["connected_device"] + "Radio"
-            except:
-                self.stop_all("Invalid configuration file. A radio's connected device was not specified.")
-
-            # Check radio configuration. adjust path to radio_keys.json config file
-            if 'connect' not in radio.keys():
-                self.stop_all(f"Configuration for {radio_connected_device} does not specify whether or not to connect to the radio.")
+            radio_connected_device = radio["connected_device"]
+            radio_name = radio["connected_device"] + "Radio"
+            imei = radio["imei"]
 
             if radio['connect']:
                 radio_data_name = radio_connected_device + "_radio"
-                radio_session = RadioSession(radio_name, self.simulation_run_dir, self.radio_keys_config)
-
-                if radio_session.connect(radio['imei']):
-                    self.radios[radio_name] = radio_session
-                else:
-                    self.stop_all(f"Unable to connect to radio for {radio_connected_device}.")
+                radio_session = RadioSession(radio_name, imei, self.simulation_run_dir, self.radio_keys_config, self.flask_keys_config)
+                self.radios[radio_name] = radio_session
 
     def set_up_sim(self):
         _ = __import__("usb_console.cases")
@@ -257,12 +249,30 @@ if __name__ == '__main__':
 
             radio_keys_schema = {
                 "email_username" : {"type" : "string"},
-                "email_password" : {"type" : "string"},
-                "imei" : {"type" : "integer"}
+                "email_password" : {"type" : "string"}
             }
             v = Validator(radio_keys_schema)
             if not v.validate(radio_keys_config, radio_keys_schema):
                 print("Malformed radio keys file. The following errors were found. Exiting.")
+                print(v.errors)
+                raise SystemExit
+
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/flask_keys.json')) as flask_keys_config_file:
+            flask_keys_config = json.load(flask_keys_config_file)
+
+            flask_keys_schema = {
+                "server": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "string"
+                }
+            }
+            v = Validator(flask_keys_schema)
+            if not v.validate(flask_keys_config, flask_keys_schema):
+                print(
+                    "Malformed flask keys file. The following errors were found. Exiting."
+                )
                 print(v.errors)
                 raise SystemExit
 
@@ -273,5 +283,5 @@ if __name__ == '__main__':
         print("Malformed config file. Exiting.")
         raise SystemExit
 
-    simulation_run = SimulationRun(config_data, args.testcase, args.data_dir, radio_keys_config)
+    simulation_run = SimulationRun(config_data, args.testcase, args.data_dir, radio_keys_config, flask_keys_config)
     simulation_run.start()
