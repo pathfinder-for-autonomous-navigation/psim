@@ -235,10 +235,10 @@ try:
         server_keys_config = json.load(server_keys_config_file)
 except json.JSONDecodeError:
     print("Could not load config files. Exiting.")
-    raise SystemExit
+    sys.exit(1)
 except KeyError:
     print("Malformed config file. Exiting.")
-    raise SystemExit
+    sys.exit(1)
 
 
 # Open a connection to elasticsearch

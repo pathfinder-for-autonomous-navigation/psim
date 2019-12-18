@@ -1,15 +1,20 @@
 matrix:
   include:
     - language: python
+      name: "USB console initialization and unit tests"
       python: 3.6
       sudo: false
       before_install:
         - cd python
+        - export CI
       install:
         - pip install -r requirements.txt
       script:
         - python -m pytest
+        - python -m usb_console.run_simulation
+
     - language: python
+      name: "GNC C++ software unit tests"
       python: 2.7
       sudo: false
       cache:

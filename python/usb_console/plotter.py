@@ -132,10 +132,10 @@ class PlotterClient(cmd.Cmd):
         plotter.display()
 
     def do_exit(self, args):
-        sys.exit()
+        sys.exit(0)
 
     def do_quit(self, args):
-        sys.exit()
+        sys.exit(0)
 
 if __name__ == "__main__":
     if sys.version_info[0] != 3 or sys.version_info[1] < 6:
@@ -160,6 +160,5 @@ if __name__ == "__main__":
         plotter.cmdloop()
     except KeyboardInterrupt:
         # Gracefully exit session
-        plotter.do_quit(None)
         print("Exiting due to keyboard interrupt.")
-        sys.exit()
+        plotter.do_quit(None)

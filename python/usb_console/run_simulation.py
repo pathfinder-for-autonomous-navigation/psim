@@ -48,6 +48,9 @@ class SimulationRun(object):
         self.set_up_sim()
         self.set_up_cmd_prompt()
 
+        if "CI" in os.environ:
+            self.stop_all("Exiting in CI environment.", is_error=False)
+
     def set_up_devices(self):
         # Set up test table by connecting to each device specified in the config.
         for device in self.device_config:
@@ -181,7 +184,7 @@ class SimulationRun(object):
             os.close(binary['pty_master_fd'])
             os.close(binary['pty_slave_fd'])
 
-        sys.exit()
+        sys.exit(1 if is_error else 0)
 
 if __name__ == '__main__':
     if sys.version_info[0] != 3 or sys.version_info[1] < 6:
@@ -196,7 +199,13 @@ if __name__ == '__main__':
                         default = "EmptyCase")
 
     parser.add_argument('-c', '--conf', action='store', help='JSON file listing serial ports and Teensy computer names.',
-                        required = True)
+                        default = "usb_console/configs/ci.json")
+
+    parser.add_argument('-rc', '--radio-conf', action='store', help='JSON file listing Iridium radio email username and password.',
+                        default = "usb_console/configs/radio_keys.json")
+
+    parser.add_argument('-gc', '--ground-conf', action='store', help='JSON file listing ground software server and port.',
+                        default = "usb_console/configs/flask_keys.json")
 
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
     parser.add_argument('-d', '--data-dir', action='store',
@@ -242,9 +251,22 @@ if __name__ == '__main__':
             if not v.validate(config_data, config_schema):
                 print("Malformed config file. The following errors were found. Exiting.")
                 print(v.errors)
-                raise SystemExit
+                sys.exit(1)
 
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/radio_keys.json')) as radio_keys_config_file:
+        if "CI" in os.environ:
+            with open(args.radio_conf, "w") as radio_keys_config_file:
+                json.dump({
+                    "email_username" : "",
+                    "email_password" : ""
+                }, radio_keys_config_file)
+
+            with open(args.ground_conf, "w") as flask_keys_config_file:
+                json.dump({
+                    "server" : "",
+                    "port" : ""
+                }, flask_keys_config_file)
+
+        with open(args.radio_conf) as radio_keys_config_file:
             radio_keys_config = json.load(radio_keys_config_file)
 
             radio_keys_schema = {
@@ -255,9 +277,9 @@ if __name__ == '__main__':
             if not v.validate(radio_keys_config, radio_keys_schema):
                 print("Malformed radio keys file. The following errors were found. Exiting.")
                 print(v.errors)
-                raise SystemExit
+                sys.exit(1)
 
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/flask_keys.json')) as flask_keys_config_file:
+        with open(args.ground_conf) as flask_keys_config_file:
             flask_keys_config = json.load(flask_keys_config_file)
 
             flask_keys_schema = {
@@ -274,14 +296,14 @@ if __name__ == '__main__':
                     "Malformed flask keys file. The following errors were found. Exiting."
                 )
                 print(v.errors)
-                raise SystemExit
+                sys.exit(1)
 
     except json.JSONDecodeError:
         print("Could not load config file. Exiting.")
-        raise SystemExit
+        sys.exit(1)
     except KeyError:
         print("Malformed config file. Exiting.")
-        raise SystemExit
+        sys.exit(1)
 
     simulation_run = SimulationRun(config_data, args.testcase, args.data_dir, radio_keys_config, flask_keys_config)
     simulation_run.start()
