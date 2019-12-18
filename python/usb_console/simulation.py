@@ -112,8 +112,7 @@ class Simulation(object):
 
             # Step 3.2. Send inputs, read outputs from Flight Computer
             self.interact_fc()
-            # Step 3.3. Allow HOOTL test case to do its own meddling with the flight computer.
-            # This item is a work in progress. Currently all it does is read the cycle count.
+            # Step 3.3. Allow test case to do its own meddling with the flight computer.
             self.testcase_runner.run_case(self)
 
             # Step 5. Command actuators in simulation
