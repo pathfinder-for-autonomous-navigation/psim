@@ -3,19 +3,20 @@ matrix:
     - language: python
       python: 3.6
       before_install:
-        - cd python
         - export CI
       install:
-        - pip install -r requirements.txt
         - git clone https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware
         - pip install -U platformio
         - platformio update
         - cd FlightSoftware
         - pio run -e native
-        - cp .pio/build/native/program ../linux-x86_64_hootl
+        - cp .pio/build/native/program ../python/linux-x86_64_hootl
+        - cd python
+        - pip install -r requirements.txt
         - cd ..
         - chmod +x linux-x86_64_hootl
       script:
         - python -m pytest
         - python -m usb_console.run_simulation
+        - cd ..
         - platformio test --verbose --environment ci_github
