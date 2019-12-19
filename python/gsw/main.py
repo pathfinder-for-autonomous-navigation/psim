@@ -12,6 +12,7 @@ import email
 import time
 import logging
 
+
 class read_iridium(object):
     def __init__(self, radio_keys_config, elastic_search):
         # Connection to elasticsearch
@@ -59,8 +60,9 @@ class read_iridium(object):
         and organize the attachment contents more
         once downlink producer is finished. 
         '''
+        data=json.loads(data)
         data["time"]=str(datetime.now().isoformat())
-        return json.loads(data)
+        return data
 
     def check_for_email(self):
         '''
@@ -74,6 +76,7 @@ class read_iridium(object):
         and MTMSN numbers and check whether or not radioSession can send uplinks.
         '''
         #look for all new emails from iridium
+        self.mail.select('Inbox')
         _, data = self.mail.search(None, '(FROM "sbdservice@sbd.iridium.com")', '(UNSEEN)')
         mail_ids = data[0]
         id_list = mail_ids.split()
@@ -160,7 +163,7 @@ class read_iridium(object):
                             if part.get_filename() is not None:
                                 # Get data from email attachment
                                 attachmentContents=part.get_payload(decode=True).decode('utf8')
-                                statefield_report=self.process_downlink_packet(attachmentContents)
+                                statefield_report=self.process_downlink_packet(str(attachmentContents.rstrip("\x00")))
                                 return statefield_report
                         
                     #if we have not recieved a downlink, return None
@@ -217,7 +220,7 @@ class read_iridium(object):
                 # Record that we have not recently recieved any uplinks as we just indexed the most recent one
                 self.recieved_uplink_confirmation=False
 
-            time.sleep(10)
+            time.sleep(1)
 
     def disconnect(self):
         '''
@@ -326,5 +329,9 @@ def search_es():
     else:
         return f"Unable to find index: {index}"
 
+@app.route("/hi")
+def hi():
+    return "Hi"
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
