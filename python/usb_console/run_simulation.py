@@ -6,7 +6,7 @@ from .state_session import StateSession
 from .radio_session import RadioSession
 from .cmdprompt import StateCmdPrompt
 from .simulation import Simulation, SingleSatSimulation
-import json, sys, os, tempfile, time, threading, signal
+import json, sys, os, tempfile, time, threading
 
 try:
     import pty, subprocess
@@ -15,7 +15,9 @@ except ImportError:
     pass
 
 class SimulationRun(object):
-    def __init__(self, config_data, data_dir, radio_keys_config, flask_keys_config):
+    def __init__(self, config_data, testcase_name, data_dir, radio_keys_config, flask_keys_config):
+        self.testcase_name = testcase_name
+
         self.random_seed = config_data["seed"]
         self.sim_duration = config_data["sim_duration"]
         self.single_sat_sim = config_data["single_sat_sim"]
@@ -46,6 +48,9 @@ class SimulationRun(object):
         self.set_up_sim()
         self.set_up_cmd_prompt()
 
+        if "CI" in os.environ:
+            self.stop_all("Exiting in CI environment.", is_error=False)
+
     def set_up_devices(self):
         # Set up test table by connecting to each device specified in the config.
         for device in self.device_config:
@@ -68,7 +73,11 @@ class SimulationRun(object):
             if device['run_mode'] == 'native':
                 try:
                     master_fd, slave_fd = pty.openpty()
-                    binary_process = subprocess.Popen(device['binary_filepath'], stdout=master_fd, stderr=master_fd, stdin=master_fd)
+                    binary_filepath = device['binary_filepath']
+                    if "CI" in os.environ:
+                        cwd = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..")
+                        binary_filepath = os.path.join(cwd, binary_filepath)
+                    binary_process = subprocess.Popen(binary_filepath, stdout=master_fd, stderr=master_fd, stdin=master_fd)
                     self.binaries.append({
                         "device_name" : device["name"],
                         "subprocess": binary_process,
@@ -115,9 +124,17 @@ class SimulationRun(object):
                 self.radios[radio_name] = radio_session
 
     def set_up_sim(self):
+        _ = __import__("usb_console.cases")
+        testcases = getattr(_, "cases")
+        try:
+            testcase = getattr(testcases, self.testcase_name)
+        except:
+            self.stop_all(f"Nonexistent test case: {self.testcase_name}")
+        print(f"Running mission testcase {self.testcase_name}.")
+
         if self.sim_duration > 0:
             if self.single_sat_sim:
-                self.sim = SingleSatSimulation(self.devices, self.random_seed)
+                self.sim = SingleSatSimulation(self.devices, self.random_seed, testcase())
             else:
                 self.sim = Simulation(self.devices, self.random_seed)
             self.sim.start(self.sim_duration)
@@ -171,7 +188,7 @@ class SimulationRun(object):
             os.close(binary['pty_master_fd'])
             os.close(binary['pty_slave_fd'])
 
-        sys.exit()
+        sys.exit(1 if is_error else 0)
 
 if __name__ == '__main__':
     if sys.version_info[0] != 3 or sys.version_info[1] < 6:
@@ -182,8 +199,17 @@ if __name__ == '__main__':
     Interactive console allows sending state commands to PAN Teensy devices, and parses console output 
     from Teensies into human-readable, storable logging information.''')
 
-    parser.add_argument('-c', '--conf', action='store', help='JSON file listing serial ports and Teensy computer names. Default is config.json.',
-                        default = 'config.json')
+    parser.add_argument('-t', '--testcase', action='store', help='Name of mission testcase, specified in cases/.',
+                        default = "EmptyCase")
+
+    parser.add_argument('-c', '--conf', action='store', help='JSON file listing serial ports and Teensy computer names.',
+                        default = "usb_console/configs/ci.json")
+
+    parser.add_argument('-rc', '--radio-conf', action='store', help='JSON file listing Iridium radio email username and password.',
+                        default = "usb_console/configs/radio_keys.json")
+
+    parser.add_argument('-gc', '--ground-conf', action='store', help='JSON file listing ground software server and port.',
+                        default = "usb_console/configs/flask_keys.json")
 
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
     parser.add_argument('-d', '--data-dir', action='store',
@@ -229,9 +255,22 @@ if __name__ == '__main__':
             if not v.validate(config_data, config_schema):
                 print("Malformed config file. The following errors were found. Exiting.")
                 print(v.errors)
-                raise SystemExit
+                sys.exit(1)
 
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/radio_keys.json')) as radio_keys_config_file:
+        if "CI" in os.environ:
+            with open(args.radio_conf, "w") as radio_keys_config_file:
+                json.dump({
+                    "email_username" : os.environ.get("IRIDIUM_EMAIL_USERNAME"),
+                    "email_password" : os.environ.get("IRIDIUM_EMAIL_PASSWORD"),
+                }, radio_keys_config_file)
+
+            with open(args.ground_conf, "w") as flask_keys_config_file:
+                json.dump({
+                    "server" : os.environ.get("GSW_SERVER"),
+                    "port" : os.environ.get("GSW_PORT")
+                }, flask_keys_config_file)
+
+        with open(args.radio_conf) as radio_keys_config_file:
             radio_keys_config = json.load(radio_keys_config_file)
 
             radio_keys_schema = {
@@ -242,9 +281,9 @@ if __name__ == '__main__':
             if not v.validate(radio_keys_config, radio_keys_schema):
                 print("Malformed radio keys file. The following errors were found. Exiting.")
                 print(v.errors)
-                raise SystemExit
+                sys.exit(1)
 
-        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'configs/flask_keys.json')) as flask_keys_config_file:
+        with open(args.ground_conf) as flask_keys_config_file:
             flask_keys_config = json.load(flask_keys_config_file)
 
             flask_keys_schema = {
@@ -261,14 +300,14 @@ if __name__ == '__main__':
                     "Malformed flask keys file. The following errors were found. Exiting."
                 )
                 print(v.errors)
-                raise SystemExit
+                sys.exit(1)
 
     except json.JSONDecodeError:
         print("Could not load config file. Exiting.")
-        raise SystemExit
+        sys.exit(1)
     except KeyError:
         print("Malformed config file. Exiting.")
-        raise SystemExit
+        sys.exit(1)
 
-    simulation_run = SimulationRun(config_data, args.data_dir, radio_keys_config, flask_keys_config)
+    simulation_run = SimulationRun(config_data, args.testcase, args.data_dir, radio_keys_config, flask_keys_config)
     simulation_run.start()
