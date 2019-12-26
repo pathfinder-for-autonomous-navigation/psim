@@ -10,7 +10,7 @@
 #include <lin.hpp>
 
 #ifndef UNIT_TEST
-#ifdef TEST_DESKTOP
+#if defined(TEST_DESKTOP) || defined(DESKTOP)
     int main() {
         return 0;
     }
