@@ -9,8 +9,8 @@
 #include <gnc_utilities.hpp>
 #include <lin.hpp>
 
-#ifndef UNIT_TEST
-#ifdef TEST_DESKTOP
+#if !defined(UNIT_TEST) && !defined(FUNCTIONAL_TEST) && !defined(FLIGHT) // Flight Software flags
+#if defined(TEST_DESKTOP) || defined(DESKTOP) // TEST_DESKTOP is a psim flag, DESKTOP is a flight software flag.
     int main() {
         return 0;
     }
