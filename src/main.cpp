@@ -9,7 +9,7 @@
 #include <gnc_utilities.hpp>
 #include <lin.hpp>
 
-#ifndef UNIT_TEST
+#if !defined(UNIT_TEST) && !defined(FUNCTIONAL_TEST) && !defined(FLIGHT)
 #if defined(TEST_DESKTOP) || defined(DESKTOP)
     int main() {
         return 0;
