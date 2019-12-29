@@ -1,4 +1,3 @@
-clearvars; clc;
 config()  % Initialize const
 generate_mex_code() %generate mex from wrappers
 

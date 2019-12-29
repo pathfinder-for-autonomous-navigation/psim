@@ -139,8 +139,7 @@ if strcmp(state.main_state,'detumble')
     end
     %detumbling
     [state.detumbler_state,actuators.magrod_moment]=detumbler(state.detumbler_state,sensor_readings.magnetometer_body);
-end
-if all(isfinite([state.primary_current_direction_body; state.primary_desired_direction_body]))
+elseif all(isfinite([state.primary_current_direction_body; state.primary_desired_direction_body]))
     %pointing mode
     if ~strcmp(previous_main_state,state.main_state)
         %initialize pointer if main_state changes
@@ -152,9 +151,11 @@ if all(isfinite([state.primary_current_direction_body; state.primary_desired_dir
         state.primary_current_direction_body,...
         state.primary_desired_direction_body,...
         state.secondary_current_direction_body,...
-        state.secondary_desired_direction_body);
+        state.secondary_desired_direction_body,...
+        estimator.angular_rate_body,true);
+else
+    actuators.wheel_torque=zeros(3,1);%hold instead of stopping wheels 
 end
-
 state.on_time= state.on_time+ uint64(const.dt);
 
 end

@@ -3,7 +3,8 @@ function [state,magrod_moment_cmd,wheel_torque_cmd]=pointer(state,...
         primary_current_direction_body,...
         primary_desired_direction_body,...
         secondary_current_direction_body,...
-        secondary_desired_direction_body);
+        secondary_desired_direction_body,...
+        rate_body,use_finite_diff)
 %pointer PD controller for the wheels and magrods to point the primary and secondary
 %directions
 global const
@@ -29,14 +30,17 @@ end
 error= quat_desbody_body(1:3);
 
 %% PD Controller %%
-pterm= 0.1*const.ATTITUDE_PD_KP*error;
+pterm= const.ATTITUDE_PD_KP*error;
 
 finite_diff=error-state.last_error;
 state.last_error=error;
 state.derivative_buffer(:,state.derivative_buffer_location+1)=finite_diff;
 state.derivative_buffer_location= mod(state.derivative_buffer_location+1,const.ATTITUDE_PD_derivative_buffer_size);
-dterm= 2*const.ATTITUDE_PD_KD*median(state.derivative_buffer,2)/(double(const.dt)*1E-9);
-
+if use_finite_diff
+    dterm= 2*const.ATTITUDE_PD_KD*median(state.derivative_buffer,2)/(double(const.dt)*1E-9);
+else
+    dterm= -const.ATTITUDE_PD_KD*rate_body;
+end
 wheel_torque_cmd= -(pterm+dterm);
 
 %% Angular Momentum Control

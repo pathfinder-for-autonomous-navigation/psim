@@ -68,7 +68,7 @@ const.JFUEL_NORM=0.1^2;% positive scalar
 % Moment of inertia of the fuel/mass of the fuel m^2.
 const.SLOSH_DAMPING=0.0;% positive scalar
 % Torque on fuel/difference in angular rates in eci Nm/(rad/s).
-const.ATTITUDE_PD_KP = 75e-4; % imported from simulink
+const.ATTITUDE_PD_KP = 7.5e-4; % imported from simulink
 const.ATTITUDE_PD_KD = 32.5e-4; % imported from simulink
 const.ATTITUDE_PD_derivative_buffer_size=1;
 
