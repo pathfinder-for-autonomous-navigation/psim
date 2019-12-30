@@ -61,7 +61,7 @@ const.MASS= 4.0;% positive scalar
 const.JB=[1/12*const.MASS*(0.3^2+0.1^2) 0 0;
           0 1/12*const.MASS*(0.3^2+0.1^2) 0;
           0 0 1/12*const.MASS*(0.1^2+0.1^2);];% 3x3 symmetric matrix
-%dry moment of inertia of satellite in body frame
+%dry moment of inertia of the satellite in body frame (kg*m^2)
 const.JWHEEL=135.0e-7;% positive scalar     
 % Wheel Inertia kg*m^2
 const.JFUEL_NORM=0.1^2;% positive scalar 

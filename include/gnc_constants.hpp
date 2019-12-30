@@ -144,6 +144,20 @@ constexpr static double max_mtr_moment = 0.113337L / 2.0L;  // For one MTR
 /** Largest magnetic moment along a single axis that can be commanded of the
  *  ADCS system in units of Am^2 (float version). */
 constexpr static float max_mtr_moment_f = static_cast<float>(max_mtr_moment);
+    
+/** Dry moment of inertia of the satellite in body frame (kg*m^2)*/
+constexpr static lin::Matrix3x3f JB_single_sat({
+        0.0333f, 0.0f, 0.0f,
+        0.0f, 0.0333f, 0.0f,
+        0.0f, 0.0f, 0.0067f
+    });
+    
+/** Dry moment of inertia of both satellites docked, in the body frame (kg*m^2)*/
+constexpr static lin::Matrix3x3f JB_docked_sats({
+        0.0333f, 0.0f, 0.0f,
+        0.0f, 0.0333f, 0.0f,
+        0.0f, 0.0f, 0.0067f
+    });
 
 }  // namespace constants
 }  // namespace gnc
