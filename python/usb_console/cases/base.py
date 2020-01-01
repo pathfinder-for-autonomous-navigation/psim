@@ -1,11 +1,25 @@
 # Base classes for writing testcases.
 
-class SimCase(object):
+class Case(object):
+    @property
+    def run_sim(self):
+        return False
+
+    @property
+    def single_sat_compatible(self):
+        raise NotImplementedError
+
+    def setup_case(self, simulation):
+        raise NotImplementedError
+
     def run_case(self, simulation):
         raise NotImplementedError
 
-class SingleSatOnlySimCase(SimCase):
-    single_sat_sim_compatible = True
+# Base testcase for writing testcases that only work with a single-satellite mission.
+class SingleSatOnlyCase(Case):
+    @property
+    def single_sat_compatible(self):
+        return True
 
     def run_case(self, simulation):
         if not simulation.is_single_sat_sim:
@@ -15,8 +29,12 @@ class SingleSatOnlySimCase(SimCase):
     def run_case_singlesat(self, simulation):
         raise NotImplementedError
 
-class MissionSimCase(SimCase):
-    single_sat_sim_compatible = False
+# Base testcase for writing testcases that only work with a full mission simulation
+# with both satellites.
+class MissionCase(Case):
+    @property
+    def single_sat_compatible(self):
+        return False
 
     def run_case(self, simulation):
         if simulation.is_single_sat_sim:
@@ -26,8 +44,22 @@ class MissionSimCase(SimCase):
     def run_case_fullmission(self, simulation):
         raise NotImplementedError
 
-class FlexibleSimCase(SimCase):
-    single_sat_sim_compatible = True
+class FlexibleCase(Case):
+    @property
+    def single_sat_compatible(self):
+        return True
+
+    def setup_case(self, simulation):
+        if simulation.is_single_sat_sim:
+            self.setup_case_singlesat(simulation)
+        else:
+            self.setup_case_fullmission(simulation)
+
+    def setup_case_singlesat(self, simulation):
+        raise NotImplementedError
+
+    def setup_case_fullmission(self, simulation):
+        raise NotImplementedError
 
     def run_case(self, simulation):
         if simulation.is_single_sat_sim:
