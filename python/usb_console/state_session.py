@@ -37,7 +37,6 @@ class StateSession(object):
         self.datastore = Datastore(device_name, simulation_run_dir)
         self.logger = Logger(device_name, simulation_run_dir)
         self.raw_logger = Logger(device_name + "_raw", simulation_run_dir)
-        self.cmd_logger = Logger(device_name + "_cmd", simulation_run_dir)
 
         # Simulation
         self.overriden_variables = set()
@@ -63,7 +62,6 @@ class StateSession(object):
             self.datastore.start()
             self.logger.start()
             self.raw_logger.start()
-            self.cmd_logger.start()
             self.running_logger = True
             self.check_msgs_thread = threading.Thread(
                 name=f"{self.device_name} logger thread",
@@ -87,7 +85,7 @@ class StateSession(object):
                 # Read line coming from device and parse it
                 if self.console.inWaiting() > 0:
                     line = self.console.readline().rstrip()
-                    self.raw_logger.put(line.decode("utf-8"))
+                    self.raw_logger.put("Received: " + line.decode("utf-8"))
                     data = json.loads(line)
                 else:
                     continue
@@ -149,7 +147,7 @@ class StateSession(object):
         self.device_write_lock.acquire()
         self.console.write(json_cmd.encode())
         self.device_write_lock.release()
-        self.cmd_logger.put(json_cmd.rstrip())
+        self.raw_logger.put("Sent:     " + json_cmd.rstrip())
 
         return self._wait_for_state(field)
 
@@ -179,7 +177,7 @@ class StateSession(object):
         self.device_write_lock.acquire()
         self.console.write(json_cmds.encode())
         self.device_write_lock.release()
-        self.cmd_logger.put(json_cmds)
+        self.raw_logger.put("Sent:     " + json_cmds)
 
         returned_vals = []
         for field in fields:
@@ -248,4 +246,3 @@ class StateSession(object):
         self.datastore.stop()
         self.logger.stop()
         self.raw_logger.stop()
-        self.cmd_logger.stop()

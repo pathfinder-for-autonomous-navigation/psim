@@ -1,4 +1,5 @@
-# GPS Time class for use in the simulation
+# GPS Time class for use in the simulation. It's a Python mirror of the flight software object of
+# the same name.
 
 class GPSTime(object):
     SECONDS_IN_WEEK = 7 * 24 * 60 * 60

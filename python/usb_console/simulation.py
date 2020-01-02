@@ -18,7 +18,7 @@ class Simulation(object):
     """
     Full mission simulation, including both spacecraft.
     """
-    def __init__(self, devices, seed, testcase_runner, print_log=True):
+    def __init__(self, devices, seed, testcase, print_log=True):
         """
         Initializes self
 
@@ -30,7 +30,7 @@ class Simulation(object):
         """
         self.devices = devices
         self.seed = seed
-        self.testcase_runner = testcase_runner
+        self.testcase = testcase
         self.log = ""
         self.print_log = print_log
         self.setup_flight_controller()
@@ -50,10 +50,21 @@ class Simulation(object):
         self.sim_thread = threading.Thread(name="Python-MATLAB Simulation Interface",
                                            target=self.run)
 
-        self.add_to_log("Configuring simulation (please be patient)...")
-        self.running = True
-        self.configure_sim()
-        self.sim_thread.start()
+        self.add_to_log("Running testcase initialization...")
+        self.testcase.setup_case(self)
+
+        if self.testcase.run_sim:
+            self.add_to_log("Configuring simulation (please be patient)...")
+            start_time = timeit.default_timer()
+            self.running = True
+            self.configure_sim()
+            elapsed_time = timeit.default_timer() - start_time
+            self.add_to_log("Configuring simulation took %0.2fs." % elapsed_time)
+
+            self.add_to_log("Starting simulation loop...")
+            self.sim_thread.start()
+        else:
+            self.add_to_log("Not running simulation since the testcase doesn't require it.")
 
     def add_to_log(self, msg):
         if self.print_log:
@@ -61,8 +72,6 @@ class Simulation(object):
         self.log += f"[{datetime.datetime.now()}] {msg}\n"
 
     def configure_sim(self):
-        start_time = timeit.default_timer()
-
         self.eng = matlab.engine.start_matlab()
         path = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), "../../MATLAB")
@@ -78,12 +87,6 @@ class Simulation(object):
 
         self.eng.workspace['const']['dt'] = 120e6  # Control cycle time = 120 ms = 120e6 ns
         self.dt = self.eng.workspace['const']['dt'] * 1e-9  # 120 ms
-
-        elapsed_time = timeit.default_timer() - start_time
-
-        self.add_to_log(
-            "Configuring simulation took %0.2fs. Starting simulation loop." % elapsed_time
-        )
 
     def run(self):
         """
@@ -115,7 +118,7 @@ class Simulation(object):
             # Step 3.2. Send inputs, read outputs from Flight Computer
             self.interact_fc()
             # Step 3.3. Allow test case to do its own meddling with the flight computer.
-            self.testcase_runner.run_case(self)
+            self.testcase.run_case(self)
 
             # Step 5. Command actuators in simulation
             self.main_state = main_state_promise.result()
@@ -164,8 +167,8 @@ class Simulation(object):
         # Send values to flight software
         flight_controller.write_state("piksi.time", str(current_gps_time))
         flight_controller.write_state("piksi.pos", position_ecef)
-        flight_controller.write_state("adcs_box.sun_vec", sat2sun_body)
-        flight_controller.write_state("adcs_box.mag_vec", magnetometer_body)
+        flight_controller.write_state("adcs_monitor.ssa_vec", sat2sun_body)
+        flight_controller.write_state("adcs_monitor.mag_vec", magnetometer_body)
 
     def read_adcs_estimator_outputs(self, flight_controller):
         """
@@ -195,8 +198,8 @@ class SingleSatSimulation(Simulation):
     """
     Mission simulation with only a single spacecraft.
     """
-    def __init__(self, devices, seed, testcase_runner, print_log=True):
-        super().__init__(devices, seed, testcase_runner, print_log)
+    def __init__(self, devices, seed, testcase, print_log=True):
+        super().__init__(devices, seed, testcase, print_log)
         self.is_single_sat_sim = True
 
     def setup_flight_controller(self):
