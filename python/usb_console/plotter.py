@@ -111,11 +111,13 @@ class PlotterClient(cmd.Cmd):
     def __init__(self, db):
         self.db = db
 
-        self.intro = "Type \"plot x\" to plot state field \"x\".\n"
+        self.intro = "Type \"plot x\" to plot state field \"x\". You can also plot multiple state fields. \n"
         self.prompt = "> "
         super().__init__()
 
     def do_plot(self, fields):
+        """Plots the fields with the given names."""
+
         fields = fields.split()
         if len(fields) == 0:
             print("Need to specify at least one state field to plot.")
@@ -132,9 +134,11 @@ class PlotterClient(cmd.Cmd):
         plotter.display()
 
     def do_exit(self, args):
+        """Exits the plotter."""
         sys.exit(0)
 
     def do_quit(self, args):
+        """Exits the plotter."""
         sys.exit(0)
 
 if __name__ == "__main__":
@@ -152,6 +156,12 @@ if __name__ == "__main__":
         required=True)
 
     args = parser.parse_args()
+
+    try:
+        fp = open(args.data, "r")
+    except FileNotFoundError:
+        print("Could not find data file. Exiting.")
+        sys.exit(1)
 
     db = TinyDB(args.data)
     plotter = PlotterClient(db)
