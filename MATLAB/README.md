@@ -3,7 +3,7 @@ Started by Kyle Krol on Sep 4, 2019
 
 **Authors** Nathan Zimmerberg, Kyle Krol
 
-Latest Revision: Oct 27, 2019
+Latest Revision: Dec 30, 2019
 
 Pathfinder for Autonomous Navigation
 
@@ -57,6 +57,8 @@ Most Matlab types are compatible with python types: [Python to Matlab function i
  * `./environmental_models/helper_functions/*` - helper functions for environmental functions.
  * `./test/*` - standalone scripts that test almost every function in the simulation.
  * `./plot/*` - functions to create plots of the `main_state_trajectory`
+ * `./adcs/*` - attitude determination and control functions.
+ * `./estimator_prototypes/*` - prototypes for estimators.
 
 ## Main State Data Structure
 
@@ -253,8 +255,20 @@ Constants are stored in the `const` global struct.
    * `SLOSH_DAMPING`(positive scalar), Torque on fuel/difference in angular rates in eci (Nm/(rad/s))
    * `ATTITUDE_PD_KP`(scalar), Attitude PD controller K_p (Nm)
    * `ATTITUDE_PD_KD`(scalar), Attitude PD controller K_d (Nm/(rad/s))
+   * `detumble_safety_factor`(scalar range (0,1)):
+The fraction of max wheel momentum detumbling ends at.
    * `GPS_LOCK_TIME`(positive scalar), Time it takes the GPS to get a lock (s)
    * `CDGPS_LOCK_TIME`(positive scalar), Time it takes the CDGPS to get a lock (s)
+   * `magnetometer_bias_readings_min`(positive int): number of readings per axis to get a 
+good magnetometer bias estimate.
+   * `magnetometer_noise_sdiv`(positive scalar): 
+standard diviation of the magnetometer noise (T)
+   * `magnetometer_bias_sdiv`(positive scalar): 
+standard diviation of the magnetometer bias (T)
+   * `gyro_noise_sdiv`(positive scalar):
+standard diviation of the gyro noise (rad/s)
+   * `gyro_bias_sdiv`(positive scalar):
+standard diviation of the gyro bias (rad/s)
 
 
 ## Functions to be implemented in C++

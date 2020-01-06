@@ -3,7 +3,6 @@ function [sensor_readings] = sensor_reading(my_satellite_state,other_satellite_s
 %   TODO implement the actual sensors with errors
 %   TODO implement GPS and CDGPS
 %   TODO use get_truth function.
-%#codegen
 
 global const
 sensor_readings= struct();
@@ -20,13 +19,14 @@ quat_body_ecef= utl_quat_cross_mult(quat_body_eci,quat_eci_ecef);
 
 %% gyro reading
 
-sensor_readings.gyro_body= true_state.angular_rate_body;
+sensor_readings.gyro_body= true_state.angular_rate_body+my_satellite_state.sensors.gyro_bias+const.gyro_noise_sdiv*randn(3,1);
 
 %% magnetometer reading
 
 position_ecef=utl_rotateframe(quat_ecef_eci,true_state.position_eci')';
 B_ecef= env_magnetic_field(true_state.time,position_ecef);
-sensor_readings.magnetometer_body=utl_rotateframe(quat_body_ecef,B_ecef')';
+B_body=utl_rotateframe(quat_body_ecef,B_ecef')';
+sensor_readings.magnetometer_body= B_body+my_satellite_state.sensors.magnetometer_bias+const.magnetometer_noise_sdiv*randn(3,1);
 
 %% sun sensor reading
 

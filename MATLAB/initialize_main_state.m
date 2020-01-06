@@ -18,7 +18,6 @@ main_state.follower.sensors=sensors;
 
 %perturb follower orbit
 main_state.follower.dynamics.velocity_eci=main_state.leader.dynamics.velocity_eci+randn(3,1)*0.1;
-
 end
 
 function [dynamics,actuators,sensors] = initialize_states(condition)
@@ -62,8 +61,8 @@ dynamics.fuel_mass=0.16;
 actuators= actuators_off_state();
 
 % sensors
-sensors.gyro_bias= zeros(3,1);
-sensors.magnetometer_bias= zeros(3,1);
+sensors.gyro_bias= const.gyro_bias_sdiv*randn(3,1);
+sensors.magnetometer_bias= const.magnetometer_bias_sdiv*randn(3,1);
 sensors.sunsensor_real_normals= transpose([ 0.9397	0.3420      0
                                     0.9397	-0.3420 	0
                                     0.9397	0           0.3420
