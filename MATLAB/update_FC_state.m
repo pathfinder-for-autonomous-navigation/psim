@@ -90,7 +90,7 @@ if strcmp(state.main_state,'get gps')
     end
     %calculate pointing strategy
     state.primary_current_direction_body= estimator.sat2sun_body/norm(estimator.sat2sun_body);
-    state.primary_desired_direction_body= [1;0;0];
+    state.primary_desired_direction_body= [sqrt(2)/2;sqrt(2)/2;0];
     state.secondary_current_direction_body= NaN(3,1);
     state.secondary_desired_direction_body= NaN(3,1);
 end
