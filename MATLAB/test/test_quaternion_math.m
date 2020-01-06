@@ -1,4 +1,3 @@
-config();
 q1=[1;2;3;4;];
 q2=[5;2;23;-4;];
 quat1= utl_array2quaternion(q1);

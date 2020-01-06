@@ -1,8 +1,4 @@
-clearvars;
-
 global const
-
-config();
 rng(2,'threefry');
 years_to_test= 2;
 margin=5E-9; %10 nT error

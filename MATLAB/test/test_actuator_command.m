@@ -1,4 +1,3 @@
-config();
 main_state = initialize_main_state(1,'default');
 actuator_commands = struct();
 actuator_commands.firing_start_times= [];

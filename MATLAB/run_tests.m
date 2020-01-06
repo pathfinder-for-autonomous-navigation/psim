@@ -1,5 +1,5 @@
 addpath('test');
-generate_mex_code() %generate mex from wrappers
+config()
 runtests('test_initialize_main_state');
 runtests('test_main_state_update');
 runtests('test_dynamics_update');
