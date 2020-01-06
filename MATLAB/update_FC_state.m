@@ -168,15 +168,15 @@ if strcmp(state.main_state,'detumble')
         initialize_detumble();
     end
     %detumbling
-    [state.detumbler_state,actuators.magrod_moment]=detumbler(state.detumbler_state,sensor_readings.magnetometer_body);
+    [state.detumbler_state,actuators.magrod_moment]=adcs_detumbler(state.detumbler_state,sensor_readings.magnetometer_body);
 elseif all(isfinite([state.primary_current_direction_body; state.primary_desired_direction_body]))
     %pointing mode
     if ~strcmp(previous_main_state,state.main_state)
         %initialize pointer if main_state changes
-        state.pointer_state=initialize_pointer_state();
+        state.pointer_state=adcs_initialize_pointer_state();
     end
     actuators.wheel_enable=true(3,1);
-    [state.pointer_state,actuators.magrod_moment,actuators.wheel_torque]=pointer(state.pointer_state,...
+    [state.pointer_state,actuators.magrod_moment,actuators.wheel_torque]=adcs_pointer(state.pointer_state,...
         estimator.angular_momentum_body, estimator.magnetic_field_body, ...
         state.primary_current_direction_body,...
         state.primary_desired_direction_body,...
@@ -189,19 +189,19 @@ end
 if startsWith(state.main_state,"calibrate magnetometer ")
     if ~startsWith(previous_main_state,"calibrate magnetometer ")
         %initialize bias estimator
-        state.mag_bias_est_state= initialize_mag_bias_est();
+        state.mag_bias_est_state= adcs_initialize_mag_bias_est();
     end
     SdotB_true= dot(estimator.mag_eci, estimator.sat2sun_eci);
     SdotB_measured= dot(estimator.magnetometer_body, estimator.sat2sun_body);
     if all(isfinite([estimator.magnetometer_body,estimator.mag_eci,estimator.sat2sun_eci,estimator.sat2sun_body]))
-        state.mag_bias_est_state=mag_bias_est(state.mag_bias_est_state,SdotB_true,SdotB_measured,estimator.sat2sun_body);
+        state.mag_bias_est_state=adcs_mag_bias_est(state.mag_bias_est_state,SdotB_true,SdotB_measured,estimator.sat2sun_body);
     end
 end
 state.on_time= state.on_time+ uint64(const.dt);
 
     function initialize_detumble()
         %initialize detumble helper
-        state.detumbler_state=initialize_detumbler_state();
+        state.detumbler_state=adcs_initialize_detumbler_state();
         state.num_magnetometer_bias_readings=zeros(3,1);
     end
 end
