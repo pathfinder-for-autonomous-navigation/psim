@@ -1,4 +1,4 @@
-function state = mag_bias_est(state,SdotB_true,SdotB_measured,S)
+function state = adcs_mag_bias_est(state,SdotB_true,SdotB_measured,S)
 %mag_bias_est runs the recursive least squares estimator
 %   of the magentometer bias.
 %   see https://en.wikipedia.org/wiki/Recursive_least_squares_filter#RLS_algorithm_summary

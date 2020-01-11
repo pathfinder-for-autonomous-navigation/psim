@@ -9,6 +9,9 @@ runtests('test_actuator_command');
 runtests('test_initialize_computer_states');
 runtests('test_quaternion_math');
 runtests('test_get_truth');
+runtests('test_adcs_pointer');
+runtests('test_adcs_detumbler');
+runtests('test_adcs_mag_bias_est');
 
 runtests('test_env_sun_vector');
 runtests('test_env_earth_attitude');
