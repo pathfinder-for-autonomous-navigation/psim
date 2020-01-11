@@ -34,17 +34,17 @@ if any(sign(h(1))*h <= 0)
   error('Entries of TSPAN are not in order.') 
 end  
 
-% try
-%   f0 = feval(odefun,tspan(1),y0,varargin{:});
-% catch
-%   msg = ['Unable to evaluate the ODEFUN at t0,y0. ',lasterr];
-%   error(msg);  
-% end  
+try
+  f0 = feval(odefun,tspan(1),y0,varargin{:});
+catch
+  msg = ['Unable to evaluate the ODEFUN at t0,y0. ',lasterr];
+  error(msg);  
+end  
 
 y0 = y0(:);   % Make a column vector.
-% if ~isequal(size(y0),size(f0))
-%   error('Inconsistent sizes of Y0 and f(t0,y0).');
-% end  
+if ~isequal(size(y0),size(f0))
+  error('Inconsistent sizes of Y0 and f(t0,y0).');
+end  
 
 neq = length(y0);
 N = length(tspan);

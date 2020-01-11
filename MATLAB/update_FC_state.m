@@ -62,14 +62,12 @@ end
 if strcmp(state.main_state,'hardware setup')
     %move to next state if all sub systems are setup
     if true
-        state.on_time=uint64(0);
         state.main_state='initialization hold';
     end 
 end
 if strcmp(state.main_state,'initialization hold')
     %move to next state if initialization time has passed
-    if state.initialization_hold_done || state.on_time>(30*60*1E9)
-        state.initialization_hold_done=true;%save this in eprom
+    if state.on_time>(30*60*1E9)
         state.main_state='detumble';
     end 
 end
@@ -96,6 +94,9 @@ if strcmp(state.main_state,'get gps')
 end
 return2detumble= return2detumble || estimator.eclipse || ~estimator.valid_gps;
 for i=1:3
+    %These modes rotate the sat around to estimate the magnetometer bias. 
+    %There are three modes, each one points a different axis at the sun, 
+    %so the mag bias on that axis can be estimated accurately.
     if strcmp(state.main_state,"calibrate magnetometer "+i)
         axis= zeros(3,1);
         axis(i)= 1;

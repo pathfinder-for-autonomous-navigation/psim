@@ -21,16 +21,20 @@ function [state,magrod_moment_cmd] = adcs_detumbler(state,magnetometer_body)
 % Space Systems Design Studio
 % Cornell University
 global const
+cycles_to_stable_mag_read= 5;
+% how many cycles to a stable mag reading after a changed magrod command.
+finite_diff_cycles_delay= 4;
+% how long to wait to do finite diff on the mag readings.
 switch state.counter
-    case 5
+    case cycles_to_stable_mag_read
         %save magnetic field reading
         state.old_magnetic_field= magnetometer_body;
-    case 9
+    case finite_diff_cycles_delay+cycles_to_stable_mag_read
         %calculate finite difference and bang bang controller
         deltaB= magnetometer_body-state.old_magnetic_field;
         state.magrod_moment_cmd= -sign(deltaB)*const.MAXMOMENT;
 end
-state.counter= mod(state.counter + 1,10);
+state.counter= mod(state.counter + 1,finite_diff_cycles_delay+cycles_to_stable_mag_read+1);
 magrod_moment_cmd= state.magrod_moment_cmd;
 end
 
