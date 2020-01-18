@@ -4,8 +4,9 @@ except ImportError:
     # We're on Windows, so readline doesn't exist
     pass
 from cmd import Cmd
-import random
 import timeit
+import tinydb
+from .plotter import PlotterClient
 
 class StateCmdPrompt(Cmd):
     '''
@@ -26,7 +27,14 @@ class StateCmdPrompt(Cmd):
         try:
             self.cmded_device = self.devices['FlightController']
         except KeyError:
-            self.cmded_device = random.choice(list(self.devices.values()))
+            try:
+                self.cmded_device = self.devices['FlightControllerFollower']
+            except KeyError:
+                self.cmded_device = list(self.devices.values())[0]
+
+        self.intro = "Beginning console.\nType \"help\" for a list of commands.\n" \
+                    "NOTE: You are currently connected to the {}.".format(self.cmded_device.device_name)
+        self.prompt = '> '
 
         Cmd.__init__(self)
 
@@ -34,13 +42,13 @@ class StateCmdPrompt(Cmd):
         # Don't do anything with an empty line input
         pass
 
-    def do_cc(self, args):
+    def do_checkcomp(self, args):
         '''
         Lists the Teensy currently being interacted with by the user.
         '''
         print(f"Currently interacting with {self.cmded_device.device_name}")
 
-    def do_lc(self, args):
+    def do_listcomp(self, args):
         '''
         Lists all available Teensies.
         '''
@@ -48,7 +56,7 @@ class StateCmdPrompt(Cmd):
         for device_name in self.devices.keys():
             print(device_name)
 
-    def do_sc(self, args):
+    def do_switchcomp(self, args):
         '''
         Switches the Teensy that the user is controlling by the command line.
         '''
@@ -158,14 +166,23 @@ class StateCmdPrompt(Cmd):
         args = args.split()
         self.cmded_device.release_override(args[0])
 
+    def do_plot(self, args):
+        '''
+        Plot the given state fields. See state_session.py for documentation.
+        '''
+        plotter = PlotterClient(self.cmded_device.datastore.db)
+        plotter.do_plot(args)
+
     def do_quit(self, args):
         '''
         Exits the command line and terminates connections with the flight computer(s).
         '''
-        self.exit_fn('Exiting command line.')
+        self.exit_fn('Exiting command line.', is_error=False)
+        return True
 
     def do_exit(self, args):
         '''
         Exits the command line and terminates connections with the flight computer(s).
         '''
         self.do_quit(None)
+        return True

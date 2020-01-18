@@ -1,5 +1,5 @@
 //
-// test/environment_test/test.cpp
+// test/test_all/environment_test.cpp
 // PSim
 //
 // Contributors:
@@ -10,7 +10,8 @@
 // Cornell Univeristy
 //
 
-#include "../test.hpp"
+#include "test.hpp"
+#include "environment_test.hpp"
 
 #include <gnc_constants.hpp>
 #include <gnc_environment.hpp>
@@ -24,7 +25,7 @@ static_assert(gnc::constant::init_gps_time_of_week == 0,
 static_assert(gnc::constant::init_gps_nanoseconds == 0,
     "Tests are only applicable if the GPS nanoseconds is 0!");
 
-void test_env_earth_attitude() {
+void test_environment_earth_attitude() {
   lin::Vector3d w;
   lin::Vector4d q;
   // Calculate and check for t=0.0 (comparing against MATLAB)
@@ -71,7 +72,7 @@ void test_env_earth_attitude() {
   }));
 }
 
-void test_env_sun_vector() {
+void test_environment_sun_vector() {
   lin::Vector3f s;
   // Calculate and check for t=0.0 (comparing against MATLAB)
   gnc::env::sun_vector(0.0L, s);
@@ -96,36 +97,36 @@ void test_env_sun_vector() {
   }));
 }
 
-void test_env_magnetic_field() {
+void test_environment_magnetic_field() {
   lin::Vector3f b, r;
   // Calculate and check for t=0.0 (comparing against MATLAB)
   r = { 5.430929361985142e6f, 2.949986114465339e6f, 2.949986114465338e6f };
   gnc::env::magnetic_field(0.0, r, b);
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-9f, b, lin::Vector3f({
-    -0.258582567767007e-4f,
-    -0.123709833133034e-4f,
-     0.152313341459376e-4f
+    -0.258627060247818e-4f,
+    -0.123760992210009e-4f,
+     0.152310085468343e-4f
   }));
   // Calculate and check for t=100000.0 (comparing against MATLAB)
   r = { 2.949986114465339e6f, 5.430929361985142e6f, 2.949986114465338e6f };
   gnc::env::magnetic_field(100000.0, r, b);
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-9f, b, lin::Vector3f({
-    -0.159017272380879e-4f,
-    -0.279396062978776e-4f,
-     0.147361051858752e-4f
+    -0.159026585606625e-4f,
+    -0.279433261312079e-4f,
+     0.147381606439012e-4f
   }));
   // Calculate and check for t=200000.0 (comparing against MATLAB)
   r = { 2.949986114465338e6f, 2.949986114465339e6f, -5.430929361985142e6f };
   gnc::env::magnetic_field(200000.0, r, b);
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-9f, b, lin::Vector3f({
-     0.245254032051889e-4f,
-     0.101543964774464e-4f,
-    -0.167963662534021e-4f
+     0.245297651417786e-4f,
+     0.101511859611492e-4f,
+    -0.167983453138731e-4f
   }));
 }
 
-void test() {
-  RUN_TEST(test_env_earth_attitude);
-  RUN_TEST(test_env_sun_vector);
-  RUN_TEST(test_env_magnetic_field);
+void environment_test() {
+  RUN_TEST(test_environment_earth_attitude);
+  RUN_TEST(test_environment_sun_vector);
+  RUN_TEST(test_environment_magnetic_field);
 }

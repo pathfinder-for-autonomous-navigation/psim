@@ -2,21 +2,20 @@ matrix:
   include:
     - language: python
       python: 3.6
-      sudo: false
       before_install:
-        - cd python
-      install:
-        - pip install -r requirements.txt
-      script:
-        - python -m pytest
-    - language: python
-      python: 2.7
-      sudo: false
-      cache:
-        directories:
-          - "~/.platformio"
+        - export CI
       install:
         - pip install -U platformio
         - platformio update
+        - wget https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases/download/v0.11/linux-x86_64_hootl
+        - cp linux-x86_64_hootl python/linux-x86_64_hootl
+        - cd python
+        - chmod +x linux-x86_64_hootl
+        - pip install -r requirements.txt
       script:
+        - python -m pytest
+        #- python -m usb_console.run_simulation
+        - cd ..
         - platformio test --verbose --environment ci_github
+        - platformio run --environment ci_github
+        - platformio run --environment ci_teensy36

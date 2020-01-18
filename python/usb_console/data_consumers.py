@@ -1,6 +1,7 @@
-import queue, os, json, threading, time
-from datetime import datetime
-
+import queue, os, json, threading, time, datetime
+from tinydb import TinyDB
+from tinydb.middlewares import CachingMiddleware
+from tinydb.storages import JSONStorage
 
 class DataConsumer(object):
     def __init__(self, device_name, data_dir):
@@ -55,46 +56,50 @@ class DataConsumer(object):
 class Datastore(DataConsumer):
     def __init__(self, device_name, data_dir):
         super().__init__(device_name, data_dir)
-        self.data = {}
+        filename = f"{self.device_name}-telemetry.txt"
+        self.db = TinyDB(f"/{data_dir}/{filename}", storage=CachingMiddleware(JSONStorage))
 
     def consume_queue_item(self, datapoint):
-        """ Adds a single data point to the telemetry log."""
-
-        time_value_pair = (str(datapoint['time']), datapoint['val'])
-        field_name = datapoint['field']
-
-        if not self.data.get(field_name):
-            self.data[field_name] = []
-
-        self.data[datapoint['field']].append(time_value_pair)
+        """
+        Adds a single data point to the telemetry log.
+        """
+        self.db.insert(datapoint)
 
     def save(self):
         """ Save telemetry log to a file. """
-
-        filename = f"{self.device_name}-telemetry.txt"
-        filepath = os.path.join(self.data_dir, filename)
-
-        with open(filepath, 'w') as datafile:
-            json.dump(self.data, datafile)
-
+        self.db.storage.flush()
+        self.db.close()
 
 class Logger(DataConsumer):
     def __init__(self, device_name, data_dir):
         super().__init__(device_name, data_dir)
         self.log = ""
+        filename = f"{self.device_name}-log.txt"
+        filepath = os.path.join(self.data_dir, filename)
+        self.logfile = open(filepath, "w")
+
+        # Used for determining whether or not to save data to file
+        self.line_counter = 0
 
     def consume_queue_item(self, logline):
         """Add a new line to the log."""
-        self.log += logline + "\n"
+        self.log += str(logline) + "\n"
+        self.line_counter += 1
+        if self.line_counter % 100 == 0:
+            self.save()
 
     def save(self):
         """Save the log to a file."""
+        self.logfile.write(self.log)
+        self.log = ""
+        self.logfile.flush()
+        os.fsync(self.logfile.fileno())
 
-        filename = f"{self.device_name}-log.txt"
-        filepath = os.path.join(self.data_dir, filename)
-        with open(filepath, 'w') as logfile:
-            logfile.write(self.log)
-    
-    def put(self, logline):
-        logline="("+str(datetime.now())+")"+"\n"+logline+"\n"
+    def put(self, logline, add_time = True):
+        if add_time:
+            logline = f"[{datetime.datetime.now()}] " + str(logline.rstrip())
         self.queue.put(logline)
+
+    def stop(self):
+        super().stop()
+        self.logfile.close()
