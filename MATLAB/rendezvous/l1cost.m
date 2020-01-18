@@ -11,29 +11,18 @@ Y = zeros(ur, N - 1);
 L = zeros(ur, N - 1);
 
 iter = 1;
-max_iter = 25000;
+max_iter = 5000;
 
 [X, U] = optctrl(Qn, Q, A, B, N, xo, rho, L, Y);
 Y = softthresh(U, L, alpha, rho);
 L = L + rho .* (U - Y);
 
-figure
-hold on
-plot(U(1, :), '-r')
-plot(U(2, :), '-g')
-plot(U(3, :), '-b')
-hold off
-title('LQR Actuation (Ns) (rgb ~ xyz)')
-
 while (norm(Y - U) > eps) && (iter < max_iter)
-    norm(Y - U)
     iter = iter + 1;
     [X, U] = optctrl(Qn, Q, A, B, N, xo, rho, L, Y);
     Y = softthresh(U, L, alpha, rho);
     L = L + rho .* (U - Y);
 end
-
-iter
 
 end
 
