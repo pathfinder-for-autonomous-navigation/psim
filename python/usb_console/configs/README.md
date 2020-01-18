@@ -5,6 +5,11 @@ Here you can find some template configurations. I recommend copy-pasting a templ
 ## Items
 - `seed` : Randomization seed for simulation.
 - `sim_duration` : Number of seconds to run the simulation. If this is set to zero, the simulation is never started.
+- `single_sat_sim`
+  - If set to true, the MATLAB simulation expects there to be one device, `FlightController`, so that
+    it can run a mission simulation on just one satellite.
+  - If set to false, the MATLAB simulation expects there to be two devices, `FlightControllerLeader` and
+    `FlightControllerFollower` to be defined, so that a full mission simulation may be carried out.
 - `devices`: A list of device configuration objects, each with the following data:
   - `name` of device.
   - `run_mode`: Either set to `teensy` or `native`, depending on whether the device is connected via a Teensy or if the device should be emulated with a desktop binary.
@@ -15,3 +20,34 @@ Here you can find some template configurations. I recommend copy-pasting a templ
   - `connect` If false, no attempt is made to establish the radio connection. This option exists so that the simulation can be run separately from radio testing.
 
 All of the above fields are required, but the `devices` and `radios` list may potentially be empty.
+
+# Config Keys Files
+
+There are three config "keys" files in the config folder: `flask_keys.json`, `radio_keys.json`, and `server_keys.json`. All of these files contain confidential information, and should be in the gitignore file.
+
+## Flask Keys
+
+The Flask keys list the server and port on which the Flask server (`main.py` in the gsw folder) is running. These keys will be used in RadioSession to send a request for data from ElasticSearch.
+
+{
+    "server" : {server} ,
+    "port": {port}
+}
+
+## Radio Keys
+
+The radio keys contain the username and password for the PAN email account. They are used by the Flask server to read downlinks and uplink confirmations from Iridium.
+
+{
+   "email_username": {email},
+   "email_password": {password}
+}
+
+## Server Keys
+
+The Server keys list the server and port on which ElasticSearch is running. These keys are used by the Flask server to connect to, index information in, and request information from ElasticSearch.
+
+{
+    "server" : {server} ,
+    "port": {port}
+}

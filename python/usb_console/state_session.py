@@ -6,6 +6,8 @@ import json
 import traceback
 import queue
 
+from .data_consumers import Datastore, Logger
+
 class StateSession(object):
     '''
     Represents a connection session with a Flight Computer's state system.
@@ -18,7 +20,7 @@ class StateSession(object):
     they won't trip over each other in setting/receiving variables from the connected flight computer.
     '''
 
-    def __init__(self, device_name, datastore, logger):
+    def __init__(self, device_name, simulation_run_dir):
         '''
         Initializes state session with a device.
 
@@ -32,8 +34,9 @@ class StateSession(object):
         self.device_name = device_name
 
         # Data logging
-        self.datastore = datastore
-        self.logger = logger
+        self.datastore = Datastore(device_name, simulation_run_dir)
+        self.logger = Logger(device_name, simulation_run_dir)
+        self.raw_logger = Logger(device_name + "_raw", simulation_run_dir)
 
         # Simulation
         self.overriden_variables = set()
@@ -56,6 +59,9 @@ class StateSession(object):
             self.field_requests = queue.Queue()
             self.field_responses = queue.Queue()
 
+            self.datastore.start()
+            self.logger.start()
+            self.raw_logger.start()
             self.running_logger = True
             self.check_msgs_thread = threading.Thread(
                 name=f"{self.device_name} logger thread",
@@ -79,16 +85,17 @@ class StateSession(object):
                 # Read line coming from device and parse it
                 if self.console.inWaiting() > 0:
                     line = self.console.readline().rstrip()
+                    self.raw_logger.put("Received: " + line.decode("utf-8"))
                     data = json.loads(line)
                 else:
                     continue
 
-                data['time'] = self.start_time + datetime.timedelta(milliseconds=data['t'])
+                data['time'] = str(self.start_time + datetime.timedelta(milliseconds=data['t']))
 
                 if 'msg' in data:
                     # The logline represents a debugging message created by Flight Software. Report the message to the logger.
                     logline = f"[{data['time']}] ({data['svrty']}) {data['msg']}"
-                    self.logger.put(logline)
+                    self.logger.put(logline, add_time = False)
                 else:
                     if 'err' in data:
                         # The log line represents an error in retrieving or writing state data that
@@ -96,7 +103,7 @@ class StateSession(object):
                         # Report this failure to the logger.
 
                         logline = f"[{data['time']}] (ERROR) Tried to {data['mode']} state value named \"{data['field']}\" but encountered an error: {data['err']}"
-                        self.logger.put(logline)
+                        self.logger.put(logline, add_time = False)
                         data['val'] = None
                     else:
                         # A valid telemetry field was returned. Manage it.
@@ -133,12 +140,14 @@ class StateSession(object):
         
         Read the value of the state field associated with the given field name on the flight controller.
         '''
+        if not self.running_logger: return
 
         json_cmd = {'mode': ord('r'), 'field': str(field)}
         json_cmd = json.dumps(json_cmd) + "\n"
         self.device_write_lock.acquire()
         self.console.write(json_cmd.encode())
         self.device_write_lock.release()
+        self.raw_logger.put("Sent:     " + json_cmd.rstrip())
 
         return self._wait_for_state(field)
 
@@ -146,6 +155,7 @@ class StateSession(object):
         '''
         Write multiple state fields to the device at once.
         '''
+        if not self.running_logger: return
 
         assert len(fields) == len(vals)
         assert len(fields) <= 20, "Flight Software can't handle more than 20 state field writes at a time"
@@ -167,6 +177,7 @@ class StateSession(object):
         self.device_write_lock.acquire()
         self.console.write(json_cmds.encode())
         self.device_write_lock.release()
+        self.raw_logger.put("Sent:     " + json_cmds)
 
         returned_vals = []
         for field in fields:
@@ -199,7 +210,6 @@ class StateSession(object):
         then verify that the state was actually set. Do not write the state if the variable is being overriden
         by the user. (This is a function that sim should exclusively use.)
         '''
-
         return self.write_multiple_states([field], [val], timeout)
 
     def override_state(self, field, val, timeout = None):
@@ -232,3 +242,7 @@ class StateSession(object):
         self.running_logger = False
         self.check_msgs_thread.join()
         self.console.close()
+
+        self.datastore.stop()
+        self.logger.stop()
+        self.raw_logger.stop()

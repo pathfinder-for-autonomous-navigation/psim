@@ -11,6 +11,7 @@ global const
 addpath(strcat(filepath, '/utl'));
 addpath(strcat(filepath, '/environmental_models'));
 addpath(strcat(filepath, '/environmental_models/helper_functions'));
+addpath(strcat(filepath, '/plot'));
 
 
 %Time
@@ -18,7 +19,7 @@ const.INITGPS_WN= 2045;% positive int
 % initial gps week number, epoch for time.
 const.INIT_DYEAR= decyear(utl_time2datetime(0.0,const.INITGPS_WN));
 
-const.mu = 3.986e14;% positive scalar 
+const.mu = 3986004.415e8;%3.986e14;% positive scalar 
 % Earth's gravitational constant (m^3/s^2)
 const.R_EARTH= 6378137.0;
 %Equatorial Radius of Earth (m)*/
@@ -60,7 +61,7 @@ const.MASS= 4.0;% positive scalar
 const.JB=[1/12*const.MASS*(0.3^2+0.1^2) 0 0;
           0 1/12*const.MASS*(0.3^2+0.1^2) 0;
           0 0 1/12*const.MASS*(0.1^2+0.1^2);];% 3x3 symmetric matrix
-%dry moment of inertia of satellite in body frame
+%dry moment of inertia of the satellite in body frame (kg*m^2)
 const.JWHEEL=135.0e-7;% positive scalar     
 % Wheel Inertia kg*m^2
 const.JFUEL_NORM=0.1^2;% positive scalar 
@@ -78,5 +79,6 @@ const.GPS_LOCK_TIME=15*60;% positive scalar
 %Time it takes the GPS to get a lock (s)
 const.CDGPS_LOCK_TIME=15*60;% positive scalar
 %Time it takes the CDGPS to get a lock (s)
+
 
 end

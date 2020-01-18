@@ -36,6 +36,8 @@ if startsWith(name,"help",'IgnoreCase',true)
 '    ''orbital angular momentum'': Orbital angular momentum of the sat (Nms)'
 '    ''eccentricity vector'': Vector pointing from apoapsis to periapsis, using osculating elements with magnitude equal to the orbit''s scalar eccentricity (unitless)'
 '    ''wheel rate'': x,y, and z, wheel angular rates (rad/s)'
+'    ''antenna'': GPS and Quake antenna normal (unitless)'
+'    ''docking face'': Docking face normal (unitless)'
 ' '
 'get_truth also supports the following scalar values, these don''t have a frame:'
 '    ''time'': Time since initial GPS week (s)'
@@ -47,7 +49,9 @@ if startsWith(name,"help",'IgnoreCase',true)
 '    ''inclination angle'': osculating inclination angle (rad)'
 '    ''right ascension of the ascending node'': osculating right ascension of the ascending node (rad)'
 '    ''argument of perigee'': osculating argument of perigee (rad)'
-'    ''true anamoly'': osculating true anamoly (rad)'
+'    ''true anomaly'': osculating true anomaly (rad)'
+'    ''eclipse'': 1 if in eclipse (boolean)'
+'    ''solar panel area in sun'': projected area of solar panels in sun light (m^2)'
 };
 
 elseif startsWith(name,"rate",'IgnoreCase',true)
@@ -118,6 +122,12 @@ elseif startsWith(name,"eccentricity vector",'IgnoreCase',true)
 elseif startsWith(name,"wheel rate",'IgnoreCase',true)
     v=split(name);
     value= rotate_vector_strings(v(end),"body",dynamics.wheel_rate_body);
+elseif startsWith(name,"antenna",'IgnoreCase',true)
+    v=split(name);
+    value= rotate_vector_strings(v(end),"body",[1;0;0]);
+elseif startsWith(name,"docking face",'IgnoreCase',true)
+    v=split(name);
+    value= rotate_vector_strings(v(end),"body",[0;0;-1]);
 elseif startsWith(name,"orbital energy",'IgnoreCase',true)
     [quat_ecef_eci,~]=env_earth_attitude(dynamics.time);
     [~,PG,~]= env_gravity(dynamics.time,utl_rotateframe(quat_ecef_eci,dynamics.position_eci));
@@ -146,13 +156,28 @@ elseif startsWith(name,"right ascension of the ascending node",'IgnoreCase',true
 elseif startsWith(name,"argument of perigee",'IgnoreCase',true)
     [a, eMag, i, O, o, nu, truLon, argLat, lonPer,p] = utl_rv2orb(dynamics.position_eci, dynamics.velocity_eci, const.mu);
     value= o;
-elseif startsWith(name,"true anamoly",'IgnoreCase',true)
+elseif startsWith(name,"true anomaly",'IgnoreCase',true)
     [a, eMag, i, O, o, nu, truLon, argLat, lonPer,p] = utl_rv2orb(dynamics.position_eci, dynamics.velocity_eci, const.mu);
     value= nu;
 elseif startsWith(name,"time",'IgnoreCase',true)
     value= dynamics.time; 
 elseif startsWith(name,"fuel mass",'IgnoreCase',true)
     value= dynamics.fuel_mass; 
+elseif startsWith(name,"eclipse",'IgnoreCase',true)
+    value=env_eclipse(dynamics.position_eci,env_sun_vector(dynamics.time));
+elseif startsWith(name,"solar panel area in sun",'IgnoreCase',true)
+    if get_truth("eclipse",dynamics)
+        value=0;
+    else
+        sat2sun_body= get_truth("sat2sun body",dynamics); 
+        solar_panel_normals=[0.03 0 0;%+X
+                             -0.03 0 0;%-X
+                             0 0.03 0;%+Y
+                             0 -0.03 0;%-Y
+                             0 0 0.01;];%+Z
+        solar_panel_areas_in_sun=max(solar_panel_normals*sat2sun_body,0);
+        value=sum(solar_panel_areas_in_sun);
+    end
 elseif startsWith(name,"dcm",'IgnoreCase',true)
     v=split(name);
     q=quaternion_from_string(v(end-1),v(end));
