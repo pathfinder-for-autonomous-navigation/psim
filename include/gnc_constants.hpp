@@ -130,6 +130,35 @@ constexpr static lin::Vector4f q_eci_perifocal_f = {
   static_cast<float>(q_eci_perifocal(2)),
   static_cast<float>(q_eci_perifocal(3))
 };
+
+/** Noise floor of the magnetometer in units of T. */
+constexpr static double b_noise_floor = 0.0L;
+
+/** Noise floor of the magnetometer in units of T (float version). */
+constexpr static float b_noise_floor_f = static_cast<float>(b_noise_floor);
+
+/** Largest magnetic moment along a single axis that can be commanded of the
+ *  ADCS system in units of Am^2. */
+constexpr static double max_mtr_moment = 0.113337L / 2.0L;  // For one MTR
+
+/** Largest magnetic moment along a single axis that can be commanded of the
+ *  ADCS system in units of Am^2 (float version). */
+constexpr static float max_mtr_moment_f = static_cast<float>(max_mtr_moment);
+    
+/** Dry moment of inertia of the satellite in body frame (kg*m^2)*/
+constexpr static lin::Matrix3x3f JB_single_sat({
+        0.0333f, 0.0f, 0.0f,
+        0.0f, 0.0333f, 0.0f,
+        0.0f, 0.0f, 0.0067f
+    });
+    
+/** Dry moment of inertia of both satellites docked, in the body frame (kg*m^2)*/
+constexpr static lin::Matrix3x3f JB_docked_sats({
+        0.0333f, 0.0f, 0.0f,
+        0.0f, 0.0333f, 0.0f,
+        0.0f, 0.0f, 0.0067f
+    });
+
 }  // namespace constants
 }  // namespace gnc
 

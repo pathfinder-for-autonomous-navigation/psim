@@ -117,8 +117,8 @@ template <typename T>
 inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
     lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &q) {
   // Ensure that sun and magnetic field vectors aren't parallel or anitparallel
-  if (abs(lin::dot(N_sun, N_mag)) == static_cast<T>(1.0)) return 1;
-  if (abs(lin::dot(B_sun, B_mag)) == static_cast<T>(1.0)) return 2;
+  if (std::abs(lin::dot(N_sun, N_mag)) == static_cast<T>(1.0)) return 1;
+  if (std::abs(lin::dot(B_sun, B_mag)) == static_cast<T>(1.0)) return 2;
 
   // Calculate right handed bases for the reference frame
   lin::Vector<T, 3> const &n1 = N_sun;
@@ -131,8 +131,9 @@ inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
   lin::Vector<T, 3> const  b3 = lin::cross(b1, b2);
 
   // Calculate the DCM between the two frames and extract the quaternion
-  auto const Q = b1 * lin::transpose(n1) + b2 * lin::transpose(n2) + b3 * lin::transpose(n3);
-  dcm_to_quat(Q.eval(), q);
+  lin::Matrix<T, 3, 3> const Q =
+      b1 * lin::transpose(n1) + b2 * lin::transpose(n2) + b3 * lin::transpose(n3);
+  dcm_to_quat(Q, q);
   return 0;
 }
 
@@ -142,7 +143,7 @@ inline void vec_rot_to_quat(lin::Vector<T, 3> const &u, lin::Vector<T, 3> const 
     lin::Vector<T, 4> &q) {
   // Handle u and v being near anitparallel
   T x = lin::dot(u, v);
-  if (abs(x + static_cast<T>(1)) < static_cast<T>(0.0001)) {
+  if (std::abs(x + static_cast<T>(1)) < static_cast<T>(0.0001)) {
     q = { static_cast<T>(0), static_cast<T>(0), static_cast<T>(1), static_cast<T>(0) };
   }
   // Handle the general case

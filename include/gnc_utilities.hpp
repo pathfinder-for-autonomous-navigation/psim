@@ -15,6 +15,9 @@
 
 #include "lin.hpp"
 
+#ifdef abs
+#undef abs
+#endif
 #include <cmath>
 
 namespace gnc {
