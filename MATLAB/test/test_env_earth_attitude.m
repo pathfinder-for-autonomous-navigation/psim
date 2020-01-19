@@ -1,11 +1,6 @@
 %TEST_ENV_EARTH_ATTITUDE Tests env_earth_attitude.m
 %   has an error if earth_attitude is over 0.1 degrees off matlab model
-
-clearvars;
-
 global const
-
-config();
 
 years_to_test= 5;
 angle_error_margin= 0.1*pi/180;%radians
