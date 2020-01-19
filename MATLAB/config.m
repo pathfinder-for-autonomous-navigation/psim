@@ -1,7 +1,7 @@
 function config
 %{
 
-Script to initialize global variables.
+Script to initialize const global variables.
 
 
 %}
@@ -12,6 +12,7 @@ addpath(strcat(filepath, '/utl'));
 addpath(strcat(filepath, '/environmental_models'));
 addpath(strcat(filepath, '/environmental_models/helper_functions'));
 addpath(strcat(filepath, '/plot'));
+addpath(strcat(filepath, '/adcs'));
 
 
 %Time
@@ -68,8 +69,10 @@ const.JFUEL_NORM=0.1^2;% positive scalar
 % Moment of inertia of the fuel/mass of the fuel m^2.
 const.SLOSH_DAMPING=0.0;% positive scalar
 % Torque on fuel/difference in angular rates in eci Nm/(rad/s).
-const.ATTITUDE_PD_KP = 75e-4; % imported from simulink
-const.ATTITUDE_PD_KD = 32.5e-4; % imported from simulink
+const.ATTITUDE_PD_KP = 20.0e-4; % imported from simulink
+const.ATTITUDE_PD_KD = 22.5e-4; % imported from simulink
+const.detumble_safety_factor= 0.2; % (scalar range (0,1)):
+% The fraction of max wheel momentum detumbling ends at.
 
 %derived constants
 const.JBINV=inv(const.JB);% 3x3 symmetric matrix
@@ -80,5 +83,20 @@ const.GPS_LOCK_TIME=15*60;% positive scalar
 const.CDGPS_LOCK_TIME=15*60;% positive scalar
 %Time it takes the CDGPS to get a lock (s)
 
+const.magnetometer_bias_readings_min=50;% (positive int): 
+%number of readings per axis to get a good magnetometer bias estimate.
+const.magnetometer_noise_sdiv= 2E-6;% (positive scalar):
+%standard diviation of the magnetometer noise (T)
+const.magnetometer_bias_sdiv= 50E-6;% (positive scalar):
+%standard diviation of the magnetometer bias (T)
+const.gyro_noise_sdiv= 0.1*pi/180;% (positive scalar):
+%standard diviation of the gyro noise (rad/s)
+const.gyro_bias_sdiv= 1*pi/180;% (positive scalar):
+%standard diviation of the gyro bias (rad/s)
+
+
+
+
+generate_mex_code();
 
 end

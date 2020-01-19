@@ -1,4 +1,3 @@
-config();
 main_state = initialize_main_state(1,'default');
 d=main_state.follower.dynamics;
 get_truth('help');

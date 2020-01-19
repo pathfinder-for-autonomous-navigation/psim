@@ -1,11 +1,6 @@
 %TEST_ENV_SUN_VECTOR Tests env_sun_vector.m
 %   has an error if env_sun_vector is over 0.1 degrees off JPL model
-
-clearvars;
-
 global const
-
-config();
 
 years_to_test= 5;
 angle_error_margin= 0.1*pi/180;
