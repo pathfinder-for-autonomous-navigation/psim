@@ -4,7 +4,7 @@ config();
 data = csvread('graceClean.csv',1,0);
 
 %duration of the mission you want to simulate
-num_states = 10000; %1.5 hours i.e approximately 1 orbit %length(data) for 1 day
+num_states = 23*60*60; %1.5 hours i.e approximately 1 orbit %length(data) for 1 day
 
 global const
 
@@ -44,8 +44,8 @@ end
 tic
 perturbs.drag = 0;
 perturbs.solrad = 0;
-perturbs.bodmoon = 0;
-perturbs.bodsun = 0;
+perturbs.bodmoon = 1;
+perturbs.bodsun = 1;
 perturbs.numJs = 10;
 
 [r_final,v_final]  = true_orbit_propagator2(data(1,2:4), data(1,8:10), data(1,1), num_states, perturbs);

@@ -66,7 +66,7 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
             now = start_time + t; %current time in seconds
             datetime = utl_time2datetime(now,const.INITGPS_WN); 
             [rp_earth_moon,~] = planetEphemeris(juliandate(datetime),'Moon','Earth','421');
-            rp_earth_moon = 1E3*rp_earth_moon'; %positional vector from Moon to Earth; used for 3rd body perturb calcs
+            rp_earth_moon = utl_rotateframe(quat_ecef0_eci,1E3*rp_earth_moon'); %positional vector from Moon to Earth; used for 3rd body perturb calcs
             acc_tbmoon = -const.mu_moon*(((r+rp_earth_moon)/norm(r+rp_earth_moon)^3) - (rp_earth_moon/norm(rp_earth_moon)^3)); 
         else
             acc_tbmoon = zeros(3,1);
@@ -78,8 +78,8 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
             now = start_time + t; %current time in seconds
             datetime = utl_time2datetime(now,const.INITGPS_WN); 
             [rp_earth,~] = planetEphemeris(juliandate(datetime),'Sun','Earth','421');
-            rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
-            acc_tbsun = -const.mu_sun*(((r+rp_earth')/norm(r+rp_earth')^3) - (rp_earth'/norm(rp_earth')^3)); 
+            rp_earth = utl_rotateframe(quat_ecef0_eci,1E3*rp_earth'); %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
+            acc_tbsun = -const.mu_sun*(((r+rp_earth)/norm(r+rp_earth)^3) - (rp_earth/norm(rp_earth)^3)); 
         else
             acc_tbsun = zeros(3,1);
         end
@@ -97,6 +97,6 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
         statef(1:3)=state0(4:6);
         
         %acceration in m/s^2, ECEF0 coords
-        statef(4:6) = acc_Js + utl_rotateframe(quat_ecef0_eci,F_envdrag./(const.MASS) + acc_solrad + acc_tbmoon + acc_tbsun);
+        statef(4:6) = acc_Js + F_envdrag./(const.MASS) + acc_solrad + acc_tbmoon + acc_tbsun;
     end
 end

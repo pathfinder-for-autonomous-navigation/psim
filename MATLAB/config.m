@@ -65,7 +65,7 @@ const.PRECESSION_RATE= polarprecessionaxis/seconds(T5-T0);% 3 vector
 % earth's axis precession rate (rad/s)
 const.quat_ecef0_eci= utl_quaternion2array(quaternion(dcm_ECEF0_ECI,'rotmat','frame'));
 %ecef0 is ecef frame at time 0 inertialy stuck.
-const.earth_rate_ecef=[sin(0.033/3600*pi/180);sin(-0.331/3600*pi/180);1;]*7.2921158553E-5;% 3 vector
+const.earth_rate_ecef=[sin(0.133/3600*pi/180);sin(-0.331/3600*pi/180);1;]*7.2921158553E-5;% 3 vector
 % earth's inertial rotation rate in ecef frame (rad/s)
 
 const.MAXWHEELRATE= 677.0;% positive scalar

@@ -8,16 +8,22 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
 
     r_ecef0= r;
     v_ecef0= v+cross(const.earth_rate_ecef,r);
+    %[~,pot_energy,~]= env_gravity(start_time,r_ecef0);
+    pot_energy= const.mu/norm(r_ecef0);
+    energy= 0.5*dot(v_ecef0,v_ecef0)-pot_energy;
+    a=-const.mu/2/energy;
     [quat_ecef0_eci,~]=env_earth_attitude(start_time);
     h_ecef0= cross(r_ecef0,v_ecef0);
-    orbit_x_ecef0= r_ecef0;
-    orbit_y_ecef0= cross(h_ecef0,r_ecef0)/norm(h_ecef0);
-    a= norm(r_ecef0);
+    x= r_ecef0;
+    x=x/norm(x)*a;
+    y= cross(h_ecef0,r_ecef0);
+    y=y/norm(y)*a;
     omega= h_ecef0/norm(h_ecef0)*sqrt(const.mu/(a*a*a));
+    norm(omega)
     function [r,v]= circular_orbit(t)
         %Returns the position from circular orbit at time t in ecef0
         theta= t*norm(omega);
-        r= orbit_x_ecef0*cos(theta)+orbit_y_ecef0*sin(theta);
+        r= x*cos(theta)+y*sin(theta);
         v= cross(omega,r);
     end
 
