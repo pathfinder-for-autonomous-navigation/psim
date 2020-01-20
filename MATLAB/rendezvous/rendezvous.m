@@ -19,7 +19,7 @@ nu = 0*pi/180;   % True anamoly                          (rad)
     v1,...  % Velocity (m/s) [eci]
 ] = utl_orb2rv(a * (1 - e), e, i, O, o, nu, 3.986e14);
 
-n = sqrt(3.986e14 / (a * a * a));     % Orbital rate
+n = utl_orbrate(a);      % Orbital rate
 w_hill = [0.0; 0.0; n];
 
 % Add initial velocity difference
@@ -39,10 +39,10 @@ B = [rv; vv] ./ M;
 Qn = 1000.0 .* eye(6);  % Final state cost
 Q  =    0.0 .* eye(6);  % Intermediate state cost
 
-Q_transform = eci_to_lvlh(r1, v1);
+Q_transform = utl_eci2hill(r1, v1);
 r_hill = Q_transform * (r2 - r1);
 v_hill = Q_transform * (v2 - v1) - cross(w_hill, r_hill);
-[X, U] = l1cost(Qn, Q, alpha, A, B, N, [r_hill; v_hill], rho, eps);
+[X, U] = utl_l1cost(Qn, Q, alpha, A, B, N, [r_hill; v_hill], rho, eps, 5000);
 
 figure
 hold on
@@ -75,7 +75,7 @@ xlabel('Time (s)')
 ylabel('Impulse (Ns)')
 
 
-Q_transform = eci_to_lvlh(r1, v1);
+Q_transform = utl_eci2hill(r1, v1);
 r_hill = Q_transform * (r2 - r1);
 v_hill = Q_transform * (v2 - v1) - cross(w_hill, r_hill);
 X(:, 1) = [r_hill; v_hill];
@@ -93,7 +93,7 @@ for i = 1:(N - 1)
     v2 = y(end, 10:12)';
     
     % Calculate new state
-    Q_transform = eci_to_lvlh(r1, v1);
+    Q_transform = utl_eci2hill(r1, v1);
     r_hill = Q_transform * (r2 - r1);
     v_hill = Q_transform * (v2 - v1) - cross(w_hill, r_hill);
     X(:, i + 1) = [r_hill; v_hill];
@@ -147,7 +147,7 @@ if plot_flag
     title('Drift Phase Relative Position of Satellite Two (rgb ~ xyz LVLH)')
     xlabel('Time (s)')
     ylabel('Position (m)')
-    
+
 end
 
 t = t(end);
@@ -155,17 +155,6 @@ r1 = y(end, 1:3)';
 v1 = y(end, 4:6)';
 r2 = y(end, 7:9)';
 v2 = y(end, 10:12)';
-
-end
-
-
-function Q = eci_to_lvlh(r, v)
-
-r_hat = -r / norm(r);
-n_hat = cross(r, v) / norm(cross(r, v));
-v_hat = cross(n_hat, r_hat);
-
-Q = [r_hat'; v_hat'; n_hat'];
 
 end
 
