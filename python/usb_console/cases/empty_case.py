@@ -3,11 +3,11 @@ from .base import FlexibleCase
 
 class EmptyCase(FlexibleCase):
     def setup_case_singlesat(self, simulation):
-        simulation.flight_controller.write_state("pan.state", 13) # Manual state
+        simulation.flight_controller.write_state("pan.state", 9) # Manual state
 
     def setup_case_fullmission(self, simulation):
-        simulation.flight_controller_follower.write_state("pan.state", 13) # Manual state
-        simulation.flight_controller_leader.write_state("pan.state", 13) # Manual state
+        simulation.flight_controller_follower.write_state("pan.state", 9) # Manual state
+        simulation.flight_controller_leader.write_state("pan.state", 9) # Manual state
 
     def run_case_singlesat(self, simulation):
         simulation.cycle_no = simulation.flight_controller.read_state("pan.cycle_no")
