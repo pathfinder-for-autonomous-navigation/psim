@@ -117,8 +117,6 @@ class StateSession(object):
                     self.field_responses.put(data)
 
             except ValueError:
-                import traceback
-                traceback.print_exc()
                 logline = f'[RAW] {line}'
                 self.logger.put(logline)
             except serial.SerialException:
