@@ -13,6 +13,7 @@ count=0;
 starttime = utl_grace2pantime(data(1,1));
 startr_ecef= data(1,2:4)';
 startv_ecef= data(1,8:10)';
+stoptime= utl_grace2pantime(data(1,1));
 stopr_ecef= data(1+num_states,2:4)';
 stopv_ecef= data(1+num_states,8:10)';
 
@@ -29,16 +30,16 @@ stopv_ecef= data(1+num_states,8:10)';
 tic
 perturbs.drag = 0;
 perturbs.solrad = 0;
-perturbs.bodmoon = 1;
-perturbs.bodsun = 1;
+perturbs.bodmoon = 0;
+perturbs.bodsun = 0;
 perturbs.numJs = 10;
 
-[r_final,v_final]  = true_orbit_propagator3(startr_ecef, startv_ecef, starttime, num_states, perturbs);
-%[r_final2,v_final2]  = true_orbit_propagator2(startr_ecef, startv_ecef, starttime, num_states, perturbs);
+[r_final,v_final]  = true_orbit_propagator6(startr_ecef, startv_ecef, data(1,1), num_states, perturbs);
+[r_final2,v_final2]  = true_orbit_propagator2(startr_ecef, startv_ecef, data(1,1), num_states, perturbs);
 
 error_r= stopr_ecef-r_final
 error_v= stopv_ecef-v_final
-%r_final2-r_final
+r_final2-r_final
 
 count
 
