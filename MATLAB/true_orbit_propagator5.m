@@ -102,8 +102,6 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
     for i=1:N
         t= (i-1)*dt;
         for j= 1:length(d)
-            rel_r= rel_r+rel_v*dt*c(j);
-            t= t+dt*c(j);
             [orb_r,~]= circular_orbit(t,t0,omega,x,y);
             now = start_time + t; %current time in seconds
             earth_axis= const.earth_rate_ecef/norm(const.earth_rate_ecef);
@@ -116,9 +114,23 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
             count=count+1;
             %convert to ECEF0
             acc =utl_rotateframe(quat_ecef0_ecef,g_ecef)+const.mu*orb_r/a^3;
-            rel_v= rel_v + acc*dt*d(j);
+            rel_v= rel_v+acc*dt*c(j);
+            rel_r= rel_r + rel_v*dt*d(j);
+            t= t+dt*d(j);
         end
-        rel_r= rel_r+rel_v*dt*c(end);
+        [orb_r,~]= circular_orbit(t,t0,omega,x,y);
+        now = start_time + t; %current time in seconds
+        earth_axis= const.earth_rate_ecef/norm(const.earth_rate_ecef);
+        theta= norm(const.earth_rate_ecef)*t;% earth rotation angle
+        quat_ecef_ecef0= [earth_axis*sin(theta/2);cos(theta/2);];
+        quat_ecef0_ecef= utl_quat_conj(quat_ecef_ecef0);
+        pos_ecef=utl_rotateframe(quat_ecef_ecef0,orb_r+rel_r);%
+        % perturbations due to J-coefficients; returns acceleration in ECEF
+        g_ecef=env_gravity(now,pos_ecef);
+        count=count+1;
+        %convert to ECEF0
+        acc =utl_rotateframe(quat_ecef0_ecef,g_ecef)+const.mu*orb_r/a^3;
+        rel_v= rel_v+acc*dt*c(end);
         %reset orbit
         [r_ecef0,v_ecef0]= circular_orbit(i*dt,t0,omega,x,y);
         r_ecef0= rel_r+r_ecef0;

@@ -14,7 +14,7 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
     [quat_ecef0_eci,~]=env_earth_attitude(start_time);
     
     %create tarray
-    opts = odeset('RelTol', 1E-12, 'AbsTol', 1E-3)%, %'OutputFcn','odephas3');
+    opts = odeset('RelTol', 1E-12, 'AbsTol', 1E-4);%, %'OutputFcn','odephas3');
     tspan = [0,duration];
     [t_array, states] = ode113(@state_dot, tspan, state0, opts, perturbs, start_time);
     %statef = utl_ode2(@state_dot,[current_time,(current_time + delta_time)],state0);
@@ -31,7 +31,7 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
 
     function statef = state_dot(t, state0, perturbs, start_time)
         %y = [x; y; z; xdot; ydot; zdot]
-        fprintf('%f \n',t)
+        %fprintf('%f \n',t)
         
         earth_axis= const.earth_rate_ecef/norm(const.earth_rate_ecef);
         theta= norm(const.earth_rate_ecef)*t;% earth rotation angle
@@ -39,7 +39,6 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
         quat_ecef0_ecef= utl_quat_conj(quat_ecef_ecef0);
         
         now = start_time + t; %current time in seconds
-        [quat_ecef_eci,~]=env_earth_attitude(now);
         
         % unpack
         r = state0(1:3);  v = state0(4:6);

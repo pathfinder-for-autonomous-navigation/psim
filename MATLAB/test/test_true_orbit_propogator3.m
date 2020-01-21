@@ -4,9 +4,11 @@ config();
 data = csvread('graceClean.csv',1,0);
 
 %duration of the mission you want to simulate
-num_states = 10; %1.5 hours i.e approximately 1 orbit %length(data) for 1 day
+num_states = 23*60*60; %1.5 hours i.e approximately 1 orbit %length(data) for 1 day
 
 global const
+global count
+count=0;
 
 starttime = utl_grace2pantime(data(1,1));
 startr_ecef= data(1,2:4)';
@@ -28,14 +30,17 @@ stopv_ecef= data(1+num_states,8:10)';
 tic
 perturbs.drag = 0;
 perturbs.solrad = 0;
-perturbs.bodmoon = 1;
-perturbs.bodsun = 1;
+perturbs.bodmoon = 0;
+perturbs.bodsun = 0;
 perturbs.numJs = 10;
 
 [r_final,v_final]  = true_orbit_propagator3(startr_ecef, startv_ecef, data(1,1), num_states, perturbs);
-
+[r_final2,v_final2]  = true_orbit_propagator2(startr_ecef, startv_ecef, data(1,1), num_states, perturbs);
 
 error_r= stopr_ecef-r_final
 error_v= stopv_ecef-v_final
+r_final2-r_final
+
+count
 
 
