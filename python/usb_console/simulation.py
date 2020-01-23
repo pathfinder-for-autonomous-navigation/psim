@@ -65,6 +65,7 @@ class Simulation(object):
             self.sim_thread.start()
         else:
             self.add_to_log("Not running simulation since the testcase doesn't require it.")
+            self.testcase.run_case()
 
     def add_to_log(self, msg):
         if self.print_log:
@@ -118,7 +119,7 @@ class Simulation(object):
             # Step 3.2. Send inputs, read outputs from Flight Computer
             self.interact_fc()
             # Step 3.3. Allow test case to do its own meddling with the flight computer.
-            self.testcase.run_case(self)
+            self.testcase.run_case()
 
             # Step 5. Command actuators in simulation
             self.main_state = main_state_promise.result()
