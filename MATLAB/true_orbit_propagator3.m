@@ -102,7 +102,7 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
     %secular perturbations from Moon (third body in circular orbit)
     %returns acceleration in ECEF0
     if perturbs.bodmoon == 1
-        times= (1:N-0.5)*dt+start_time;
+        times= ((1:N)-0.5)*dt+start_time;
         jdates = juliandate(utl_time2datetime(times,const.INITGPS_WN)); 
         [rp_earth_moons_eci,~] = planetEphemeris(jdates','Moon','Earth','421');
         %rp_earth_moon = utl_rotateframe(quat_ecef0_eci,1E3*rp_earth_moon'); %positional vector from Moon to Earth; used for 3rd body perturb calcs
@@ -112,7 +112,7 @@ function [r_final,v_final] = true_orbit_propagator2(r,v,start_time,duration, per
     %secular perturbations from Sun (third body in circular orbit)
     %returns acceleration in ECEF0
     if perturbs.bodsun == 1
-        times= (1:N-0.5)*dt+start_time;
+        times= ((1:N)-0.5)*dt+start_time;
         jdates = juliandate(utl_time2datetime(times,const.INITGPS_WN)); 
         [rp_earths_eci,~] = planetEphemeris(jdates','Sun','Earth','421');
         %rp_earth = utl_rotateframe(quat_ecef0_eci,1E3*rp_earth'); %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs

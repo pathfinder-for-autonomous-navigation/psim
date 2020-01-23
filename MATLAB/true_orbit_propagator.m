@@ -13,8 +13,8 @@ function [t_array, states, orb_elemsf] = true_orbit_propagator(r,v,start_time,du
     
     
     %create tarray
-    opts = odeset('RelTol', 1E-12, 'AbsTol', 1E-3, 'OutputFcn','odephas3');
-    tspan = [0:1000:duration,duration];
+    opts = odeset('RelTol', 1E-12, 'AbsTol', 1E-4, 'OutputFcn','odephas3');
+    tspan = [0,duration];
     [t_array, states] = ode113(@state_dot, tspan, state0, opts, perturbs, start_time);
     %statef = utl_ode2(@state_dot,[current_time,(current_time + delta_time)],state0);
     
