@@ -8,7 +8,7 @@ supported by Python may include, but is not limited to:
  * Real time graphing utilities and other data visulation tools to be used in
    conjunction with a real time simulation. To use this utility run
 
-       python -m usb_console.plotter -d /path/to/data/file
+       python -m ptest.plotter -d /path/to/data/file
 
    after running the installation steps below. The `/path/to/data/file` needs to be
    produced by the simulation.
@@ -59,19 +59,19 @@ To install the Python MATLAB engine, you must:
 
 Open the config file:
 
-    psim/python/usb_console/configs
+    psim/python/ptest/configs
 
 Change the port to the COM port Teensy is connected to
 
 Run the main script:
 
-    python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
+    python -m ptest.run_simulation -c ptest/configs/fc_only_teensy.json
 
 **Running with software only**
 
 This only works for Mac and Linux for now.
 
-Edit `usb_console/configs/fc_only.json` so that the `binary_filepath` for the Flight Controller points to a binary built
+Edit `ptest/configs/fc_only.json` so that the `binary_filepath` for the Flight Controller points to a binary built
 for the Flight Software. You can find these binaries [here](https://github.com/pathfinder-for-autonomous-navigation/FlightSoftware/releases).
 
 # Running simulation
@@ -81,12 +81,12 @@ for the Flight Software. You can find these binaries [here](https://github.com/p
 
 2. Then, run the main script. On Windows you must run
 
-       python -m usb_console.run_simulation -c usb_console/configs/fc_only_teensy.json
+       python -m ptest.run_simulation -c ptest/configs/fc_only_teensy.json
 
       since psim for Windows currently only supports connections to actual Teensy devices. On Mac you may run
 
-       python -m usb_console.run_simulation -c usb_console/configs/fc_only_native.json
+       python -m ptest.run_simulation -c ptest/configs/fc_only_native.json
 
       To connect to a desktop binary.
 
-3. If you'd like to run more complex configurations, see the examples in the folder `usb_console/configs`.
+3. If you'd like to run more complex configurations, see the examples in the folder `ptest/configs`.
