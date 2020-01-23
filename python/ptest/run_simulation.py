@@ -124,7 +124,7 @@ class SimulationRun(object):
                 self.radios[radio_name] = radio_session
 
     def set_up_sim(self):
-        _ = __import__("usb_console.cases")
+        _ = __import__("ptest.cases")
         testcases = getattr(_, "cases")
         try:
             testcase = getattr(testcases, self.testcase_name)
@@ -203,13 +203,13 @@ if __name__ == '__main__':
                         default = "EmptyCase")
 
     parser.add_argument('-c', '--conf', action='store', help='JSON file listing serial ports and Teensy computer names.',
-                        default = "usb_console/configs/ci.json")
+                        default = "ptest/configs/ci.json")
 
     parser.add_argument('-rc', '--radio-conf', action='store', help='JSON file listing Iridium radio email username and password.',
-                        default = "usb_console/configs/radio_keys.json")
+                        default = "ptest/configs/radio_keys.json")
 
     parser.add_argument('-gc', '--ground-conf', action='store', help='JSON file listing ground software server and port.',
-                        default = "usb_console/configs/flask_keys.json")
+                        default = "ptest/configs/flask_keys.json")
 
     log_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'logs')
     parser.add_argument('-d', '--data-dir', action='store',
