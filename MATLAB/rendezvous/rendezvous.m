@@ -33,7 +33,7 @@ v2 = v1 + V_rel * v2 / norm(v2);
 eps   = 1e-4; % Tolerance value (value from Standford paper was 1e-5 but has convergence issues)
 rho   = 1.0;  % Penalty weigth (value from Stanford paper)
 alpha = 1.0;  % L1 cost factor (value from Stanford paper)
-[rr, rv, vr, vv] = clohessywiltshire(dt_fire, n); % State update matrices
+[rr, rv, vr, vv] = utl_cw(dt_fire, n); % State update matrices
 A = [rr, rv; vr, vv];
 B = [rv; vv] ./ M;
 Qn = 1000.0 .* eye(6);  % Final state cost
@@ -42,7 +42,7 @@ Q  =    0.0 .* eye(6);  % Intermediate state cost
 Q_transform = utl_eci2hill(r1, v1);
 r_hill = Q_transform * (r2 - r1);
 v_hill = Q_transform * (v2 - v1) - cross(w_hill, r_hill);
-[X, U] = utl_l1cost(Qn, Q, alpha, A, B, N, [r_hill; v_hill], rho, eps, 5000);
+[X, U] = ren_l1cost(Qn, Q, alpha, A, B, N, [r_hill; v_hill], rho, eps, 5000);
 
 figure
 hold on
