@@ -198,7 +198,7 @@ if startsWith(state.main_state,"calibrate magnetometer ")
         state.mag_bias_est_state=adcs_mag_bias_est(state.mag_bias_est_state,SdotB_true,SdotB_measured,estimator.sat2sun_body);
     end
 end
-state.on_time= state.on_time+ uint64(const.dt);
+state.on_time= state.on_time+ int64(const.dt);
 
     function initialize_detumble()
         %initialize detumble helper
