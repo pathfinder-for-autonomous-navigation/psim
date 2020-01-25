@@ -124,6 +124,30 @@ class StateCmdPrompt(Cmd):
         write_succeeded = "Succeeded" if write_succeeded else "Failed"
         print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
 
+    def do_cycle(self, args):
+        '''
+        Start a control cycle.
+        '''
+        self.do_ws("cycle.start true")
+
+    def do_cyclecount(self, args):
+        '''
+        Get the number of control cycles that have executed.
+        '''
+        self.do_rs("pan.cycle_no")
+
+    def do_telem(self, args):
+        '''
+        Dump telemetry.
+        '''
+        start_time = timeit.default_timer()
+        write_succeeded = self.cmded_device.write_state("telem.dump", "true")
+        write_succeeded &= self.cmded_device.write_state("cycle.start", "true")
+        elapsed_time = int((timeit.default_timer() - start_time) * 1E6)
+
+        write_succeeded = "Succeeded" if write_succeeded else "Failed"
+        print(f"{write_succeeded} \t\t\t\t\t\t(Completed in {elapsed_time} us)")
+
     def do_wms(self, args):
         '''
         Write multiple states. See state_session.py for documentation.

@@ -86,15 +86,20 @@ class StateSession(object):
                 if self.console.inWaiting() > 0:
                     line = self.console.readline().rstrip()
                     self.raw_logger.put("Received: " + line.decode("utf-8"))
-                    data = json.loads(line)
                 else:
                     continue
 
+                data = json.loads(line)
                 data['time'] = str(self.start_time + datetime.timedelta(milliseconds=data['t']))
 
                 if 'msg' in data:
                     # The logline represents a debugging message created by Flight Software. Report the message to the logger.
                     logline = f"[{data['time']}] ({data['svrty']}) {data['msg']}"
+                    self.logger.put(logline, add_time = False)
+                elif 'telem' in data:
+                    logline = f"[{data['time']}] Received requested telemetry from spacecraft.\n"
+                    logline += data['telem']
+                    print("\n" + logline)
                     self.logger.put(logline, add_time = False)
                 else:
                     if 'err' in data:
@@ -113,6 +118,7 @@ class StateSession(object):
 
             except ValueError:
                 logline = f'[RAW] {line}'
+                self.logger.put(logline)
             except serial.SerialException:
                 print('Error: unable to read serial port for {}. Exiting.'.
                       format(self.device_name))
