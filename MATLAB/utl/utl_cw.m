@@ -1,4 +1,7 @@
-function [phi_rr, phi_rv, phi_vr, phi_vv] = clohessywiltshire(t, n)
+function [phi_rr, phi_rv, phi_vr, phi_vv] = utl_cw(t, n)
+% Returns the Clohessy-Wiltshire state update matrices given a timestep and
+% orbital rate (all units should be MKS).
+%
 % Taken from the best source ever:
 % https://en.wikipedia.org/wiki/Clohessy?Wiltshire_equations
 
