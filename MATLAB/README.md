@@ -332,6 +332,11 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | utl_quat_cross_mult          | Kyle    |          | done                 | done        | done        |
 | utl_triad                    | Kyle    |          | done                 | done        | done        |
 | utl_vect_rot2quat            | Kyle    |          | done                 | done        | done        |
+| utl_cw                       | Kyle    |          | done                 | not started | not started |
+| utl_orbrate                  | Kyle    |          | done                 | not started | not started |
+| utl_eci2hill                 | Kyle    |          | done                 | not started | not started |
+| utl_l1costiter               | Kyle    |          | done                 | not started | not started |
+| utl_l1cost                   | Kyle    |          | done                 | not started | not started |
 | utl_compare_main_states      |         |          | not started          | not started | NA          |
 | utl_compare_dynamics         |         |          | not started          | not started | NA          |
 | utl_compare_actuators        |         |          | not started          | not started | NA          |
@@ -342,9 +347,6 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | plot_wheel_rates             |         |          | not started          | NA          | NA          |
 | plot_orbit_error             |         |          | not started          | NA          | NA          |
 | fancy_animation              |         |          | not started          | NA          | NA          |
-
-
-
 
 
 ## Matlab Add-Ons

@@ -1,50 +1,41 @@
-function [X, U] = l1cost(Qn, Q, alpha, A, B, N, xo, rho, eps)
+function [X, U, Y, L, delta] = ren_l1costiter(Qn, Q, alpha, A, B, N, x0, rho, Y, L)
+% Steps a single iteration of a finite time, finite horizon optimal control
+% problem with L1 control cost, quadratic stage cost, and quadratic final
+% stage cost.
+%
+%   i.e. min_U  x' Qn x + sum_i x_i' Q x_i + alpha |u_i|
+%     where x_i+1 = A x_i + B u_i
+%     and X contains N total states
+%
 % Source:
 %  Finite time, finite horizon, L1 control cost optimization solver.
 %  FAST SOLUTION OF OPTIMAL CONTROL PROBLEMS WITH L1 COST
 %  Simon Le Cleac?h, Zachary Manchester
 
-% Extract size information
-[~, ur] = size(B);
-
-Y = zeros(ur, N - 1);
-L = zeros(ur, N - 1);
-
-iter = 1;
-max_iter = 5000;
-
-[X, U] = optctrl(Qn, Q, A, B, N, xo, rho, L, Y);
-Y = softthresh(U, L, alpha, rho);
+[X, U] = optimal_control_update(Qn, Q, A, B, N, x0, rho, L, Y);
+Y = soft_threshold_update(U, L, alpha, rho);
 L = L + rho .* (U - Y);
-
-while (norm(Y - U) > eps) && (iter < max_iter)
-    iter = iter + 1;
-    [X, U] = optctrl(Qn, Q, A, B, N, xo, rho, L, Y);
-    Y = softthresh(U, L, alpha, rho);
-    L = L + rho .* (U - Y);
-end
+delta = norm(Y - U);
 
 end
 
-function [X, U] = optctrl(Qn, Q, A, B, N, xo, rho, L, Y)
 
-% Extract size information
-[xr, ur] = size(B);
+function [X, U] = optimal_control_update(Qn, Q, A, B, N, x0, rho, L, Y)
 
-% Setup return variables
-U = zeros(ur, N - 1);
-X = zeros(xr, N);
-X(:, 1) = xo;
+[r, c] = size(B);
 
-K = zeros(ur, xr, N - 1);
-b = zeros(ur, N - 1);
+K = zeros(c, r, N - 1);
+b = zeros(c, N - 1);
+U = zeros(c, N - 1);
+X = zeros(r, N);
+X(:, 1) = x0;
 
 % Backward pass
-g = zeros(xr, 1);
+g = zeros(r, 1);
 H = Qn;
 for i = (N - 1):-1:1
     C = B' * H * A;
-    D = rho * eye(ur) + B' * H * B;
+    D = rho * eye(c) + B' * H * B;
     K(:, :, i) = D \ C;
     H = Q + K(:, :, i)' * D * K(:, :, i) - K(:, :, i)' * C - C' * K(:, :, i) + A' * H * A;
     b(:, i) = D \ ( (L(:, i) - rho * Y(:, i)) + B' * g );
@@ -58,7 +49,9 @@ for i = 1:(N - 1)
 end
 end
 
-function [Y] = softthresh(U, L, alpha, rho)
+
+function Y = soft_threshold_update(U, L, alpha, rho)
+
 [r, N] = size(U);
 N = N + 1;
 
