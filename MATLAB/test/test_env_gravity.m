@@ -14,11 +14,10 @@ for time = test_times
     x=randn(3,1);
     x=x/norm(x)*(rand()*200E3+400E3+const.R_EARTH);
     g=zeros([3,1]);
-    [g(1), g(2), g(3)] = gravitysphericalharmonic( x', 'EGM2008', 10 );
+    [g(1), g(2), g(3)] = gravitysphericalharmonic( x', 'EGM2008', 40 );
     %now B is in NED coords, and must be transformed back to ECEF.
     g_test= env_gravity(time,x);
-    %norm(g_test-g)
-    assert(norm(g_test-g)<=margin,"gravity field out of margin");      
+    assert(norm(g_test-g)<=margin,"gravity field out of margin"+norm(g_test-g));      
     
 end
 
