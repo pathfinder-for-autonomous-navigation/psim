@@ -357,3 +357,5 @@ There are a few required Add-Ons for Matlab
  * Ephemeris Data for Aerospace Toolbox
  * Aerospace Toolbox
  * Robotics System Toolbox
+
+In addition a C++ compiler is need, in matlab run `mex -setup C++` to ensure you have one.
