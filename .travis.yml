@@ -17,5 +17,3 @@ matrix:
         #- python -m ptest.run_simulation
         - cd ..
         - platformio test --verbose --environment ci_github
-        - platformio run --environment ci_github
-        - platformio run --environment ci_teensy36
