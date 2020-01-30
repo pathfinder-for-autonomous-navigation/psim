@@ -100,3 +100,13 @@ for i=1:100
     assert(error<1E-9,"self jacobian finite diff failed "+ error)
 end
 
+% test that the jacobian is symplectic
+r_ecef= startr_ecef;
+v_ecef= startv_ecef;
+rel_target_r_ecef= 1E5*ones(3,1);
+rel_target_v_ecef= 1E2*ones(3,1);
+[r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jacobian] ... 
+	= orb_short_orbit_prop(...
+	r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime);
+assert(abs(det(jacobian)-1)<1E-12,"Jacobian isn't symplectic")
+assert(abs(det(target_jacobian)-1)<1E-12,"Jacobian isn't symplectic")
