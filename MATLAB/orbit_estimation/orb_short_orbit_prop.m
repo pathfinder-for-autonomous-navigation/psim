@@ -2,9 +2,35 @@ function [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jaco
 %orb_short_orbit_prop Updates orbit, and gets the jacbian.
 %   note the target is relative just to avoid floating pointing errors, for
 %   the jacobians, they are as if the target is completely seperate.
+%   The orbit propigator is designed for nearly circular low earth orbit, and
+%   ignores all forces except gravity from env_gravity.
 %
 %   The jacobians are calculated assuming point mass earth.
-%   dt should be (-0.2 to 0.2)
+%   
+%   r_ecef(matrix (3,1)):
+%       position in ecef coordinate system (m)
+%   v_ecef(matrix (3,1)):
+%       velocity in ecef coordinate system (m/s)
+%   jacobian(matrix (6,6)):
+%       Approximate jacobian of the tranform from [r_ecef;v_ecef;] input to
+%       [r_ecef;v_ecef;] output.
+%   rel_target_r_ecef(matrix (3,1)):
+%       position of the target relative to r_ecef in ecef coordinate system (m)
+%   rel_target_v_ecef(matrix (3,1)):
+%       velocity of the target relative to v_ecef in ecef coordinate system (m/s)
+%   target_jacobian(matrix (6,6)):
+%       Approximate jacobian of the tranform from [rel_target_r_ecef+r_ecef;rel_target_v_ecef+v_ecef;] input to
+%       [rel_target_r_ecef+r_ecef;rel_target_v_ecef+v_ecef;] output.
+%   dt(double -0.2 to 0.2):
+%       Time step, how much time to update the orbit.
+%   start_time(double): seconds since const.INITGPS_WN
+%
+% Started by Nathan Zimmerberg on Jan 29, 2020
+% Authors: Nathan Zimmerberg (nhz2@cornell.edu)
+% Latest Revision: Jan 29, 2020
+% Pathfinder for Autonomous Navigation
+% Space Systems Design Studio
+% Cornell University
 global const
 
 %% step 1a ecef->ecef0
