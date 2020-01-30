@@ -22,7 +22,7 @@ function [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jaco
 %       Approximate jacobian of the tranform from [rel_target_r_ecef+r_ecef;rel_target_v_ecef+v_ecef;] input to
 %       [rel_target_r_ecef+r_ecef;rel_target_v_ecef+v_ecef;] output.
 %   dt(double -0.2 to 0.2):
-%       Time step, how much time to update the orbit.
+%       Time step, how much time to update the orbit (s)
 %   start_time(double): seconds since const.INITGPS_WN
 %
 % Started by Nathan Zimmerberg on Jan 29, 2020
