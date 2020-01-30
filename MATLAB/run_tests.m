@@ -13,6 +13,8 @@ runtests('test_adcs_pointer');
 runtests('test_adcs_detumbler');
 runtests('test_adcs_mag_bias_est');
 
+runtests('test_orb_short_orbit_prop');
+
 runtests('test_env_sun_vector');
 runtests('test_env_earth_attitude');
 runtests('test_env_magnetic_field');
