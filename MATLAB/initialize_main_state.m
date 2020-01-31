@@ -40,7 +40,7 @@ nu = 0*pi/180;   % True anamoly                          (rad)
 
 [   r,...  % Position (m)   [eci]
     v,...  % Velocity (m/s) [eci]
-] = utl_orb2rv(a*(1-e), e, i, O, o, nu, const.mu);
+] = utl_orb2rv(a*(1-e*e), e, i, O, o, nu, const.mu);
 dynamics.position_eci= r;
 dynamics.velocity_eci= v;
 

@@ -15,7 +15,7 @@ function [r_ecef,v_ecef] = orb_long_orbit_prop(r_ecef,v_ecef,duration,start_time
 %
 % Started by Nathan Zimmerberg on Jan 30, 2020
 % Authors: Nathan Zimmerberg (nhz2@cornell.edu)
-% Latest Revision: Jan 30, 2020
+% Latest Revision: Jan 31, 2020
 % Pathfinder for Autonomous Navigation
 % Space Systems Design Studio
 % Cornell University
@@ -37,7 +37,7 @@ t0=0;
 [orb_r,orb_v]= circular_orbit(0,t0,omega,x,y);
 rel_r= r_ecef0-orb_r;
 rel_v= v_ecef0-orb_v;
-%% get higher order integrator steps
+%% get higher order integrator steps this should be done at compile time in C++
 %high order integrators
 %https://doi.org/10.1016/0375-9601(90)90092-3
 %https://pdf.sciencedirectassets.com/271541/1-s2.0-S0375960100X05075/1-s2.0-0375960190900923/main.pdf?X-Amz-Security-Token=IQoJb3JpZ2luX2VjEHIaCXVzLWVhc3QtMSJGMEQCIF1ECb38EYCxayPQRI0hpkbfjJc8eQ%2FAlwjL8FEtSVN1AiAg%2BNndqK38eCFIGiNiIh1DajL%2FBlIVrQFa6idjCf4l9Cq9Awj7%2F%2F%2F%2F%2F%2F%2F%2F%2F%2F8BEAIaDDA1OTAwMzU0Njg2NSIMsEfyy6bWwA0G0iHLKpEDA%2FBHuVZ%2BVrJnY6l8heiEZ7jxtjL2zdPELqgIjgiJUo50nM%2FMAOinJx82WVIbukNl56aGWSCe6Pysdn2mS9cQx%2BrF2HAoTs%2BpiBadw%2FuAtggU4RQLc9%2Ffu4by%2FaCZYOYkTV7dA8KYAibKr76LaKZmZcal%2B2iHVc6pZom5iof3O%2FIMV%2BYiKuxkGKv9aiztBwn59PsE0v4odCDkbfs%2FNeIzNNjvZOqMd84xXSKB%2FND4TJArkhpBBo%2F9DShQp4wBwZepjKHaDAlmSJbyXt1nvlkr2c55HSXYMFzA0HocbScbekInnxoVRRIBhSlAJqVKLeTKScO%2B3%2BEuIJM9i3Mdf%2FZF4LfNdQad1Edalc6Xg7seo1Cm13aX92SIbBql8JIHQrhL%2F8YO4CNgtv6f4ajHqprlsq4Dbd6hVeM%2F%2F9pO7cyBibdRZMFDFKj%2Bn1yNx6voOQna4fXd9953vNwVer4TbZEMuxAI3gyte7V9uxc4qqi33wYavVFpBeHv8%2FAp1u5pE0h4NvB7SCTJ2VFEl7m6mKN5mIQwsLSZ8QU67AFWLmQMZ2r2Bx6Eos9Sx7Q9MQju0X5Dacz5rMWai7MeWLv4cbY05t%2BFzppKCGLTEE%2B80u6E59onOWV1ppmvgYYD%2BH%2FxMskaYil9mZuhhfSkrVbTEbUmyWIURFu76ht72ZGzfLiuw35ilknpQoeewBNIGwvEn%2FWbHsv1vrmn0JZk2TNVZBDaS7jEXpJINs7%2BJKo%2F82ngZKaGLwMLH%2BDUrbdd%2B0WqjiKX6y%2BAbBVpLjlZsRj%2BPoV2d97UR6ABtYSVHv%2FWITdO7Wd930KQQizMrh3yZDDDUrj4UQAqWpqqZv38OQ2HvDHcvhvx4wowyA%3D%3D&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Date=20200121T024645Z&X-Amz-SignedHeaders=host&X-Amz-Expires=300&X-Amz-Credential=ASIAQ3PHCVTYSQKDTZ5H%2F20200121%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Signature=087c847babff243b457807c797f220e3743de6d63902d0943a61cd30e30ee95b&hash=4a586ea181fec35778b5f7e60a625cdd055f00d9ea16572cef4a41192adaebc9&host=68042c943591013ac2b2430a89b270f6af2c76d8dfd086a07176afe7c76c2c61&pii=0375960190900923&tid=spdf-306995ff-861f-40bd-9c97-a080a5d8c1b2&sid=0f7242a41192874f6a6a8bb-6ac9f383dac9gxrqa&type=client      
@@ -46,7 +46,6 @@ w6a= [-0.117767998417887E1,
     0.784513610477560E0,];
 w=w6a;
 m=length(w);
-N= max(round(abs(duration)/15/(m*2+1)),1);
 w0= 1-2*sum(w);
 c=zeros(1,2*m+2);
 d=zeros(1,2*m+1);
@@ -63,8 +62,9 @@ for i= 1:m
     d(2*m+2-i)= w(m+1-i);
 end
 d(m+1)=w0;
-dt= duration/(N);
 %% Iterations
+N= ceil(abs(duration)/15/(m*2+1));
+dt= duration/(N);
 for i=1:N
     t= (i-1)*dt;
     for j= 1:length(d)
@@ -102,12 +102,8 @@ for i=1:N
     rel_r= r_ecef0-orb_r;
     rel_v= v_ecef0-orb_v;
 end
-%% Get back absolute orbit
-[r_ecef0,v_ecef0]= circular_orbit(duration,t0,omega,x,y);
-r_ecef0= rel_r+r_ecef0;
-v_ecef0= rel_v+v_ecef0;
 %% ecef0->ecef
-dcm_ecef_ecef0 = relative_earth_dcm(dt);
+dcm_ecef_ecef0 = relative_earth_dcm(duration);
 r_ecef= dcm_ecef_ecef0*r_ecef0;
 v_ecef= dcm_ecef_ecef0*v_ecef0;
 v_ecef= v_ecef-cross(const.earth_rate_ecef,r_ecef);
