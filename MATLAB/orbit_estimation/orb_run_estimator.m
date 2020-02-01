@@ -2,6 +2,7 @@ function [state,self2target_r_ecef,self2target_v_ecef,r_ecef,v_ecef] ...
     = orb_run_estimator(...
     state,maneuver,fixedrtk,reset_all,reset_target,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns)
 %ORB_RUN_ESTIMATOR updates the estimate of the both orbits and outputs the needed ADCS values.
+global const
 %handle resets
 if (reset_all)
     state = orb_initialize_estimator();
@@ -24,23 +25,26 @@ groundvalid= all(isfinite([ground_target_r_ecef;ground_target_v_ecef;]));
 saved_groundvalid= all(isfinite([state.saved_ground_target_r_ecef;state.saved_ground_target_v_ecef;]));
 cdgpsvalid= gpsvalid && all(isfinite(gps_self2target_r_ecef));
 selfvalid= all(isfinite([state.r_ecef;state.v_ecef;])) ...
-    && all(isfinite(state.self_covariance));
+    && all(isfinite(state.self_covariance),'all');
 targetvalid= selfvalid && all(isfinite([state.rel_target_r_ecef;state.rel_target_v_ecef])) ...
-    && all(isfinite(state.target_covariance)) ...
-    && all(isfinite(state.self_target_cross_covariance));
+    && all(isfinite(state.target_covariance),'all') ...
+    && all(isfinite(state.self_target_cross_covariance),'all');
 %handle initializations
 if (~selfvalid && gpsvalid)
+    "self init"
     state= init_self_orbit_gps(state,gps_r_ecef,gps_v_ecef,time_ns);
     selfvalid= true;
 end
 
 if ((~targetvalid || state.target_stale) && selfvalid && groundvalid)
+    "target init"
     state= init_target_orbit_ground(state,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns);
     targetvalid= true;
     state.target_stale= true;
 end
 
 if (~targetvalid && selfvalid && saved_groundvalid)
+    "target init from saved"
     state= init_target_orbit_ground(state,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns);
     targetvalid= true;
     state.target_stale= true;
@@ -50,6 +54,7 @@ if (~targetvalid && selfvalid && saved_groundvalid)
 end
 
 if (groundvalid && ~selfvalid)
+    "save ground"
     state.saved_ground_target_r_ecef= ground_target_r_ecef;
     state.saved_ground_target_v_ecef= ground_target_v_ecef;
     state.saved_ground_time_ns= ground_time_ns;
@@ -59,9 +64,11 @@ end
 if (cdgpsvalid && targetvalid)
     state.target_stale= false;
     state.time_of_last_cdgps= time_ns;
-    state = update_with_cdgps(state,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns);
-elseif (gpsvalid && selfvalid)
+    state = update_with_cdgps(state,fixedrtk,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns);
+elseif (gpsvalid && targetvalid)
     state = update_with_noncdgps(state,gps_r_ecef,gps_v_ecef,time_ns);
+elseif (gpsvalid && selfvalid)
+    state = update_with_noncdgps_invalid_target(state,gps_r_ecef,gps_v_ecef,time_ns);
 elseif (selfvalid)
     %move state to time_ns
     while(time_ns~=state.time_ns)
@@ -70,7 +77,7 @@ elseif (selfvalid)
     end
 end
 
-if ((time_ns-state.time_of_last_cdgps) > (int64(1E9)*int64(24*60*60)))
+if ((time_ns-state.time_of_last_cdgps) > const.time_for_stale_cdgps)
     state.target_stale= true;
 end
 
@@ -85,7 +92,8 @@ function [state] = propagate_state(state,dt)
     %propagate_state, update state
     %   dt(int64 -0.2E9 to 0.2E9):
     %       Time step, how much time to update the state (ns)
-    bad_force_related_var= eye(6)*0;%this relates to added variance for bad force models
+    global const
+    bad_force_related_var= const.orb_process_noise_var;%this relates to added variance for bad force models
     state.self_covariance= state.self_covariance + 0.5*double(dt)*1E-9*bad_force_related_var;
     state.target_covariance= state.target_covariance + 0.5*double(dt)*1E-9*bad_force_related_var;
     [state.r_ecef,state.v_ecef,jacobian,state.rel_target_r_ecef,state.rel_target_v_ecef,target_jacobian] = ...
@@ -101,6 +109,7 @@ end
 
 function [state] = update_with_noncdgps(state,gps_r_ecef,gps_v_ecef,time_ns)
     %move state to time_ns
+    global const
     while(time_ns~=state.time_ns)
         dt= min(max((time_ns-state.time_ns),int64(-2E8)),int64(2E8));
         state = propagate_state(state,dt);
@@ -111,7 +120,7 @@ function [state] = update_with_noncdgps(state,gps_r_ecef,gps_v_ecef,time_ns)
     x= [state.r_ecef;state.v_ecef;state.rel_target_r_ecef+state.r_ecef;state.rel_target_v_ecef+state.v_ecef;];
     P= [state.self_covariance, state.self_target_cross_covariance;
         state.self_target_cross_covariance', state.target_covariance;];
-    R= eye(6)*1;% noise covariance
+    R= const.single_gps_noise_covariance;% noise covariance
     [x,P] = kalman_correction_step(x,y,H,P,R);
     state.r_ecef= x(1:3);
     state.v_ecef= x(4:6);
@@ -122,8 +131,28 @@ function [state] = update_with_noncdgps(state,gps_r_ecef,gps_v_ecef,time_ns)
     state.target_covariance= P(7:12,7:12);
 end
 
-function [state] = update_with_cdgps(state,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns)
-%move state to time_ns
+function [state] = update_with_noncdgps_invalid_target(state,gps_r_ecef,gps_v_ecef,time_ns)
+    %move state to time_ns
+    global const
+    while(time_ns~=state.time_ns)
+        dt= min(max((time_ns-state.time_ns),int64(-2E8)),int64(2E8));
+        state = propagate_state(state,dt);
+    end
+    %measurement correction.
+    y= [gps_r_ecef;gps_v_ecef;];
+    H= eye(6);
+    x= [state.r_ecef;state.v_ecef;];
+    P= state.self_covariance;
+    R= const.single_gps_noise_covariance;% noise covariance
+    [x,P] = kalman_correction_step(x,y,H,P,R);
+    state.r_ecef= x(1:3);
+    state.v_ecef= x(4:6);
+    state.self_covariance= P;
+end
+
+function [state] = update_with_cdgps(state,fixedrtk,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns)
+    %move state to time_ns and correct state
+    global const
     while(time_ns~=state.time_ns)
         dt= min(max((time_ns-state.time_ns),int64(-2E8)),int64(2E8));
         state = propagate_state(state,dt);
@@ -135,7 +164,11 @@ function [state] = update_with_cdgps(state,gps_r_ecef,gps_v_ecef,gps_self2target
     x= [state.r_ecef;state.v_ecef;state.rel_target_r_ecef+state.r_ecef;state.rel_target_v_ecef+state.v_ecef;];
     P= [state.self_covariance, state.self_target_cross_covariance;
         state.self_target_cross_covariance', state.target_covariance;];
-    R= eye(9)*1;% noise covariance
+    if fixedrtk
+        R= const.fixed_cdgps_noise_covariance;% noise covariance
+    else
+        R= const.float_cdgps_noise_covariance;% noise covariance
+    end
     [x,P] = kalman_correction_step(x,y,H,P,R);
     state.r_ecef= x(1:3);
     state.v_ecef= x(4:6);
@@ -147,8 +180,9 @@ function [state] = update_with_cdgps(state,gps_r_ecef,gps_v_ecef,gps_self2target
 end
 
 function [state] = init_target_orbit_ground(state,target_r_ecef,target_v_ecef,time_ns)
+    global const
     state.self_target_cross_covariance= zeros(6,6);
-    state.target_covariance= eye(6)*1; %initialize covariance
+    state.target_covariance= const.single_gps_noise_covariance; %initialize covariance
     %propagate target forward
     delta_t_ns= state.time_ns-time_ns;
     [target_r_ecef,target_v_ecef] = orb_long_orbit_prop(target_r_ecef, target_v_ecef, double(delta_t_ns)*1E-9, double(time_ns)*1E-9);
@@ -157,8 +191,9 @@ function [state] = init_target_orbit_ground(state,target_r_ecef,target_v_ecef,ti
 end
 
 function [state] = init_self_orbit_gps(state,gps_r_ecef,gps_v_ecef,time_ns)
+    global const
     state.self_target_cross_covariance= zeros(6,6);
-    state.self_covariance= eye(6)*1; %initialize covariance
+    state.self_covariance= const.single_gps_noise_covariance; %initialize covariance
     state.time_ns=time_ns;
     state.r_ecef= gps_r_ecef;
     state.v_ecef= gps_v_ecef;

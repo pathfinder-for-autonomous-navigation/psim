@@ -113,6 +113,19 @@ const.gyro_noise_sdiv= 0.1*pi/180;% (positive scalar):
 const.gyro_bias_sdiv= 1*pi/180;% (positive scalar):
 %standard diviation of the gyro bias (rad/s)
 
+% ORBIT_ESTIMATION parameters
+
+const.time_for_stale_cdgps= int64(1E9)*int64(24*60*60);% (int64 scalar):
+% time to wait before making the target estimate stale (ns)
+const.orb_process_noise_var= diag([1E-10;1E-10;1E-10;1E-10;1E-10;1E-10;]);% (6x6 symetric matrix)
+% Added variance for bad force models divided by timestep (mks units)
+const.single_gps_noise_covariance= diag([1;1;1;1;1;1;]);% (6x6 symetric matrix)
+%noise covariance of gps reading
+const.fixed_cdgps_noise_covariance= diag([1;1;1;1;1;1;0.01^2;0.01^2;0.01^2;]);% (9x9 symetric matrix)
+%noise covariance of cdgps reading in fixed mode
+const.float_cdgps_noise_covariance= diag([1;1;1;1;1;1;1;1;1;]);% (9x9 symetric matrix)
+%noise covariance of cdgps reading in float mode
+
 
 
 
