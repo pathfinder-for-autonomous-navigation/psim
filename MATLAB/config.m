@@ -97,31 +97,50 @@ const.detumble_safety_factor= 0.2; % (scalar range (0,1)):
 const.JBINV=inv(const.JB);% 3x3 symmetric matrix
 % inverse of dry moment of inertia of satellite in body frame
 
-const.GPS_LOCK_TIME=15*60;% positive scalar
+%% GPS sensor constants %%
+const.GPS_LOCK_TIME=1*60;% (positive scalar):
 %Time it takes the GPS to get a lock (s)
-const.CDGPS_LOCK_TIME=15*60;% positive scalar
+const.CDGPS_LOCK_TIME=15*60;% (positive scalar):
 %Time it takes the CDGPS to get a lock (s)
-
+const.gps_max_angle= 60*pi/180;% (positive scalar):
+% Max angle of gps antenna to radia out where gps can work (rad)
+const.cdgps_max_angle= 60*pi/180;% (positive scalar):
+% Max angle of cdgps antenna to other sat where cdgps can work (rad)
+const.cdgps_max_range= 1E3;% (positive scalar):
+% Max range of cdgps antenna to other sat where cdgps can work (m)
+const.probability_of_ground_gps= 1E-4;% (scalar 0-1):
+%Propability of getting a ground gps reading over radio any control cycle the sat
+%also can get regular gps.
+const.gps_position_bias_sdiv= 1;% (positive scalar):
+% standard diviation of bias of gps position measurements (m)
+const.cdgps_position_bias_sdiv= 0.05;% (positive scalar):
+% standard diviation of bias of cdgps relative position measurements (m)
+const.gps_velocity_bias_sdiv= 0.1;% (positive scalar):
+% standard diviation of bias of gps velocity measurements (m/s)
+const.gps_position_noise_sdiv= 6;% (positive scalar):
+% standard diviation of gps position measurements (m)
+const.gps_velocity_noise_sdiv= 1;% (positive scalar):
+% standard diviation of gps position measurements (m)
+%% Magnetometer sensor constants
 const.magnetometer_bias_readings_min=50;% (positive int):
 %number of readings per axis to get a good magnetometer bias estimate.
 const.magnetometer_noise_sdiv= 2E-6;% (positive scalar):
 %standard diviation of the magnetometer noise (T)
 const.magnetometer_bias_sdiv= 50E-6;% (positive scalar):
 %standard diviation of the magnetometer bias (T)
+%% Gyro sensor constants
 const.gyro_noise_sdiv= 0.1*pi/180;% (positive scalar):
 %standard diviation of the gyro noise (rad/s)
 const.gyro_bias_sdiv= 1*pi/180;% (positive scalar):
 %standard diviation of the gyro bias (rad/s)
-
-% ORBIT_ESTIMATION parameters
-
+%% ORBIT_ESTIMATION parameters %%
 const.time_for_stale_cdgps= int64(1E9)*int64(24*60*60);% (int64 scalar):
 % time to wait before making the target estimate stale (ns)
-const.orb_process_noise_var= diag([1E-10;1E-10;1E-10;1E-10;1E-10;1E-10;]);% (6x6 symetric matrix)
+const.orb_process_noise_var= diag([1E-10;1E-10;1E-10;1E-8;1E-8;1E-8;]);% (6x6 symetric matrix)
 % Added variance for bad force models divided by timestep (mks units)
 const.single_gps_noise_covariance= diag([1;1;1;1;1;1;]);% (6x6 symetric matrix)
 %noise covariance of gps reading
-const.fixed_cdgps_noise_covariance= diag([1;1;1;1;1;1;0.01^2;0.01^2;0.01^2;]);% (9x9 symetric matrix)
+const.fixed_cdgps_noise_covariance= diag([1;1;1;1;1;1;0.1^2;0.1^2;0.1^2;]);% (9x9 symetric matrix)
 %noise covariance of cdgps reading in fixed mode
 const.float_cdgps_noise_covariance= diag([1;1;1;1;1;1;1;1;1;]);% (9x9 symetric matrix)
 %noise covariance of cdgps reading in float mode

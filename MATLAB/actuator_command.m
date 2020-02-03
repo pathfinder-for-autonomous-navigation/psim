@@ -12,5 +12,13 @@ satellite_state.actuators.magrod_real_moment_body=min(max(actuator_commands.magr
 satellite_state.actuators.wheel_commanded_rate=actuator_commands.wheel_enable.*sign(actuator_commands.wheel_torque)*const.MAXWHEELRATE;
 satellite_state.actuators.wheel_commanded_ramp=abs(actuator_commands.wheel_torque)/const.JWHEEL;
 %TODO add thruster commands, and descretized ramp for wheels
+
+%send estimated orbit to ground
+% try to send ground reading
+if (satellite_state.sensors.gps_time_till_lock<=0 && rand()<const.probability_of_ground_gps)
+    satellite_state.actuators.ground_position_ecef= actuator_commands.position_ecef;
+    satellite_state.actuators.ground_velocity_ecef= actuator_commands.velocity_ecef;
+    satellite_state.actuators.ground_time= actuator_commands.time;
+end
 end
 

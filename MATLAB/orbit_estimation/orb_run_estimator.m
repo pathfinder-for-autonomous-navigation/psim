@@ -1,7 +1,61 @@
 function [state,self2target_r_ecef,self2target_v_ecef,r_ecef,v_ecef] ...
     = orb_run_estimator(...
-    state,maneuver,fixedrtk,reset_all,reset_target,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns)
-%ORB_RUN_ESTIMATOR updates the estimate of the both orbits and outputs the needed ADCS values.
+    state,maneuver_ecef,fixedrtk,reset_all,reset_target,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns)
+%ORB_RUN_ESTIMATOR updates the estimate of the both orbits.
+%   The estimator is an EKF, inspired by the CanX-4/-5 algorithm.
+%   https://tspace.library.utoronto.ca/bitstream/1807/25908/3/Roth_Niels_H_201011_MASc_thesis.pdf
+%   
+%   When state.target_stale the estimator will just try and propagate the
+%       target position from the last estimate or valid ground target estimate.
+%   Otherwise, when state.target_stale is false, the estimator will ignore
+%       ground target orbit estimates, and just use its own estimate and
+%       cdgps. 
+%   After const.time_for_stale_cdgps ns of no cdgps,
+%       state.target_stale get set to true. It get reset on every
+%       valid/used cdgps reading.
+%   
+%   state(struct): 
+%       state of the estimator described in orb_initialize_estimator
+%   self2target_r_ecef(matrix (3,1)): 
+%       vector from self to target satellite (m)
+%   self2target_v_ecef(matrix (3,1)): 
+%       target velocity relative to self (m/s)
+%   r_ecef(matrix (3,1)): 
+%       self position (m)
+%   v_ecef(matrix (3,1)): 
+%       self velocity (m/s)
+%   maneuver_ecef(matrix (3,1)):
+%       maneuver impulse (Ns)
+%   fixedrtk(logical):
+%       whether or not the cdgps reading is fixed or float precision
+%   reset_all(logical):
+%       flag to reset the estimator
+%   reset_target(logical):
+%       flag to reset the target related parts of the estimator
+%   gps_r_ecef(matrix (3,1)): 
+%       self gps reading position (m)
+%   gps_v_ecef(matrix (3,1)): 
+%       self gps reading velocity (m/s)
+%   gps_self2target_r_ecef(matrix (3,1)): 
+%       self cdgps reading position (m)
+%   gps_self2target_r_ecef(matrix (3,1)): 
+%       self cdgps reading position (m)
+%   time_ns(int64 scalar):
+%       gps/cdgps reading time and output orbit time nano seconds since const.INITGPS_WN (ns)
+%   ground_target_r_ecef(matrix (3,1)): 
+%       target position sent from ground (m)
+%   ground_target_v_ecef(matrix (3,1)): 
+%       target velocity sent from ground (m/s)
+%   ground_time_ns(int64 scalar):
+%       target orbit time nano seconds since const.INITGPS_WN (ns)
+    
+
+% Started by Nathan Zimmerberg on Jan 31, 2020
+% Authors: Nathan Zimmerberg (nhz2@cornell.edu)
+% Latest Revision: Feb 3, 2020
+% Pathfinder for Autonomous Navigation
+% Space Systems Design Studio
+% Cornell University
 global const
 %handle resets
 if (reset_all)
@@ -31,20 +85,20 @@ targetvalid= selfvalid && all(isfinite([state.rel_target_r_ecef;state.rel_target
     && all(isfinite(state.self_target_cross_covariance),'all');
 %handle initializations
 if (~selfvalid && gpsvalid)
-    "self init"
+    "self init";
     state= init_self_orbit_gps(state,gps_r_ecef,gps_v_ecef,time_ns);
     selfvalid= true;
 end
 
 if ((~targetvalid || state.target_stale) && selfvalid && groundvalid)
-    "target init"
+    "target init";
     state= init_target_orbit_ground(state,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns);
     targetvalid= true;
     state.target_stale= true;
 end
 
 if (~targetvalid && selfvalid && saved_groundvalid)
-    "target init from saved"
+    "target init from saved";
     state= init_target_orbit_ground(state,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns);
     targetvalid= true;
     state.target_stale= true;
@@ -54,7 +108,7 @@ if (~targetvalid && selfvalid && saved_groundvalid)
 end
 
 if (groundvalid && ~selfvalid)
-    "save ground"
+    "save ground";
     state.saved_ground_target_r_ecef= ground_target_r_ecef;
     state.saved_ground_target_v_ecef= ground_target_v_ecef;
     state.saved_ground_time_ns= ground_time_ns;

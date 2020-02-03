@@ -6,7 +6,7 @@ config();
 rng(2,'threefry');
 years_to_test= 5;
 margin=1E-6; 
-N= 20;
+N= 10;
 test_times= linspace(-years_to_test*365*24*60*60,0.0,N);%test times, 20 years
 
 

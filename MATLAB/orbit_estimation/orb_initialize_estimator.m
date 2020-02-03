@@ -1,9 +1,14 @@
 function [state] = orb_initialize_estimator()
 %orb_initialize_estimator initializes the orbit estimator state.
+%   The estimator is an EKF, inspired by the CanX-4/-5 algorithm.
+%   https://tspace.library.utoronto.ca/bitstream/1807/25908/3/Roth_Niels_H_201011_MASc_thesis.pdf
 % 
 % state is a struct with the following elements:
-%   mode(string either "propagate" or "cd gps"):
-%       The mode of the estimator for the target orbit. 
+%   target_stale(logical):
+%       If true, the estimator will accept new ground readings.
+%   time_of_last_cdgps(int64):
+%       Time of last received cdgps (ns)
+%       
 state=struct();
 state.target_stale= true;
 state.time_of_last_cdgps= -int64(1E18);
