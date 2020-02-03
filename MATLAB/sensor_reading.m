@@ -52,15 +52,15 @@ sensor_readings.target_time= 0;
 
 if (my_satellite_state.sensors.gps_time_till_lock<=0)
     sensor_readings.time= true_state.time;
-    sensor_readings.position_ecef= position_ecef + randn(3,1)*const.gps_position_noise_sdiv+my_satellite_state.sensors.gps_position_bias;
+    sensor_readings.position_ecef= position_ecef + randn(3,1)*const.gps_position_noise_sdiv+my_satellite_state.sensors.gps_position_bias_ecef;
     velocity_ecef= utl_rotateframe(quat_ecef_eci, true_state.velocity_eci)-cross(rate_ecef,position_ecef);
-    sensor_readings.velocity_ecef= velocity_ecef + randn(3,1)*const.gps_velocity_noise_sdiv++my_satellite_state.sensors.gps_velocity_bias;
+    sensor_readings.velocity_ecef= velocity_ecef + randn(3,1)*const.gps_velocity_noise_sdiv++my_satellite_state.sensors.gps_velocity_bias_ecef;
     target_position_eci= other_satellite_state.dynamics.position_eci;
     target_position_ecef= utl_rotateframe(quat_ecef_eci,target_position_eci);
     target_velocity_eci= other_satellite_state.dynamics.velocity_eci;
     target_velocity_ecef= utl_rotateframe(quat_ecef_eci, target_velocity_eci)-cross(rate_ecef,target_position_ecef);
     if (my_satellite_state.sensors.cdgps_time_till_lock<=0)
-        sensor_readings.self2target_position_ecef= target_position_ecef-position_ecef+my_satellite_state.sensors.cdgps_position_bias;
+        sensor_readings.self2target_position_ecef= target_position_ecef-position_ecef+my_satellite_state.sensors.cdgps_position_bias_ecef;
     end
     % ground reading
     if (rand()<const.probability_of_ground_gps)

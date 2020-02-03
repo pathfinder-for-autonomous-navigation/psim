@@ -87,10 +87,10 @@ sensors.sunsensor_real_voltage_maximums= 3.3 * ones(20, 1);
 sensors.sunsensor_measured_voltage_maximums= sensors.sunsensor_real_voltage_maximums;
 sensors.sunsensor_measured_normals= sensors.sunsensor_real_normals;
 %gps model
-sensors.gps_position_bias= const.gps_position_bias_sdiv*randn(3,1);
-sensors.gps_velocity_bias= const.gps_velocity_bias_sdiv*randn(3,1);
+sensors.gps_position_bias_ecef= const.gps_position_bias_sdiv*randn(3,1);
+sensors.gps_velocity_bias_ecef= const.gps_velocity_bias_sdiv*randn(3,1);
 sensors.gps_time_till_lock= const.GPS_LOCK_TIME;
-sensors.cdgps_position_bias= const.cdgps_position_bias_sdiv*randn(3,1);
+sensors.cdgps_position_bias_ecef= const.cdgps_position_bias_sdiv*randn(3,1);
 sensors.cdgps_time_till_lock= const.CDGPS_LOCK_TIME;
 end
 

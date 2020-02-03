@@ -89,18 +89,19 @@ Each satellites state has the following members and submembers:
    * `ground_velocity_ecef`(3x1 matrix): ground known estimated velocity of the gps reciever of the satellite (m/s)
    * `ground_time`(scalar): ground known estimated time since initial GPS week (s)
  * `sensors`
-   * `gyro_bias`, (rad/s)
-   * `magnetometer_bias`, (T)
-   * `sunsensor_real_normals`, (unitless)
-   * `sunsensor_real_voltage_maximums`, normalization constants for voltage measurements (V)
-   * `sunsensor_measured_normals`, (unitless)
-   * `sunsensor_measured_voltage_maximums`, (V)
-   * `gps_bias`,  (m and m/s)
-   * `gps_time_till_lock`,
+   * `gyro_bias`: (rad/s)
+   * `magnetometer_bias`: (T)
+   * `sunsensor_real_normals`: (unitless)
+   * `sunsensor_real_voltage_maximums`: normalization constants for voltage measurements (V)
+   * `sunsensor_measured_normals`: (unitless)
+   * `sunsensor_measured_voltage_maximums`: (V)
+   * `gps_position_bias_ecef`: (m)
+   * `gps_velocity_bias_ecef`: (m/s)
+   * `cdgps_position_bias_ecef`: (m)
+   * `gps_time_till_lock`:
        time till the GPS gets a lock, starts at `const.GPS_LOCK_TIME`, then counts down and stays at 0
        when the antenna is pointing towards the GPS constellation (s)
-   * `cdgps_bias`, (m)
-   * `cdgps_time_till_lock`,
+   * `cdgps_time_till_lock`:
         time till the carrier-phase differential GPS(CDGPS) gets a lock, starts at `const.CDGPS_LOCK_TIME`, then counts down and stays at 0
         when the gps antenna is pointing towards the GPS constellation the piksi antenna is pointing at the other sattelite (s)
 
