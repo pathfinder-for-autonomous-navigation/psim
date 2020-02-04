@@ -1,2 +1,2 @@
 from .empty_case import EmptyCase, EmptySimCase
-from .mission import MissionStateMachineCheckout
+from .mission import DeploymentToStandby

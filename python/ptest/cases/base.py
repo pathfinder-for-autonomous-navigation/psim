@@ -4,6 +4,22 @@ class TestCaseFailure(Exception):
     """Raise in case of test case failure."""
 
 class Case(object):
+    def __init__(self):
+        self.mission_states = {
+            "startup" : 0,
+            "detumble" : 1,
+            "initialization_hold" : 2,
+            "standby" : 3,
+            "follower" : 4,
+            "leader" : 5,
+            "follower_close_approach" : 6,
+            "leader_close_approach" : 7,
+            "docking" : 8,
+            "docked" : 9,
+            "safehold" : 10,
+            "manual" : 11
+        }
+
     @property
     def run_sim(self):
         return False
