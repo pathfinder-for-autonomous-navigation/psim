@@ -1,4 +1,4 @@
-from usb_console.data_consumers import Datastore, Logger
+from ptest.data_consumers import Datastore, Logger
 import os, json, tempfile, time, tinydb
 
 def test_datastore():
