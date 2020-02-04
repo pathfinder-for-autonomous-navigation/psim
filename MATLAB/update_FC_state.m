@@ -12,12 +12,36 @@ function [state,actuators] = update_FC_state(state,sensor_readings)
 %   update state with commanded wheel torque
 
 global const
+%% Orbit Estimation %%
+estimator.valid_gps_measure=all(isfinite([sensor_readings.position_ecef; sensor_readings.velocity_ecef;]));
+if (estimator.valid_gps_measure)
+    estimator.time_ns= int64(sensor_readings.time*1E9);
+else
+    estimator.time_ns= state.orbit_est_state.time_ns+const.dt;
+end
+estimator.time= double(estimator.time_ns)*1E-9;
+[state.orbit_est_state,estimator.self2target_r_ecef,estimator.self2target_v_ecef,estimator.position_ecef,estimator.velocity_ecef] ...
+    = orb_run_estimator(...
+    state.orbit_est_state, ...
+    zeros(3,1), ...%
+    true, ...
+    false, ...
+    false, ...
+    sensor_readings.position_ecef, ...
+    sensor_readings.velocity_ecef, ...
+    sensor_readings.self2target_position_ecef, ...
+    estimator.time_ns, ...
+    sensor_readings.target_position_ecef, ...
+    sensor_readings.target_velocity_ecef, ...
+    int64(sensor_readings.target_time*1E9)); 
+estimator.target_position_ecef= estimator.self2target_r_ecef+estimator.position_ecef;
+estimator.target_velocity_ecef= estimator.self2target_v_ecef+estimator.velocity_ecef;
 
 %% Attitude Determination %%
 
-estimator.sat2sun_eci= env_sun_vector(sensor_readings.time);
-estimator.mag_ecef= env_magnetic_field(sensor_readings.time,sensor_readings.position_ecef);
-[estimator.quat_ecef_eci,~]=env_earth_attitude(sensor_readings.time);
+estimator.sat2sun_eci= env_sun_vector(estimator.time);
+estimator.mag_ecef= env_magnetic_field(estimator.time,estimator.position_ecef);
+[estimator.quat_ecef_eci,~]=env_earth_attitude(estimator.time);
 estimator.quat_eci_ecef= utl_quat_conj(estimator.quat_ecef_eci);
 estimator.mag_eci =utl_rotateframe(estimator.quat_eci_ecef,estimator.mag_ecef);
 estimator.sat2sun_body= sensor_readings.sat2sun_body;
@@ -26,11 +50,10 @@ estimator.angular_momentum_body= const.JB*estimator.angular_rate_body+sensor_rea
 estimator.magnetometer_body= sensor_readings.magnetometer_body;
 estimator.magnetic_field_body=estimator.magnetometer_body-state.mag_bias_est_state.b_bias_est;
 estimator.quat_body_eci=utl_triad(estimator.sat2sun_eci,estimator.mag_eci,estimator.sat2sun_body,estimator.magnetic_field_body);
-estimator.time= sensor_readings.time;
-estimator.position_eci= utl_rotateframe(estimator.quat_eci_ecef,sensor_readings.position_ecef);
-estimator.velocity_eci= utl_rotateframe(estimator.quat_eci_ecef,sensor_readings.velocity_ecef+cross(const.earth_rate_ecef,sensor_readings.position_ecef));
-estimator.target_position_eci=utl_rotateframe(estimator.quat_eci_ecef,sensor_readings.target_position_ecef);
-estimator.target_velocity_eci=utl_rotateframe(estimator.quat_eci_ecef,sensor_readings.target_velocity_ecef+cross(const.earth_rate_ecef,sensor_readings.target_position_ecef));
+estimator.position_eci= utl_rotateframe(estimator.quat_eci_ecef,estimator.position_ecef);
+estimator.velocity_eci= utl_rotateframe(estimator.quat_eci_ecef,estimator.velocity_ecef+cross(const.earth_rate_ecef,estimator.position_ecef));
+estimator.target_position_eci=utl_rotateframe(estimator.quat_eci_ecef,estimator.target_position_ecef);
+estimator.target_velocity_eci=utl_rotateframe(estimator.quat_eci_ecef,estimator.target_velocity_ecef+cross(const.earth_rate_ecef,estimator.target_position_ecef));
 estimator.tumbling= ~(norm(estimator.angular_momentum_body)<const.MAXWHEELRATE*const.JWHEEL*0.7);
 estimator.low_power= false;
 estimator.eclipse= env_eclipse(estimator.position_eci,estimator.sat2sun_eci);
@@ -46,6 +69,9 @@ end
 %% Get main_state %%
 % by default turn off actuators and adcs control
 actuators= actuators_off_command();
+actuators.position_ecef= estimator.position_ecef;
+actuators.velocity_ecef= estimator.velocity_ecef;
+actuators.time= estimator.time;
 
 %these are the pointing commands, primary is optimized before secondary
 %everything must be a unit vector in the body frame, or NaN
@@ -88,7 +114,7 @@ if strcmp(state.main_state,'get gps')
     end
     %calculate pointing strategy
     state.primary_current_direction_body= estimator.sat2sun_body/norm(estimator.sat2sun_body);
-    state.primary_desired_direction_body= [sqrt(2)/2;sqrt(2)/2;0];
+    state.primary_desired_direction_body= [1;0;0];
     state.secondary_current_direction_body= NaN(3,1);
     state.secondary_desired_direction_body= NaN(3,1);
 end
