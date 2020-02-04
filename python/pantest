@@ -1,0 +1,2 @@
+. venv/bin/activate
+python -m ptest.run_simulation "$@"
