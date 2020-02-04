@@ -3,7 +3,7 @@ Started by Kyle Krol on Sep 4, 2019
 
 **Authors** Nathan Zimmerberg, Kyle Krol
 
-Latest Revision: Dec 30, 2019
+Latest Revision: Feb 3, 2019
 
 Pathfinder for Autonomous Navigation
 
@@ -149,14 +149,17 @@ actuator commands is a struct with elements:
  * `wheel_enable`, commanded x,y,z wheel enables, whether each wheel
            should be on, if false, the wheel rate is commanded to zero.
  * `magrod_moment`, commanded x,y,z magnetorquer moments (Am^2)
- * `position_ecef`(3x1 matrix): estimated position of the satellite (m)
- * `velocity_ecef`(3x1 matrix): estimated velocity of the satellite (m/s)
- * `time`(scalar): estimated time since initial GPS week (s)
+ * `position_ecef`(3x1 matrix): estimated position of the satellite to send to ground (m)
+ * `velocity_ecef`(3x1 matrix): estimated velocity of the satellite to send to ground (m/s)
+ * `time`(scalar): time since initial GPS week, time of the orbit estimate to send to ground (s)
 
 ## Functions
 
 `config()`: sets up path and constants and generates mex code from C++ wrapper function
+
 `get_truth(name,dynamics)`: returns named value from dynamics
+
+`[main_state_trajectory,computer_state_follower_trajectory,computer_state_leader_trajectory,rng_state_trajectory] = run_sim(num_steps,sample_rate,main_state,computer_state_follower,computer_state_leader)`: runs a simulation given the initial conditions and saves the trajectories. This is called in `main` and will be used for parallel monte carlo simulations.
 
 The simulator has four main functions that preform computations with `main_state`.
  * `initialize_main_state`: Constructs the main state given a seed, and situation.
@@ -175,10 +178,13 @@ main_state_update has a few main helper funtions.
  * `sensors=sensors_update(self_state,other_state)`
         Update the sensor state given both satellite states.
 
-update_FC_state is also broken in to a few main helper classes.
-
+update_FC_state is also broken into a few main helper functions.
+ * `[state,self2target_r_ecef,self2target_v_ecef,r_ecef,v_ecef] = orb_run_estimator( state, maneuver_ecef, fixedrtk, reset_all, reset_target, gps_r_ecef, gps_v_ecef, gps_self2target_r_ecef, time_ns, ground_target_r_ecef, ground_target_v_ecef, ground_time_ns)`
+ * `state = adcs_mag_bias_est(state,SdotB_true,SdotB_measured,S)`
+ * `[state,magrod_moment_cmd,wheel_torque_cmd]=adcs_pointer(state, angular_momentum_body, magnetic_field_body, primary_current_direction_body, primary_desired_direction_body, secondary_current_direction_body, secondary_desired_direction_body, rate_body)`
+ * `[state,magrod_moment_cmd] = adcs_detumbler(state,magnetometer_body)`
+ 
 Environmental functions.
- * `density= env_atmosphere_density(time,x)`
  * `[quat_ecef_eci,rate_ecef]= env_earth_attitude(time)`
  * `eclipse = env_eclipse(earth2sat,sat2sun)`
  * `[acceleration,potential,hessian]= env_gravity(time,x)`
