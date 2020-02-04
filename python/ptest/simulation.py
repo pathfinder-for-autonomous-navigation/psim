@@ -40,12 +40,12 @@ class Simulation(object):
         self.flight_controller_leader = self.devices['FlightControllerLeader']
         self.flight_controller_follower = self.devices['FlightControllerFollower']
 
-    def start(self, duration):
+    def start(self):
         '''
         Start the MATLAB simulation. This function is blocking until the simulation begins.
         '''
 
-        self.sim_duration = duration
+        self.sim_duration = self.testcase.sim_duration
         self.sim_time = 0
         self.sim_thread = threading.Thread(name="Python-MATLAB Simulation Interface",
                                            target=self.run)
@@ -53,7 +53,7 @@ class Simulation(object):
         self.add_to_log("Running testcase initialization...")
         self.testcase.setup_case(self)
 
-        if self.testcase.run_sim:
+        if self.testcase.sim_duration != 0:
             self.add_to_log("Configuring simulation (please be patient)...")
             start_time = timeit.default_timer()
             self.running = True
@@ -65,6 +65,7 @@ class Simulation(object):
             self.sim_thread.start()
         else:
             self.add_to_log("Not running simulation since the testcase doesn't require it.")
+            self.running = False
             self.testcase.run_case()
 
     def add_to_log(self, msg):
@@ -82,11 +83,11 @@ class Simulation(object):
         self.eng.generate_mex_code(nargout=0)
         self.eng.eval("global const", nargout=0)
 
-        self.main_state = self.eng.initialize_main_state(self.seed, 'detumbled', nargout=1)
-        self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states('detumbled', nargout=2)
+        self.main_state = self.eng.initialize_main_state(self.seed, self.testcase.sim_initial_state, nargout=1)
+        self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states(self.testcase.sim_initial_state, nargout=2)
         self.main_state_trajectory = []
 
-        self.eng.workspace['const']['dt'] = 120e6  # Control cycle time = 120 ms = 120e6 ns
+        self.eng.workspace['const']['dt'] = 170e6  # Control cycle time in HOOTL/HITL = 170 ms = 170e6 ns
         self.dt = self.eng.workspace['const']['dt'] * 1e-9  # 120 ms
 
     def run(self):
@@ -94,7 +95,10 @@ class Simulation(object):
         Runs the simulation for the time interval specified in start().
         """
 
-        num_steps = int(self.sim_duration / self.dt)
+        if self.sim_duration != float("inf"):
+            num_steps = int(self.sim_duration / self.dt) 
+        else:
+            num_steps = float("inf")
         sample_rate = int(10.0 / self.dt) # Sample once every ten seconds
         step = 0
 

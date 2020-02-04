@@ -3,26 +3,88 @@
 class TestCaseFailure(Exception):
     """Raise in case of test case failure."""
 
+def make_dict(arr):
+    """Converts array into a dictionary where the keys are values in the array and
+    the values are indices in the array."""
+    ret = {}
+    for i in range(len(arr)):
+        ret[arr[i]] = i
+    return ret
+
 class Case(object):
     def __init__(self):
-        self.mission_states = {
-            "startup" : 0,
-            "detumble" : 1,
-            "initialization_hold" : 2,
-            "standby" : 3,
-            "follower" : 4,
-            "leader" : 5,
-            "follower_close_approach" : 6,
-            "leader_close_approach" : 7,
-            "docking" : 8,
-            "docked" : 9,
-            "safehold" : 10,
-            "manual" : 11
-        }
+        self.mission_states = make_dict([
+            "startup",
+            "detumble",
+            "initialization_hold",
+            "standby",
+            "follower",
+            "leader",
+            "follower_close_approach",
+            "leader_close_approach",
+            "docking",
+            "docked",
+            "safehold",
+            "manual"
+        ])
+
+        self.prop_states = make_dict([
+            "disabled",
+            "idle",
+            "pressurizing",
+            "firing",
+            "venting",
+            "awaiting_pressurization",
+            "handling_fault"
+        ])
+
+        self.adcs_states = make_dict([
+            "startup",
+            "limited",
+            "zero_torque",
+            "zero_L",
+            "detumble",
+            "point_manual",
+            "point_standby",
+            "point_docking"
+        ])
+
+        self.radio_states = make_dict([
+            "disabled",
+            "wait",
+            "transceive",
+            "read",
+            "write",
+            "config"
+        ])
+
+        self.sat_designations = make_dict([
+            "undecided",
+            "leader",
+            "follower"
+        ])
+
+        self.piksi_modes = make_dict([
+            "spp",
+            "fixed_rtk",
+            "float_rtk",
+            "no_fix",
+            "sync_error",
+            "nsat_error",
+            "crc_error",
+            "time_limit_error",
+            "data_error",
+            "no_data_error",
+            "dead"
+        ])
 
     @property
-    def run_sim(self):
-        return False
+    def sim_duration(self):
+        return 0
+
+    @property
+    def sim_initial_state(self):
+        return 'startup'
 
     @property
     def single_sat_compatible(self):
