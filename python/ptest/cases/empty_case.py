@@ -19,5 +19,5 @@ class EmptyCase(FlexibleCase):
 
 class EmptySimCase(EmptyCase):
     @property
-    def run_sim(self):
-        return True
+    def sim_duration(self):
+        return float("inf")
