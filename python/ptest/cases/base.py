@@ -28,6 +28,13 @@ class SingleSatOnlyCase(Case):
     def single_sat_compatible(self):
         return True
 
+    def setup_case(self, simulation):
+        self.sim = simulation
+        if self.sim.is_single_sat_sim:
+            self.setup_case_singlesat()
+        else:
+            raise NotImplementedError
+
     def run_case(self):
         if not self.sim.is_single_sat_sim:
             raise Exception(f"Testcase {__class__.__name__} only works for a single-satellite simulation.")
