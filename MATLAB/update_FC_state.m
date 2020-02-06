@@ -1,15 +1,30 @@
 function [state,actuators] = update_FC_state(state,sensor_readings)
-% Global variables treated as inputs:
+% Global variables treated as constants:
 %  * const
-%  * sensors
 %
-% Global variables treated as outputs:
-%  * actuators
-%  *
-
-% attitude PD controller
-%   calculate commanded wheel torque
-%   update state with commanded wheel torque
+% actuators is a struct with elements:
+%  * `firing_start_times`(4x1 matrix): commanded times since initial GPS week to start firing (s)
+%  * `firing_on_times`(4x1 matrix): commanded thruster on times (s)
+%  * `wheel_torque`, commanded x,y,z wheel torque, (signed ramp)x(rotor inertia) (Nm)
+%  * `wheel_enable`, commanded x,y,z wheel enables, whether each wheel
+%            should be on, if false, the wheel rate is commanded to zero.
+%  * `magrod_moment`, commanded x,y,z magnetorquer moments (Am^2)
+%  * `position_ecef`(3x1 matrix): estimated position of the satellite (m)
+%  * `velocity_ecef`(3x1 matrix): estimated velocity of the gps reciever of the satellite (m/s)
+%  * `time`(scalar): estimated time since initial GPS week (s)
+%
+% sensor_readings is a struct with elements:
+%  * `gyro_body`, gyro reading (rad/s)
+%  * `magnetometer_body`, magnetometer reading (T)
+%  * `sat2sun_body`, unit vector from satellite to sun (unitless)
+%  * `sun_sensor_true`, true if sun vector reading is good, else false.
+%  * `wheel_momentum_body`, wheel angular momentum reading (Nms)
+%  * `time`, time since initial GPS week (s)
+%  * `position_ecef`, position of the gps reciever of the satellite (m)
+%  * `velocity_ecef`, velocity of the gps reciever of the satellite (m/s)
+%  * `target_position_ecef`, position of the target gps reciever of the satellite, from ground (m)
+%  * `target_velocity_ecef`, velocity of the target gps reciever of the satellite, from ground (m/s)
+%  * `relative_position_ecef`, position vector from self to target, from cdgps (m)
 
 global const
 %% Orbit Estimation %%
@@ -186,7 +201,9 @@ if strcmp(state.main_state,'docking')
     state.main_state='docking';
 end
 
-
+%% Orbit Control %% This will all be repaced with kyle's code
+actuators.firing_start_times= inf(4,1);
+actuators.firing_on_times= zeros(4,1);
 
 %% Attitude Control %%
 if strcmp(state.main_state,'detumble')

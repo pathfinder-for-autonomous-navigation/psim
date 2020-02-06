@@ -307,10 +307,10 @@ repositories.
 
 ## Test Harness
 Each function will have its own test script in `./test/` called `test_functionName.m` containing:
-    1. Setup of path, constants, and seed.
+    1. Setup of the seed.
     2. Calls to the function.
     3. Asserts that the outputs are within required accuracy.
-`run_tests.m` is a script that will run all of the test scripts and give a failure summary for each test that failed.
+`run_tests.m` is a script that calls `config()` and will run all of the test scripts and give a failure summary for each test that failed.
 
 Tests should be completely deterministic, fast, and not have any prints or plots unless they fail.
 

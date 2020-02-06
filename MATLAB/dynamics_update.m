@@ -2,24 +2,28 @@ function [final_state] = dynamics_update(initial_state,actuators)
 %orbit_attitude_update updates the ECEF position, velocity, and attitude of
 %the satellite. (units are all MKS)
 %   initial_state and final state are a structs with elements:
-%       time, time since inital GPS week.
-%       position_eci, position of the center of mass of the satellite.
-%       velocity_eci, velocity of the center of mass of the satellite.
-%       angular_rate_body, the angular rate of the spacecraft in the body frame.
-%       quat_body_eci, quaternion that rotates from eci to body frame.
-%       wheel_rate_body, x,y, and z, wheel angular rates.
-%       fuel_net_angular_momentum_eci, net angular momentum of the fuel.
-%       fuel_mass, the mass of the fuel.
+%    * `time`, Time since initial GPS week (s)
+%    * `time_ns`(positive int64), Time since initial GPS week (ns)
+%    * `position_eci`, Position of the center of mass of the satellite (m)
+%    * `velocity_eci`, Velocity of the center of mass of the satellite (m/s)
+%    * `angular_rate_body`, Angular rate of the spacecraft in the body frame (rad/s)
+%    * `quat_body_eci`, Quaternion that rotates from eci to body frame.
+%    * `wheel_rate_body`, x,y, and z, wheel angular rates (rad/s)
+%    * `fuel_net_angular_momentum_eci`, Net angular momentum of the fuel (Nms)
+%    * `fuel_mass`, The mass of the fuel (kg)
 %   actuators is a struct with actuator inputs that are constant over the
 %   following time step but not constant for the whole simulation:
-%       firing_start_times, times since inital GPS week to start firing.
-%       real_thrust_vectors_body, real thruster forces, units N.
-%       centers_of_thrust_body, center of thrust for each firing, units m.
-%       firing_on_times, how long firings last.
-%       wheel_commanded_rate, commanded x,y,z wheel rate.
-%       wheel_commanded_ramp, commanded x,y,z wheel ramp, units rad/s/s.
-%       magrod_real_moment_body, real magnetorquer moment, units A*m^2
-%
+%    * `thrust_vectors_body`(3x4 matrix): each thruster's force vector (N)
+%    * `centers_of_thrust_body`(3x4 matrix): Center of thrust of each truster (m)
+%    * `wheel_commanded_rate`(3x1 matrix): Commanded x,y,z wheel rate (rad/s)
+%    * `wheel_commanded_ramp`(3x1 matrix): Commanded x,y,z wheel ramp (rad/s/s)
+%    * `magrod_real_moment_body`(3x1 matrix): Real magnetorquer moment (Am^2)
+%    * `magrod_hysteresis_body`(3x1 matrix): Real magnetorquer hysteresis moment (Am^2)
+%    * `ground_position_ecef`(3x1 matrix): ground known estimated position of the satellite (m)
+%    * `ground_velocity_ecef`(3x1 matrix): ground known estimated velocity of the gps reciever of the satellite (m/s)
+%    * `ground_time`(scalar): ground known estimated time since initial GPS week (s)
+%    * `current_thruster_force_body` (3x1 matrix): Net thruster force vector at current timestep (N)
+%    * `current_thruster_torque_body` (3x1 matrix): Net thruster torque vector at current timestep (N-m)
 %#codegen
 global const
 
