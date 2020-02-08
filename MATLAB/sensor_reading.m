@@ -1,8 +1,5 @@
 function [sensor_readings] = sensor_reading(my_satellite_state,other_satellite_state)
 %sensor_reading returns the sensor readings
-%   TODO implement the actual sensors with errors
-%   TODO implement GPS and CDGPS
-%   TODO use get_truth function.
 
 global const
 sensor_readings= struct();
@@ -45,17 +42,34 @@ eclipse = env_eclipse(true_state.position_eci,sat2sun_eci);
 sensor_readings.wheel_momentum_body= true_state.wheel_rate_body*const.JWHEEL;
 
 %% GPS
+sensor_readings.time= 0;
+sensor_readings.position_ecef= nan(3,1);
+sensor_readings.velocity_ecef= nan(3,1);
+sensor_readings.self2target_position_ecef= nan(3,1);
+sensor_readings.target_velocity_ecef= nan(3,1);
+sensor_readings.target_position_ecef= nan(3,1);
+sensor_readings.target_time= 0;
 
-sensor_readings.time= true_state.time;
-sensor_readings.position_ecef= position_ecef;
-sensor_readings.velocity_ecef= utl_rotateframe(quat_ecef_eci, true_state.velocity_eci)-cross(rate_ecef,position_ecef);
+if (my_satellite_state.sensors.gps_time_till_lock<=0)
+    sensor_readings.time= true_state.time;
+    sensor_readings.position_ecef= position_ecef + randn(3,1)*const.gps_position_noise_sdiv+my_satellite_state.sensors.gps_position_bias_ecef;
+    velocity_ecef= utl_rotateframe(quat_ecef_eci, true_state.velocity_eci)-cross(rate_ecef,position_ecef);
+    sensor_readings.velocity_ecef= velocity_ecef + randn(3,1)*const.gps_velocity_noise_sdiv++my_satellite_state.sensors.gps_velocity_bias_ecef;
+    target_position_eci= other_satellite_state.dynamics.position_eci;
+    target_position_ecef= utl_rotateframe(quat_ecef_eci,target_position_eci);
+    target_velocity_eci= other_satellite_state.dynamics.velocity_eci;
+    target_velocity_ecef= utl_rotateframe(quat_ecef_eci, target_velocity_eci)-cross(rate_ecef,target_position_ecef);
+    if (my_satellite_state.sensors.cdgps_time_till_lock<=0)
+        sensor_readings.self2target_position_ecef= target_position_ecef-position_ecef+my_satellite_state.sensors.cdgps_position_bias_ecef;
+    end
+    % ground reading
+    if (rand()<const.probability_of_ground_gps)
+        sensor_readings.target_position_ecef= other_satellite_state.actuators.ground_position_ecef;
+        sensor_readings.target_velocity_ecef= other_satellite_state.actuators.ground_velocity_ecef;
+        sensor_readings.target_time= other_satellite_state.actuators.ground_time;
+    end
+end
 
-
-%in reality this is not how cd cps works
-target_position_eci= other_satellite_state.dynamics.position_eci;
-sensor_readings.target_position_ecef= utl_rotateframe(quat_ecef_eci,target_position_eci);
-target_velocity_eci= other_satellite_state.dynamics.velocity_eci;
-sensor_readings.target_velocity_ecef= utl_rotateframe(quat_ecef_eci, target_velocity_eci)-cross(rate_ecef,sensor_readings.target_position_ecef);
 
 end
 

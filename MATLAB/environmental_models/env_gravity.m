@@ -7,8 +7,11 @@ function [acceleration,potential,hessian]= env_gravity(time,x)
 %TODO add gravity from moon and sun and higher order spherical harmonics
 global const
 acceleration=zeros([3,1]);
-
-out=geograv_wrapper(x);
+if all(isreal(x))
+    out=geograv_wrapper(x);
+else
+    out= nan(4,1);
+end
 acceleration(1:3)=out(1:3);
 potential=out(4);
 r=norm(x);
