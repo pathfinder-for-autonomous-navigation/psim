@@ -1,14 +1,22 @@
 clc
 clear all
 close all
-data = csvread('total.csv',2,0);
-
+data = csvread('total.csv',10,0); %%%starts reading from row 10
+tic 
 data(:,8) = data(:,8)/(2*pi); %wheel 0 on [Hz]
 data(:,9) = data(:,9)/(2*pi);
 data(:,10) = data(:,10)/(2*pi);
 
-figure(1)
-plot(data(:,1),data(:,5))
+data(:,8) = data(:,10)/(2*pi); %wheel 1 on [Hz]
+data(:,9) = data(:,20)/(2*pi);
+data(:,10) = data(:,21)/(2*pi);
+
+data(:,8) = data(:,30)/(2*pi); %wheel 2 on [Hz]
+data(:,9) = data(:,31)/(2*pi);
+data(:,10) = data(:,32)/(2*pi);
+
+%figure(1)
+%plot(data(:,1),data(:,5))
 %%%% data sheet indexing
 %%% 1  2  3  4  5  6  7     8     9     10    11 
 %%% t1 1x 1y 1z 2x 2y 2z speed0 speed1 speed2 0   %wheel 0 on
@@ -25,47 +33,110 @@ names = {'mag1x0';'mag1y0';'mag1z0';'mag2x0';'mag2y0';'mag2z0';
     'mag1x1';'mag1y1';'mag1z1';'mag2x1';'mag2y1';'mag2z1';
     'mag1x2';'mag1y2';'mag1z2';'mag2x2';'mag2y2';'mag2z2'};
 
-for s = 1:length(access)
+for s = 1:length(access) %loops of 18 data sets that each consist of full sweep
+    
     start = data(access(s,1),1);
     freq = ones(10,1); freq(1) = data(1,access(s,3)); %take wheel reading
     idx = ones(10,1); idx(1) = 1;
+    
+    %%% get indices for each frequency step start in data set
     for i = 2:11
-        time = start + 10000*(i-1);
+        time = start + 10000*(i-1); %each frequency step is for 10 sec
         x = find(data(:,access(s,1)) > time, 1,'first');
         idx(i) = x;
     end
     for i = 1:10
         freq(i) = data(idx(i),access(s,3));
     end
+    
+    %%% apply fft to each frequency step
+    F_samp = 50;  %mag sampling freq
+    NFFTs = ones(length(idx),1);
+    Ys = {};
+    Fs = {};
+    magnitudeYs = {};
+    phaseYs = {};
+    for j = 2:length(idx)
+        NFFT = length(data(idx(j-1):idx(j),access(s,2))); %take mag reading can be 1/2 x/y/z
+        Y = fft(data(idx(j-1):idx(j),access(s,2)), NFFT); 
+        F = ((0:1/NFFT:1-1/NFFT)*F_samp).';
+        magnitudeY = abs(Y); %magnitude of the fft
+        phaseY = unwrap(angle(Y));
+        
+        NFFTs(j) = NFFT; Fs{j} = F;
+        Ys{j} = Y; magnitudeYs{j} = magnitudeY;
+        phaseYs{j} = phaseY;
+    end
 
-    Fs = 50;  %mag sampling freq
-    NFFT = length(data(1:idx(2),access(s,2))); %take mag reading can be 1/2 x/y/z
-    Y = fft(data(1:idx(2),access(s,2)), NFFT);
-    F = ((0:1/NFFT:1-1/NFFT)*Fs).';
-    magnitudeY = abs(Y);
-    phaseY = unwrap(angle(Y));
-    figure(gcf)
-    %plot(F,magnitudeY,phaseY,NFFT)
-    figure(2)
-    helperFrequencyAnalysisPlot1(F,magnitudeY,phaseY,NFFT)
-    subplot(3,1,3)
+    %%% plot full frequency sweep mag reading vs. frequency of wheel;
+    %%% using fft for each individual frequency step 
     %[curvefit,gof,output] = fit(F(1:NFFT/2),20*log10(magnitudeY(1:NFFT/2)),'smoothingspline','normalize','on');
-    [curvefit,gof,output] = fit(F,20*log(magnitudeY),'smoothingspline')%'normalize','on');
-    plot(curvefit,F,20*log(magnitudeY));
-    %plot(F(1:NFFT/2),20*log10(magnitudeY(1:NFFT/2)));
-    %plot(curvefit(1:NFFT/2),F(1:NFFT/2));
-    xlabel('frequency Hz')
-    ylabel('mag reading T')
-    px.formula = formula(curvefit);
-    px.mean = mean(magnitudeY); px.std = std(magnitudeY); px.var = var(magnitudeY);
-    px.max = max(magnitudeY);  px.min = min(magnitudeY);
-    %methods(curvefit)
-    c = coeffvalues(curvefit); c = c.coefs;
+    figure(1)
+    hold on
+    n = length(idx);
+    P = {}; %cell of information for each frequency step
+    for k = 2:length(idx)
+        x_array = Fs{k};
+        y_array = magnitudeYs{k};
+        %y_array = rmoutliers(y_array,'mean'); %remove pts. more than 3 stdevs from the mean
+        [curvefit,gof,output] = fit(x_array,y_array,'smoothingspline','normalize','on');
+        plot(curvefit,x_array,y_array);
+        %plot(F(1:NFFT/2),20*log10(magnitudeY(1:NFFT/2)));
+        %plot(curvefit(1:NFFT/2),F(1:NFFT/2));
+        p.formula = formula(curvefit);
+        p.mean = mean(magnitudeY); p.std = std(magnitudeY); p.var = var(magnitudeY);
+        p.max = max(magnitudeY);  p.min = min(magnitudeY);
+        c = coeffvalues(curvefit); c = c.coefs; p.coeffs = c;
+        P{k} = p; %packet of information for each frequency step
+        %methods(curvefit)
+        fprintf('plotted freq %f\n',k);
+    end
+    hold off
+    legend('hide'); grid on;
+    xlabel('wheel frequency Hz'); ylabel('mag reading T'); 
     fname = char(names{s});
     save(fname)
     fname = (names{s});
     saveas(gcf,fname)
+    
+    fprintf('finished data set %f\n',s);
+    close all
+    clf
+    
+%     figure(gcf)
+%     %plot(F,magnitudeY,phaseY,NFFT)
+%     %helperFrequencyAnalysisPlot1(F,magnitudeY,phaseY,NFFT)
+%     subplot(3,1,1)
+%     plot(F(1:NFFT/2),20*log10(Ymag(1:NFFT/2)));
+%     title('Magnitude response of the mag signal waveform')
+%     xlabel('Frequency Hz'); ylabel('T')
+%     grid on; axis tight 
+% 
+%     subplot(3,1,2)
+%     plot(F(1:NFFT/2),Yangle(1:NFFT/2));
+%     title('Phase response of the mag signal waveform')
+%     xlabel('Frequency in Hz'); ylabel('radians')
+%     grid on; axis tight
+%     
+%     subplot(3,1,3)
+%     %[curvefit,gof,output] = fit(F(1:NFFT/2),20*log10(magnitudeY(1:NFFT/2)),'smoothingspline','normalize','on');
+%     [curvefit,gof,output] = fit(F,20*log(magnitudeY),'smoothingspline')%'normalize','on');
+%     plot(curvefit,F,20*log(magnitudeY));
+%     %plot(F(1:NFFT/2),20*log10(magnitudeY(1:NFFT/2)));
+%     %plot(curvefit(1:NFFT/2),F(1:NFFT/2));
+%     xlabel('frequency Hz')
+%     ylabel('mag reading T')
+%     px.formula = formula(curvefit);
+%     px.mean = mean(magnitudeY); px.std = std(magnitudeY); px.var = var(magnitudeY);
+%     px.max = max(magnitudeY);  px.min = min(magnitudeY);
+%     %methods(curvefit)
+%     c = coeffvalues(curvefit); c = c.coefs;
+%     fname = char(names{s});
+%     save(fname)
+%     fname = (names{s});
+%     saveas(gcf,fname)
 end
+toc
 
 % for i = length(access)
 %     start = data(1,1);
@@ -146,3 +217,5 @@ end
 % %Plant = ss(A,[B B],C,0,-1,'inputname',{'u' 'w'},'outputname','y');
 % %[kalmf,L,~,M,Z] = kalman(Plant,1,1);
 % disp(px)
+
+
