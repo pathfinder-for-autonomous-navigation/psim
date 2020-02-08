@@ -17,7 +17,7 @@ for time = test_times
     quat_ecef_eci(1)=q(2);
     quat_ecef_eci(2)=q(3);
     quat_ecef_eci(3)=q(4);
-    rate_ecef_truth=[0;0;7.2921158553E-5;];
+    rate_ecef_truth=const.earth_rate_ecef;
     quat_ecef_eci_truth=quat_ecef_eci';
     [quat_ecef_eci_test,rate_ecef_test] = env_earth_attitude(time);
     
