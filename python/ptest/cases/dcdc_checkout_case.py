@@ -50,11 +50,11 @@ class DCDCCheckoutCase(SingleSatOnlyCase):
         self.simulation=simulation
         self.simulation.flight_controller.write_state(
             "pan.state", 11)  # Manual state
-        self.run_case_singlesat(simulation)
+        self.run_case_singlesat()
         print("DCDC cases finished.")
 
-    def run_case_singlesat(self, simulation):
-        simulation.cycle_no = simulation.flight_controller.read_state("pan.cycle_no")
+    def run_case_singlesat(self):
+        self.simulation.cycle_no = self.simulation.flight_controller.read_state("pan.cycle_no")
 
         if self.adcs_cmd==self.adcs_rd and self.sph_cmd==self.sph_rd and self.disable_cmd=="false" and self.reset_cmd=="false":
             print("Control task initialized correctly") 
