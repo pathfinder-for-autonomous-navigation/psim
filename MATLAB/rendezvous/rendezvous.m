@@ -17,7 +17,7 @@ o  = 0.0;        % Argument of perigee                   (rad)
 nu = 0*pi/180;   % True anamoly                          (rad)
 [   r1,...  % Position (m)   [eci]
     v1,...  % Velocity (m/s) [eci]
-] = utl_orb2rv(a * (1 - e), e, i, O, o, nu, 3.986e14);
+] = utl_orb2rv(a * (1 - e*e), e, i, O, o, nu, 3.986e14);
 
 n = utl_orbrate(a);      % Orbital rate
 w_hill = [0.0; 0.0; n];

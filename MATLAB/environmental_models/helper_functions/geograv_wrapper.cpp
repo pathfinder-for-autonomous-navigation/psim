@@ -16,7 +16,7 @@
 #include "../../../geograv/include/geograv.hpp"
 #include "../../../geograv/include/GGM05S.hpp"
 
-constexpr geograv::Coeff<40> GGM05S_trunc(GGM05S);
+constexpr geograv::Coeff<4> GGM05S_trunc(GGM05S);
 
 void calc_geograv(double *x, double *out)
 {
