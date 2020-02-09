@@ -2,97 +2,111 @@ from .base import SingleSatOnlyCase
 
 class DCDCCheckoutCase(SingleSatOnlyCase):
 
+    @property
+    def adcs_cmd(self): 
+        return self.simulation.flight_controller.read_state("dcdc.ADCSMotor_cmd")
+
+    @property
+    def sph_cmd(self): 
+        return self.simulation.flight_controller.read_state("dcdc.SpikeDock_cmd")
+    
+    @property
+    def disable_cmd(self): 
+        return self.simulation.flight_controller.read_state("dcdc.disable_cmd")
+
+    @property
+    def reset_cmd(self): 
+        return self.simulation.flight_controller.read_state("dcdc.reset_cmd")
+
+    @property
+    def adcs_rd(self): 
+        return self.simulation.flight_controller.read_state("dcdc.ADCSMotor")
+    
+    @property
+    def sph_rd(self): 
+        return self.simulation.flight_controller.read_state("dcdc.SpikeDock")
+
+    @adcs_cmd.setter 
+    def adcs_cmd(self, value): 
+        assert(value == "true" or value == "false")
+        self.simulation.flight_controller.write_state("dcdc.ADCSMotor_cmd", value)
+
+    @sph_cmd.setter 
+    def sph_cmd(self, value): 
+        assert(value == "true" or value == "false")
+        self.simulation.flight_controller.write_state("dcdc.SpikeDock_cmd", value)
+
+    @disable_cmd.setter 
+    def disable_cmd(self, value): 
+        assert(value == "true" or value == "false")
+        self.simulation.flight_controller.write_state("dcdc.disable_cmd", value)
+
+    @reset_cmd.setter 
+    def reset_cmd(self, value): 
+        assert(value == "true" or value == "false")
+        self.simulation.flight_controller.write_state("dcdc.reset_cmd", value)
+
     def setup_case_singlesat(self, simulation):
-        simulation.flight_controller.write_state(
-            "pan.state", 9)  # Manual state
+        self.simulation=simulation
+        self.simulation.flight_controller.write_state(
+            "pan.state", 11)  # Manual state
         self.run_case_singlesat(simulation)
         print("DCDC cases finished.")
 
     def run_case_singlesat(self, simulation):
         simulation.cycle_no = simulation.flight_controller.read_state("pan.cycle_no")
 
-        adcs_cmd = simulation.flight_controller.read_state("dcdc.ADCSMotor_cmd")
-        sph_cmd = simulation.flight_controller.read_state("dcdc.SpikeDock_cmd")
-        disable_cmd = simulation.flight_controller.read_state("dcdc.disable_cmd")
-        reset_cmd = simulation.flight_controller.read_state("dcdc.reset_cmd")
-        adcs_pin = simulation.flight_controller.read_state("dcdc.ADCSMotor")
-        sph_pin = simulation.flight_controller.read_state("dcdc.SpikeDock")
-        if adcs_cmd==sph_pin and sph_cmd==sph_pin and disable_cmd=="false" and reset_cmd=="false":
-            print("Control task initialized correctly")
+        if self.adcs_cmd==self.adcs_rd and self.sph_cmd==self.sph_rd and self.disable_cmd=="false" and self.reset_cmd=="false":
+            print("Control task initialized correctly") 
 
-        # Try both DCDCs on. Turn on all systems (ADCS motors, prop valves, docking motor). 
+        print ("Test case 1: Try both DCDCs on. Turn on all systems (ADCS motors, prop valves, docking motor).")
 
-        print ("Test case 1: ")
+        self.adcs_cmd="true"
+        self.sph_cmd="true"
 
-        simulation.flight_controller.write_state("dcdc.ADCSMotor_cmd", "true")
-        simulation.flight_controller.write_state("dcdc.SpikeDock_cmd", "true")
-        adcs_pin = simulation.flight_controller.read_state("dcdc.ADCSMotor")
-        sph_pin = simulation.flight_controller.read_state("dcdc.SpikeDock")
-
-        if adcs_pin=="true" and sph_pin=="true":
+        if self.adcs_rd=="true" and self.sph_rd=="true":
             print("Passed")
         else:
             print("Failed")
-        
-        # ADCS DCDC on, SPH + Prop DCDC off. Turn on all systems. 
 
-        print("Test case 2: ")
+        print("Test case 2: ADCS DCDC on, SPH + Prop DCDC off. Turn on all systems.")
 
-        simulation.flight_controller.write_state("dcdc.ADCSMotor_cmd", "true")
-        simulation.flight_controller.write_state("dcdc.SpikeDock_cmd", "false")
-        adcs_pin = simulation.flight_controller.read_state("dcdc.ADCSMotor")
-        sph_pin = simulation.flight_controller.read_state("dcdc.SpikeDock")
-        if adcs_pin=="true" and sph_pin=="false":
-            simulation.flight_controller.write_state("dcdc.reset_cmd", "true")
-            simulation.flight_controller.read_state("dcdc.ADCSMotor")
-            simulation.flight_controller.read_state("dcdc.SpikeDock")
+        self.adcs_cmd="true"
+        self.sph_cmd="false"
+        if self.adcs_rd=="true" and self.sph_rd=="false":
+            self.reset_cmd="true"
             # Reset takes at least one control cycle to complete
-            adcs_pin = simulation.flight_controller.read_state("dcdc.ADCSMotor")
-            sph_pin = simulation.flight_controller.read_state("dcdc.SpikeDock")
-            if (adcs_pin == "true" and sph_pin == "true"):
+            self.simulation.flight_controller.write_state("cycle.start", "true")
+            if (self.adcs_rd == "true" and self.sph_rd == "true"):
                 print("Passed")
             else:
                 print("Unable to reset pins")
         else:
             print("Unable to turn ADCS Motor on and SpikeDock off")
 
-        # ADCS DCDC off, SPH + Prop DCDC on. Turn on all systems. 
+        print("Test Case 3: ADCS DCDC off, SPH + Prop DCDC on. Turn on all systems. ")
 
-        print("Test Case 3: ")
-
-        simulation.flight_controller.write_state("dcdc.ADCSMotor_cmd", "false")
-        simulation.flight_controller.write_state("dcdc.SpikeDock_cmd", "true")
-        adcs_pin = simulation.flight_controller.read_state("dcdc.ADCSMotor")
-        sph_pin = simulation.flight_controller.read_state("dcdc.SpikeDock")
-        if adcs_pin=="false" and sph_pin=="true":
-            simulation.flight_controller.write_state("dcdc.reset_cmd", "true")
-            simulation.flight_controller.read_state("dcdc.ADCSMotor")
-            simulation.flight_controller.read_state("dcdc.SpikeDock")
+        self.adcs_cmd="false"
+        self.sph_cmd="true"
+        if self.adcs_rd=="false" and self.sph_rd=="true":
+            self.reset_cmd="true"
             # Reset takes at least one control cycle to complete
-            adcs_pin = simulation.flight_controller.read_state("dcdc.ADCSMotor")
-            sph_pin = simulation.flight_controller.read_state("dcdc.SpikeDock")
-            if (adcs_pin == "true" and sph_pin == "true"):
+            self.simulation.flight_controller.write_state("cycle.start", "true")
+            if (self.adcs_rd == "true" and self.sph_rd == "true"):
                 print("Passed")
             else:
                 print("Unable to reset pins")
         else:
             print("Unable to turn ADCS Motor off and SpikeDock on")
 
-        # ADCS DCDC off, SPH + Prop DCDC off. Turn on all systems. 
+        print("Test Case 4: ADCS DCDC off, SPH + Prop DCDC off. Turn on all systems. ")
 
-        print("Test Case 4: ")
-
-        simulation.flight_controller.write_state("dcdc.disable_cmd", "true")
-        adcs_pin = simulation.flight_controller.read_state("dcdc.ADCSMotor")
-        sph_pin = simulation.flight_controller.read_state("dcdc.SpikeDock")
-        if adcs_pin=="false" and sph_pin=="false":
-            simulation.flight_controller.write_state("dcdc.reset_cmd", "true")
-            simulation.flight_controller.read_state("dcdc.ADCSMotor")
-            simulation.flight_controller.read_state("dcdc.SpikeDock")
+        self.disable_cmd="true"
+        if self.adcs_rd=="false" and self.sph_rd=="false":
+            self.reset_cmd="true"
             # Reset takes at least one control cycle to complete
-            adcs_pin = simulation.flight_controller.read_state("dcdc.ADCSMotor")
-            sph_pin = simulation.flight_controller.read_state("dcdc.SpikeDock")
-            if (adcs_pin == "true" and sph_pin == "true"):
+            self.simulation.flight_controller.write_state("cycle.start", "true")
+            if (self.adcs_rd == "true" and self.sph_rd == "true"):
                 print("Passed")
             else:
                 print("Unable to reset pins")
