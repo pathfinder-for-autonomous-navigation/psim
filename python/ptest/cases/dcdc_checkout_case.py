@@ -76,7 +76,7 @@ class DCDCCheckoutCase(SingleSatOnlyCase):
         if self.adcs_rd=="true" and self.sph_rd=="false":
             self.reset_cmd="true"
             # Reset takes at least one control cycle to complete
-            self.simulation.flight_controller.write_state("cycle.start", "true")
+            self.cycle(self.simulation)
             if (self.adcs_rd == "true" and self.sph_rd == "true"):
                 print("Passed")
             else:
@@ -91,7 +91,7 @@ class DCDCCheckoutCase(SingleSatOnlyCase):
         if self.adcs_rd=="false" and self.sph_rd=="true":
             self.reset_cmd="true"
             # Reset takes at least one control cycle to complete
-            self.simulation.flight_controller.write_state("cycle.start", "true")
+            self.cycle(self.simulation)
             if (self.adcs_rd == "true" and self.sph_rd == "true"):
                 print("Passed")
             else:
@@ -105,7 +105,7 @@ class DCDCCheckoutCase(SingleSatOnlyCase):
         if self.adcs_rd=="false" and self.sph_rd=="false":
             self.reset_cmd="true"
             # Reset takes at least one control cycle to complete
-            self.simulation.flight_controller.write_state("cycle.start", "true")
+            self.cycle(self.simulation)
             if (self.adcs_rd == "true" and self.sph_rd == "true"):
                 print("Passed")
             else:

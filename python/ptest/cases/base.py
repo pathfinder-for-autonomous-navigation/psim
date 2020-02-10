@@ -16,6 +16,9 @@ class Case(object):
     def run_case(self, simulation):
         raise NotImplementedError
 
+    def cycle(self, simulation):
+        simulation.flight_controller.write_state("cycle.start", "true")
+
 # Base testcase for writing testcases that only work with a single-satellite mission.
 
 
