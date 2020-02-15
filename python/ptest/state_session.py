@@ -95,6 +95,7 @@ class StateSession(object):
                 if 'msg' in data:
                     # The logline represents a debugging message created by Flight Software. Report the message to the logger.
                     logline = f"[{data['time']}] ({data['svrty']}) {data['msg']}"
+                    print(logline)
                     self.logger.put(logline, add_time = False)
                 elif 'telem' in data:
                     logline = f"[{data['time']}] Received requested telemetry from spacecraft.\n"
