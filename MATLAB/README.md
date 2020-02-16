@@ -369,7 +369,7 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | plot_pointing_errors         |         |          | not started          | NA          | NA          |
 | plot_wheel_rates             |         |          | not started          | NA          | NA          |
 | plot_orbit_error             |         |          | not started          | NA          | NA          |
-| fancy_animation              |         |          | not started          | NA          | NA          |
+| plot_fancy_animation              |         |          | not started          | NA          | NA          |
 
 
 ## Matlab Add-Ons
