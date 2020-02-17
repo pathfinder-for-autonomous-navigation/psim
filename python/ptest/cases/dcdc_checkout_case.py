@@ -81,8 +81,12 @@ class DCDCCheckoutCase(SingleSatOnlyCase):
                 print("Passed")
             else:
                 print("Unable to reset pins")
+                print("ADCS Motor pin: "+self.adcs_rd)
+                print("Spike and Hold pin: "+self.sph_rd)
         else:
             print("Unable to turn ADCS Motor on and SpikeDock off")
+            print("ADCS Motor pin: "+self.adcs_rd)
+            print("Spike and Hold pin: "+self.sph_rd)
 
         print("Test Case 3: ADCS DCDC off, SPH + Prop DCDC on. Turn on all systems. ")
 
@@ -96,8 +100,12 @@ class DCDCCheckoutCase(SingleSatOnlyCase):
                 print("Passed")
             else:
                 print("Unable to reset pins")
+                print("ADCS Motor pin: "+self.adcs_rd)
+                print("Spike and Hold pin: "+self.sph_rd)
         else:
             print("Unable to turn ADCS Motor off and SpikeDock on")
+            print("ADCS Motor pin: "+self.adcs_rd)
+            print("Spike and Hold pin: "+self.sph_rd)
 
         print("Test Case 4: ADCS DCDC off, SPH + Prop DCDC off. Turn on all systems. ")
 
@@ -110,5 +118,9 @@ class DCDCCheckoutCase(SingleSatOnlyCase):
                 print("Passed")
             else:
                 print("Unable to reset pins")
+                print("ADCS Motor pin: "+self.adcs_rd)
+                print("Spike and Hold pin: "+self.sph_rd)
         else:
             print("Unable to disable pins")
+            print("ADCS Motor pin: "+self.adcs_rd)
+            print("Spike and Hold pin: "+self.sph_rd)
