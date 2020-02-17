@@ -11,6 +11,11 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         self.run_case_singlesat(simulation)
         print("Gomspace cases finished.")
 
+    def str_to_bool(self, str):
+        if str == "true":
+            return True
+        return False
+
     def run_case_singlesat(self, simulation):
         simulation.cycle_no = simulation.flight_controller.read_state(
             "pan.cycle_no")
@@ -56,8 +61,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
             # checked umbilical for which outputs should be 0 and 1:
             # 1-5 are all 5V, 6 is 3.3V
             if out_n is False:
-                print("Output-" + n +
-                      " is not on: ")
+                print("Output-" + n + " is not on")
 
         wdt_i2c_time_left = int(read_state(self, "gomspace.wdt_i2c_time_left"))
         if wdt_i2c_time_left < 99:
@@ -73,7 +77,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
                 for i in range(1, 5)]
         for n in range(0, len(temp)):
             temp_n = temp[n]
-            if temp_n < 20 or out_n > 22:
+            if temp_n < 20 or out_n > 25:
                 print("Temp-" + str(n) +
                       " is out of room temperature range [20, 25] degC at: " + str(temp_n))
 
@@ -85,13 +89,34 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         print("pptmode is: " + str(pptmode))
 
         # writable fields
-        power_cycle_output_cmd = [read_state(self, "gomspace.power_cycle_output" + str(i) + "_cmd")
+        power_cycle_output_cmd = [self.str_to_bool(read_state(self, "gomspace.power_cycle_output" + str(i) + "_cmd"))
                                   for i in range(1, 7)]
-        power_cycle_output_cmd_updated = [write_state(self, "gomspace.power_cycle_output" + str(i) + "_cmd",
-                                                      not power_cycle_output_cmd[i])
-                                          for i in range(0, len(power_cycle_output_cmd))]
+        cycle_no_init = int(read_state(self, "pan.cycle_no"))
+        cycle_no = cycle_no_init
+        print(power_cycle_output_cmd)
+        # wait for power cycling to be off
+        while (not all(cmd == False for cmd in power_cycle_output_cmd)) and cycle_no - cycle_no_init < 600:
+            power_cycle_output_cmd = [self.str_to_bool(read_state(self, "gomspace.power_cycle_output" + str(i) + "_cmd"))
+                                      for i in range(1, 7)]
+            print(power_cycle_output_cmd)
+            simulation.flight_controller.write_state(
+                self, "pan.cycle_no", cycle_no + 1)
+            cycle_no = int(read_state(self, "pan.cycle_no"))
+        # try to power cycle
+        power_cycle_output_cmd = [self.str_to_bool(write_state(self, "gomspace.power_cycle_output"
+                                                               + str(i) + "_cmd", "true"))
+                                  for i in range(1, 7)]
+        # wait for power cycle to complete
+        while (not all(cmd == False for cmd in power_cycle_output_cmd)) and cycle_no - cycle_no_init < 600:
+            power_cycle_output_cmd = [self.str_to_bool(read_state(self, "gomspace.power_cycle_output" + str(i) + "_cmd"))
+                                      for i in range(1, 7)]
+            print(power_cycle_output_cmd)
+            simulation.flight_controller.write_state(
+                "pan.cycle_no", cycle_no + 1)
+            cycle_no = int(read_state(self, "pan.cycle_no"))
+        # check if finished power cycling
         for n in range(0, len(power_cycle_output_cmd)):
-            if power_cycle_output_cmd[n] == power_cycle_output_cmd_updated[n]:
+            if power_cycle_output_cmd[n] == True:
                 print("Could not update power_cycle_output" + str(n))
 
         ppt_mode_cmd = int(read_state(self, "gomspace.pptmode_cmd"))
@@ -100,27 +125,29 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         if ppt_mode_cmd == ppt_mode_updated:
             print("Could not update pptmode")
 
-        heater_cmd = bool(read_state(self, "gomspace.heater_cmd"))
-        heater_cmd_updated = bool(write_state(
+        heater_cmd = self.str_to_bool(read_state(self, "gomspace.heater_cmd"))
+        heater_cmd_updated = self.str_to_bool(write_state(
             self, "gomspace.heater_cmd", not heater_cmd))
         if heater_cmd == heater_cmd_updated:
             print("Could not update heater")
 
-        counter_reset_cmd = bool(read_state(
+        counter_reset_cmd = self.str_to_bool(read_state(
             self, "gomspace.counter_reset_cmd"))
-        counter_reset_cmd_updated = bool(write_state(
+        counter_reset_cmd_updated = self.str_to_bool(write_state(
             self, "gomspace.counter_reset_cmd", not counter_reset_cmd))
         if counter_reset_cmd == counter_reset_cmd_updated:
             print("Could not update counter_reset")
 
-        gs_reset_cmd = bool(read_state(self, "gomspace.gs_reset_cmd"))
-        gs_reset_cmd_updated = bool(write_state(
+        gs_reset_cmd = self.str_to_bool(
+            read_state(self, "gomspace.gs_reset_cmd"))
+        gs_reset_cmd_updated = self.str_to_bool(write_state(
             self, "gomspace.gs_reset_cmd", not gs_reset_cmd))
         if gs_reset_cmd == gs_reset_cmd_updated:
             print("Could not update gs_reset")
 
-        gs_reboot_cmd = bool(read_state(self, "gomspace.gs_reboot_cmd"))
-        gs_reboot_cmd_updated = bool(write_state(
+        gs_reboot_cmd = self.str_to_bool(
+            read_state(self, "gomspace.gs_reboot_cmd"))
+        gs_reboot_cmd_updated = self.str_to_bool(write_state(
             self, "gomspace.gs_reboot_cmd", not gs_reboot_cmd))
         if gs_reboot_cmd == gs_reboot_cmd_updated:
             print("Could not update gs_reboot")
