@@ -2,7 +2,18 @@ function [czml] = main_state_trajectory2czml_struct(main_state_trajectory,vector
 %main_state_trajectory2czml_struct Prepares main_state_trajectory for
 % interactive animation using cesium viewer
 %   
-%   czml is a cell array of structs, which are the cesium packets
+%   czml(a cell array of structs): each struct is a cesium packet
+%   vector_names(string array):
+%       vector names from the `get_truth` function to animate at each sat
+%   color_names(string array):
+%       color names for each vector, they are like the matlab plot colors codes
+
+% Started by Nathan Zimmerberg on Feb 16, 2019
+% Authors: Nathan Zimmerberg (nhz2@cornell.edu)
+% Latest Revision: Feb 16, 2019
+% Pathfinder for Autonomous Navigation
+% Space Systems Design Studio
+% Cornell University
 global const
 if nargin<=1
     vector_names= [];
