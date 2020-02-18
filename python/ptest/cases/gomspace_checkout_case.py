@@ -114,6 +114,9 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
                 "pan.cycle_no", cycle_no + 1)
             cycle_no = int(read_state(self, "pan.cycle_no"))
         # check if finished power cycling
+        power_cycle_output_cmd = [self.str_to_bool(read_state(self, "gomspace.power_cycle_output"
+                                                              + str(i) + "_cmd"))
+                                  for i in range(1, 7)]
         for n in range(0, len(power_cycle_output_cmd)):
             if power_cycle_output_cmd[n] == True:
                 print("Could not update power_cycle_output" + str(n))
