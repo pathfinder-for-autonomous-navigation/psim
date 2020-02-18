@@ -106,6 +106,9 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
             simulation.flight_controller.write_state(
                 self, "pan.cycle_no", cycle_no + 1)
             cycle_no = int(read_state(self, "pan.cycle_no"))
+            if cycle_no - cycle_no_init == 600:
+                print(
+                    "Power cycled outputs could not turn off after 600 cycles (1 minute)")
         # wait for outputs to turn on again
         while (not all(out == True for out in output)) and cycle_no - cycle_no_init < 600:
             output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
@@ -113,6 +116,9 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
             simulation.flight_controller.write_state(
                 "pan.cycle_no", cycle_no + 1)
             cycle_no = int(read_state(self, "pan.cycle_no"))
+            if cycle_no - cycle_no_init == 600:
+                print(
+                    "Power cycled outputs could not turn on after 600 cycles (1 minute)")
         # check if finished power cycling
         power_cycle_output_cmd = [self.str_to_bool(read_state(self, "gomspace.power_cycle_output"
                                                               + str(i) + "_cmd"))
