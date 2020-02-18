@@ -53,7 +53,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         for n in range(0, len(curout)):
             print("curout" + str(n) + " is: " + str(curout[n]) + " mA")
 
-        output = [bool(read_state(self, "gomspace.output.output" + str(i)))
+        output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
                   for i in range(1, 7)]
 
         for n in range(0, len(output)):
@@ -61,7 +61,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
             # checked umbilical for which outputs should be 0 and 1:
             # 1-5 are all 5V, 6 is 3.3V
             if out_n is False:
-                print("Output-" + n + " is not on")
+                print("Output-" + str(n) + " is not on")
 
         wdt_i2c_time_left = int(read_state(self, "gomspace.wdt_i2c_time_left"))
         if wdt_i2c_time_left < 99:
@@ -93,24 +93,23 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
                                   for i in range(1, 7)]
         cycle_no_init = int(read_state(self, "pan.cycle_no"))
         cycle_no = cycle_no_init
-        print(power_cycle_output_cmd)
-        # wait for power cycling to be off
-        while (not all(cmd == False for cmd in power_cycle_output_cmd)) and cycle_no - cycle_no_init < 600:
-            power_cycle_output_cmd = [self.str_to_bool(read_state(self, "gomspace.power_cycle_output" + str(i) + "_cmd"))
-                                      for i in range(1, 7)]
-            print(power_cycle_output_cmd)
-            simulation.flight_controller.write_state(
-                self, "pan.cycle_no", cycle_no + 1)
-            cycle_no = int(read_state(self, "pan.cycle_no"))
-        # try to power cycle
+
+        # power cycling
+        # start power cycle
         power_cycle_output_cmd = [self.str_to_bool(write_state(self, "gomspace.power_cycle_output"
                                                                + str(i) + "_cmd", "true"))
                                   for i in range(1, 7)]
-        # wait for power cycle to complete
-        while (not all(cmd == False for cmd in power_cycle_output_cmd)) and cycle_no - cycle_no_init < 600:
-            power_cycle_output_cmd = [self.str_to_bool(read_state(self, "gomspace.power_cycle_output" + str(i) + "_cmd"))
-                                      for i in range(1, 7)]
-            print(power_cycle_output_cmd)
+        # wait for outputs to be off
+        while (not all(out == False for out in output)) and cycle_no - cycle_no_init < 600:
+            output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
+                      for i in range(1, 7)]
+            simulation.flight_controller.write_state(
+                self, "pan.cycle_no", cycle_no + 1)
+            cycle_no = int(read_state(self, "pan.cycle_no"))
+        # wait for outputs to turn on again
+        while (not all(out == True for out in output)) and cycle_no - cycle_no_init < 600:
+            output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
+                      for i in range(1, 7)]
             simulation.flight_controller.write_state(
                 "pan.cycle_no", cycle_no + 1)
             cycle_no = int(read_state(self, "pan.cycle_no"))
