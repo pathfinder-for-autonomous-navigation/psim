@@ -330,7 +330,7 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 
 | Function                     | Person  | Priority | Basic Matlab Version | Test Script | C++ Version |
 |------------------------------|---------|----------|----------------------|-------------|-------------|
-| get_truth                    | Nathan  |          | not started          | not started | NA          |
+| get_truth                    | Nathan  |          | wip          | wip | NA          |
 | initialize_main_state        | Nathan  |          | wip                  | not started | NA          |
 | sensor_reading               | Kyle    |          | wip                  | not started | NA          |
 | main_state_update            | Nathan  |          | wip                  | not started | NA          |
@@ -346,8 +346,8 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | env_atmosphere_density       | Sruti   |          | not started          | not started | NA          |
 | env_earth_attitude           | Nathan  |          | done                 | done        | wip         |
 | env_eclipse                  | Nathan  |          | done                 | not started | not started |
-| env_gravity                  |         |          | wip                  | not started | NA          |
-| env_magnetic_field           | Nathan  |          | wip                  | done        | wip         |
+| env_gravity                  | Nathan  |          | done                 | done | done          |
+| env_magnetic_field           | Nathan  |          | done                 | done        | wip         |
 | env_sun_vector               | Nathan  |          | done                 | done        | wip         |
 | utl_rotateframe              | Kyle    |          | done                 | done        | done        |
 | utl_quat_conj                | Kyle    |          | done                 | done        | done        |
@@ -364,12 +364,12 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | utl_compare_dynamics         |         |          | not started          | not started | NA          |
 | utl_compare_actuators        |         |          | not started          | not started | NA          |
 | utl_compare_sensors          |         |          | not started          | not started | NA          |
-| true_orbit_propagator        | Sruti   |          | not started          | not started | NA          |
-| plot_almost_conserved_values |         |          | not started          | NA          | NA          |
-| plot_pointing_errors         |         |          | not started          | NA          | NA          |
-| plot_wheel_rates             |         |          | not started          | NA          | NA          |
-| plot_orbit_error             |         |          | not started          | NA          | NA          |
-| fancy_animation              |         |          | not started          | NA          | NA          |
+| true_orbit_propagator        | Sruti   |          | wip                  | wip         | NA          |
+| plot_almost_conserved_values | Nathan  |          | done                 | NA          | NA          |
+| plot_pointing_errors         | Nathan  |          | done                 | NA          | NA          |
+| plot_wheel_rates             | Nathan  |          | done                 | NA          | NA          |
+| plot_orbit_error             | Nathan  |          | done                 | NA          | NA          |
+| plot_fancy_animation         | Nathan  |          | done                 | NA          | NA          |
 
 
 ## Matlab Add-Ons
@@ -380,5 +380,6 @@ There are a few required Add-Ons for Matlab
  * Ephemeris Data for Aerospace Toolbox
  * Aerospace Toolbox
  * Robotics System Toolbox
+ * Convert between RGB and Color Names
 
 In addition a C++ compiler is need, in matlab run `mex -setup C++` to ensure you have one.
