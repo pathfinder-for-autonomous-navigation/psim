@@ -17,7 +17,7 @@ tempfile=fopen("template.html");
 template= string(fread(tempfile,'*char')');
 fclose(tempfile);
 fullhtml = strrep(template,"PSIM_CZML",myjson);
-file = fopen(filename,'wt');
+file = fopen(filename,'w');
 fprintf(file, fullhtml);
 fclose(file);
 

@@ -27,7 +27,7 @@ start_secs= main_state_trajectory{1}.(names(1)).dynamics.time;
 duration_secs= main_state_trajectory{end}.(names(1)).dynamics.time-start_secs;
 end_time= start_time+seconds(duration_secs);
 interval_iso=string(start_time)+"/"+string(end_time);
-tempfile=fopen("model_data_uri.txt");
+tempfile=fopen("model_data_uri.txt",'rt');
 model_uri= char(fread(tempfile,'*char')');
 model_uri= string(model_uri(1:end-1));%remove end line
 fclose(tempfile);
