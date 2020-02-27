@@ -1,10 +1,13 @@
+
+
+
 function F_envdrag = env_atmospheric_drag(time,r,v)
 %input: mission time in sec
 % r position in ECI frame in m
 % v velocity in ECI frame in m/s
 % Omega longitude/right ascension of the ascending node in rad
 
-% outputs: Fenv_drag in N in direction of velocity % check dis ECI frame? 
+% outputs: Fenv_drag in direction of velocity ECI frame? 
 % assumes a simple, fully static exponentially decaying model (Vallado)
 
 global const
