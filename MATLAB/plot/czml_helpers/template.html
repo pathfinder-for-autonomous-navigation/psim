@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <!-- Use correct character set. -->
+        <meta charset="utf-8">
+        <!-- Tell IE to use the latest, best version. -->
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <!-- Make the app on mobile take up the full browser screen and disable user scaling. -->
+        <meta name="viewport"
+            content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+        <title>PSIM</title>
+        <!-- The Cesium library. -->
+        <script src="https://cesium.com/downloads/cesiumjs/releases/1.66/Build/Cesium/Cesium.js"></script>
+        <link href="https://cesium.com/downloads/cesiumjs/releases/1.66/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    </head>
+    <body>
+        <!-- A container for the Cesium Viewer to live in. -->
+        <div id="cesiumContainer"></div>
+        <!-- Our app code. -->
+        <script type="text/javascript">
+        (function () {
+            "use strict";
+            var czml = PSIM_CZML;
+            var viewer = new Cesium.Viewer('cesiumContainer', {
+                imageryProvider : new Cesium.TileMapServiceImageryProvider({
+                    url : Cesium.buildModuleUrl('Assets/Textures/NaturalEarthII')
+                }),
+                baseLayerPicker : false,
+                geocoder : false,
+                shouldAnimate : true
+            });
+            viewer.camera.flyHome(0);
+            viewer.scene.globe.enableLighting = true;
+
+            viewer.dataSources.add(Cesium.CzmlDataSource.load(czml));
+        }());
+
+        </script>
+
+    </body>
+</html>

@@ -107,7 +107,12 @@ class Case(object):
     def run_case(self):
         raise NotImplementedError
 
+    def cycle(self):
+        self.simulation.flight_controller.write_state("cycle.start", "true")
+
 # Base testcase for writing testcases that only work with a single-satellite mission.
+
+
 class SingleSatOnlyCase(Case):
     @property
     def single_sat_compatible(self):
@@ -130,6 +135,8 @@ class SingleSatOnlyCase(Case):
 
 # Base testcase for writing testcases that only work with a full mission simulation
 # with both satellites.
+
+
 class MissionCase(Case):
     @property
     def single_sat_compatible(self):
@@ -142,6 +149,7 @@ class MissionCase(Case):
 
     def run_case_fullmission(self):
         raise NotImplementedError
+
 
 class FlexibleCase(Case):
     @property
