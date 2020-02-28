@@ -6,49 +6,80 @@ class DeploymentToStandby(SingleSatOnlyCase):
     def sim_duration(self):
         return float("inf")
 
+    @property
+    def sim_initial_state(self):
+        # Start the spacecraft with zero angular rate in the body frame, 
+        # so that we exit detumble almost immediately.
+        return "detumbled"
+
     def setup_case_singlesat(self):
         self.test_stage = 'startup'
         self.deployment_hold_length = 100 # Number of cycles for which the satellite will be in a deployment hold. This
                                     # is an item that is configured on Flight Software.
-        self.max_detumble_cycles = 10 # Number of cycles for which we expect the satellite to be in detumble
+        self.elapsed_deployment = 0
+        self.max_detumble_cycles = 100 # Number of cycles for which we expect the satellite to be in detumble
+
+        # Let's be generous with what is allowable as "detumbled."
+        self.sim.flight_controller.write_state("detumble_safety_factor", 10)
+
+        # Prevent ADCS faults from causing transition to initialization hold
+        self.sim.flight_controller.write_state("adcs_monitor.functional_fault.suppress", "true")
+        self.sim.flight_controller.write_state("adcs_monitor.wheel1_fault.suppress", "true")
+        self.sim.flight_controller.write_state("adcs_monitor.wheel2_fault.suppress", "true")
+        self.sim.flight_controller.write_state("adcs_monitor.wheel3_fault.suppress", "true")
+        self.sim.flight_controller.write_state("adcs_monitor.wheel_pot_fault.suppress", "true")
+
+    def query_fc(self):
+        """Query satellite state on every cycle for mission manager-specific data"""
+
+        satellite_state = self.mission_states.get_by_num( \
+            int(self.sim.flight_controller.read_state("pan.state")))
+        true_elapsed = self.sim.flight_controller.read_state("pan.deployment.elapsed")
+
+        return satellite_state, true_elapsed
 
     def run_case_singlesat(self):
-        # Note: this function runs on every step of the sim, so it needs to be structured
-        # like a finite state machine.
+        satellite_state, true_elapsed = self.query_fc()        
 
         if self.test_stage == 'startup':
-            # Set some sim initial conditions
-            self.elapsed_deployment = 0
+            print("")
+            print("[TESTCASE] Entering startup state.")
 
-            if not self.satellite_is_in_state('startup'):
-                raise TestCaseFailure("Satellite was not in state {self.test_stage}.")
+            if not satellite_state == "startup":
+                raise TestCaseFailure(f"Satellite was not in state {self.test_stage}.")
             self.test_stage = 'deployment_hold'
+            print("[TESTCASE] Waiting for the deployment period to be over.")
 
         elif self.test_stage == 'deployment_hold':
             self.elapsed_deployment += 1
-            if self.elapsed_deployment == self.deployment_hold_length:
-                self.test_stage = 'detumble'
 
-        elif self.test_stage == 'detumble':
-            if not self.satellite_is_in_state('detumble'):
-                raise TestCaseFailure("Satellite failed to exit deployment wait period.")
-            else:
-                self.num_detumble_cycles = 0
-                self.test_stage = 'detumble_wait'
+            if self.elapsed_deployment == self.deployment_hold_length:
+                if satellite_state == "detumble":
+                    print("[TESTCASE] Deployment period is over. Entering detumble state.")
+                    self.num_detumble_cycles = 0
+                    self.test_stage = 'detumble_wait'
+                elif satellite_state == "initialization_hold":
+                    raise TestCaseFailure("Satellite went to initialization hold instead of detumble.")
+                else:
+                    raise TestCaseFailure(f"Satellite failed to exit deployment wait period. \
+                        Elapsed deployment period was {true_elapsed}.")
 
         elif self.test_stage == 'detumble_wait':
             self.num_detumble_cycles += 1
-            if self.num_detumble_cycles >= self.max_detumble_cycles:
-                if not self.satellite_is_in_state('standby'):
-                    raise TestCaseFailure("Satellite failed to exit detumble.")
-                else:
+            if self.num_detumble_cycles >= self.max_detumble_cycles or satellite_state == "standby":
+                if satellite_state == "standby":
+                    print("[TESTCASE] Successfully detumbled. Now in standby state.")
                     self.test_stage = 'standby'
+                else:
+                    raise TestCaseFailure("Satellite failed to exit detumble.")
 
         elif self.test_stage == 'standby':
-            print("Finished test case.")
+            print("[TESTCASE] Finished test case.")
+            self.test_stage = 'finished'
+
+        elif self.test_stage == 'finished':
+            # Stand by and do nothing.
+            pass
 
         else:
             raise TestCaseFailure("Invalid test case stage: {self.test_stage}.")
-
-    def satellite_is_in_state(self, state_name):
-        return self.sim.flight_controller.read_state("pan.state") == str(self.mission_states[state_name])
