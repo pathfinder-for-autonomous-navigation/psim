@@ -87,6 +87,8 @@ class Simulation(object):
         self.computer_state_follower, self.computer_state_leader = self.eng.initialize_computer_states(self.testcase.sim_initial_state, nargout=2)
         self.main_state_trajectory = []
 
+        self.send_initial_conditions_to_flight_computer()
+
         self.eng.workspace['const']['dt'] = 170e6  # Control cycle time in HOOTL/HITL = 170 ms = 170e6 ns
         self.dt = self.eng.workspace['const']['dt'] * 1e-9  # 120 ms
 
@@ -142,6 +144,10 @@ class Simulation(object):
         self.add_to_log("Simulation ended.")
         self.eng.quit()
 
+    def send_initial_conditions_to_flight_computer(self):
+        self.write_adcs_estimator_outputs(self.flight_controller_follower, self.main_state["follower"]["dynamics"])
+        self.write_adcs_estimator_outputs(self.flight_controller_leader, self.main_state["leader"]["dynamics"])
+
     def interact_fc(self):
         self.interact_fc_onesat(self.flight_controller_follower, self.sensor_readings_follower)
         self.interact_fc_onesat(self.flight_controller_leader, self.sensor_readings_leader)
@@ -174,6 +180,14 @@ class Simulation(object):
         flight_controller.write_state("piksi.pos", position_ecef)
         flight_controller.write_state("adcs_monitor.ssa_vec", sat2sun_body)
         flight_controller.write_state("adcs_monitor.mag_vec", magnetometer_body)
+
+    def write_adcs_estimator_outputs(self, flight_controller, dynamics):
+        """Write the initial angular rate and attitude quaternion to the flight software."""
+
+        q_body_eci = ",".join(["%.9f" % x[0] for x in dynamics["quat_body_eci"]])
+        w_body = ",".join(["%.9f" % x[0] for x in dynamics["angular_rate_body"]])
+        flight_controller.write_state("attitude_estimator.q_body_eci", q_body_eci)
+        flight_controller.write_state("attitude_estimator.w_body", w_body)
 
     def read_adcs_estimator_outputs(self, flight_controller):
         """
@@ -209,6 +223,9 @@ class SingleSatSimulation(Simulation):
 
     def setup_flight_controller(self):
         self.flight_controller = self.devices['FlightController']
+
+    def send_initial_conditions_to_flight_computer(self):
+        self.write_adcs_estimator_outputs(self.flight_controller, self.main_state["follower"]["dynamics"])
 
     def interact_fc(self):
         self.interact_fc_onesat(self.flight_controller, self.sensor_readings_follower)

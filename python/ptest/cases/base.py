@@ -3,17 +3,24 @@
 class TestCaseFailure(Exception):
     """Raise in case of test case failure."""
 
-def make_dict(arr):
-    """Converts array into a dictionary where the keys are values in the array and
-    the values are indices in the array."""
-    ret = {}
-    for i in range(len(arr)):
-        ret[arr[i]] = i
-    return ret
+class FSWEnum(object):
+    def __init__(self, arr):
+        self.arr = arr
+        self._indexed_by_name = {}
+        self._indexed_by_num = {}
+        for i in range(len(arr)):
+            self._indexed_by_name[arr[i]] = i
+            self._indexed_by_num[i] = arr[i]
+
+    def get_by_name(self, name):
+        return self._indexed_by_name[name]
+
+    def get_by_num(self, num):
+        return self._indexed_by_num[num]
 
 class Case(object):
     def __init__(self):
-        self.mission_states = make_dict([
+        self.mission_states = FSWEnum([
             "startup",
             "detumble",
             "initialization_hold",
@@ -28,7 +35,7 @@ class Case(object):
             "manual"
         ])
 
-        self.prop_states = make_dict([
+        self.prop_states = FSWEnum([
             "disabled",
             "idle",
             "pressurizing",
@@ -38,7 +45,7 @@ class Case(object):
             "handling_fault"
         ])
 
-        self.adcs_states = make_dict([
+        self.adcs_states = FSWEnum([
             "startup",
             "limited",
             "zero_torque",
@@ -49,7 +56,7 @@ class Case(object):
             "point_docking"
         ])
 
-        self.radio_states = make_dict([
+        self.radio_states = FSWEnum([
             "disabled",
             "wait",
             "transceive",
@@ -58,13 +65,13 @@ class Case(object):
             "config"
         ])
 
-        self.sat_designations = make_dict([
+        self.sat_designations = FSWEnum([
             "undecided",
             "leader",
             "follower"
         ])
 
-        self.piksi_modes = make_dict([
+        self.piksi_modes = FSWEnum([
             "spp",
             "fixed_rtk",
             "float_rtk",
