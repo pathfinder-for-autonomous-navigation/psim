@@ -1,9 +1,13 @@
 # Base classes for writing testcases.
-
 class TestCaseFailure(Exception):
     """Raise in case of test case failure."""
 
 class FSWEnum(object):
+    """
+    Class that encodes flight software enums into Python objects in
+    a way that makes them easy to access during testing.
+    """
+
     def __init__(self, arr):
         self.arr = arr
         self._indexed_by_name = {}
@@ -18,7 +22,12 @@ class FSWEnum(object):
     def get_by_num(self, num):
         return self._indexed_by_num[num]
 
+
 class Case(object):
+    """
+    Base class for all HITL/HOOTL testcases.
+    """
+
     def __init__(self):
         self.mission_states = FSWEnum([
             "startup",
@@ -108,12 +117,14 @@ class Case(object):
         raise NotImplementedError
 
     def cycle(self):
-        self.simulation.flight_controller.write_state("cycle.start", "true")
-
-# Base testcase for writing testcases that only work with a single-satellite mission.
+        self.sim.flight_controller.write_state("cycle.start", "true")
 
 
 class SingleSatOnlyCase(Case):
+    """
+    Base testcase for writing testcases that only work with a single-satellite mission.
+    """
+
     @property
     def single_sat_compatible(self):
         return True
@@ -133,11 +144,14 @@ class SingleSatOnlyCase(Case):
     def run_case_singlesat(self):
         raise NotImplementedError
 
-# Base testcase for writing testcases that only work with a full mission simulation
-# with both satellites.
 
 
 class MissionCase(Case):
+    """
+    Base testcase for writing testcases that only work with a full mission simulation
+    with both satellites.
+    """
+
     @property
     def single_sat_compatible(self):
         return False
@@ -152,6 +166,11 @@ class MissionCase(Case):
 
 
 class FlexibleCase(Case):
+    """
+    Base class for cases that should be able to work with either 1 or 2
+    satellites.
+    """
+
     @property
     def single_sat_compatible(self):
         return True

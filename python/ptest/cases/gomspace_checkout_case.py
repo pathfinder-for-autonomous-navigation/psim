@@ -5,10 +5,10 @@ from .base import SingleSatOnlyCase
 
 class GomspaceCheckoutCase(SingleSatOnlyCase):
 
-    def setup_case_singlesat(self, simulation):
-        simulation.flight_controller.write_state(
+    def setup_case_singlesat(self):
+        self.sim.flight_controller.write_state(
             "pan.state", 9)  # Manual state
-        self.run_case_singlesat(simulation)
+        self.run_case_singlesat()
         print("Gomspace cases finished.")
 
     def str_to_bool(self, str):
@@ -16,15 +16,15 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
             return True
         return False
 
-    def run_case_singlesat(self, simulation):
-        simulation.cycle_no = simulation.flight_controller.read_state(
+    def run_case_singlesat(self):
+        self.sim.cycle_no = self.sim.flight_controller.read_state(
             "pan.cycle_no")
 
         def read_state(self, string_state):
-            return simulation.flight_controller.read_state(string_state)
+            return self.sim.flight_controller.read_state(string_state)
 
         def write_state(self, string_state, state_value):
-            simulation.flight_controller.write_state(string_state, state_value)
+            self.sim.flight_controller.write_state(string_state, state_value)
             return read_state(self, string_state)
 
         # readable fields
@@ -103,7 +103,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         while (not all(out == False for out in output)) and cycle_no - cycle_no_init < 600:
             output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
                       for i in range(1, 7)]
-            simulation.flight_controller.write_state(
+            self.sim.flight_controller.write_state(
                 self, "pan.cycle_no", cycle_no + 1)
             cycle_no = int(read_state(self, "pan.cycle_no"))
             if cycle_no - cycle_no_init == 600:
@@ -113,7 +113,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         while (not all(out == True for out in output)) and cycle_no - cycle_no_init < 600:
             output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
                       for i in range(1, 7)]
-            simulation.flight_controller.write_state(
+            self.sim.flight_controller.write_state(
                 "pan.cycle_no", cycle_no + 1)
             cycle_no = int(read_state(self, "pan.cycle_no"))
             if cycle_no - cycle_no_init == 600:
