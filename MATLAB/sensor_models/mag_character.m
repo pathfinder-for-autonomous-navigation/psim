@@ -79,8 +79,9 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
     Fs = {};
     magnitudeYs = {};
     phaseYs = {};
-    peaks = [];
-    wherePeaks = [];
+    offset = [];
+    
+    fname4 = [names{s} 'allFFTs'];
     
     for j = 2:length(idx1)
         %NFFT = length(data(idx(j-1):idx(j),access(s,2))); %take mag reading can be 1/2 x/y/z
@@ -91,45 +92,66 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
         
         phaseY = unwrap(angle(Y));
         
-%         NFFTs(j) = NFFT; Fs{j} = F;
-%         Ys{j} = Y; magnitudeYs{j} = magnitudeY;
-%         phaseYs{j} = phaseY;
+        NFFTs(j) = NFFT; Fs{j} = F;
+        Ys{j} = Y; magnitudeYs{j} = magY;
+        phaseYs{j} = phaseY;
         
-%         %magY=mag2db(magY);
+        %magY=mag2db(magY);
+
+        fname0 = [names{s} 'freq' num2str(j)];
+        fname1 = [names{s} 'freq' num2str(j) '.mat'];
+        fname3 = [names{s} 'offsets'];
+        
         subplot(2,1,1);
-        hold on
+        %hold on %uncomment to see all frequencies overlap on eachother
+        gcf
         plot(F(1:NFFT/2),magY(1:NFFT/2));
         title('Magnitude response of signal');
         xlabel('Frequency Hz')
         ylabel('Magnitude(dB)');
-        legend('-DynamicLegend');
+        legend(fname0,'-DynamicLegend');
         if j == length(idx1)
             hold off
         end
+        
+        %find offset of peaks from 5,10,15....50 Hz
+        [M, I] = max(magY(2:NFFT/2));
+        peakFreq = F(I);
+%         if 5*(j-1) >= 20
+%             offset(j-1) = abs(peakFreq - 5*(j-1))-25;
+%         else
+        offset(j-1) = peakFreq - 5*(j-1);
+%         end
+        
         
         subplot(2,1,2);
         plot(F(1:NFFT/2),phaseY(1:NFFT/2));
-        hold on
+        %hold on %uncomment to see all frequencies overlap on eachother
+        gcf
         title('Phase response of signal');
         xlabel('Frequency Hz')
         ylabel('radians');
-        legend('-DynamicLegend');
+        legend(fname0,'-DynamicLegend');
         if j == length(idx1)
             hold off
         end
         
-        fname1 = [names{s} 'freq' num2str(j) '.mat'];
-        save(fname1)
-%         [M I] = max(magY);
-%         peaks = [peaks; M]; %get peak of mag reading
-%         wherePeaks = [wherePeaks; I]; %get location of max mag reading
-%         fprintf('finished plotting freq %f \n',j);
+        %save(fname1)
+        %saveas(gcf,fname0)
+        
+        fprintf('finished plotting freq %f \n',j);
     end
+   
+    save(fname4)
     
-    fname2 = [names{s} '.png'];
-    saveas(gcf,fname2)
     close all
-    
+    x_array = linspace(0,50,10);
+    plot(x_array, offset);
+    title('offset between mag freq peak and wheel freq');
+    xlabel('wheel freq')
+    ylabel('offset in Hz');
+    %saveas(gcf,fname3)
+   
 %     diff = zeros(10,1);
 %     for i = 1:length(diff)
 %         diff(i) = wherePeaks(i) - freq(i);
@@ -161,7 +183,7 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
 %         c = coeffvalues(curvefit); c = c.coefs; p.coeffs = c;
 %         P{k} = p; %packet of information for each frequency step
 %         methods(curvefit)
-%         fprintf('plotted freq %f\n',k);
+%         fprintf'plotted freq %f\n',k);
 %     end
 %     hold off
 %     legend('hide'); grid on;
