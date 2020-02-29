@@ -1,13 +1,21 @@
+config();
+%load GRACE data; in m, m/s, ECEF
+data = csvread('graceClean.csv',1,0);
+starttime = utl_grace2pantime(data(1,1));
+startr_ecef= data(1,2:4)';
+startv_ecef= data(1,8:10)';
+[startr_eci, startv_eci] = ECEFtoECI(starttime,startr_ecef,startv_ecef);
+[stopr_eci, stopv_eci] = ECEFtoECI(stoptime,stopr_ecef,stopv_ecef);
 
+[F_envdrag1,F_envdrag2] = env_atmospheric_drag1(starttime,startr_eci,startv_eci);
 
-
-function F_envdrag = env_atmospheric_drag(time,r,v)
+function [F_envdrag1,F_envdrag2] = env_atmospheric_drag1(time,r,v)
 %input: mission time in sec
 % r position in ECI frame in m
 % v velocity in ECI frame in m/s
 % Omega longitude/right ascension of the ascending node in rad
 
-% outputs: Fenv_drag in direction of velocity ECI frame? 
+% outputs: Fenv_drag in direction of velocity ECI frame
 % assumes a simple, fully static exponentially decaying model (Vallado)
 
 global const
@@ -42,9 +50,24 @@ v_rel = v - cross(const.earth_rate_ecef,r); %velocity relative to the rotating a
 %v_rel = v - cross([0;0;7.2921158553E-5],r); test
 
 %scaled up for GRACE
-F_envdrag = 57*-0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
+%F_envdrag1 = 57*-0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
+F_envdrag1 = -0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
+F_envdrag1 = reshape(F_envdrag1,[3,1]);
 
-F_envdrag = reshape(F_envdrag,[3,1]);
+%%%% get F_envdrag2 to compare to F_envdrag1
+v_rel_body = (initial_state.quat_body_eci)*v_rel; %rotates rel velocity from ECI to body frame
+q0 = initial_state.quat_body_eci(1);
+q1 = initial_state.quat_body_eci(2);
+q2 = initial_state.quat_body_eci(3);
+q3 = initial_state.quat_body_eci(4);
+%convert quat to euler angles
+euler = [atan((2*(q0*q1+q2*q3))/(1-2*(q1^2+q2^2)));...
+    asin(2*(q0*q2-q3*q1));...
+    atan((2*(q0*q3+q1*q2))/(1-2*(q2^2+q3^2)))];
+phi = euler(1); theta = euler(2); psi = euler(3);
+S1 = 0.03; S2 = 0.01; S3 = 0.03; %face areas in m^2
+
+
 end
 
 function [rho,H] = get_rho(h)
