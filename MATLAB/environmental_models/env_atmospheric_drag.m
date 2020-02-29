@@ -6,10 +6,12 @@ startr_ecef= data(1,2:4)';
 startv_ecef= data(1,8:10)';
 [startr_eci, startv_eci] = ECEFtoECI(starttime,startr_ecef,startv_ecef);
 [stopr_eci, stopv_eci] = ECEFtoECI(stoptime,stopr_ecef,stopv_ecef);
+%quat = initial_state.quat_body_eci;
+quat = utl_triad([0; 0; 1],[1; 0; 0],h_earth/norm(h_earth),rp_earth/norm(rp_earth));
 
-[F_envdrag1,F_envdrag2] = env_atmospheric_drag1(starttime,startr_eci,startv_eci);
+[F_envdrag1,F_envdrag2] = env_atmospheric_drag1(starttime,startr_eci,startv_eci,quat);
 
-function [F_envdrag1,F_envdrag2] = env_atmospheric_drag1(time,r,v)
+function [F_envdrag1,F_envdrag2] = env_atmospheric_drag1(time,r,v,quat)
 %input: mission time in sec
 % r position in ECI frame in m
 % v velocity in ECI frame in m/s
@@ -56,18 +58,24 @@ F_envdrag1 = reshape(F_envdrag1,[3,1]);
 
 %%%% get F_envdrag2 to compare to F_envdrag1
 v_rel_body = (initial_state.quat_body_eci)*v_rel; %rotates rel velocity from ECI to body frame
-q0 = initial_state.quat_body_eci(1);
-q1 = initial_state.quat_body_eci(2);
-q2 = initial_state.quat_body_eci(3);
-q3 = initial_state.quat_body_eci(4);
+q0 = quat(1); q1 = quat(2); q2 = quat(3); q3 = quat(4); 
+%q0 = initial_state.quat_body_eci(1);
+%q1 = initial_state.quat_body_eci(2);
+%q2 = initial_state.quat_body_eci(3);
+%q3 = initial_state.quat_body_eci(4);
 %convert quat to euler angles
 euler = [atan((2*(q0*q1+q2*q3))/(1-2*(q1^2+q2^2)));...
     asin(2*(q0*q2-q3*q1));...
     atan((2*(q0*q3+q1*q2))/(1-2*(q2^2+q3^2)))];
 phi = euler(1); theta = euler(2); psi = euler(3);
 S1 = 0.03; S2 = 0.01; S3 = 0.03; %face areas in m^2
+Cd = 0.82;
+da = Cd*(S1*abs(cos(phi))+S2*abs(sin(phi)));
+db = Cd*(S2*abs(cos(theta))+S3*abs(sin(theta)));
+dc = S1*abs(cos(psi))+S3*abs(sin(psi));
 
-
+F_envdrag2 = -0.5*rho*(da+db+dc)*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
+F_envdrag2 = reshape(F_envdrag2,[3,1]);
 end
 
 function [rho,H] = get_rho(h)
