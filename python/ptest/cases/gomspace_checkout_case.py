@@ -125,34 +125,34 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
                 print("Could not update power_cycle_output" + str(n))
 
         ppt_mode_cmd = int(self.read_state("gomspace.pptmode_cmd"))
-        ppt_mode_updated = int(write_state(
-            self, "gomspace.pptmode_cmd", (int(ppt_mode_cmd) + 1) % 2))
+        ppt_mode_updated = int(self.write_state(
+            "gomspace.pptmode_cmd", (int(ppt_mode_cmd) + 1) % 2))
         if ppt_mode_cmd == ppt_mode_updated:
             print("Could not update pptmode")
 
         heater_cmd = self.str_to_bool(self.read_state("gomspace.heater_cmd"))
-        heater_cmd_updated = self.str_to_bool(write_state(
-            self, "gomspace.heater_cmd", not heater_cmd))
+        heater_cmd_updated = self.str_to_bool(self.write_state(
+            "gomspace.heater_cmd", not heater_cmd))
         if heater_cmd == heater_cmd_updated:
             print("Could not update heater")
 
-        counter_reset_cmd = self.str_to_bool(read_state(
-            self, "gomspace.counter_reset_cmd"))
-        counter_reset_cmd_updated = self.str_to_bool(write_state(
-            self, "gomspace.counter_reset_cmd", not counter_reset_cmd))
+        counter_reset_cmd = self.str_to_bool(self.read_state(
+            "gomspace.counter_reset_cmd"))
+        counter_reset_cmd_updated = self.str_to_bool(self.write_state(
+            "gomspace.counter_reset_cmd", not counter_reset_cmd))
         if counter_reset_cmd == counter_reset_cmd_updated:
             print("Could not update counter_reset")
 
         gs_reset_cmd = self.str_to_bool(
             self.read_state("gomspace.gs_reset_cmd"))
-        gs_reset_cmd_updated = self.str_to_bool(write_state(
-            self, "gomspace.gs_reset_cmd", not gs_reset_cmd))
+        gs_reset_cmd_updated = self.str_to_bool(self.write_state(
+            "gomspace.gs_reset_cmd", not gs_reset_cmd))
         if gs_reset_cmd == gs_reset_cmd_updated:
             print("Could not update gs_reset")
 
         gs_reboot_cmd = self.str_to_bool(
             self.read_state("gomspace.gs_reboot_cmd"))
-        gs_reboot_cmd_updated = self.str_to_bool(write_state(
-            self, "gomspace.gs_reboot_cmd", not gs_reboot_cmd))
+        gs_reboot_cmd_updated = self.str_to_bool(self.write_state(
+            "gomspace.gs_reboot_cmd", not gs_reboot_cmd))
         if gs_reboot_cmd == gs_reboot_cmd_updated:
             print("Could not update gs_reboot")
