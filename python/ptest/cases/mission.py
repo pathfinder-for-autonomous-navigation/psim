@@ -10,16 +10,16 @@ class DeploymentToStandby(SingleSatOnlyCase):
     def sim_initial_state(self):
         # Start the spacecraft with zero angular rate in the body frame, 
         # so that we exit detumble almost immediately.
-        return "detumbled"
+        return "startup"
 
     def setup_case_singlesat(self):
         self.test_stage = 'startup'
         self.deployment_hold_length = 100 # Number of cycles for which the satellite will be in a deployment hold. This
-                                    # is an item that is configured on Flight Software.
+                                          # is an item that is configured on Flight Software.
         self.elapsed_deployment = 0
         self.max_detumble_cycles = 100 # Number of cycles for which we expect the satellite to be in detumble
 
-        # Let's be generous with what is allowable as "detumbled."
+        # Let's be generous with what angular rate is allowable as "detumbled."
         self.sim.flight_controller.write_state("detumble_safety_factor", 10)
 
         # Prevent ADCS faults from causing transition to initialization hold
@@ -39,7 +39,7 @@ class DeploymentToStandby(SingleSatOnlyCase):
         return satellite_state, true_elapsed
 
     def run_case_singlesat(self):
-        satellite_state, true_elapsed = self.query_fc()        
+        satellite_state, true_elapsed = self.query_fc()
 
         if self.test_stage == 'startup':
             print("")
