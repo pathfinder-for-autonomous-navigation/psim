@@ -116,10 +116,6 @@ class Case(object):
     def run_case(self):
         raise NotImplementedError
 
-    def cycle(self):
-        self.sim.flight_controller.write_state("cycle.start", "true")
-
-
 class SingleSatOnlyCase(Case):
     """
     Base testcase for writing testcases that only work with a single-satellite mission.
