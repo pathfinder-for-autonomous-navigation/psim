@@ -100,7 +100,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
                                                                + str(i) + "_cmd", "true"))
                                   for i in range(1, 7)]
         # wait for outputs to be off
-        while (not all(out == False for out in output)) and cycle_no - cycle_no_init < 600:
+        while (not all(out == False for out in output)) and cycle_no - cycle_no_init <= 600:
             output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
                       for i in range(1, 7)]
             simulation.flight_controller.write_state(
@@ -110,7 +110,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
                 print(
                     "Power cycled outputs could not turn off after 600 cycles (1 minute)")
         # wait for outputs to turn on again
-        while (not all(out == True for out in output)) and cycle_no - cycle_no_init < 600:
+        while (not all(out == True for out in output)) and cycle_no - cycle_no_init <= 600:
             output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
                       for i in range(1, 7)]
             simulation.flight_controller.write_state(
@@ -133,11 +133,17 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         if ppt_mode_cmd == ppt_mode_updated:
             print("Could not update pptmode")
 
-        heater_cmd = self.str_to_bool(read_state(self, "gomspace.heater_cmd"))
-        heater_cmd_updated = self.str_to_bool(write_state(
-            self, "gomspace.heater_cmd", not heater_cmd))
-        if heater_cmd == heater_cmd_updated:
-            print("Could not update heater")
+        heater_init = self.str_to_bool(read_state(self, "gomspace.heater"))
+        write_state(self, "gomspace.heater_cmd", str(not heater_init).lower())
+        heater_updated=self.str_to_bool(read_state(self, "gomspace.heater"))
+
+        cycle_init = int(read_state(self, "pan.cycle_no"))
+        cycle_no = int(read_state(self, "pan.cycle_no"))
+        while(cycle_no-cycle_init<100 and heater_init==heater_updated):
+            cycle_no = int(read_state(self, "pan.cycle_no"))
+
+        if (heater_init==heater_updated):
+            print("could not update heater")
 
         counter_reset_cmd = self.str_to_bool(read_state(
             self, "gomspace.counter_reset_cmd"))
@@ -155,7 +161,9 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
 
         gs_reboot_cmd = self.str_to_bool(
             read_state(self, "gomspace.gs_reboot_cmd"))
+        print(read_state(self, "gomspace.counter_boot"))
         gs_reboot_cmd_updated = self.str_to_bool(write_state(
-            self, "gomspace.gs_reboot_cmd", not gs_reboot_cmd))
+            self, "gomspace.gs_reboot_cmd", str(not gs_reboot_cmd).lower()))
+        print(read_state(self, "gomspace.counter_boot"))
         if gs_reboot_cmd == gs_reboot_cmd_updated:
             print("Could not update gs_reboot")
