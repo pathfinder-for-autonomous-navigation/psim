@@ -141,6 +141,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         cycle_no = int(read_state(self, "pan.cycle_no"))
         while(cycle_no-cycle_init<100 and heater_init==heater_updated):
             cycle_no = int(read_state(self, "pan.cycle_no"))
+            heater_updated=self.str_to_bool(read_state(self, "gomspace.heater"))
 
         if (heater_init==heater_updated):
             print("could not update heater")
