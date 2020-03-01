@@ -100,7 +100,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
                                                                + str(i) + "_cmd", "true"))
                                   for i in range(1, 7)]
         # wait for outputs to be off
-        while (not all(out == False for out in output)) and cycle_no - cycle_no_init <= 600:
+        while (not all(out == False for out in output)) and cycle_no - cycle_no_init < 600:
             output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
                       for i in range(1, 7)]
             simulation.flight_controller.write_state(
@@ -110,7 +110,7 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
                 print(
                     "Power cycled outputs could not turn off after 600 cycles (1 minute)")
         # wait for outputs to turn on again
-        while (not all(out == True for out in output)) and cycle_no - cycle_no_init <= 600:
+        while (not all(out == True for out in output)) and cycle_no - cycle_no_init < 600:
             output = [self.str_to_bool(read_state(self, "gomspace.output.output" + str(i)))
                       for i in range(1, 7)]
             simulation.flight_controller.write_state(
