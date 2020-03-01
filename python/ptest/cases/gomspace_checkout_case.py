@@ -148,22 +148,20 @@ class GomspaceCheckoutCase(SingleSatOnlyCase):
         counter_reset_cmd = self.str_to_bool(read_state(
             self, "gomspace.counter_reset_cmd"))
         counter_reset_cmd_updated = self.str_to_bool(write_state(
-            self, "gomspace.counter_reset_cmd", not counter_reset_cmd))
+            self, "gomspace.counter_reset_cmd", str(not counter_reset_cmd).lower())
         if counter_reset_cmd == counter_reset_cmd_updated:
             print("Could not update counter_reset")
 
         gs_reset_cmd = self.str_to_bool(
             read_state(self, "gomspace.gs_reset_cmd"))
         gs_reset_cmd_updated = self.str_to_bool(write_state(
-            self, "gomspace.gs_reset_cmd", not gs_reset_cmd))
+            self, "gomspace.gs_reset_cmd", str(not gs_reset_cmd).lower())
         if gs_reset_cmd == gs_reset_cmd_updated:
             print("Could not update gs_reset")
 
         gs_reboot_cmd = self.str_to_bool(
             read_state(self, "gomspace.gs_reboot_cmd"))
-        print(read_state(self, "gomspace.counter_boot"))
         gs_reboot_cmd_updated = self.str_to_bool(write_state(
             self, "gomspace.gs_reboot_cmd", str(not gs_reboot_cmd).lower()))
-        print(read_state(self, "gomspace.counter_boot"))
         if gs_reboot_cmd == gs_reboot_cmd_updated:
             print("Could not update gs_reboot")
