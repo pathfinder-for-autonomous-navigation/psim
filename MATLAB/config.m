@@ -154,13 +154,13 @@ gpspossdiv=30;
 gpsvelsdiv=10;
 cdgpspossdiv=0.5;
 const.single_gps_noise_covariance= diag([gpspossdiv^2*ones(3,1);gpsvelsdiv^2*ones(3,1);]);% (6x6 symetric matrix)
-%noise covariance of gps reading
+%noise covariance of gps reading  (mks units)
 const.initial_target_covariance= diag([10;10;10;1E-4;1E-4;1E-4;]);% (6x6 symetric matrix)
-%initial covariance used to initialize target state
+%initial covariance used to initialize target state  (mks units)
 const.fixed_cdgps_noise_covariance= diag([gpspossdiv^2*ones(3,1);gpsvelsdiv^2*ones(3,1);cdgpspossdiv^2*ones(3,1);]);% (9x9 symetric matrix)
-%noise covariance of cdgps reading in fixed mode
+%noise covariance of cdgps reading in fixed mode  (mks units)
 const.float_cdgps_noise_covariance= diag([1;1;1;1;1;1;1;1;1;]);% (9x9 symetric matrix)
-%noise covariance of cdgps reading in float mode
+%noise covariance of cdgps reading in float mode  (mks units)
 
 
 

@@ -288,11 +288,13 @@ standard diviation of the gyro noise (rad/s)
 standard diviation of the gyro bias (rad/s)
 ### ORBIT_ESTIMATION parameters
    * `time_for_stale_cdgps`(int64 scalar): time to wait before making the target estimate stale (ns)
-   * `orb_process_noise_var`(6x6 symetric matrix) Added variance for bad force models divided by timestep (mks units)
-   * `single_gps_noise_covariance`(6x6 symetric matrix) noise covariance of gps reading
-   * `fixed_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in fixed mode
-   * `float_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in float mode
-
+   * `orb_process_noise_var`(12x12 symetric matrix) Added variance for bad force models divided by timestep (mks units)
+   * `single_gps_noise_covariance`(6x6 symetric matrix) noise covariance of gps reading  (mks units)
+   * `initial_target_covariance`(6x6 symetric matrix) initial covariance used to initialize target state  (mks units)
+   * `fixed_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in fixed mode  (mks units)
+   * `float_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in float mode  (mks units)
+   * `orb_self_thrust_noise_sdiv` (positive scalar) ratio of thruster impulse that is noise
+   * `orb_target_thrust_noise_sdiv` (positive scalar) ratio of thruster impulse that is noise
 
 ## Functions to be implemented in C++
 update_FC_state and any function it uses including:
