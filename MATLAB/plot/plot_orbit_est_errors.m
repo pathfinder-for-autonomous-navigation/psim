@@ -23,7 +23,7 @@ for n=1:N
     %update orbit_est_state to the right time
     [~,self2target_r_ecef,self2target_v_ecef,r_ecef,v_ecef] ...
     = orb_run_estimator(...
-    orbit_est_state,nan(3,1),false,false,false,nan(3,1),nan(3,1),nan(3,1),dynamics.time_ns,nan(3,1),nan(3,1),0);
+    orbit_est_state,false,false,false,nan(3,1),nan(3,1),nan(3,1),dynamics.time_ns,nan(3,1),nan(3,1),0);
 
     error_r_ecef(:,n)= r_ecef-get_truth('position ecef',dynamics);
     error_v_ecef(:,n)= v_ecef-get_truth('velocity ecef',dynamics);
