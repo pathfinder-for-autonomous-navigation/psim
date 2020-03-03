@@ -70,12 +70,6 @@ if (my_satellite_state.sensors.gps_time_till_lock<=0)
     end
 end
 
-% This is a bandaid fix to let the DeploymentToStandby ptest case work.
-% The testcase depends on the attitude estimator working so that the satellite can
-% detumble quickly, but the estimator cannot work if the GPS position is NaN because
-% the GPS hasn't yet acquired lock. So this line of code forces GPS lock to exist.
-sensor_readings.position_ecef= position_ecef;
-
 end
 
 
