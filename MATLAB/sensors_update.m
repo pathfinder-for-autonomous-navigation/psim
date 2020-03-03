@@ -10,7 +10,7 @@ other_sensors= other_state.sensors;
 pos_eci= get_truth('position eci',self_dynamics);
 r_hat= pos_eci/norm(pos_eci);
 gps_antenna= get_truth('antenna eci',self_dynamics);
-if(dot(r_hat,gps_antenna)>cos(const.gps_max_angle))
+if(dot(r_hat,gps_antenna)>=cos(const.gps_max_angle))
     sensors.gps_time_till_lock= sensors.gps_time_till_lock - double(const.dt)*1E-9;
 else
     sensors.gps_time_till_lock= const.GPS_LOCK_TIME;
@@ -22,8 +22,8 @@ if (sensors.gps_time_till_lock<=0 && other_sensors.gps_time_till_lock<=0)
     relative_pos_eci_hat=relative_pos_eci/norm(relative_pos_eci);
     self_cdgps_antenna= get_truth('docking face eci',self_dynamics);
     other_cdgps_antenna= get_truth('docking face eci',other_dynamics);
-    if (dot(self_cdgps_antenna,relative_pos_eci_hat)>cos(const.cdgps_max_angle) ...
-            && -dot(other_cdgps_antenna,relative_pos_eci_hat)>cos(const.cdgps_max_angle)) ...
+    if (dot(self_cdgps_antenna,relative_pos_eci_hat)>=cos(const.cdgps_max_angle) ...
+            && -dot(other_cdgps_antenna,relative_pos_eci_hat)>=cos(const.cdgps_max_angle)) ...
             && (const.cdgps_max_range>=norm(relative_pos_eci))
         sensors.cdgps_time_till_lock= sensors.cdgps_time_till_lock - double(const.dt)*1E-9;
     else
