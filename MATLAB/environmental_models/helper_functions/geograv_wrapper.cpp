@@ -13,8 +13,8 @@
 */
 
 #include "mex.h"
-#include "../../../geograv/include/geograv.hpp"
-#include "../../../geograv/include/GGM05S.hpp"
+#include <geograv.hpp>
+#include <GGM05S.hpp>
 
 constexpr geograv::Coeff<40> GGM05S_trunc(GGM05S);
 
