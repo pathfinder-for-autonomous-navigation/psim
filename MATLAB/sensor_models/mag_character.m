@@ -2,8 +2,9 @@ clc
 clear all
 close all
 tic 
+warning('off','all') %disabled warning related to large output file sizes
 
-data = csvread('total.csv',1,0); %%%starts reading from row 2
+data = csvread('mag_data.csv',1,0); %%%starts reading from row 2
 
 %convert wheel freq from rad/sec to Hz
 data(:,8) = data(:,8)/(2*pi); %wheel 0 on [Hz]
@@ -82,6 +83,7 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
     offset = [];
     
     fname4 = [names{s} 'allFFTs'];
+    fname3 = [names{s} 'offsets'];
     
     for j = 2:length(idx1)
         %NFFT = length(data(idx(j-1):idx(j),access(s,2))); %take mag reading can be 1/2 x/y/z
@@ -100,16 +102,15 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
 
         fname0 = [names{s} 'freq' num2str(j)];
         fname1 = [names{s} 'freq' num2str(j) '.mat'];
-        fname3 = [names{s} 'offsets'];
         
         subplot(2,1,1);
         %hold on %uncomment to see all frequencies overlap on eachother
-        gcf
+        %gcf
         plot(F(1:NFFT/2),magY(1:NFFT/2));
-        title('Magnitude response of signal');
+        title(['Magnitude response of signal: ' fname0]);
         xlabel('Frequency Hz')
         ylabel('Magnitude(dB)');
-        legend(fname0,'-DynamicLegend');
+        %legend(fname0,'-DynamicLegend');
         if j == length(idx1)
             hold off
         end
@@ -127,22 +128,22 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
         subplot(2,1,2);
         plot(F(1:NFFT/2),phaseY(1:NFFT/2));
         %hold on %uncomment to see all frequencies overlap on eachother
-        gcf
-        title('Phase response of signal');
+        %gcf
+        title(['Phase response of signal: ' fname0]);
         xlabel('Frequency Hz')
         ylabel('radians');
-        legend(fname0,'-DynamicLegend');
+        %legend(fname0,'-DynamicLegend');
         if j == length(idx1)
             hold off
         end
         
-        %save(fname1)
-        %saveas(gcf,fname0)
+        save(fname1);
+        saveas(gcf,fname0);
         
         fprintf('finished plotting freq %f \n',j);
     end
    
-    save(fname4)
+    save(fname4);
     
     close all
     x_array = linspace(0,50,10);
@@ -150,7 +151,7 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
     title('offset between mag freq peak and wheel freq');
     xlabel('wheel freq')
     ylabel('offset in Hz');
-    %saveas(gcf,fname3)
+    saveas(gcf,fname3);
    
 %     diff = zeros(10,1);
 %     for i = 1:length(diff)
