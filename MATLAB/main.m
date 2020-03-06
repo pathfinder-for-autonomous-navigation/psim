@@ -7,8 +7,8 @@ global computer_state_leader_trajectory
 global rng_state_trajectory
 
 dt=double(const.dt) * 1e-9;
-t_max = 10000;% Amount of time simulated (s)
-t_int = 0.5;% Sampling interval        (s)
+t_max = 1000;% Amount of time simulated (s)
+t_int = 10;% Sampling interval        (s)
 num_steps = floor(t_max/dt);
 sample_rate = t_int/dt;
 condition='detumbled';%'tumbling';%

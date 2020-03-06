@@ -135,16 +135,32 @@ const.gyro_noise_sdiv= 0.1*pi/180;% (positive scalar):
 const.gyro_bias_sdiv= 1*pi/180;% (positive scalar):
 %standard diviation of the gyro bias (rad/s)
 %% ORBIT_ESTIMATION parameters %%
-const.time_for_stale_cdgps= int64(1E9)*int64(24*60*60);% (int64 scalar):
+const.time_for_stale_cdgps= int64(1E9)*int64(2*60*60);% (int64 scalar):
 % time to wait before making the target estimate stale (ns)
-const.orb_process_noise_var= diag([1E-10;1E-10;1E-10;1E-8;1E-8;1E-8;]);% (6x6 symetric matrix)
+sharedposprosdiv= 1E-2;
+indposprosdiv= 1E-2;
+sharedvelprosdiv= 1E-5;
+indvelprosdiv= 1E-6;
+selfprocessvar= diag([(indposprosdiv^2+sharedposprosdiv^2)*ones(3,1);(indvelprosdiv^2+sharedvelprosdiv^2)*ones(3,1);]);
+coprocessvar= diag([(sharedposprosdiv^2)*ones(3,1);(sharedvelprosdiv^2)*ones(3,1);]);
+const.orb_process_noise_var= [selfprocessvar, coprocessvar;
+                              coprocessvar',selfprocessvar;];% (12x12 symetric matrix)
 % Added variance for bad force models divided by timestep (mks units)
-const.single_gps_noise_covariance= diag([1;1;1;1;1;1;]);% (6x6 symetric matrix)
-%noise covariance of gps reading
-const.fixed_cdgps_noise_covariance= diag([1;1;1;1;1;1;0.1^2;0.1^2;0.1^2;]);% (9x9 symetric matrix)
-%noise covariance of cdgps reading in fixed mode
+const.orb_self_thrust_noise_sdiv= 0.2;% (positive scalar)
+% ratio of thruster impulse that is noise
+const.orb_target_thrust_noise_sdiv= 1.0;% (positive scalar)
+% ratio of thruster impulse that is noise
+gpspossdiv=30;
+gpsvelsdiv=10;
+cdgpspossdiv=0.5;
+const.single_gps_noise_covariance= diag([gpspossdiv^2*ones(3,1);gpsvelsdiv^2*ones(3,1);]);% (6x6 symetric matrix)
+%noise covariance of gps reading  (mks units)
+const.initial_target_covariance= diag([10;10;10;1E-4;1E-4;1E-4;]);% (6x6 symetric matrix)
+%initial covariance used to initialize target state  (mks units)
+const.fixed_cdgps_noise_covariance= diag([gpspossdiv^2*ones(3,1);gpsvelsdiv^2*ones(3,1);cdgpspossdiv^2*ones(3,1);]);% (9x9 symetric matrix)
+%noise covariance of cdgps reading in fixed mode  (mks units)
 const.float_cdgps_noise_covariance= diag([1;1;1;1;1;1;1;1;1;]);% (9x9 symetric matrix)
-%noise covariance of cdgps reading in float mode
+%noise covariance of cdgps reading in float mode  (mks units)
 
 
 
