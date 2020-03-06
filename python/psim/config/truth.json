@@ -2,11 +2,11 @@
     "follower" : {
         "position" : {
             "frame" : "eci",
-            "value" : [[1.0], [1.0], [1.0]]
+            "value" : [[0.0], [0.0], [0.0]]
         },
         "velocity" : {
             "frame" : "eci",
-            "value" : [[], [], []]
+            "value" : [[0.0], [0.0], [0.0]]
         },
         "angular_rate" : {
             "frame" : "body",
@@ -29,13 +29,10 @@
         }
     },
     "leader": {
-        "position" : {
+        "orbit" : {
             "frame" : "eci",
-            "value" : [[1.0], [1.0], [1.0]]
-        },
-        "velocity" : {
-            "frame" : "eci",
-            "value" : [[], [], []]
+            "position" : [[0.0], [0.0], [0.0]],
+            "velocity" : [[0.0], [0.0], [0.0]]
         },
         "angular_rate" : {
             "frame" : "body",
