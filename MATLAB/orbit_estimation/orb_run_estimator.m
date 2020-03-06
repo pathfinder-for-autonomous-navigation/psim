@@ -1,6 +1,6 @@
 function [state,self2target_r_ecef,self2target_v_ecef,r_ecef,v_ecef] ...
     = orb_run_estimator(...
-    state,maneuver_ecef,fixedrtk,reset_all,reset_target,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns)
+    state,fixedrtk,reset_all,reset_target,gps_r_ecef,gps_v_ecef,gps_self2target_r_ecef,time_ns,ground_target_r_ecef,ground_target_v_ecef,ground_time_ns)
 %ORB_RUN_ESTIMATOR updates the estimate of the both orbits.
 %   The estimator is an EKF, inspired by the CanX-4/-5 algorithm.
 %   https://tspace.library.utoronto.ca/bitstream/1807/25908/3/Roth_Niels_H_201011_MASc_thesis.pdf
@@ -24,8 +24,6 @@ function [state,self2target_r_ecef,self2target_v_ecef,r_ecef,v_ecef] ...
 %       self position (m)
 %   v_ecef(matrix (3,1)): 
 %       self velocity (m/s)
-%   maneuver_ecef(matrix (3,1)):
-%       maneuver impulse (Ns)
 %   fixedrtk(logical):
 %       whether or not the cdgps reading is fixed or float precision
 %   reset_all(logical):
@@ -148,8 +146,9 @@ function [state] = propagate_state(state,dt)
     %       Time step, how much time to update the state (ns)
     global const
     bad_force_related_var= const.orb_process_noise_var;%this relates to added variance for bad force models
-    state.self_covariance= state.self_covariance + 0.5*double(dt)*1E-9*bad_force_related_var;
-    state.target_covariance= state.target_covariance + 0.5*double(dt)*1E-9*bad_force_related_var;
+    state.self_covariance= state.self_covariance + 0.5*double(dt)*1E-9*bad_force_related_var(1:6,1:6);
+    state.target_covariance= state.target_covariance + 0.5*double(dt)*1E-9*bad_force_related_var(7:12,7:12);
+    state.self_target_cross_covariance= state.self_target_cross_covariance + 0.5*double(dt)*1E-9*bad_force_related_var(1:6,7:12);
     [state.r_ecef,state.v_ecef,jacobian,state.rel_target_r_ecef,state.rel_target_v_ecef,target_jacobian] = ...
         orb_short_orbit_prop(...
         state.r_ecef,state.v_ecef,state.rel_target_r_ecef,state.rel_target_v_ecef,double(dt)*1E-9,double(state.time_ns)*1E-9);
@@ -157,8 +156,9 @@ function [state] = propagate_state(state,dt)
     state.target_covariance= target_jacobian*state.self_covariance*target_jacobian';
     state.self_target_cross_covariance= jacobian*state.self_target_cross_covariance*target_jacobian';
     state.time_ns= state.time_ns + dt;
-    state.target_covariance= state.target_covariance + 0.5*double(dt)*1E-9*bad_force_related_var;
-    state.self_covariance= state.self_covariance + 0.5*double(dt)*1E-9*bad_force_related_var;
+    state.self_covariance= state.self_covariance + 0.5*double(dt)*1E-9*bad_force_related_var(1:6,1:6);
+    state.target_covariance= state.target_covariance + 0.5*double(dt)*1E-9*bad_force_related_var(7:12,7:12);
+    state.self_target_cross_covariance= state.self_target_cross_covariance + 0.5*double(dt)*1E-9*bad_force_related_var(1:6,7:12);
 end
 
 function [state] = update_with_noncdgps(state,gps_r_ecef,gps_v_ecef,time_ns)
@@ -236,7 +236,7 @@ end
 function [state] = init_target_orbit_ground(state,target_r_ecef,target_v_ecef,time_ns)
     global const
     state.self_target_cross_covariance= zeros(6,6);
-    state.target_covariance= const.single_gps_noise_covariance; %initialize covariance
+    state.target_covariance= const.initial_target_covariance; %initialize covariance
     %propagate target forward
     delta_t_ns= state.time_ns-time_ns;
     [target_r_ecef,target_v_ecef] = orb_long_orbit_prop(target_r_ecef, target_v_ecef, double(delta_t_ns)*1E-9, double(time_ns)*1E-9);
@@ -256,7 +256,7 @@ end
 function [x,P] = kalman_correction_step(x,y,H,P,R)
     % correction step of kalman filter, see canx paper eq 4.4 - 4.7
     %get kalman gain K
-    K= P*H'*inv(H*P*H'+ R);
-    P= (eye(length(x))-K*H)*P;
+    K= P*H'/(H*P*H'+ R);
+    P= (eye(length(x))-K*H)*P*(eye(length(x))-K*H)'+K*R*K';
     x= x + K*(y-H*x);
 end
