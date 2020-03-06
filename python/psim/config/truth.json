@@ -29,10 +29,13 @@
         }
     },
     "leader": {
-        "orbit" : {
+        "position" : {
             "frame" : "eci",
-            "position" : [[0.0], [0.0], [0.0]],
-            "velocity" : [[0.0], [0.0], [0.0]]
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "velocity" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0]]
         },
         "angular_rate" : {
             "frame" : "body",
