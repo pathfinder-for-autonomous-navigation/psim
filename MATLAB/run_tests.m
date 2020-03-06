@@ -10,6 +10,7 @@ runtests('test_initialize_computer_states');
 runtests('test_quaternion_math');
 runtests('test_utl_phase_angle');
 runtests('test_get_truth');
+runtests('test_util_area');
 runtests('test_adcs_pointer');
 runtests('test_adcs_detumbler');
 runtests('test_adcs_mag_bias_est');
