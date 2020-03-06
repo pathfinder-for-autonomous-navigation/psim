@@ -33,6 +33,7 @@ get_truth('docking face body',d);
 get_truth('time',d);
 get_truth('fuel mass',d);
 get_truth('orbital energy',d);
+get_truth('specific orbital energy',d);
 get_truth('rotational energy',d);
 get_truth('semimajor axis',d);
 get_truth('eccentricity',d);
