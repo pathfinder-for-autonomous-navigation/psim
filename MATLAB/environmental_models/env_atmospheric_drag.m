@@ -1,47 +1,36 @@
-function F_envdrag = env_atmospheric_drag(time,r,v)
+function [F_envdrag] = env_atmospheric_drag(r,v,quat_body_ecef)
 %input: mission time in sec
-% r position in ECI frame in m
-% v velocity in ECI frame in m/s
-% Omega longitude/right ascension of the ascending node in rad
+% r position in ECEF frame in m
+% v velocity in ECEF frame in m/s
 
-% outputs: Fenv_drag in N in direction of velocity % check dis ECI frame? 
+% outputs: Fenv_drag in direction of velocity ECEF frame
 % assumes a simple, fully static exponentially decaying model (Vallado)
 
-global const
-
-%time conversions (if using r_eci)
-UTC_leap = utl_time2datetime(time,const.INITGPS_WN);  %converts mission time in secs to datetime in UTCleapseconds
-%UTC_leap = utl_time2datetime(time,3); test
-offset = 2*86400; %offset of UTCLeapSeconds to UTC time
-del = datetime(0,0,0,0,0,offset);
-del.TimeZone = 'UTCLeapSeconds';
-UTC = UTC_leap - offset;
-
-r = reshape(r,[1,3]); %convert r from collumn vector to row vector for eci2lla
-%r_ecef = reshape(r_ecef,[1,3]); %convert r from collumn vector to row vector for ecef2lla
-
-v = reshape(v,[1,3]); %convert v from collumn vector to row vector for eci2lla
-% r: satellite position in ECI
-
-%%convert ECI coordinates to latitude, longitude, altitude (LLA) geodetic coordinates based on the Universal Coordinated Time (UTC) you specify
-lla = eci2lla(r, [UTC.Year UTC.Month UTC.Day UTC.Hour UTC.Minute UTC.Second]); 
-
-%ECEF coordinates to latitude, longitude, altitude (LLA) geodetic coordinates;  lla is in [degrees degrees meters]; planet model WGS84.
-%lla = ecef2lla(r_ecef);
+%%convert ECEF coordinates to latitude, longitude, altitude (LLA) geodetic coordinates
+lla = ecef2lla(r')'; 
 
 h = abs(lla(3)); %altitude of Position (m); geocentric altitude = geodetic altitude
 
-[rho,H] = get_rho(h);
+[rho,~] = get_rho(h);
 
-Cd = 0.8; %drag coefficient of angled cube
-A = const.satArea; %largest planar area of satellite in m^2
-v_rel = v - cross(const.earth_rate_ecef,r); %velocity relative to the rotating atmosphere
+%v_rel = v - cross(const.earth_rate_ecef,r); %velocity relative to the rotating atmosphere
 %v_rel = v - cross([0;0;7.2921158553E-5],r); test
 
 %scaled up for GRACE
-F_envdrag = 57*-0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
+%F_envdrag = 57*-0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame; scaled for grace 
+%F_envdrag = -0.5*rho*Cd*A*(v_rel*v_rel')*(v_rel./norm(v_rel)); %drag calculated in ECI frame
+%F_envdrag = reshape(F_envdrag,[3,1]);
 
+
+v_body = utl_rotateframe(quat_body_ecef,v);
+v_body_unit = v_body/norm(v_body);
+
+Cd = 1.15; %conservative drag coeff
+A = utl_area(v_body_unit);
+
+F_envdrag = -0.5*rho*Cd*A*(v*v')*(v./norm(v));
 F_envdrag = reshape(F_envdrag,[3,1]);
+
 end
 
 function [rho,H] = get_rho(h)
@@ -80,19 +69,15 @@ function [rho,H] = get_rho(h)
         5.70; 5.41; 5.38; 5.74; 6.15; 8.06;...
         11.6; 16.1; 20.6; 24.6; 26.3; 33.2;...
         38.5; 46.9; 52.5; 56.4; 59.4; 62.2;...
-        65.8; 79.0; 109.0; 164.0; 225.0; 268.0];
-    
+        65.8; 79.0; 109.0; 164.0; 225.0; 268.0];   
     idx = 0;
     for i = 1:length(hmin)
         if abs(h) >= hmin(i) && abs(h) < hmax(i)
             idx = i;
             break
         end
-    end
-    
+    end    
     rho = rho0(idx)*exp(-(h-h0(idx))/H(idx));
-    
-    
 end
 
     
