@@ -4,5 +4,8 @@ matrix:
       python: 3.6
       before_install:
         - export CI
+      install:
+        - pip install -U platformio
+        - platformio update
       script:
-        - echo "Passed!"
+        - platformio test --verbose --environment ci_github
