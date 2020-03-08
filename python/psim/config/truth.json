@@ -25,7 +25,7 @@
             "value" : [[0.0], [0.0], [0.0]]
         },
         "fuel_mass" : {
-            "value" : 1.0
+            "value" : 0.0
         }
     },
     "leader": {
@@ -54,7 +54,7 @@
             "value" : [[0.0], [0.0], [0.0]]
         },
         "fuel_mass" : {
-            "value" : 1.0
+            "value" : 0.0
         }
     },
     "shared" : {
