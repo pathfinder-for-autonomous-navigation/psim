@@ -1,9 +1,6 @@
 {
     "shared" : {
         "cdgps_model" : "",
-        "cdgps_lock_time" : {
-            "value" : 0.0
-        },
         "cdgps_time_till_lock" : {
             "value" : 0.0
         },
@@ -12,9 +9,7 @@
             "value" : [[0.0], [0.0], [0.0]]
         },
         "gps_model" : "",
-        "gps_lock_time" : {
-            "value" : 0.0
-        },
+
         "gps_time_till_lock" : {
             "value" : 0.0
         },

@@ -18,11 +18,15 @@ def _get_full_path(path):
 
 
 def _get_config_directories(directory, base_directory):
-    """Streams the directories obtained from walking up the configuration tree.
+    """Gives a list of the directories ecountered while walking down the
+    configuration tree.
 
     Args:
         directory:
         base_directory:
+
+    Returns:
+        List of directories.
     """
     # Ensure the base directory exists
     base_directory = _get_full_path(base_directory)
@@ -30,32 +34,36 @@ def _get_config_directories(directory, base_directory):
         raise RuntimeError('Invalid base configuration directory: %s' % base_directory)
 
     # Ensure the specified directory is valid
-    directory = _get_full_path(directory)
+    directory = _get_full_path(os.path.join(base_directory, directory))
     if not os.path.isdir(directory) or not directory.startswith(base_directory):
         raise RuntimeError('Invalid configuration directory: %s' % directory)
 
+    directories = list()
     while directory.startswith(base_directory):
-        yield directory
+        directories.append(directory)
         directory = _get_full_path(os.path.dirname(directory))
+
+    directories.reverse()
+    return directories
 
 
 def _get_module_dictionaries(module, directory, base_directory):
     """Streams the json dictionaries for the desired module encountered while
-    walking up the configuration tree.
+    walking down the configuration tree.
     
     Args:
         directory:
         base_directory:
         module:
     """
-    for _directory in _get_config_directories(base_directory, directory):
+    for _directory in _get_config_directories(directory, base_directory):
         potential_json = os.path.join(_directory, module + ".json")
         if os.path.isfile(potential_json):
             with open(potential_json, 'r') as _json:
                 yield json.load(_json)
 
 
-def load_module(module, directory, base_directory=_base_directory)
+def load_module(module, directory, base_directory=_base_directory):
     """
     Args:
         module:
@@ -67,10 +75,10 @@ def load_module(module, directory, base_directory=_base_directory)
     def _search_for_sub_dictionary(dictionary, sub_dictionary):
         _sub_dictionary = dict()
         if (sub_dictionary in dictionary.keys()):
-            _sub_dictionary = dictionary['shared']
+            _sub_dictionary = dictionary[sub_dictionary]
             if not (type(_sub_dictionary) is dict):
                 raise RuntimeError('"%s" entry is expected to be a dictionary' % sub_dictionary)
-        
+
         return _sub_dictionary
 
     leader = dict()
@@ -93,9 +101,4 @@ def load_module(module, directory, base_directory=_base_directory)
     return leader, follower
 
 
-def load_modules(modules, directory, base_directory=_base_directory):
-    """
-    """
-
-
-load('psim/config/deployment')
+# load_module('truth', 'psim/config/deployment')
