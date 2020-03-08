@@ -8,21 +8,22 @@ Script to initialize const global variables.
 global const
 
 [filepath, name, ext] = fileparts(mfilename("fullpath"));
-addpath(strcat(filepath, '/utl'));
-addpath(strcat(filepath, '/environmental_models'));
-addpath(strcat(filepath, '/environmental_models/helper_functions'));
-addpath(strcat(filepath, '/plot'));
-addpath(strcat(filepath, '/plot/czml_helpers'));
-addpath(strcat(filepath, '/adcs'));
-addpath(strcat(filepath, '/orbit_estimation'));
-addpath(strcat(filepath, '/test'));
-
+addpath(genpath(strcat(filepath, '/utl')));
+addpath(genpath(strcat(filepath, '/environmental_models')));
+addpath(genpath(strcat(filepath, '/plot')));
+addpath(genpath(strcat(filepath, '/adcs')));
+addpath(genpath(strcat(filepath, '/orbit_estimation')));
+addpath(genpath(strcat(filepath, '/test')));
+addpath(genpath(strcat(filepath, '/3rd_Party_Libraries')));
+%generate_mex_code();
 
 %Time
 const.INITGPS_WN= 2045;% positive int
+const.gps_epoch_tai_jd1= 2444244.5;
+const.gps_epoch_tai_jd2= 0.000219907407407407;
 % initial gps week number, epoch for time.
-const.INIT_DYEAR= decyear(utl_time2datetime(0.0,const.INITGPS_WN));
-
+%decyear(utl_time2datetime(0.0,1))
+const.INIT_DYEAR= UTC2YearFrac(2444244.5+7*const.INITGPS_WN,0);
 const.mu = 3986004.415e8;%3.986e14;% positive scalar
 % Earth's gravitational constant (m^3/s^2)
 const.mu_moon = 4.9048695E12; % positive scalar
@@ -165,6 +166,6 @@ const.float_cdgps_noise_covariance= diag([1;1;1;1;1;1;1;1;1;]);% (9x9 symetric m
 
 
 
-generate_mex_code();
+
 
 end
