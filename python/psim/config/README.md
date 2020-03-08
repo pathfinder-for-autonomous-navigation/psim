@@ -38,9 +38,6 @@
 
 * `cdgps_model` String specifying the model used to simulate the CDGPS sensor.
 
-* `cdgps_lock_time` Time CDGPS takes to lock onto the other satellite is seconds.
-    * `value` : scalar
-
 * `cdgps_time_till_lock` Time until CDGPS lock will be acquired in seconds assuming conditions for a lock remain.
     * `value` : scalar
 
@@ -49,9 +46,6 @@
     * `value` : three dimensional column vector
 
 * `gps_model` String specifying the model used to simulate the GPS sensor.
-
-* `gps_lock_time` Time GPS takes to lock onto the constellation.
-    * `value` : scalar
 
 * `cdgps_time_till_lock` Time until GPS lock will be acquired in seconds assuming conditions for a lock remain.
     * `value` : scalar
