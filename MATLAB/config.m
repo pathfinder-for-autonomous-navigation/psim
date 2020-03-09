@@ -7,15 +7,7 @@ Script to initialize const global variables.
 %}
 global const
 
-[filepath, name, ext] = fileparts(mfilename("fullpath"));
-addpath(strcat(filepath, '/utl'));
-addpath(strcat(filepath, '/environmental_models'));
-addpath(strcat(filepath, '/environmental_models/helper_functions'));
-addpath(strcat(filepath, '/plot'));
-addpath(strcat(filepath, '/plot/czml_helpers'));
-addpath(strcat(filepath, '/adcs'));
-addpath(strcat(filepath, '/orbit_estimation'));
-addpath(strcat(filepath, '/test'));
+setup_path()
 
 
 %Time
