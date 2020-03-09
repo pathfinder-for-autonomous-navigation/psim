@@ -13,10 +13,12 @@ setup_path();
 %Time
 const.INITGPS_WN= 2045;% positive int
 % initial gps week number, epoch for time.
-const.gps_epoch_tai_jd1= 2444244.5;
-const.gps_epoch_tai_jd2= 0.000219907407407407;
-const.pan_epoch_tai_jd1= 2444244.5+7*const.INITGPS_WN;
-const.pan_epoch_tai_jd2= 0.000219907407407407;
+gps_epoch_tai_jd1= 2444244;
+gps_epoch_tai_jd2= 0.500219907407407407;
+const.pan_epoch_tai_jd1= 2444244+7*const.INITGPS_WN;
+%part one of a two part julian date for pan epoch (julian date tai)
+const.pan_epoch_tai_jd2= 0.500219907407407407;
+%part two of a two part julian date for pan epoch (julian date tai)
 
 %decyear(utl_time2datetime(0.0,const.INITGPS_WN))
 [a,b]=TAI2UTC(const.pan_epoch_tai_jd1,const.pan_epoch_tai_jd2);
