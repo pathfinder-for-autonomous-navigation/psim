@@ -2,3 +2,7 @@
 	path = lin
 	url = https://github.com/kkrol27/lin.git
 	branch = pan/master
+[submodule "MATLAB/3rd_Party_Libraries/TrackerComponentLibrary"]
+	path = MATLAB/3rd_Party_Libraries/TrackerComponentLibrary
+	url = https://github.com/pathfinder-for-autonomous-navigation/TrackerComponentLibrary.git
+	branch = master
