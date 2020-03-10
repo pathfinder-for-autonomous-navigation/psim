@@ -1,32 +1,36 @@
-function [estimator,initest] = sqrt_EKF_addnoise(jac_updater,procovsqrt,mescovsqrtdiag)
+function [estimator,initest] = sqrt_EKF_addnoise(jac_updater,SQ,messdiv)
 %sqrt_EKF_addnoise Summary of this function goes here
-%   Detailed explanation goes here
-    statesize= length(procovsqrt);
-    measuresize= length(mescovsqrtdiag);
-    
+%       [J,x]=jac_updater(x) 
+%       SQ The xDimX xDim lower-triangular square root of the process
+%              noise covariance matrix.
+    l= length(SQ);
     function initialstate= initestfn()
         %function to initialize estimator
         initialstate= struct();
-        initialstate.Psqrt= nans(statesize);
-        initialstate.est= nans(statesize);
+        initialstate.S= nan(l);
+        initialstate.x= nan(l,1);
     end
     function [state,estimate]=estimatorfn(state,measure)
         %function to run the estimator
-        filtervalid= all(isfinite(state.Psqrt)) && ...
-                     all(isreal(state.Psqrt)) && ...
-                     all(isfinite(state.est)) && ...
-                     all(isreal(state.est));
+        filtervalid= all(isfinite(state.S),'all') && ...
+                     all(isreal(state.S),'all') && ...
+                     all(isfinite(state.x)) && ...
+                     all(isreal(state.x));
         measurevalid= all(isfinite(measure)) && ...
                       all(isreal(measure));        
         if filtervalid 
         	%update time
-            x=state.est;
-            [J,x]=feval(jac_updater,x);
-            
+            [J,state.x]=feval(jac_updater,state.x);
+            [~, state.S]=sqrtDiscKalPred(state.x,state.S,J,SQ);
+            if measurevalid
+                %correct estimate
+                [state.x, state.S,~,~,~]=sqrtKalmanUpdate(state.x,state.S,measure,diag(messdiv),eye(l));
+            end
         else
-            estimate=measure;
-            state.Psqrt=diag(mescovsqrtdiag);
+            state.x=measure;
+            state.S=diag(messdiv);
         end
+        estimate=state.x;
     end
     initest = @initestfn;
     estimator = @estimatorfn;

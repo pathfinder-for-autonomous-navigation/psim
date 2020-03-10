@@ -1,6 +1,5 @@
 function [estimates,states] = sample_estimation(estimator,initest,measures)
 %sample_estimation Feeds the estimator the measures
-%   Detailed explanation goes here
 
 states{1}=feval(initest);
 s=size(measures);
