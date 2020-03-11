@@ -32,7 +32,7 @@ rel_target_v_ecef= nan(3,1);
 for i= 1:(N)
     [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jacobian] ... 
         = orb_short_orbit_prop(...
-        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime+dt*i);
+        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime+dt*i,const.earth_rate_ecef);
 end
 assert(norm(r_final-r_ecef)<0.01,"position too far off from reference integrator "+norm(r_final-r_ecef))
 assert(norm(v_final-v_ecef)<1E-4,"velocity too far off from reference integrator "+norm(v_final-v_ecef))
@@ -45,7 +45,7 @@ rel_target_v_ecef= 1*ones(3,1);
 for i= 1:(N)
     [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jacobian] ... 
         = orb_short_orbit_prop(...
-        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime+dt*i);
+        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime+dt*i,const.earth_rate_ecef);
 end
 assert(norm(r_final-r_ecef-rel_target_r_ecef)<1E-2,"position too far off from reference integrator "+norm(r_final-r_ecef-rel_target_r_ecef))
 assert(norm(v_final-v_ecef-rel_target_v_ecef)<1E-4,"velocity too far off from reference integrator "+norm(v_final-v_ecef-rel_target_v_ecef))
@@ -58,7 +58,7 @@ rel_target_v_ecef= 1*ones(3,1);
 for i= 1:(N)
     [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jacobian] ... 
         = orb_short_orbit_prop(...
-        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,-dt,starttime+dt*(N+1)-dt*i);
+        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,-dt,starttime+dt*(N+1)-dt*i,const.earth_rate_ecef);
 end
 assert(norm(startr_ecef-r_ecef-rel_target_r_ecef)<1E-2,"position too far off from reference integrator "+norm(startr_ecef-r_ecef-rel_target_r_ecef))
 assert(norm(startv_ecef-v_ecef-rel_target_v_ecef)<1E-4,"velocity too far off from reference integrator "+norm(startv_ecef-v_ecef-rel_target_v_ecef))
@@ -74,7 +74,7 @@ for i=1:100
     J=eye(6);
     [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jacobian] ... 
         = orb_short_orbit_prop(...
-        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime);
+        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime,const.earth_rate_ecef);
     J=jacobian*J;
     error= norm(J*[start_r_rel; start_v_rel;]-[rel_target_r_ecef; rel_target_v_ecef;]);
     assert(error<1E-9,"self jacobian finite diff failed "+ error)
@@ -95,7 +95,7 @@ for i=1:100
     rel_target_v_ecef= v0+start_v_rel;
     [~,~,~,rel_target_r_ecef,rel_target_v_ecef,~] ... 
         = orb_short_orbit_prop(...
-        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime);
+        r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime,const.earth_rate_ecef);
     error= norm(J*[start_r_rel; start_v_rel;]-[rel_target_r_ecef-r1; rel_target_v_ecef-v1;]);
     assert(error<1E-9,"self jacobian finite diff failed "+ error)
 end
@@ -107,6 +107,6 @@ rel_target_r_ecef= 1E5*ones(3,1);
 rel_target_v_ecef= 1E2*ones(3,1);
 [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jacobian] ... 
 	= orb_short_orbit_prop(...
-	r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime);
+	r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,starttime,const.earth_rate_ecef);
 assert(abs(det(jacobian)-1)<1E-12,"Jacobian isn't symplectic")
 assert(abs(det(target_jacobian)-1)<1E-12,"Jacobian isn't symplectic")

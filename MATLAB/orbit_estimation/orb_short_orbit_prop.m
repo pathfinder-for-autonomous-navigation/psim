@@ -1,4 +1,4 @@
-function [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jacobian] = orb_short_orbit_prop(r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,start_time)
+function [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jacobian] = orb_short_orbit_prop(r_ecef,v_ecef,rel_target_r_ecef,rel_target_v_ecef,dt,start_time,earth_rate_ecef)
 %orb_short_orbit_prop Updates orbit, and gets the jacbian.
 %   note the target is relative just to avoid floating pointing errors, for
 %   the jacobians, they are as if the target is completely seperate.
@@ -24,7 +24,9 @@ function [r_ecef,v_ecef,jacobian,rel_target_r_ecef,rel_target_v_ecef,target_jaco
 %   dt(double -0.2 to 0.2):
 %       Time step, how much time to update the orbit (s)
 %   start_time(double): seconds since const.INITGPS_WN
-%
+%   earth_rate_ecef(matrix (3,1)):
+%       earth rotation rate in ecef (rad/s)
+
 % Started by Nathan Zimmerberg on Jan 29, 2020
 % Authors: Nathan Zimmerberg (nhz2@cornell.edu)
 % Latest Revision: Jan 29, 2020
@@ -35,9 +37,9 @@ global const
 
 %% step 1a ecef->ecef0
 r_ecef0= r_ecef;
-v_ecef0= v_ecef+cross(const.earth_rate_ecef,r_ecef);
+v_ecef0= v_ecef+cross(earth_rate_ecef,r_ecef);
 rel_target_r_ecef0= rel_target_r_ecef;
-rel_target_v_ecef0= rel_target_v_ecef+cross(const.earth_rate_ecef,rel_target_r_ecef);
+rel_target_v_ecef0= rel_target_v_ecef+cross(earth_rate_ecef,rel_target_r_ecef);
 %% step 1b get circular orbit reference
 energy= 0.5*dot(v_ecef0,v_ecef0)-const.mu/norm(r_ecef0);
 a=-const.mu/2/energy;
@@ -87,66 +89,64 @@ v_ecef= dcm_ecef_ecef0*v_ecef0;
 rel_target_r_ecef= dcm_ecef_ecef0*rel_target_r_ecef0;
 rel_target_v_ecef= dcm_ecef_ecef0*rel_target_v_ecef0;
 %% step 6 remove cross r term from velocity
-v_ecef= v_ecef-cross(const.earth_rate_ecef,r_ecef);
-rel_target_v_ecef= rel_target_v_ecef-cross(const.earth_rate_ecef,rel_target_r_ecef);
+v_ecef= v_ecef-cross(earth_rate_ecef,r_ecef);
+rel_target_v_ecef= rel_target_v_ecef-cross(earth_rate_ecef,rel_target_r_ecef);
 
 %% compute jacobians
 jacobian= get_jacobian(r_half_ecef0,dcm_ecef_ecef0,dt);
 target_jacobian= get_jacobian(target_pos_half_ecef0,dcm_ecef_ecef0,dt);
-end
 
-function [r,v]= circular_orbit(t,t0,omega,x,y)
-    %Returns the position from circular orbit at time t in ecef0
-    theta= (t-t0)*norm(omega);
-    r= x*cos(theta)+y*sin(theta);
-    v= cross(omega,r);
-end
 
-function [A_EI] = relative_earth_dcm(dt)
-    %relative_earth_dcm returns the dcm to rotate from initial ecef to ecef
-    %dt seconds latter.
-    global const
-    earth_axis= const.earth_rate_ecef/norm(const.earth_rate_ecef);
-    earth_omega= norm(const.earth_rate_ecef);
-    theta= earth_omega*dt;% earth rotation angle
-    A_EI= cos(theta)*eye(3)-sin(theta)*cross_product_matrix(earth_axis)+(1-cos(theta))*(earth_axis*earth_axis');
-end
+    function [r,v]= circular_orbit(t,t0,omega,x,y)
+        %Returns the position from circular orbit at time t in ecef0
+        theta= (t-t0)*norm(omega);
+        r= x*cos(theta)+y*sin(theta);
+        v= cross(omega,r);
+    end
 
-function M = cross_product_matrix(x)
-    %cross_product_matrix 
-    % see eq 2.55 in the ADC book
-    M=[ 0 -x(3) x(2);
-        x(3) 0 -x(1);
-        -x(2) x(1) 0;];
-end
+    function [A_EI] = relative_earth_dcm(dt)
+        %relative_earth_dcm returns the dcm to rotate from initial ecef to ecef
+        %dt seconds latter.
+        earth_axis= earth_rate_ecef/norm(earth_rate_ecef);
+        earth_omega= norm(earth_rate_ecef);
+        theta= earth_omega*dt;% earth rotation angle
+        A_EI= cos(theta)*eye(3)-sin(theta)*cross_product_matrix(earth_axis)+(1-cos(theta))*(earth_axis*earth_axis');
+    end
 
-function H = hessian_helper(x)
-    %returns the hessian of gravity, mks units
-    %from equation (3.154) in Fundamentals of Spacecraft Attitude Determination and Control
-    global const
-    r= norm(x);
-    H= -const.mu/r^3*(eye(3)-3*(x*x')/r^2);
-end
+    function M = cross_product_matrix(x)
+        %cross_product_matrix 
+        % see eq 2.55 in the ADC book
+        M=[ 0 -x(3) x(2);
+            x(3) 0 -x(1);
+            -x(2) x(1) 0;];
+    end
 
-function [J]= get_jacobian(r_half_ecef0,dcm_ecef_ecef0,dt)
-    %returns the jacobians
-    %target_r_half_ecef0 and r_half_ecef0 are to position vetors on the
-    %half step mks units, dt is the time step.
-    %dcm_ecef_ecef0 is the dcm to rotate from initial ecef to ecef
-    %dt seconds latter.
-    global const
-    wx= cross_product_matrix(const.earth_rate_ecef);
-    H= hessian_helper(r_half_ecef0);
-    A= dcm_ecef_ecef0;
-    Hdt= H*dt;
-    I= eye(3);
-    iwx= I+dt*0.5*wx;
-    hiwx= Hdt*iwx;
-    rr41= I+dt*wx+hiwx*dt*0.5;
-    rv41= dt*I+Hdt*dt*dt*0.25;
-    vr41= hiwx+wx;
-    vv41= I+Hdt*dt*0.5;
-    wxtA= wx'*A;
-    J= [A*rr41 A*rv41;
-        wxtA*rr41+A*vr41 A*vv41+wxtA*rv41;];
+    function H = hessian_helper(x)
+        %returns the hessian of gravity, mks units
+        %from equation (3.154) in Fundamentals of Spacecraft Attitude Determination and Control
+        r= norm(x);
+        H= -const.mu/r^3*(eye(3)-3*(x*x')/r^2);
+    end
+
+    function [J]= get_jacobian(r_half_ecef0,dcm_ecef_ecef0,dt)
+        %returns the jacobians
+        %target_r_half_ecef0 and r_half_ecef0 are to position vetors on the
+        %half step mks units, dt is the time step.
+        %dcm_ecef_ecef0 is the dcm to rotate from initial ecef to ecef
+        %dt seconds latter.
+        wx= cross_product_matrix(earth_rate_ecef);
+        H= hessian_helper(r_half_ecef0);
+        A= dcm_ecef_ecef0;
+        Hdt= H*dt;
+        I= eye(3);
+        iwx= I+dt*0.5*wx;
+        hiwx= Hdt*iwx;
+        rr41= I+dt*wx+hiwx*dt*0.5;
+        rv41= dt*I+Hdt*dt*dt*0.25;
+        vr41= hiwx+wx;
+        vv41= I+Hdt*dt*0.5;
+        wxtA= wx'*A;
+        J= [A*rr41 A*rv41;
+            wxtA*rr41+A*vr41 A*vv41+wxtA*rv41;];
+    end
 end

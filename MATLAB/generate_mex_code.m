@@ -7,5 +7,3 @@ geograv_file = fullfile(filepath, "environmental_models/helper_functions/geograv
 
 mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geomag_file, geomag_incl);
 mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geograv_file, geograv_incl);
-
-CompileCLibraries
