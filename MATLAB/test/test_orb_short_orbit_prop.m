@@ -87,7 +87,7 @@ r0= 1E5*ones(3,1);
 v0= 1E2*ones(3,1);
 [~,~,~,r1,v1,J] ... 
     = orb_short_orbit_prop(...
-    r_ecef,v_ecef,r0,v0,dt,starttime);
+    r_ecef,v_ecef,r0,v0,dt,starttime,const.earth_rate_ecef);
 for i=1:100
     start_r_rel= 1E-1*randn(3,1);
     start_v_rel= 1E-1*randn(3,1);

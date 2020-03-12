@@ -21,10 +21,10 @@ xest= [selfrv;targetrv;];
 Sest= eye(12);
 processvsdiv= 1E-8;
 SQ= diag([zeros(3,1);processvsdiv*ones(3,1);zeros(3,1);processvsdiv*ones(3,1)]);
-messdiv= [10*ones(6,1);0.5*ones(3,1);];
+messdiv= [10*ones(6,1);0.2*ones(3,1);];
 H= [eye(6), zeros(6);
     -eye(3),zeros(3),eye(3),zeros(3);];
-n= 60*60*10;
+n= 24*60*60*10;
 samplerate=100;
 global dt
 dt=0.1;
@@ -32,10 +32,14 @@ t=0;
 xests=zeros(12,n/samplerate);
 xs=zeros(12,n/samplerate);
 Sests=zeros(12,12,n/samplerate);
+dragself= 1E-7;
+dragtarget= 2E-7;
 for i=1:n
     %update orbits
     selfrv=orbit_updater(selfrv,t,dt);
+    selfrv(4:6)= selfrv(4:6)-selfrv(4:6)/norm(selfrv(4:6))*dragself*dt;
     targetrv=orbit_updater(targetrv,t,dt);
+    targetrv(4:6)= targetrv(4:6)-targetrv(4:6)/norm(targetrv(4:6))*dragtarget*dt;
     t=t+dt;
     measure= cdgps_measurer(selfrv,targetrv,t);
     %update time 
@@ -59,11 +63,12 @@ end
     
 function [J,x]=jac_updaterfn(x)
     global dt
+    global const
     r= x(1:3);
     v= x(4:6);
     relr= x(7:9)-x(1:3);
     relv= x(10:12)-x(4:6);
-    [r,v,Js,relr,relv,Jt] = orb_short_orbit_prop(r,v,relr,relv,dt,0);
+    [r,v,Js,relr,relv,Jt] = orb_short_orbit_prop(r,v,relr,relv,dt,0,const.earth_rate_ecef);
     x= [r;v;r+relr;v+relv;];
     J= [Js,zeros(6);
         zeros(6), Jt;];
@@ -72,11 +77,11 @@ end
 function measure= cdgps_measurer(selfrv,targetrv,t)
 %MEASURER single cdgps measurement
     gpspossdiv=5;
-    cdgpspossdiv=0.25;
+    cdgpspossdiv=0.1;
     gpsvelsdiv=5;
     measure=nan(9,1);
     if (mod(t,90*60)<90*60/2)
         measure(1:6)= selfrv + [gpspossdiv*randn(3,1)+5;gpsvelsdiv*randn(3,1)+5];
-        measure(7:9)= targetrv(1:3)-selfrv(1:3)+cdgpspossdiv*randn(3,1)+0.25;
+        measure(7:9)= targetrv(1:3)-selfrv(1:3)+cdgpspossdiv*randn(3,1)+0.1;
     end
 end

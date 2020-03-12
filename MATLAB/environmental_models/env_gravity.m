@@ -5,12 +5,12 @@ function [acceleration,potential,hessian]= env_gravity(time,x)
 %uses equation (3.154) in Fundamentals of Spacecraft Attitude Determination and Control
 %   to calculate the hessian
 %TODO add gravity from moon and sun and higher order spherical harmonics
+coder.extrinsic('geograv_wrapper'); 
 global const
+out= nan(4,1);
 acceleration=zeros([3,1]);
 if all(isreal(x))
     out=geograv_wrapper(x);
-else
-    out= nan(4,1);
 end
 acceleration(1:3)=out(1:3);
 potential=out(4);
