@@ -1,10 +1,12 @@
+%%%%%% magnetometer characterization using wheel frequency sweeps
+
 clc
 clear all
 close all
 tic 
 warning('off','all') %disabled warning related to large output file sizes
 
-data = csvread('mag_data.csv',1,0); %%%starts reading from row 2
+data = csvread('mag_data_2_13_20.csv',1,0); %%%starts reading from row 2
 
 %convert wheel freq from rad/sec to Hz
 data(:,8) = data(:,8)/(2*pi); %wheel 0 on [Hz]
@@ -19,10 +21,15 @@ data(:,30) = data(:,30)/(2*pi);
 data(:,31) = data(:,31)/(2*pi);
 data(:,32) = data(:,32)/(2*pi);%wheel 2 on [Hz]
 
-%% check plots
-figure(1); plot(data(:,1),data(:,8))   %mag1x0, wheel 0 on
-figure(2); plot(data(:,12),data(:,20)) %mag1x0, wheel 0 on
-figure(3); plot(data(:,23),data(:,32)) %mag1x0, wheel 0 on
+%% check time domain plots
+figure(1); plot(data(:,1),data(:,8)); title('wheel0 spin [rad/sec] vs time [ms]'); %wheel 0 on
+saveas(gcf,'wheel0tdomainplot'); 
+
+figure(2); plot(data(:,12),data(:,20)); title('wheel1 spin [rad/sec] vs time [ms]'); %wheel 1 on
+saveas(gcf,'wheel1tdomainplot'); 
+
+figure(3); plot(data(:,23),data(:,32)); title('wheel2 spin [rad/sec] vs time [ms]'); %wheel 2 on
+saveas(gcf,'wheel2tdomainplot');
 
 %% checking average time between each sample taken; roughly 19 ms
 timeInt = zeros(length(data)-1,1);
@@ -56,18 +63,10 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
     
     start = data(access(s,1),1);
     freq = ones(10,1); freq(1) = data(1,access(s,3)); %take wheel reading
-%     idx = ones(10,1);
-%     step = ceil(length(data)/10);
-%     %%% get indices for each frequency step start in data set
-%     for i = 1:11
-%         %time = start + 10000*(i-1); %each frequency step is for 10 sec
-%         %x = find(data(:,access(s,1)) > time, 1,'first');
-%         %idx(i) = x;
-%         idx(i) = (step*i)/2; %middle of the data
-%     end
     idx1 = [0,520,1040,1560,2080,2600,3120,3640,4160,4680,5200]'; %start of each set
     %idx = [260,780,1300,1820,2340,2860,3380,3900,4420,4940];
     idx = [322,780,1362,1802,2301,2913,3349,3837,4414,4802]'; %median of set
+    
     %get corresponding median frequency
     for i = 1:length(idx)
         freq(i) = data(idx(i),access(s,3));
@@ -81,49 +80,39 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
     magnitudeYs = {};
     phaseYs = {};
     offset = [];
+    Ps = {}; %stores stats for each freq
     
-    fname4 = [names{s} 'allFFTs'];
-    fname3 = [names{s} 'offsets'];
+    fname3 = [names{s} 'allFFTs'];
+    fname2 = [names{s} 'offsets'];
     
-    for j = 2:length(idx1)
+    for j = 2:length(idx1) %over entire frequency sweep 
+        
         %NFFT = length(data(idx(j-1):idx(j),access(s,2))); %take mag reading can be 1/2 x/y/z
-        NFFT = length(data(idx1(j-1)+1:idx1(j),access(s,2)));
+        NFFT = length(data(idx1(j-1)+1:idx1(j),access(s,2))); %length of fft
         Y = fft(data(idx1(j-1)+1:idx1(j),access(s,2)), NFFT); 
         F = ((0:1/NFFT:1-1/NFFT)*F_samp).';
         magY = abs(Y); %magnitude of the fft
-        
         phaseY = unwrap(angle(Y));
+        leak = 0; %looking at leakage of signal energy to n bins on either side of a freq; assuming no leak
         
         NFFTs(j) = NFFT; Fs{j} = F;
         Ys{j} = Y; magnitudeYs{j} = magY;
         phaseYs{j} = phaseY;
-        
-        %magY=mag2db(magY);
 
         fname0 = [names{s} 'freq' num2str(j)];
         fname1 = [names{s} 'freq' num2str(j) '.mat'];
+        fname4 = [names{s} 'freq' num2str(j) 'tdomainfit'];
         
         subplot(2,1,1);
         %hold on %uncomment to see all frequencies overlap on eachother
-        %gcf
         plot(F(1:NFFT/2),magY(1:NFFT/2));
         title(['Magnitude response of signal: ' fname0]);
         xlabel('Frequency Hz')
-        ylabel('Magnitude(dB)');
+        ylabel('Magnitude(T)');
         %legend(fname0,'-DynamicLegend');
         if j == length(idx1)
             hold off
         end
-        
-        %find offset of peaks from 5,10,15....50 Hz
-        [M, I] = max(magY(2:NFFT/2));
-        peakFreq = F(I);
-%         if 5*(j-1) >= 20
-%             offset(j-1) = abs(peakFreq - 5*(j-1))-25;
-%         else
-        offset(j-1) = peakFreq - 5*(j-1);
-%         end
-        
         
         subplot(2,1,2);
         plot(F(1:NFFT/2),phaseY(1:NFFT/2));
@@ -137,13 +126,44 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
             hold off
         end
         
-        save(fname1);
-        saveas(gcf,fname0);
         
-        fprintf('finished plotting freq %f \n',j);
+        %find offset of peaks from 5,10,15....50 Hz
+        [M, I] = max(magY(2:NFFT/2));
+        peakFreq = F(I);
+        offset(j-1) = peakFreq - 5*(j-1);
+        
+        %get stats of the data in time domain
+        x = data(idx1(j-1)+1:idx1(j),access(s,1)); %time array
+        y = data(idx1(j-1)+1:idx1(j),access(s,2)); %mag data array
+        
+        [curvefit,gof,output] = fit(x,y,'smoothingspline','normalize','on');
+        plot(curvefit,x,y);
+        title(['time domain plot + curvefit: ' fname0])
+        
+        p.formula = formula(curvefit);
+        p.mean = mean(y); p.std = std(y); p.var = var(y);
+        p.p2p = max(y)- min(y); %peak to peak of magntitudes
+        c = coeffvalues(curvefit); c = c.coefs; p.coeffs = c; 
+        %methods(curvefit)
+        
+        %get signal-to-noise ratio SNR
+        [~,m] = max(magY(1:NFFT/2)); %peak of the freq spectrum
+        sigs = [m-leak:m+leak NFFT-m-leak:NFFT-m+leak]; %find the bins corresponding to the signal around peak, including leakage
+        sig_pow = sum(magY(sigs));
+        magY([sigs]) = 0; % making all bins corresponding to signal zero, what remains = noise
+        noise_pow = sum(magY);
+        p.SNR = 10*log10(sig_pow/noise_pow); %signal-to-noise ratio
+        
+        Ps{j} = p; %store packet of information for each frequency step
+         
+        %save(fname1); %uncomment to save fft data .mat file for each frequency
+        %saveas(gcf,fname0); %uncomment to save fft plot for each frequency
+        %saveas(gcf,fname4); %uncomment to save time domain plot for each frequency
+        
+        fprintf('finished freq %f \n',j);
     end
    
-    save(fname4);
+%    save(fname3); %uncomment to save all FFT data for entire frequency sweep
     
     close all
     x_array = linspace(0,50,10);
@@ -151,48 +171,7 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
     title('offset between mag freq peak and wheel freq');
     xlabel('wheel freq')
     ylabel('offset in Hz');
-    saveas(gcf,fname3);
-   
-%     diff = zeros(10,1);
-%     for i = 1:length(diff)
-%         diff(i) = wherePeaks(i) - freq(i);
-%     end
-% %     figure(2)
-%     plot(peaks(1:3),freq(1:3))
-%     diff = [6.346,12.02,18.75,24.42];
-% %     figure(3)
-% %     plot(diff)
-    
-%     %%% plot full frequency sweep mag reading vs. frequency of wheel;
-%     %% using fft for each individual frequency step 
-%     [curvefit,gof,output] = fit(F(1:NFFT/2),20*log10(magnitudeY(1:NFFT/2)),'smoothingspline','normalize','on');
-%     figure(1)
-%     hold on
-%     n = length(idx);
-%     P = {}; %cell of information for each frequency step
-%     for k = 2:length(idx)
-%         x_array = Fs{k};
-%         y_array = magnitudeYs{k};
-%         y_array = rmoutliers(y_array,'mean'); %remove pts. more than 3 stdevs from the mean
-%         [curvefit,gof,output] = fit(x_array,y_array,'smoothingspline','normalize','on');
-%         plot(curvefit,x_array,y_array);
-%         plot(F(1:NFFT/2),20*log10(magnitudeY(1:NFFT/2)));
-%         plot(curvefit(1:NFFT/2),F(1:NFFT/2));
-%         p.formula = formula(curvefit);
-%         p.mean = mean(magnitudeY); p.std = std(magnitudeY); p.var = var(magnitudeY);
-%         p.max = max(magnitudeY);  p.min = min(magnitudeY);
-%         c = coeffvalues(curvefit); c = c.coefs; p.coeffs = c;
-%         P{k} = p; %packet of information for each frequency step
-%         methods(curvefit)
-%         fprintf'plotted freq %f\n',k);
-%     end
-%     hold off
-%     legend('hide'); grid on;
-%     xlabel('wheel frequency Hz'); ylabel('mag reading T'); 
-%     fname = char(names{s});
-%     save(fname)
-%     fname = (names{s});
-%     saveas(gcf,fname)
+%     saveas(gcf,fname2); % uncomment to save offset data between mag freq peak and wheel freq
     
     fprintf('finished data set %f\n',s);
     %close all
