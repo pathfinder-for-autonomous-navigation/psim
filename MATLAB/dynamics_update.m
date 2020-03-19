@@ -82,16 +82,21 @@ delta_time= double(const.dt)*1E-9;
         quat_body_eci=y(7:10);
         quat_eci_body= utl_quat_conj(quat_body_eci);
         quat_body_ecef= utl_quat_cross_mult(quat_body_eci,quat_eci_ecef);
-        pos_eci=y(1:3);
+        pos_eci=y(1:3); 
+        vel_eci=y(4:6);
         pos_ecef=utl_rotateframe(quat_ecef_eci,pos_eci);
+        vel_ecef = utl_rotateframe(quat_ecef_eci,vel_eci);
         [g_ecef,~,G_ecef]= env_gravity(t,pos_ecef);
         g_eci=utl_rotateframe(quat_eci_ecef,g_ecef);
         %TODO add thruster firings forces and torques
         %TODO add drag and solar pressure forces
-        dydt(4:6)= g_eci;
+        [F_envdrag_ecef] = env_atmospheric_drag(pos_ecef,vel_ecef,quat_body_ecef); %differential drag in ecef
+        F_envdrag_eci = utl_rotateframe(quat_eci_ecef,F_envdrag_ecef);
+        dydt(4:6)= g_eci + F_envdrag_eci./(const.MASS);
         quat_rate=[y(11:13);0];
         dydt(7:10)= utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
         Lwb= const.JWHEEL*wheelramp(t);
+        
         %calculation of external torques 
         %TODO add drag, solar pressure, and gravity torques
         magnetic_field_body=utl_rotateframe(quat_body_ecef,magnetic_field_zero_order);
