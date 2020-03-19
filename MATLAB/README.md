@@ -374,6 +374,12 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | plot_fancy_animation         | Nathan  |          | done                 | NA          | NA          |
 
 
+# Installation
+1. Install MATLAB R2019b, Matlab Add-Ons, and ensure you have a C++ compiler by running `mex -setup C++`
+2. Run `install.m` script to compile all C code into mex.
+
+Run `install.m` everytime you reclone or redownload the repo. 
+
 ## Matlab Add-Ons
 
 There are a few required Add-Ons for Matlab
