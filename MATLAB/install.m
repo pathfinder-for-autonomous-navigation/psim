@@ -7,5 +7,7 @@ try
 catch
     CompileCLibraries;
 end
+%download latest earth orientation parameters
+getEOP(2444244.5,0,3,true);
 %compile everything
 generate_mex_code();
