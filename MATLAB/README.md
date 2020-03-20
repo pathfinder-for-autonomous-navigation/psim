@@ -388,3 +388,4 @@ There are a few required Add-Ons for Matlab
  * Aerospace Toolbox
  * Robotics System Toolbox
  * Convert between RGB and Color Names
+ * [TrackerComponentLibrary](https://github.com/pathfinder-for-autonomous-navigation/TrackerComponentLibrary/releases/download/v4.1/TrackerComponentLibrary.mltbx)
