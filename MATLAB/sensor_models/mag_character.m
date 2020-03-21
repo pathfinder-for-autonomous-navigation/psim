@@ -142,6 +142,7 @@ for s = 1:18 %loops of 18 data sets that each consist of full sweep
         
         p.formula = formula(curvefit);
         p.mean = mean(y); p.std = std(y); p.var = var(y);
+        p.rms = rms(y);
         p.p2p = max(y)- min(y); %peak to peak of magntitudes
         c = coeffvalues(curvefit); c = c.coefs; p.coeffs = c; 
         %methods(curvefit)
