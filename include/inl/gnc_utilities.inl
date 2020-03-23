@@ -12,6 +12,8 @@
 
 #include "../gnc_utilities.hpp"
 
+#include <lin/references.hpp>
+
 namespace gnc {
 namespace utl {
 

@@ -13,7 +13,7 @@
 #ifndef PAN_PSIM_INCLUDE_GNC_UTILITIES_HPP_
 #define PAN_PSIM_INCLUDE_GNC_UTILITIES_HPP_
 
-#include "lin.hpp"
+#include <lin/core.hpp>
 
 #ifdef abs
 #undef abs

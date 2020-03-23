@@ -13,6 +13,8 @@
 #include <gnc_attitude_controller.hpp>
 #include <gnc_constants.hpp>
 
+#include <lin/generators/constants.hpp>
+
 #include <limits>
 
 static_assert(std::numeric_limits<double>::has_quiet_NaN,
