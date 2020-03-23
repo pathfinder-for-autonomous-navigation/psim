@@ -1,4 +1,6 @@
 %%%%%% magnetometer characterization using wheel frequency sweeps
+%%%%%% wheel ramp up test on 2/13/2020
+%%%%%% last editted Sruti Vutukury 3/23/2020
 
 clc
 clear all
