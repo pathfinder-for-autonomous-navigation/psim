@@ -16,9 +16,10 @@ time = data(:,1);
 mag1x = data(:,2);
 mag1y = data(:,3);
 mag1z = data(:,4); 
-gyrox = data(:,5); %set with outliers; removed earlier
-gyroy = data(:,6);
-gyroz = data(:,7);
+%gyro data multiplied by 0.5 to correct for an error in driver script. driver script has since been corrected 
+gyrox = data(:,5).*0.5; %set with outliers; removed earlier
+gyroy = data(:,6).*0.5;
+gyroz = data(:,7).*0.5;
 temp =  data(:,8); %satellite recorded temp (not discrete)
 
 %%%discrete temp recordings
