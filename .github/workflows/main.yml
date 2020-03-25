@@ -14,15 +14,13 @@ jobs:
         python-version: '3.7'
         architecture: 'x64'
 
-    - name: Setup virtual environment
+    - name: Install dependencies
       run: |
-        python -m venv venv
-        source venv/bin/activate
-        pip install --upgrade pip
-        pip install -r requirements.txt
-        platformio update
-        platformio platform install native
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
+        python -m platformio update
 
     - name: CXX software tests
       run: |
-        platformio test --verbose -e github
+        python -m platformio platform install native
+        python -m platformio test --verbose -e github
