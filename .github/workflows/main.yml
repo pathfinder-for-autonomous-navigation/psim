@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        clone: 'recursive'
+        submodules: 'recursive'
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
