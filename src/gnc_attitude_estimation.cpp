@@ -15,6 +15,8 @@
 #include <gnc_environment.hpp>
 #include <gnc_utilities.hpp>
 
+#include <lin/generators/constants.hpp>
+
 #include <cmath>
 
 static_assert(std::numeric_limits<double>::has_quiet_NaN,

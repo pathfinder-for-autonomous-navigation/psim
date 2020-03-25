@@ -14,7 +14,8 @@
 #define PAN_PSIM_INCLUDE_GNC_ATTITUDE_CONTROLLER_HPP_
 
 #include "gnc_containers.hpp"
-#include "lin.hpp"
+
+#include <lin/core.hpp>
 
 namespace gnc {
 

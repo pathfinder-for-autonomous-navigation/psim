@@ -13,7 +13,7 @@
 #ifndef PAN_PSIM_INCLUDE_GNC_ENVIRONMENT_HPP_
 #define PAN_PSIM_INCLUDE_GNC_ENVIRONMENT_HPP_
 
-#include "lin.hpp"
+#include <lin/core.hpp>
 
 namespace gnc {
 namespace env {
