@@ -53,6 +53,18 @@ def generate(csv_file, hpp_file, cpp_file):
     '''This funciton generates a constants header and source file for the PSim
     CXX library given a constants CSV file. This script is automatically run
     prior to each PSim PlatformIO build.
+
+    The format of the CSV file is as follows:
+
+        <editable>,<type>,<name>,<value 0>,<value 1>,...
+
+    - <editable> specifies whether or not the constant will be treated as an
+      extern (i.e. can be edited by flight software) and is either "true" or
+      "false".
+    - <type> specifies the type of the constant.
+    - <name> is the name of the constant in PSim CXX source code.
+    - <value 0>,... is a variadic static initializer list which sets the
+      constant's initial value.
     '''
     hpp_file.write(HPP_HEADER)
     cpp_file.write(CPP_HEADER)
