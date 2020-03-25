@@ -25,4 +25,4 @@ jobs:
 
     - name: CXX software tests
       run: |
-        pio test --verbose -e github
+        platformio test --verbose -e github
