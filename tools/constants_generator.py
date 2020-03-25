@@ -1,5 +1,4 @@
 import csv
-import os
 
 CSV_FILE='tools/constants.csv'
 
