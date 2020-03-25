@@ -50,7 +50,10 @@ CPP_FOOTER='''\
 
 
 def generate(csv_file, hpp_file, cpp_file):
-
+    '''This funciton generates a constants header and source file for the PSim
+    CXX library given a constants CSV file. This script is automatically run
+    prior to each PSim PlatformIO build.
+    '''
     hpp_file.write(HPP_HEADER)
     cpp_file.write(CPP_HEADER)
 
