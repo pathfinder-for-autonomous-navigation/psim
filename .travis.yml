@@ -1,11 +1,13 @@
 matrix:
   include:
     - language: python
-      python: 3.6
+      python: 3.7
       before_install:
         - export CI
       install:
-        - pip install -U platformio
-        - platformio update
+        - python -m venv venv
+        - source venv/bin/activate
+        - pip install -r requirements.txt
+        - pio platform install native
       script:
-        - platformio test --verbose --environment ci_github
+        - platformio test --verbose --environment github
