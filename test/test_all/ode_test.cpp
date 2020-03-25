@@ -1,19 +1,10 @@
-//
-// test/test_all/ode_test.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file test_all/ode_test.cpp
+ *  @author Kyle Krol */
 
 #include "test.hpp"
 #include "ode_test.hpp"
 
-#include <gnc_ode.hpp>
+#include <gnc/ode.hpp>
 #include <cmath>
 
 #define PAN_GNC_ODEX_TEST_VARS(n) \

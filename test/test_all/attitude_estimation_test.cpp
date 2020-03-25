@@ -1,19 +1,10 @@
-//
-// test/test_all/attitude_estimation_test.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file test_all/attitude_estimation.cpp
+ *  @author Kyle Krol */
 
 #include "test.hpp"
 #include "attitude_estimation_test.hpp"
 
-#include <gnc_attitude_estimation.hpp>
+#include <gnc/attitude_estimation.hpp>
 
 void test_attitude_estimation_nan_inputs() {
   gnc::AttitudeEstimatorState state;

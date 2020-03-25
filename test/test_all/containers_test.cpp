@@ -1,19 +1,10 @@
-//
-// test/test_all/containers_test.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file test_all/containers_test.cpp
+ *  @author Kyle Krol */
 
 #include "test.hpp"
 #include "containers_test.hpp"
 
-#include <gnc_containers.hpp>
+#include <gnc/containers.hpp>
 
 void subtest_circular_buffer(gnc::CircularBuffer<float, 3> &buffer) {
   // Test properties on when cleared/constructed

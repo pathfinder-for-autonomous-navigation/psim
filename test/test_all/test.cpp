@@ -1,14 +1,5 @@
-//
-// test/test_all/test.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file test_all/test.cpp
+ *  @author Kyle Krol */
 
 #include "test.hpp"
 

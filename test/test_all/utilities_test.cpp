@@ -1,19 +1,10 @@
-//
-// test/test_all/utilities_test.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file test_all/utilities_test.cpp
+ *  @author Kyle Krol */
 
 #include "test.hpp"
 #include "utilities_test.hpp"
 
-#include <gnc_utilities.hpp>
+#include <gnc/utilities.hpp>
 #include <lin.hpp>
 
 void test_utilities_quatconj() {
@@ -160,4 +151,3 @@ void utilities_test() {
   RUN_TEST(test_utilities_vec_rot_to_quat);
   RUN_TEST(test_utilities_vec_rot_to_quat_antiparallel);
 }
-
