@@ -1,18 +1,10 @@
-//
-// src/gnc_environment.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc_environment.cpp
+ *  @author Kyle Krol */
 
-#include <gnc_constants.hpp>
-#include <gnc_environment.hpp>
-#include <gnc_utilities.hpp>
+#include <gnc/config.hpp>
+#include <gnc/constants.hpp>
+#include <gnc/environment.hpp>
+#include <gnc/utilities.hpp>
 
 #include <cmath>
 
@@ -35,8 +27,8 @@ void earth_attitude(double t, lin::Vector4d &q) {
   lin::Vector4d q_ecef_ecef0p({
     0.0,
     0.0,
-    sin(theta / 2.0),
-    cos(theta / 2.0)
+    std::sin(theta / 2.0),
+    std::cos(theta / 2.0)
   });
   // Rotate through ECI -> ECEF0 -> ECEF0P -> ECEF
   lin::Vector4d temp;
@@ -56,23 +48,24 @@ void earth_angular_rate(double t, lin::Vector3d &w) {
 }
 
 void earth_angular_rate(double t, lin::Vector3f &w) {
-  w = { 0.0f, 0.0f, constant::earth_rate_ecef_z_f };
+  w = { 0.0, 0.0, constant::earth_rate_ecef_z };
 }
 
 // t will never get large enough for floating point precession to be an issue
 void sun_vector(double t, lin::Vector3f &s) {
   // Calculate Earth's position in the perifocal frame
-  float E = constant::two_pi_f * (static_cast<float>(t) - constant::earth_perihelion_time_f)
-      / constant::earth_period_f;
-  E = E + constant::earth_eccentricity_f * sinf(E);
+  float E = static_cast<float>(constant::two_pi) * (static_cast<float>(t) -
+      static_cast<float>(constant::earth_perihelion_time)) / static_cast<float>(constant::earth_period);
+  E = E + static_cast<float>(constant::earth_eccentricity) * sinf(E);
   s = {  // Negative of Earth's position (want to point at the Sun)
-    constant::earth_eccentricity_f - cosf(E),
-    sinf(E) * (0.5f * constant::earth_eccentricity_f * constant::earth_eccentricity_f - 1.0f),
+    static_cast<float>(constant::earth_eccentricity) - cosf(E),
+    sinf(E) * (0.5f * static_cast<float>(constant::earth_eccentricity) * static_cast<float>(constant::earth_eccentricity) - 1.0f),
     0.0f
   };
   s = s / lin::norm(s);  // Puts us in AU (approximately) and is a normalized vector
   // Rotate into ECI
-  utl::rotate_frame(constant::q_eci_perifocal_f, s);
+  lin::Vector4f q_eci_perifocal_f = constant::q_eci_perifocal;
+  utl::rotate_frame(q_eci_perifocal_f, s);
 }
 
 void magnetic_field(double t, lin::Vector3f const &r, lin::Vector3f &b) {

@@ -1,28 +1,15 @@
-//
-// src/gnc_attitude_estimationr.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc_attitude_estimation.cpp
+ *  @author Kyle Krol */
 
-#include <gnc_attitude_estimation.hpp>
-#include <gnc_constants.hpp>
-#include <gnc_environment.hpp>
-#include <gnc_utilities.hpp>
+#include <gnc/attitude_estimation.hpp>
+#include <gnc/config.hpp>
+#include <gnc/constants.hpp>
+#include <gnc/environment.hpp>
+#include <gnc/utilities.hpp>
 
 #include <lin/generators/constants.hpp>
 
 #include <cmath>
-
-static_assert(std::numeric_limits<double>::has_quiet_NaN,
-    "GNC code requires quiet NaN's to be available.");
-static_assert(std::numeric_limits<float>::has_quiet_NaN,
-    "GNC code requires quiet NaN's to be available.");
 
 namespace gnc {
 
@@ -68,7 +55,7 @@ static int estimate_q_body_eci(double t, lin::Vector3d const &r_ecef,
   env::magnetic_field(t, r_ecef_f, b_eci);
 
   // Verify magnetic field vectors have are large enough
-  constexpr static float threshold = constant::b_noise_floor_f * constant::b_noise_floor_f;
+  constexpr static float threshold = constant::b_noise_floor * constant::b_noise_floor;
   if (lin::fro(b_eci) <= threshold || lin::fro(b_body) <= threshold)
     return 1;
 

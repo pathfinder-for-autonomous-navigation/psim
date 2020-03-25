@@ -1,16 +1,7 @@
-//
-// include/inl/gnc_containers.inl
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc/inl/containers.inl
+ *  @author Kyle Krol */
 
-#include "../gnc_containers.hpp"
+#include "../containers.hpp"
 
 namespace gnc {
 
