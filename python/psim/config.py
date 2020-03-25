@@ -1,8 +1,15 @@
 import json
+import logging
 import os
 import sys
 
+_log = logging.getLogger(__name__)
+
 _base_directory = os.path.join(os.path.dirname(__file__), 'config')
+
+global_modules = { 'constants' }
+satellite_modules = { 'sensors', 'truth' }
+all_modules = global_modules.union(satellite_modules)
 
 
 def _get_full_path(path):
@@ -50,7 +57,7 @@ def _get_config_directories(directory, base_directory):
 def _get_module_dictionaries(module, directory, base_directory):
     """Streams the json dictionaries for the desired module encountered while
     walking down the configuration tree.
-    
+
     Args:
         directory:
         base_directory:
@@ -63,13 +70,13 @@ def _get_module_dictionaries(module, directory, base_directory):
                 yield json.load(_json)
 
 
-def load_module(module, directory, base_directory=_base_directory):
+def _load_module(module, directory, base_directory=_base_directory):
     """
     Args:
         module:
         directory:
         base_directory:
-    
+
     Returns:
     """
     def _search_for_sub_dictionary(dictionary, sub_dictionary):
@@ -101,4 +108,19 @@ def load_module(module, directory, base_directory=_base_directory):
     return leader, follower
 
 
-# load_module('truth', 'psim/config/deployment')
+def load_modules(modules, config_dir, patch_dir=None):
+    """
+    """
+    return dict()
+
+
+def load_all_modules(modules, config_dir, patch_dir=None):
+    """
+    """
+    load_modules(all_modules, config_dir, patch_dir)
+
+
+def load_module(module, config_dir, patch_dir=None):
+    """
+    """
+    return load_modules({module}, config_dir, patch_dir)

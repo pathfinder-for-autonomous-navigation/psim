@@ -1,40 +1,13 @@
 
-# PSim Configuration Files
+# Configuration Files
 
-## Truth
+## Constants
 
-* `time` Initial time relative to the PAN epoch.
-    * `units` : supported units is/are `nanoseconds`
-    * `value` : integer scalar
-
-* `position` Initial position in units of meters.
-    * `frame` : supported frames is/are `eci`
-    * `value` : three dimensional column vector
-
-* `velocity` Initial velocity in units of meters per second.
-    * `frame` : supported frames is/are `eci`
-    * `value` : three dimensional column vector
-
-* `angular_rate` Initial angular rate in units of radians per second.
-    * `frame` : supported frames is/are `body`
-    * `value` : three dimensional column vector
-
-* `quaternion_body` Initial attitude of the spacecraft (i.e. orientation of the body frame).
-    * `frame` : supported frames is/are `eci`
-    * `value` : four dimensional column vector representing a quaternion
-
-* `wheel_rate` Initial angular rate of the reaction wheels in units of radians per second.
-    * `frame` : supported frames is/are `body`
-    * `value` : three dimensional column vector
-
-* `fuel_angular_momentum` Initial, net angular momentum for the fuel in the spacecraft in units of kilogram meters squared per second.
-    * `frame` : supported frames is/are `eci`
-    * `value` : three dimensional column vector
-
-* `fuel_mass` Initial fuel mass stored on the spacecraft in units of kilograms.
-    * `value` : scalar
+Values are assigned globally (i.e. values are specified directly in the top level dictionary). The following fields can be specified:
 
 ## Sensors
+
+Values are asigned to for satellite individually (i.e. each `truth.json` should have `shared`, `leader`, and `follower` entries in the top level dictionary). The following fields can then be specified:
 
 * `cdgps_model` String specifying the model used to simulate the CDGPS sensor.
 
@@ -85,6 +58,37 @@
 * `sun_sensor_alpha` Scale factor used in the sun vector determination algorithm to fight uncertainty in the sun's intensity (generally just set this to `1.0`).
     * `value` : scalar
 
-## Ground
+## Truth
 
-## Flight Computer
+Values are asigned to for satellite individually (i.e. each `truth.json`) should have `shared`, `leader`, and `follower` top level dictionaries. The following fields can then be specified:
+
+* `time` Initial time relative to the PAN epoch.
+    * `units` : supported units is/are `nanoseconds`
+    * `value` : integer scalar
+
+* `position` Initial position in units of meters.
+    * `frame` : supported frames is/are `eci`
+    * `value` : three dimensional column vector
+
+* `velocity` Initial velocity in units of meters per second.
+    * `frame` : supported frames is/are `eci`
+    * `value` : three dimensional column vector
+
+* `angular_rate` Initial angular rate in units of radians per second.
+    * `frame` : supported frames is/are `body`
+    * `value` : three dimensional column vector
+
+* `quaternion_body` Initial attitude of the spacecraft (i.e. orientation of the body frame).
+    * `frame` : supported frames is/are `eci`
+    * `value` : four dimensional column vector representing a quaternion
+
+* `wheel_rate` Initial angular rate of the reaction wheels in units of radians per second.
+    * `frame` : supported frames is/are `body`
+    * `value` : three dimensional column vector
+
+* `fuel_angular_momentum` Initial, net angular momentum for the fuel in the spacecraft in units of kilogram meters squared per second.
+    * `frame` : supported frames is/are `eci`
+    * `value` : three dimensional column vector
+
+* `fuel_mass` Initial fuel mass stored on the spacecraft in units of kilograms.
+    * `value` : scalar

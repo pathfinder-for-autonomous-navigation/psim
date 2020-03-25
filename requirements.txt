@@ -1,1 +1,7 @@
+<<<<<<< HEAD
 platformio==4.2.1
+=======
+argparse
+platformio
+pylint
+>>>>>>> updates the the psim config cli
