@@ -24,7 +24,7 @@ SQ= diag([zeros(3,1);processvsdiv*ones(3,1);zeros(3,1);processvsdiv*ones(3,1)]);
 messdiv= [10*ones(6,1);0.2*ones(3,1);];
 H= [eye(6), zeros(6);
     -eye(3),zeros(3),eye(3),zeros(3);];
-n= 24*60*60*10;
+n= 1*60*60*10;
 samplerate=100;
 global dt
 dt=0.1;

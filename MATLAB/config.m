@@ -13,16 +13,7 @@ setup_path();
 %Time
 const.INITGPS_WN= 2045;% positive int
 % initial gps week number, epoch for time.
-gps_epoch_tai_jd1= 2444244;
-gps_epoch_tai_jd2= 0.500219907407407407;
-const.pan_epoch_tai_jd1= 2444244+7*const.INITGPS_WN;
-%part one of a two part julian date for pan epoch (julian date tai)
-const.pan_epoch_tai_jd2= 0.500219907407407407;
-%part two of a two part julian date for pan epoch (julian date tai)
-
-%decyear(utl_time2datetime(0.0,const.INITGPS_WN))
-[a,b]=TAI2UTC(const.pan_epoch_tai_jd1,const.pan_epoch_tai_jd2);
-const.INIT_DYEAR= UTC2YearFrac(a,b);
+const.INIT_DYEAR= decyear(utl_time2datetime(0.0,const.INITGPS_WN));
 const.mu = 3986004.415e8;%3.986e14;% positive scalar
 % Earth's gravitational constant (m^3/s^2)
 const.mu_moon = 4.9048695E12; % positive scalar
@@ -50,24 +41,20 @@ const.tp_earth = utl_datetime2time(perihelion_date,const.INITGPS_WN);
 % Time when earth was at perihelion (s)
 const.period_earth = 365.256363004*24*60*60;
 % Earth orbital period (s)
-earth_orbit_state=approxSolarSysVec(juliandate(perihelion_date),0,0);
-rp_earth= earth_orbit_state(1:3);
-vp_earth= earth_orbit_state(4:6);
-% [rp_earth,vp_earth] = planetEphemeris(juliandate(perihelion_date),'Sun','Earth');
-% const.rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
-% rp_earth = rp_earth';
-% vp_earth = vp_earth';
+
+[rp_earth,vp_earth] = planetEphemeris(juliandate(perihelion_date),'Sun','Earth');
+const.rp_earth = 1E3*rp_earth; %positional vector from Sun to Earth; used for 3rd body perturb and solar radiation pressure calcs
+rp_earth = rp_earth';
+vp_earth = vp_earth';
 h_earth = cross(rp_earth,vp_earth);
 const.quat_eci_perifocal = utl_triad([0; 0; 1],[1; 0; 0],h_earth/norm(h_earth),rp_earth/norm(rp_earth));
 % Quat between earth's perifocal and eci frame.
-[a,b]=TAI2TT(const.pan_epoch_tai_jd1,const.pan_epoch_tai_jd2);
-[~,dcm_ECEF0_ECI]=GCRS2ITRS([0;0;1],a,b);
-%dcm_ECEF0_ECI=dcmeci2ecef('IAU-2000/2006',[year(T0),month(T0),day(T0),hour(T0),minute(T0),second(T0)]);
-[a,b]=TAI2TT(const.pan_epoch_tai_jd1,const.pan_epoch_tai_jd2);
-[~,dcm_ECEF5_ECI]=GCRS2ITRS([0;0;1],a-5*365.2425,b);
-%dcm_ECEF5_ECI=dcmeci2ecef('IAU-2000/2006',[year(T5),month(T5),day(T5),hour(T5),minute(T5),second(T5)]);
+T0= utl_time2datetime(0.0,const.INITGPS_WN);
+T5= utl_time2datetime(0.0,const.INITGPS_WN)+years(5);
+dcm_ECEF0_ECI=dcmeci2ecef('IAU-2000/2006',[year(T0),month(T0),day(T0),hour(T0),minute(T0),second(T0)]);
+dcm_ECEF5_ECI=dcmeci2ecef('IAU-2000/2006',[year(T5),month(T5),day(T5),hour(T5),minute(T5),second(T5)]);
 polarprecessionaxis= -cross((dcm_ECEF0_ECI*dcm_ECEF5_ECI'*[0;0;1;]),[0;0;1;]);
-const.PRECESSION_RATE= -polarprecessionaxis/(5*365.2425*24*60*60);% 3 vector
+const.PRECESSION_RATE= polarprecessionaxis/(5*365.2425*24*60*60);% 3 vector
 % earth's axis precession rate (rad/s)
 const.quat_ecef0_eci= utl_dcm2quat(dcm_ECEF0_ECI);
 %ecef0 is ecef frame at time 0 inertialy stuck.
