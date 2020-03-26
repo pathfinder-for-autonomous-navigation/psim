@@ -1,26 +1,13 @@
-//
-// src/gnc_attitude_controller.hpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc_attitude_controller.cpp
+ *  @author Kyle Krol */
 
-#include <gnc_attitude_controller.hpp>
-#include <gnc_constants.hpp>
+#include <gnc/attitude_controller.hpp>
+#include <gnc/config.hpp>
+#include <gnc/constants.hpp>
 
 #include <lin/generators/constants.hpp>
 
 #include <limits>
-
-static_assert(std::numeric_limits<double>::has_quiet_NaN,
-    "GNC code requires quiet NaN's to be available.");
-static_assert(std::numeric_limits<float>::has_quiet_NaN,
-    "GNC code requires quiet NaN's to be available.");
 
 namespace gnc {
 
@@ -57,9 +44,9 @@ void control_detumble(DetumbleControllerState &state,
     auto size = state.b_body_buffer.size();
     auto db = state.b_body_buffer[size - 1] - state.b_body_buffer[size / 2];
     state.mtr_body_cmd = {
-      constant::max_mtr_moment_f * (db(0) > 0.0f ? -1.0f : 1.0f),
-      constant::max_mtr_moment_f * (db(1) > 0.0f ? -1.0f : 1.0f),
-      constant::max_mtr_moment_f * (db(2) > 0.0f ? -1.0f : 1.0f)
+      static_cast<float>(constant::max_mtr_moment) * (db(0) > 0.0f ? -1.0f : 1.0f),
+      static_cast<float>(constant::max_mtr_moment) * (db(1) > 0.0f ? -1.0f : 1.0f),
+      static_cast<float>(constant::max_mtr_moment) * (db(2) > 0.0f ? -1.0f : 1.0f)
     };
     state.b_body_buffer.clear();
   }

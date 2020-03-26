@@ -1,19 +1,11 @@
-//
-// include/gnc_attitude_estimation.hpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc/attitude_estimation.hpp
+ *  @author Kyle Krol
+ *  Defines the interface for the attitude estimators. */
 
-#ifndef PAN_PSIM_INCLUDE_GNC_ATTITUDE_ESTIMATION_HPP_
-#define PAN_PSIM_INCLUDE_GNC_ATTITUDE_ESTIMATION_HPP_
+#ifndef GNC_ATTITUDE_ESTIMATION_HPP_
+#define GNC_ATTITUDE_ESTIMATION_HPP_
 
-#include "gnc_containers.hpp"
+#include "containers.hpp"
 
 #include <lin/core.hpp>
 

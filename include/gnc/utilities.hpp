@@ -1,17 +1,8 @@
-//
-// include/gnc_utilities.hpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc/utilities.hpp
+ *  @author Kyle Krol */
 
-#ifndef PAN_PSIM_INCLUDE_GNC_UTILITIES_HPP_
-#define PAN_PSIM_INCLUDE_GNC_UTILITIES_HPP_
+#ifndef GNC_UTILITIES_HPP_
+#define GNC_UTILITIES_HPP_
 
 #include <lin/core.hpp>
 
@@ -82,6 +73,6 @@ inline void vec_rot_to_quat(lin::Vector<T, 3> const &u, lin::Vector<T, 3> const 
 }  // namespace utl
 }  // namespace gnc
 
-#include "inl/gnc_utilities.inl"
+#include "inl/utilities.inl"
 
 #endif

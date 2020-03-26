@@ -1,16 +1,7 @@
-//
-// include/gnc_utilities.hpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc/inl/utilities.inl
+ *  @author Kyle Krol */
 
-#include "../gnc_utilities.hpp"
+#include "../utilities.hpp"
 
 #include <lin/references.hpp>
 

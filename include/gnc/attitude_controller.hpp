@@ -1,19 +1,11 @@
-//
-// include/gnc_attitude_controller.hpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc/attitude_controller.hpp
+ *  @author Kyle Krol
+ *  Defines the interface for the attitude controllers. */
 
-#ifndef PAN_PSIM_INCLUDE_GNC_ATTITUDE_CONTROLLER_HPP_
-#define PAN_PSIM_INCLUDE_GNC_ATTITUDE_CONTROLLER_HPP_
+#ifndef GNC_ATTITUDE_CONTROLLER_HPP_
+#define GNC_ATTITUDE_CONTROLLER_HPP_
 
-#include "gnc_containers.hpp"
+#include "containers.hpp"
 
 #include <lin/core.hpp>
 

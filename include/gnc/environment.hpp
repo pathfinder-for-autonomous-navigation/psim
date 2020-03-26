@@ -1,17 +1,8 @@
-//
-// include/gnc_environment.hpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc/environment.hpp
+ *  @author Kyle Krol */
 
-#ifndef PAN_PSIM_INCLUDE_GNC_ENVIRONMENT_HPP_
-#define PAN_PSIM_INCLUDE_GNC_ENVIRONMENT_HPP_
+#ifndef GNC_ENVIRONMENT_HPP_
+#define GNC_ENVIRONMENT_HPP_
 
 #include <lin/core.hpp>
 

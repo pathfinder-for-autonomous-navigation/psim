@@ -1,16 +1,6 @@
-//
-// include/gnc_ode.hpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
-
-/* Fixed and variable step size numerical integrators are declared here.
+/** @file gnc/ode.hpp
+ *  @author Kyle Krol 
+ *  Defines an interface to fixed and variable step size numerical integrators.
  *
  * A fixed size integrator will be named odeX where X denotes the order of the
  * integration method. A variable sized method will be named odeXX where XX will
@@ -22,35 +12,34 @@
  * timesteps given a vector of independant variable states t[0], t[1], ...,
  * t[nt]. The initial independant variable conditions y[0] will be used to
  * determine y[1], ..., y[nt]. See the function documentation below for more
- * information.
- */
+ * information. */
 
-#ifndef PAN_PSIM_INCLUDE_GNC_ODE_HPP_
-#define PAN_PSIM_INCLUDE_GNC_ODE_HPP_
+#ifndef GNC_ODE_HPP_
+#define GNC_ODE_HPP_
 
-#define PAN_GNC_ODEX_SINGLE_TEMPLATE(odex, type) \
+#define GNC_ODEX_SINGLE_TEMPLATE(odex, type) \
     template \
     void odex<type>(type, type, type const *, type *, unsigned int, type *, \
         void (* const)(type, type const *, type *))
 
-#define PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(odex, type) \
-    extern PAN_GNC_ODEX_SINGLE_TEMPLATE(odex, type)
+#define GNC_ODEX_SINGLE_EXTERN_TEMPLATE(odex, type) \
+    extern GNC_ODEX_SINGLE_TEMPLATE(odex, type)
 
-#define PAN_GNC_ODEX_MULTI_TEMPLATE(odex, type) \
+#define GNC_ODEX_MULTI_TEMPLATE(odex, type) \
     template \
     void odex<type>(type const *, unsigned int, type **, unsigned int, type *, \
         void (* const)(type, type const *, type *))
 
-#define PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(odex, type) \
-    extern PAN_GNC_ODEX_MULTI_TEMPLATE(odex, type)
+#define GNC_ODEX_MULTI_EXTERN_TEMPLATE(odex, type) \
+    extern GNC_ODEX_MULTI_TEMPLATE(odex, type)
 
-#define PAN_GNC_ODEXX_TEMPLATE(odexx, type) \
+#define GNC_ODEXX_TEMPLATE(odexx, type) \
     template \
     int odexx<type>(type, type, type const *, type *, unsigned int, type *, \
         type, type, type, unsigned int, void (*const)(type, type const *, type *));
 
-#define PAN_GNC_ODEXX_EXTERN_TEMPLATE(odexx, type) \
-    extern PAN_GNC_ODEXX_TEMPLATE(odexx, type)
+#define GNC_ODEXX_EXTERN_TEMPLATE(odexx, type) \
+    extern GNC_ODEXX_TEMPLATE(odexx, type)
 
 namespace gnc {
 
@@ -83,8 +72,8 @@ template <typename T>
 void ode1(T ti, T dt, T const *yi, T *yf, unsigned int ne, T *bf,
     void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode1, float);
-PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode1, double);
+GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode1, float);
+GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode1, double);
 
 /** @fn ode1
  *  @param[in]     t  Array of independant variables states.
@@ -103,8 +92,8 @@ template <typename T>
 void ode1(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
     void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode1, float);
-PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode1, double);
+GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode1, float);
+GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode1, double);
 
 /** @fn ode2
  *  @param[in]  ti Initial conditions for the independant variable.
@@ -121,8 +110,8 @@ template <typename T>
 void ode2(T ti, T dt, T const *yi, T *yf, unsigned int ne, T *bf,
     void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode2, float);
-PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode2, double);
+GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode2, float);
+GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode2, double);
 
 /** @fn ode2
  *  @param[in]     t  Array of independant variables states.
@@ -141,8 +130,8 @@ template <typename T>
 void ode2(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
     void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode2, float);
-PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode2, double);
+GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode2, float);
+GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode2, double);
 
 /** @fn ode3
  *  @param[in]  ti Initial conditions for the independant variable.
@@ -159,8 +148,8 @@ template <typename T>
 void ode3(T ti, T dt, T const *yi, T *yf, unsigned int ne, T *bf,
     void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode3, float);
-PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode3, double);
+GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode3, float);
+GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode3, double);
 
 /** @fn ode3
  *  @param[in]     t  Array of independant variables states.
@@ -179,8 +168,8 @@ template <typename T>
 void ode3(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
     void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode3, float);
-PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode3, double);
+GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode3, float);
+GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode3, double);
 
 /** @fn ode4
  *  @param[in]  ti Initial conditions for the independant variable.
@@ -197,8 +186,8 @@ template <typename T>
 void ode4(T ti, T dt, T const *yi, T *yf, unsigned int ne, T *bf,
     void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode4, float);
-PAN_GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode4, double);
+GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode4, float);
+GNC_ODEX_SINGLE_EXTERN_TEMPLATE(ode4, double);
 
 /** @fn ode4
  *  @param[in]     t  Array of independant variables states.
@@ -217,8 +206,8 @@ template <typename T>
 void ode4(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
     void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode4, float);
-PAN_GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode4, double);
+GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode4, float);
+GNC_ODEX_MULTI_EXTERN_TEMPLATE(ode4, double);
 
 /** @fn ode23
  *  @param[in]  ti       Initial conditions for the independant variable.
@@ -241,8 +230,8 @@ template <typename T>
 int ode23(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
     T rel_tol, T abs_tol, unsigned int max_iter, void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEXX_EXTERN_TEMPLATE(ode23, float);
-PAN_GNC_ODEXX_EXTERN_TEMPLATE(ode23, double);
+GNC_ODEXX_EXTERN_TEMPLATE(ode23, float);
+GNC_ODEXX_EXTERN_TEMPLATE(ode23, double);
 
 /** @fn ode45
  *  @param[in]  ti       Initial conditions for the independant variable.
@@ -265,8 +254,8 @@ template <typename T>
 int ode45(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
     T rel_tol, T abs_tol, unsigned int max_iter, void (*const f)(T, T const *, T *));
 
-PAN_GNC_ODEXX_EXTERN_TEMPLATE(ode45, float);
-PAN_GNC_ODEXX_EXTERN_TEMPLATE(ode45, double);
+GNC_ODEXX_EXTERN_TEMPLATE(ode45, float);
+GNC_ODEXX_EXTERN_TEMPLATE(ode45, double);
 
 }  // namespace gnc
 
