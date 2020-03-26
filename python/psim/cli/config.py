@@ -2,6 +2,7 @@ from .. import config
 
 import json
 import logging
+import os
 import sys
 
 log = logging.getLogger(__name__)
@@ -12,9 +13,9 @@ desc='Process PSim configuration files.'
 
 def arguments(parser):
     parser.add_argument(
-        '--config-dir', '-c', required=False, type=str, default='./', help='' +
-        'Configuration directory for the simulation. This is a relative path ' +
-        'from "psim/config" in the PSim repository and default to "./".'
+        'config_dir', metavar='CONFIG_DIR', type=str, help='Configuration ' +
+        'directory for the simulation. This is a relative path from ' +
+        '"python/psim/config" in the PSim repository.'
     )
     parser.add_argument(
         '--patch-dir', '-p', required=False, type=str, help='Looks for an ' +
@@ -32,6 +33,10 @@ def arguments(parser):
         'list of modules to process configuration files for. Defaults to all ' +
         'modules not specified.'
     )
+    parser.add_argument(
+        '--readable', '-r', action='store_true', help='Enable cleaner JSON ' +
+        'formatting for the resulting output files.'
+    )
     return parser
 
 
@@ -47,12 +52,18 @@ def main(args):
     else:
         modules = set(config.all_modules)
 
-    # leader, follower = config.load_module(args.modules[0], args.path)
+    # Load configuration data
+    data = config.load_modules(modules, args.config_dir, args.patch_dir)
 
-    # dictionary = {
-    #   "leader": leader,
-    #   "follower": follower
-    # }
-    # json.dump(dictionary, args.output, indent=4, sort_keys=True)
+    # Handle readable output if requested
+    json_kwargs = dict()
+    if args.readable:
+        json_kwargs.update({'indent': 4, 'sort_keys': True})
+
+    # Dump data to the proper JSON files
+    for module in modules:
+        output_file = os.path.abspath(os.path.expanduser(os.path.join(args.output_dir, '{}.json'.format(module))))
+        with open(output_file, 'w') as ostream:
+            json.dump(data[module], ostream, **json_kwargs)
 
     return 0
