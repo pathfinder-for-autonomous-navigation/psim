@@ -1,0 +1,49 @@
+{
+    "shared" : {
+        "cdgps_model" : "",
+        "cdgps_time_till_lock" : {
+            "value" : 0.0
+        },
+        "cdgps_position_bias" : {
+            "frame" : "ecef",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "gps_model" : "",
+
+        "gps_time_till_lock" : {
+            "value" : 0.0
+        },
+        "gps_position_bias" : {
+            "frame" : "ecef",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "gps_velocity_bias" : {
+            "frame" : "ecef",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "gyroscope_model" : "",
+        "gyroscope_bias" : {
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "magnetometer_model" : "",
+        "magnetometer_bias" : {
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "sun_sensor_model" : "",
+        "sun_sensor_truth_normals" : {
+            "value" : []
+        },
+        "sun_sensor_measured_normals" : {
+            "value" : []
+        },
+        "sun_sensor_truth_voltage_maximums" : {
+            "value" : []
+        },
+        "sun_sensor_measured_voltage_maximums" : {
+            "value" : []
+        },
+        "sun_sensor_alpha" : {
+            "value" : 1.0
+        }
+    }
+}
