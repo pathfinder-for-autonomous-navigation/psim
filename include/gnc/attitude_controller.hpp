@@ -50,17 +50,24 @@ struct DetumbleActuation {
 void control_detumble(DetumbleControllerState &state,
     DetumbleControllerData const &data, DetumbleActuation &actuation);
 
+/** @struct PointingControllerState */
 struct PointingControllerState {
   /** Defaults everything's value to NaN. */
   PointingControllerState();
 };
 
+/** @struct PointingControllerData */
 struct PointingControllerData {
   /** Defaults everything's value to NaN. */
   PointingControllerData();
 };
 
+/** @struct PointingActuation */
 struct PointingActuation {
+  /** Magnetourquer actuation command in the body frame (units Am^2) */
+  lin::Vector3f mtr_body_cmd;
+  /** Reaction wheel torque command in the body frame (units Nm) */
+  lin::Vector3f rwa_body_cmd;
   /** Defaults everything's value to NaN. */
   PointingActuation();
 };
