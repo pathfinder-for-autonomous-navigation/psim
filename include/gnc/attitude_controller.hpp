@@ -43,20 +43,26 @@ struct DetumbleActuation {
 };
 
 /** @fn control_detumble
- *  @param[inout] state     Control function internal state information.
- *  @param[in]    data      Control function inputs
- *  @param[out]   actuation Actuation output.
+ *  @param[inout] state     Controller's internal state information.
+ *  @param[in]    data      Controller's inputs.
+ *  @param[out]   actuation Controller's outputs.
  *  Calculation MTR actuations to detumble the spacecraft. */
 void control_detumble(DetumbleControllerState &state,
     DetumbleControllerData const &data, DetumbleActuation &actuation);
 
-/** @struct PointingControllerState */
+/** @struct PointingControllerState
+ *  Contains internal state information needed by the control_pointing function.
+ *  */
 struct PointingControllerState {
   /** Defaults everything's value to NaN. */
   PointingControllerState();
 };
 
-/** @struct PointingControllerData */
+/** @struct PointingControllerData
+ *  Essentially serves as the inputs to the control_pointing function. Note,
+ *  it is permissable to leave some members (like the secondary pointing
+ *  objective information) as NaNs. See member documentation for more details.
+ *  */
 struct PointingControllerData {
   /** Desired state of the primary pointing objective. This needs to be a unit
    *  vector. */
@@ -80,7 +86,9 @@ struct PointingControllerData {
   PointingControllerData();
 };
 
-/** @struct PointingActuation */
+/** @struct PointingActuation
+ *  Essentially serves as the outputs to the control_pointing function. See
+ *  member documentation for more information. */
 struct PointingActuation {
   /** Magnetourquer actuation command in the body frame (units Am^2) */
   lin::Vector3f mtr_body_cmd;
@@ -90,6 +98,12 @@ struct PointingActuation {
   PointingActuation();
 };
 
+/** @fn control_pointing
+ *  @param[inout] state     Controller's internal state information.
+ *  @param[in]    data      Controller's inputs.
+ *  @param[out]   actuation Controller's outputs.
+ *  Calculates wheel and MTR actuations to point to spacecraft according to the
+ *  passed objectives. */
 void control_pointing(PointingControllerState &state,
     PointingControllerData const &data, PointingActuation &actuation);
 

@@ -157,6 +157,9 @@ void control_pointing(PointingControllerState &state,
   // Total angular momentum of the satellite in the body frame
   L = constant::J_sat * data.w_sat + constant::J_wheel * data.w_wheels;
 
+  // Total angular momentum should never be NaN here
+  GNC_ASSERT(!std::isnan(L(0)));
+
   // Magnitude of L calls for momentum control
   if (lin::norm(L) > 0.05f * constant::w_wheel_max * constant::J_wheel) {
     L = lin::cross(L, data.b);
