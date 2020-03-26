@@ -5,6 +5,7 @@
 #ifndef GNC_ATTITUDE_CONTROLLER_HPP_
 #define GNC_ATTITUDE_CONTROLLER_HPP_
 
+#include "config.hpp"
 #include "containers.hpp"
 
 #include <lin/core.hpp>
@@ -48,6 +49,24 @@ struct DetumbleActuation {
  *  @param[out]   actuation Actuation output. */
 void control_detumble(DetumbleControllerState &state,
     DetumbleControllerData const &data, DetumbleActuation &actuation);
+
+struct PointingControllerState {
+  /** Defaults everything's value to NaN. */
+  PointingControllerState();
+};
+
+struct PointingControllerData {
+  /** Defaults everything's value to NaN. */
+  PointingControllerData();
+};
+
+struct PointingActuation {
+  /** Defaults everything's value to NaN. */
+  PointingActuation();
+};
+
+void control_pointing(PointingControllerState &state,
+    PointingControllerData const &data, PointingActuation &actuation);
 
 }  // namespace gnc
 
