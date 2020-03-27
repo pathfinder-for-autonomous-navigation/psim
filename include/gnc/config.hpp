@@ -6,6 +6,7 @@
 #ifndef GNC_CONFIG_HPP_
 #define GNC_CONFIG_HPP_
 
+#include <cmath>
 #include <limits>
 #include <type_traits>
 
@@ -21,6 +22,10 @@
 #else
   #define GNC_ASSERT(x)
 #endif
+
+/** Assert some number is near another within some tolerance. This should be
+ *  used with floating point values. */
+#define GNC_ASSERT_NEAR(a, b, delta) GNC_ASSERT(std::abs(a - b) < delta)
 
 /* Ensure float literals are actually floats and double literals are actually
  * doubles. */

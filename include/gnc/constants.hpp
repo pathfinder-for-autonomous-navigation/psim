@@ -15,7 +15,23 @@ namespace constant {
 
 GNC_TRACKED_CONSTANT(constexpr static double, pi, 3.141592653589793);
 
+GNC_TRACKED_CONSTANT(constexpr static float, pi_f, pi);
+
 GNC_TRACKED_CONSTANT(constexpr static double, two_pi, 2.0 * pi);
+
+GNC_TRACKED_CONSTANT(constexpr static float, two_pi_f, two_pi);
+
+GNC_TRACKED_CONSTANT(constexpr static double, deg_to_rad, pi / 180.0);
+
+GNC_TRACKED_CONSTANT(constexpr static float, deg_to_rad_f, deg_to_rad);
+
+GNC_TRACKED_CONSTANT(constexpr static double, rad_to_deg, 180.0 / pi);
+
+GNC_TRACKED_CONSTANT(constexpr static float, rad_to_deg_f, rad_to_deg);
+
+GNC_TRACKED_CONSTANT(constexpr static double, mu_earth, 3.986004418e14);
+
+GNC_TRACKED_CONSTANT(constexpr static float, mu_earth_f, mu_earth);
 
 extern unsigned short init_gps_week_number;
 
@@ -43,9 +59,15 @@ GNC_TRACKED_CONSTANT(constexpr static double, b_noise_floor, 0.0);
 
 GNC_TRACKED_CONSTANT(constexpr static double, max_mtr_moment, 0.113337 / 2.0);
 
-GNC_TRACKED_CONSTANT(constexpr static lin::Matrix3x3f, JB_single_sat, 0.03798, 0.0, 0.0, 0.0, 0.03957, 0.0, 0.0, 0.0, 0.00688);
+extern lin::Matrix3x3f J_sat;
 
-GNC_TRACKED_CONSTANT(constexpr static lin::Matrix3x3f, JB_docked_sats, 0.03798, 0.0, 0.0, 0.0, 0.03957, 0.0, 0.0, 0.0, 0.00688);
+extern float pointer_Kp;
+
+extern float pointer_Kd;
+
+GNC_TRACKED_CONSTANT(constexpr static float, J_wheel, 135.0e-7f);
+
+GNC_TRACKED_CONSTANT(constexpr static float, w_wheel_max, 677.0f);
 
 }  // namespace constant
 }  // namespace gnc

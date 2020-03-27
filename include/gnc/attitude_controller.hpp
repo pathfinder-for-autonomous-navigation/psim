@@ -36,17 +36,17 @@ struct DetumbleControllerData {
  *  Essentially serves as the outputs to the control_detumble function. See
  *  member documentation for more details. */
 struct DetumbleActuation {
-  /** Magnetourquer actuation command in the body frame (units Am^2) */
+  /** Magnetourquer actuation command in the body frame (units Am^2). */
   lin::Vector3f mtr_body_cmd;
   /** Defaults everything's value to NaN. */
   DetumbleActuation();
 };
 
 /** @fn control_detumble
- *  @brief Calculation MTR actuations to detumble the spacecraft.
  *  @param[inout] state     Control function internal state information.
  *  @param[in]    data      Control function inputs
- *  @param[out]   actuation Actuation output. */
+ *  @param[out]   actuation Actuation output.
+ *  Calculation MTR actuations to detumble the spacecraft. */
 void control_detumble(DetumbleControllerState &state,
     DetumbleControllerData const &data, DetumbleActuation &actuation);
 
@@ -58,6 +58,24 @@ struct PointingControllerState {
 
 /** @struct PointingControllerData */
 struct PointingControllerData {
+  /** Desired state of the primary pointing objective. This needs to be a unit
+   *  vector. */
+  lin::Vector3f primary_desired;
+  /** Current state of the primary pointing objective. This needs to be a unit
+   *  vector. */
+  lin::Vector3f primary_current;
+  /** Desired state of the secondary pointing objective. This needs to be a unit
+   *  vector. */
+  lin::Vector3f secondary_desired;
+  /** Current state of the secondary pointing objective. This needs to be a unit
+   *  vector. */
+  lin::Vector3f secondary_current;
+  /** Angular rate of the wheels in the body frame (units of radians/s) */
+  lin::Vector3f w_wheels;
+  /** Angular rate of the satellite in the body frame (units of radians/s). */
+  lin::Vector3f w_sat;
+  /** Magnetic field in the body frame (units of T). */
+  lin::Vector3f b;
   /** Defaults everything's value to NaN. */
   PointingControllerData();
 };
