@@ -43,9 +43,9 @@ GNC_TRACKED_CONSTANT(constexpr static double, b_noise_floor, 0.0);
 
 GNC_TRACKED_CONSTANT(constexpr static double, max_mtr_moment, 0.113337 / 2.0);
 
-GNC_TRACKED_CONSTANT(constexpr static lin::Matrix3x3f, JB_single_sat, 0.0333f, 0.0f, 0.0f, 0.0f, 0.0333f, 0.0f, 0.0f, 0.0f, 0.0067f);
+GNC_TRACKED_CONSTANT(constexpr static lin::Matrix3x3f, JB_single_sat, 0.03798, 0.0, 0.0, 0.0, 0.03957, 0.0, 0.0, 0.0, 0.00688);
 
-GNC_TRACKED_CONSTANT(constexpr static lin::Matrix3x3f, JB_docked_sats, 0.0333f, 0.0f, 0.0f, 0.0f, 0.0333f, 0.0f, 0.0f, 0.0f, 0.0067f);
+GNC_TRACKED_CONSTANT(constexpr static lin::Matrix3x3f, JB_docked_sats, 0.03798, 0.0, 0.0, 0.0, 0.03957, 0.0, 0.0, 0.0, 0.00688);
 
 }  // namespace constant
 }  // namespace gnc
