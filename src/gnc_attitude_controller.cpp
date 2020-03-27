@@ -118,7 +118,6 @@ constexpr float sign(float val) {
 
 void control_pointing(PointingControllerState &state,
     PointingControllerData const &data, PointingActuation &actuation) {
-  lin::Vector3f err, L;
 
   // Default everything to NaN
   actuation = PointingActuation();
@@ -130,6 +129,7 @@ void control_pointing(PointingControllerState &state,
     return;
 
   // No secondary objective is specified
+  lin::Vector3f err;
   if (std::isnan(data.secondary_current(0)) ||
       std::isnan(data.secondary_desired(0))) {
     single_objective_error(data.primary_current, data.primary_desired, err);
@@ -137,7 +137,9 @@ void control_pointing(PointingControllerState &state,
   // Secondary objective is specified
   else {
     // Check is the primary and secondary objectives are too near
-    if (true)
+    float thresh = std::cos(10.0f * constant::pi_f / 180.0f);  // within 10 deg.
+    if (std::abs(lin::dot(data.secondary_current, data.primary_current)) < thresh ||
+        std::abs(lin::dot(data.secondary_desired, data.primary_desired)) < thresh)
       single_objective_error(data.primary_current, data.primary_desired, err);
     else
       double_objective_error(data.primary_current, data.primary_desired,
@@ -155,7 +157,7 @@ void control_pointing(PointingControllerState &state,
   if (std::isnan(data.w_wheels(0)) || std::isnan(data.b(0))) return;
 
   // Total angular momentum of the satellite in the body frame
-  L = constant::J_sat * data.w_sat + constant::J_wheel * data.w_wheels;
+  lin::Vector3f L = constant::J_sat * data.w_sat + constant::J_wheel * data.w_wheels;
 
   // Total angular momentum should never be NaN here
   GNC_ASSERT(!std::isnan(L(0)));
