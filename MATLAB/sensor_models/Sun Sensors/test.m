@@ -33,7 +33,7 @@ gyroyd = gyroy.*(180/pi);
 gyrozd = gyroz.*(180/pi);
 
 %%%discrete temp recordings
-tempd = ones(length(temp),1); %hand-recorded temp (discrete)
+temp2 = ones(length(temp),1); %hand-recorded temp (discrete)
 F2 = data2(1:34,1);
 F3 = data2(1:34,2);
 F4 = data2(1:34,3);
@@ -42,7 +42,7 @@ C1 = data2(1:34,4);
 %rough correlatation of hand-recorded temp and uncalibrated satellite recorded temparature
 div = ceil((length(time)/34)); 
 for i = 1:34
-    tempd((i-1)*div+1:i*div)= C1(i);
+    temp2((i-1)*div+1:i*div)= C1(i);
 end
 
 Fs = 50; %sampling frequency 50 hz
@@ -167,24 +167,18 @@ for i = 1:34 %loops over discrete time intervals
     end
 end
 
-figure(1)
+figure(2)
 subplot(3,1,1); plot(C1,averages(:,1)); xlabel('temp [C]'); ylabel('gyrox signal mean deg/s'); 
 title('Angular rate typical zero-rate level change vs. temperature')
 subplot(3,1,2); plot(C1,averages(:,2)); xlabel('temp [C]'); ylabel('gyroy signal mean deg/s'); 
+title('Angular rate typical zero-rate level change vs. temperature')
 subplot(3,1,3); plot(C1,averages(:,3)); xlabel('temp [C]'); ylabel('gyroz signal mean deg/s'); 
+title('Angular rate typical zero-rate level change vs. temperature')
 
 %get the slopes of the plot in dps/C
 fx = gradient(averages(:,1)); maxslopex = max(fx); avgslopex = mean(fx);
 fy = gradient(averages(:,2)); maxslopey = max(fy); avgslopey = mean(fy);
 fz = gradient(averages(:,3)); maxslopez = max(fz); avgslopez = mean(fz);
-
-% Angular rate typical zero-rate level change vs. time (discrete hand-recorded time)
-figure(2)
-subplot(3,1,1); plot(averages(:,1)); xlabel('time [min]'); ylabel('gyrox signal mean deg/s'); 
-title('Angular rate typical zero-rate level change vs. time')
-subplot(3,1,2); plot(averages(:,2)); xlabel('time [min]'); ylabel('gyroy signal mean deg/s'); 
-subplot(3,1,3); plot(averages(:,3)); xlabel('time [min]'); ylabel('gyroz signal mean deg/s'); 
-
 
 %% Gyro Noise Density
 %source: https://ez.analog.com/mems/w/documents/4507/faq-gyroscope-noise-density
@@ -209,43 +203,32 @@ title('Noise Density')
 %% time dependence plots
 figure(1)
 subplot(3,1,1); plot(time,gyrox); xlabel('time'); ylabel('gyrox rad/s');
-title('time dependence plots gyro')
 subplot(3,1,2); plot(time,gyroy); xlabel('time'); ylabel('gyroy rad/s');
 subplot(3,1,3); plot(time,gyroz); xlabel('time'); ylabel('gyroz rad/s');
 figure(2)
 subplot(3,1,1); plot(time,mag1x); xlabel('time'); ylabel('mag1x T');
-title('time dependence plots mag')
 subplot(3,1,2); plot(time,mag1y); xlabel('time'); ylabel('mag1y T');
 subplot(3,1,3); plot(time,mag1z); xlabel('time'); ylabel('mag1z T');
 
 %% temp dependence plots (using continuous temp recorded by satellite)
 figure(3)
 subplot(3,1,1); plot(temp,gyrox); xlabel('temp'); ylabel('gyrox rad/s');
-title('temp dependence plots gyro using uncalibrated satellite recorded temp')
 subplot(3,1,2); plot(temp,gyroy); xlabel('temp'); ylabel('gyroy rad/s');
 subplot(3,1,3); plot(temp,gyroz); xlabel('temp'); ylabel('gyroz rad/s');
 figure(4)
 subplot(3,1,1); plot(temp,mag1x); xlabel('temp'); ylabel('mag1x T');
-title('temp dependence plots mag using uncalibrated satellite recorded temp')
 subplot(3,1,2); plot(temp,mag1y); xlabel('temp'); ylabel('mag1y T');
 subplot(3,1,3); plot(temp,mag1z); xlabel('temp'); ylabel('mag1z T');
 
 %% temp dependence plots (using discrete temp hand-recorded)
-figure(1)
-subplot(3,1,1); plot(tempd(1:length(temp)),gyrox); xlabel('temp'); ylabel('gyrox rad/s');
-title('temp dependence plots gyro using hand-recorded temp')
-subplot(3,1,2); plot(tempd(1:length(temp)),gyroy); xlabel('temp'); ylabel('gyroy rad/s');
-subplot(3,1,3); plot(tempd(1:length(temp)),gyroz); xlabel('temp'); ylabel('gyroz rad/s');
-figure(2)
-subplot(3,1,1); plot(tempd(1:length(temp)),mag1x); xlabel('temp'); ylabel('mag1x T');
-title('temp dependence plots mag using hand-recorded temp')
-subplot(3,1,2); plot(tempd(1:length(temp)),mag1y); xlabel('temp'); ylabel('mag1y T');
-subplot(3,1,3); plot(tempd(1:length(temp)),mag1z); xlabel('temp'); ylabel('mag1z T');
-
-%% time vs. temperature
-figure(1)
-plot(time,temp); xlabel('time (ms)'); ylabel('temp (uncalibrated)');
-title('uncalibrated temperature vs time')
+% % figure(3)
+% % subplot(3,1,1); plot(temp2(1:length(temp)),gyrox); xlabel('temp'); ylabel('gyrox rad/s');
+% % subplot(3,1,2); plot(temp2(1:length(temp)),gyroy); xlabel('temp'); ylabel('gyroy rad/s');
+% % subplot(3,1,3); plot(temp2(1:length(temp)),gyroz); xlabel('temp'); ylabel('gyroz rad/s');
+% % figure(3)
+% % subplot(3,1,1); plot(temp2(1:length(temp)),mag1x); xlabel('temp'); ylabel('mag1x T');
+% % subplot(3,1,2); plot(temp2(1:length(temp)),mag1y); xlabel('temp'); ylabel('mag1y T');
+% % subplot(3,1,3); plot(temp2(1:length(temp)),mag1z); xlabel('temp'); ylabel('mag1z T');
 
 function [freq,PSD,RMS,RND] = ProcessNoise(RawData,fs,freqBand)
     % Performs noise computations on given data set.
