@@ -139,3 +139,4 @@ geograv/build/*
 *EGM2008_to2190_ZeroTide
 MATLAB/psim.html
 tmp/
+.idea/
