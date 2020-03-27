@@ -1,12 +1,12 @@
-/** @file test_all/attitude_estimation.cpp
+/** @file test_all/attitude_estimator.cpp
  *  @author Kyle Krol */
 
 #include "test.hpp"
-#include "attitude_estimation_test.hpp"
+#include "attitude_estimator_test.hpp"
 
-#include <gnc/attitude_estimation.hpp>
+#include <gnc/attitude_estimator.hpp>
 
-void test_attitude_estimation_nan_inputs() {
+void test_attitude_estimator_nan_inputs() {
   gnc::AttitudeEstimatorState state;
   gnc::AttitudeEstimatorData data;
   gnc::AttitudeEstimate estimate;
@@ -16,6 +16,6 @@ void test_attitude_estimation_nan_inputs() {
   TEST_ASSERT_TRUE(std::isnan(estimate.w_body(0)));
 }
 
-void attitude_estimation_test() {
-  RUN_TEST(test_attitude_estimation_nan_inputs);
+void attitude_estimator_test() {
+  RUN_TEST(test_attitude_estimator_nan_inputs);
 }

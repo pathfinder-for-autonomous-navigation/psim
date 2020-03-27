@@ -112,14 +112,13 @@ inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q) {
   q = q / lin::norm(q);
 }
 
-// TODO : Add more specific tolerancing to this function along with the QR
-// linear system solvers in lin/include/algorithms/*
 template <typename T>
 inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
     lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &q) {
   // Ensure that sun and magnetic field vectors aren't parallel or anitparallel
   if (std::abs(lin::dot(N_sun, N_mag)) == static_cast<T>(1.0)) return 1;
   if (std::abs(lin::dot(B_sun, B_mag)) == static_cast<T>(1.0)) return 2;
+  // TODO : Improve out tolerancing here
 
   // Calculate right handed bases for the reference frame
   lin::Vector<T, 3> const &n1 = N_sun;

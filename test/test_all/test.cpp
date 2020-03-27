@@ -3,7 +3,7 @@
 
 #include "test.hpp"
 
-#include "attitude_estimation_test.hpp"
+#include "attitude_estimator_test.hpp"
 #include "containers_test.hpp"
 #include "environment_test.hpp"
 #include "ode_test.hpp"
