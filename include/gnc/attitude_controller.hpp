@@ -64,19 +64,19 @@ struct PointingControllerState {
  *  objective information) as NaNs. See member documentation for more details.
  *  */
 struct PointingControllerData {
-  /** Desired state of the primary pointing objective. This needs to be a unit
-   *  vector. */
+  /** Desired state of the primary pointing objective in the body frame. This
+   *  needs to be a unit vector. */
   lin::Vector3f primary_desired;
-  /** Current state of the primary pointing objective. This needs to be a unit
-   *  vector. */
+  /** Current state of the primary pointing objective in the body frame. This
+   *  needs to be a unit vector. */
   lin::Vector3f primary_current;
-  /** Desired state of the secondary pointing objective. This needs to be a unit
-   *  vector. */
+  /** Desired state of the secondary pointing objective in the body frame. This
+   *  needs to be a unit vector. */
   lin::Vector3f secondary_desired;
-  /** Current state of the secondary pointing objective. This needs to be a unit
-   *  vector. */
+  /** Current state of the secondary pointing objective in the body frame. This
+   *  needs to be a unit vector. */
   lin::Vector3f secondary_current;
-  /** Angular rate of the wheels in the body frame (units of radians/s) */
+  /** Angular rate of the wheels in the body frame (units of radians/s). */
   lin::Vector3f w_wheels;
   /** Angular rate of the satellite in the body frame (units of radians/s). */
   lin::Vector3f w_sat;
@@ -90,9 +90,9 @@ struct PointingControllerData {
  *  Essentially serves as the outputs to the control_pointing function. See
  *  member documentation for more information. */
 struct PointingActuation {
-  /** Magnetourquer actuation command in the body frame (units Am^2) */
+  /** Magnetourquer actuation command in the body frame (units Am^2). */
   lin::Vector3f mtr_body_cmd;
-  /** Reaction wheel torque command in the body frame (units Nm) */
+  /** Reaction wheel torque command in the body frame (units Nm). */
   lin::Vector3f rwa_body_cmd;
   /** Defaults everything's value to NaN. */
   PointingActuation();
