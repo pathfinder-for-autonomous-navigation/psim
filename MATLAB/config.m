@@ -74,7 +74,9 @@ const.MASS= 4.0;% positive scalar
 const.JB=[0.03798 0 0;
           0 0.03957 0;
           0 0 0.00688;];% 3x3 symmetric matrix
-%dry moment of inertia of the satellite in body frame (kg*m^2)
+%Dry moment of inertia of satellite in body frame (kgm^2),
+% measurement described here:
+% https://cornellprod-my.sharepoint.com/:w:/g/personal/saa243_cornell_edu/EfnqDGLGxSJKsCPZ2Gi0n2UBek152YP_spoqLfRybCa9pQ?e=2S4hV4
 const.JWHEEL=135.0e-7;% positive scalar
 % Wheel Inertia kg*m^2
 const.JFUEL_NORM=0.1^2;% positive scalar

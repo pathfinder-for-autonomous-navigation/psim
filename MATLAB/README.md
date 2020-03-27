@@ -254,7 +254,7 @@ Constants are stored in the `const` global struct.
    * `MAXWHEELRAMP`(positive scalar), Max wheel ramp (rad/s/s)
    * `MAXMOMENT`(positive scalar), Max magrod moment on one axis (Am^2)
    * `MASS`(positive scalar), Dry mass of satellite (kg)
-   * `JB`(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame (kgm^2)
+   * `JB`(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame, measurement described [here](https://cornellprod-my.sharepoint.com/:w:/g/personal/saa243_cornell_edu/EfnqDGLGxSJKsCPZ2Gi0n2UBek152YP_spoqLfRybCa9pQ?e=2S4hV4) (kgm^2)
    * `JBINV`(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kgm^2))
    * `JWHEEL`(positive scalar),  Wheel Inertia (kgm^2)
    * `JFUEL_NORM`(positive scalar), Moment of inertia of the fuel/mass of the fuel (m^2)
