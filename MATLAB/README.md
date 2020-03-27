@@ -375,7 +375,7 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 
 # Installation
 1. Install MATLAB R2019b, Matlab Add-Ons, and ensure you have a C++ compiler by running `mex -setup C++`
-2. Run `install.m` script to compile all C code into mex.
+2. Run `install.m` script to compile all C code into mex and download data.
 
 Run `install.m` everytime you reclone or redownload the repo. 
 
@@ -388,3 +388,5 @@ There are a few required Add-Ons for Matlab
  * Aerospace Toolbox
  * Robotics System Toolbox
  * Convert between RGB and Color Names
+ * [TrackerComponentLibrary](https://github.com/pathfinder-for-autonomous-navigation/TrackerComponentLibrary/releases/download/v4.1/TrackerComponentLibrary.mltbx)
+    * Download this file and then open it using matlab to add it as an addon
