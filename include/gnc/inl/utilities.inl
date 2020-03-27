@@ -45,6 +45,14 @@ constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> &v) {
 // TODO : Potentially add diagonal references to lin
 template <typename T>
 inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q) {
+  // Assert that M is a direction cosine matrix
+  // GNC_ASSERT_NEAR(1.0f, lin::fro(lin::norm(lin::ref_col(M, 0))), 1.0e-5f); // TODO : Waiting on a PR
+  // GNC_ASSERT_NEAR(1.0f, lin::fro(lin::norm(lin::ref_col(M, 1))), 1.0e-5f);
+  // GNC_ASSERT_NEAR(1.0f, lin::fro(lin::norm(lin::ref_col(M, 2))), 1.0e-5f);
+  // GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 0), lin::ref_col(M, 1)), 1.0e-5f);
+  // GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 0), lin::ref_col(M, 2)), 1.0e-5f);
+  // GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 1), lin::ref_col(M, 2)), 1.0e-5f);
+
   // Find the maximum among the diagonal elements and trace
   T max = M(0, 0);
   T trace = M(0, 0);
