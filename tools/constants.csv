@@ -13,5 +13,5 @@ false,double,earth_period,365.256363004 * 24.0 * 60.0 * 60.0
 false,lin::Vector4d,q_eci_perifocal,0.127456632677880,-0.158124280715206,0.762378784011859,-0.614434787689722
 false,double,b_noise_floor,0.0
 false,double,max_mtr_moment,0.113337 / 2.0
-false,lin::Matrix3x3f,JB_single_sat,0.0333f,0.0f,0.0f,0.0f,0.0333f,0.0f,0.0f,0.0f,0.0067f
-false,lin::Matrix3x3f,JB_docked_sats,0.0333f,0.0f,0.0f,0.0f,0.0333f,0.0f,0.0f,0.0f,0.0067f
+false,lin::Matrix3x3f,JB_single_sat,0.03798,0.0,0.0,0.0,0.03957,0.0,0.0,0.0,0.00688
+false,lin::Matrix3x3f,JB_docked_sats,0.03798,0.0,0.0,0.0,0.03957,0.0,0.0,0.0,0.00688

@@ -71,9 +71,9 @@ const.MAXMOMENT= 0.08;% positive scalar
 % Max magrod moment on one axis (A*m^2)
 const.MASS= 4.0;% positive scalar
 %dry mass of satellite, kg.
-const.JB=[1/12*const.MASS*(0.3^2+0.1^2) 0 0;
-          0 1/12*const.MASS*(0.3^2+0.1^2) 0;
-          0 0 1/12*const.MASS*(0.1^2+0.1^2);];% 3x3 symmetric matrix
+const.JB=[0.03798 0 0;
+          0 0.03957 0;
+          0 0 0.00688;];% 3x3 symmetric matrix
 %dry moment of inertia of the satellite in body frame (kg*m^2)
 const.JWHEEL=135.0e-7;% positive scalar
 % Wheel Inertia kg*m^2
