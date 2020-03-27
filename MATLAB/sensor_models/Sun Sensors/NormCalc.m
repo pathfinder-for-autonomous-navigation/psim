@@ -1,40 +1,3 @@
-%%% Body frame unti normals
-%%% Leader F2, F3, F4, F5, F6
-%%% Follower F2, F3, F4, F5, F6
-
-yset = {'newFace4-XFollower11220604raw_Data.csv', %%%% add names of data sets here
-xset = {'newBFace4-XFollower11222209raw_Data.csv', 
-
-for i = 1:8
-    y_data_1 = csvread(yset{i});
-    x_data_1 = csvread(xset{i});
-    
-    [S, v] = trim_data([y_data_1(:, 1); x_data_1(:, 1)],...
-                   [y_data_1(:, 2); x_data_1(:, 2)],...
-                   [y_data_1(:, 3); x_data_1(:, 3)]);
-    n0 = least_squares(S, v);
-    [S, v] = trim_data([y_data_1(:, 1); x_data_1(:, 1)],...
-                       [y_data_1(:, 2); x_data_1(:, 2)],...
-                       [y_data_1(:, 4); x_data_1(:, 4)]);
-    n1 = least_squares(S, v);
-    [S, v] = trim_data([y_data_1(:, 1); x_data_1(:, 1)],...
-                       [y_data_1(:, 2); x_data_1(:, 2)],...
-                       [y_data_1(:, 5); x_data_1(:, 5)]);
-    n2 = least_squares(S, v);
-    [S, v] = trim_data([y_data_1(:, 1); x_data_1(:, 1)],...
-                       [y_data_1(:, 2); x_data_1(:, 2)],...
-                       [y_data_1(:, 6); x_data_1(:, 6)]);
-    n3 = least_squares(S, v);
-    plot_normals(n0, n1, n2, n3)
-    grid on
-    norm(n0)
-    norm(n1)
-    norm(n2)
-    norm(n3)
-end
-
-
-
 %% Follower Face 2 Normal Calculations
 %
 % x degress, y degress, v0, v1, v2, v3
@@ -309,7 +272,7 @@ function [S, v] = trim_data(x_angle, y_angle, voltages)
             if abs(x_angle(j) > y_angle(j))
                 S(i, :) = (x_rot(-x_angle(j)) * (y_rot(-y_angle(j)) * [0.0; 0.0; -1.0]))';
             else
-                S(i, := ((y_rot(-y_angle(j)) * x_rot(-x_angle(j)) * [0.0; 0.0; -1.0]))';
+                S(i, :) = ((y_rot(-y_angle(j)) * x_rot(-x_angle(j)) * [0.0; 0.0; -1.0]))';
             end
             v(i) = voltages(j);
         end
