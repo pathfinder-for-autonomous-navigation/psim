@@ -85,7 +85,9 @@ inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q);
  *  @param[out] q  Quaternion transforming from the unknown to known frame.
  *  Given a set of unit vector from a known frame and then unknown frame, this
  *  function calculates the rotation required to transform from the latter to
- *  the former. If R1 and R2, or r1 and r2 are within a degree of one another,
+ *  the former. The first vectors, R1 and r1, will be matched exactly by the
+ *  rotation while R2 and r2 will be matched as best as possible given the first
+ *  constraint. If R1 and R2, or r1 and r2 are within a degree of one another,
  *  the function will return a quaternion of NaNs. Otherwise, a finite input
  *  will always yield a finite result.
  *  REQUIRES: R1, R2, r1, and r2 to be unit vectors. */
