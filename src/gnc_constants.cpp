@@ -22,6 +22,12 @@ GNC_TRACKED_CONSTANT(lin::Vector3d, earth_precession_rate, 1.0e-11 * 0.069896936
 
 GNC_TRACKED_CONSTANT(lin::Vector4d, q_ecef0_eci, 0.000917219458782, 0.000038843277811, 0.998612074831165, 0.052660053181324);
 
+GNC_TRACKED_CONSTANT(lin::Matrix3x3f, J_sat, 0.03798, 0.0, 0.0, 0.0, 0.03957, 0.0, 0.0, 0.0, 0.00688);
+
+GNC_TRACKED_CONSTANT(float, pointer_Kp, 20.0e-4f);
+
+GNC_TRACKED_CONSTANT(float, pointer_Kd, 22.5e-4f);
+
 }  // namespace constant
 }  // namespace gnc
 
