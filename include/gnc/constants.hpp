@@ -55,7 +55,7 @@ GNC_TRACKED_CONSTANT(constexpr static double, earth_period, 365.256363004 * 24.0
 
 GNC_TRACKED_CONSTANT(constexpr static lin::Vector4d, q_eci_perifocal, 0.127456632677880, -0.158124280715206, 0.762378784011859, -0.614434787689722);
 
-GNC_TRACKED_CONSTANT(constexpr static double, b_noise_floor, 0.0);
+GNC_TRACKED_CONSTANT(constexpr static float, b_noise_floor, 0.0f);
 
 GNC_TRACKED_CONSTANT(constexpr static double, max_mtr_moment, 0.113337 / 2.0);
 

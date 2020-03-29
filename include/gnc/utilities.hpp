@@ -5,8 +5,11 @@
 #define GNC_UTILITIES_HPP_
 
 #include "config.hpp"
+#include "constants.hpp"
 
 #include <lin/core.hpp>
+#include <lin/generators/constants.hpp>
+#include <lin/references.hpp>
 
 #ifdef abs
 #undef abs
@@ -75,26 +78,35 @@ template <typename T>
 inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q);
 
 /** @fn triad
- *  Given a set of vectors in a knows frame (N_*), and a matching set of
- *  measured vectors in an unknown frame (B_*), this function will determine the
- *  quaternion required to rotate the unknown frame to the known frame. This
- *  result is stored in q.
- *  @returns Zero if the function was succesful and false otherwise.
- * 
- *  REQUIRES: N_* and B_* vectors must be unit vectors. */
+ *  @param[in]  R1 First known vector in a known frame.
+ *  @param[in]  R2 Second known vector in a known frame.
+ *  @param[in]  r1 First measurement vector in an unknown frame.
+ *  @param[in]  r2 Second measurement vector in an unknown frame.
+ *  @param[out] q  Quaternion transforming from the unknown to known frame.
+ *  Given a set of unit vector from a known frame and then unknown frame, this
+ *  function calculates the rotation required to transform from the latter to
+ *  the former. If R1 and R2, or r1 and r2 are within a degree of one another,
+ *  the function will return a quaternion of NaNs. Otherwise, a finite input
+ *  will always yield a finite result.
+ *  REQUIRES: R1, R2, r1, and r2 to be unit vectors. */
 template <typename T>
-inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
-    lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &q);
+inline void triad(lin::Vector<T, 3> const &R1, lin::Vector<T, 3> const &R2,
+    lin::Vector<T, 3> const &r1, lin::Vector<T, 3> const &r2,
+    lin::Vector<T, 4> &q);
 
 /** @fn vec_rot_to_quat
+ *  @param[in]  u Unit vector being rotated to.
+ *  @param[in]  v Unit vector being rotated from.
+ *  @param[out] q Quaternion storing the calculated rotation.
  *  Calculates the quaternion which would rotate vector v onto vector u in the
- *  smallest possible rotation. If the vector are near antiparallel, the
- *  rotations is defaulted to about the z-axis.
- * 
+ *  smallest possible rotation. If the vectors are antiparallel, the quaternion
+ *  defaults to a rotation about the z-axis. There is no explicit handling of
+ *  NaNs built into this function; however, a finite input will always yield a
+ *  finite result.
  *  REQUIRES: Vectors u and v must both be unit vectors. */
 template <typename T>
-inline void vec_rot_to_quat(lin::Vector<T, 3> const &u, lin::Vector<T, 3> const &v,
-    lin::Vector<T, 4> &q);
+inline void vec_rot_to_quat(lin::Vector<T, 3> const &u,
+    lin::Vector<T, 3> const &v, lin::Vector<T, 4> &q);
 
 }  // namespace utl
 }  // namespace gnc

@@ -3,8 +3,6 @@
 
 #include "../utilities.hpp"
 
-#include <lin/references.hpp>
-
 namespace gnc {
 namespace utl {
 
@@ -46,12 +44,12 @@ constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> &v) {
 template <typename T>
 inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q) {
   // Assert that M is a direction cosine matrix
-  // GNC_ASSERT_NEAR(1.0f, lin::fro(lin::norm(lin::ref_col(M, 0))), 1.0e-5f); // TODO : Waiting on a PR
-  // GNC_ASSERT_NEAR(1.0f, lin::fro(lin::norm(lin::ref_col(M, 1))), 1.0e-5f);
-  // GNC_ASSERT_NEAR(1.0f, lin::fro(lin::norm(lin::ref_col(M, 2))), 1.0e-5f);
-  // GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 0), lin::ref_col(M, 1)), 1.0e-5f);
-  // GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 0), lin::ref_col(M, 2)), 1.0e-5f);
-  // GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 1), lin::ref_col(M, 2)), 1.0e-5f);
+  GNC_ASSERT_NORMALIZED(lin::ref_col(M, 0));
+  GNC_ASSERT_NORMALIZED(lin::ref_col(M, 1));
+  GNC_ASSERT_NORMALIZED(lin::ref_col(M, 2));
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 0), lin::ref_col(M, 1)), 1.0e-3f);
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 0), lin::ref_col(M, 2)), 1.0e-3f);
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(M, 1), lin::ref_col(M, 2)), 1.0e-3f);
 
   // Find the maximum among the diagonal elements and trace
   T max = M(0, 0);
@@ -113,34 +111,47 @@ inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q) {
 }
 
 template <typename T>
-inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
-    lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &q) {
-  // Ensure that sun and magnetic field vectors aren't parallel or anitparallel
-  if (std::abs(lin::dot(N_sun, N_mag)) == static_cast<T>(1.0)) return 1;
-  if (std::abs(lin::dot(B_sun, B_mag)) == static_cast<T>(1.0)) return 2;
-  // TODO : Improve out tolerancing here
+inline void triad(lin::Vector<T, 3> const &R1, lin::Vector<T, 3> const &R2,
+    lin::Vector<T, 3> const &r1, lin::Vector<T, 3> const &r2,
+    lin::Vector<T, 4> &q) {
+  // Ensure we are working with normal vectors
+  GNC_ASSERT_NORMALIZED(R1);
+  GNC_ASSERT_NORMALIZED(R2);
+  GNC_ASSERT_NORMALIZED(r1);
+  GNC_ASSERT_NORMALIZED(r2);
 
-  // Calculate right handed bases for the reference frame
-  lin::Vector<T, 3> const &n1 = N_sun;
-  lin::Vector<T, 3> const  n2 = lin::cross(n1, N_mag) / lin::norm(lin::cross(n1, N_mag));
+  // Default the returned value to NaN
+  q = lin::nans<lin::Vector<T, 4>>();
+
+  // Ensure that sun and magnetic field vectors aren't parallel or anitparallel
+  T thresh = std::cos(1.0f * constant::deg_to_rad);
+  if ((lin::dot(R1, R2) > thresh) || (lin::dot(r1, r2) > thresh))
+    return;
+
+  // Calculate right handed bases for the known frame
+  lin::Vector<T, 3> const &n1 = R1;
+  lin::Vector<T, 3> const  n2 = lin::cross(n1, R2) / lin::norm(lin::cross(n1, R2));
   lin::Vector<T, 3> const  n3 = lin::cross(n1, n2);
 
-  // Calculate right handed bases for the body frame
-  lin::Vector<T, 3> const &b1 = B_sun;
-  lin::Vector<T, 3> const  b2 = lin::cross(b1, B_mag) / lin::norm(lin::cross(b1, B_mag));
+  // Calculate right handed bases for measurements' frame
+  lin::Vector<T, 3> const &b1 = r1;
+  lin::Vector<T, 3> const  b2 = lin::cross(b1, r2) / lin::norm(lin::cross(b1, r2));
   lin::Vector<T, 3> const  b3 = lin::cross(b1, b2);
 
   // Calculate the DCM between the two frames and extract the quaternion
   lin::Matrix<T, 3, 3> const Q =
       b1 * lin::transpose(n1) + b2 * lin::transpose(n2) + b3 * lin::transpose(n3);
   dcm_to_quat(Q, q);
-  return 0;
 }
 
 // TODO : More strict tolerancing to determine 'antiparallel'
 template <typename T>
-inline void vec_rot_to_quat(lin::Vector<T, 3> const &u, lin::Vector<T, 3> const &v,
-    lin::Vector<T, 4> &q) {
+inline void vec_rot_to_quat(lin::Vector<T, 3> const &u,
+    lin::Vector<T, 3> const &v, lin::Vector<T, 4> &q) {
+  // Ensure we are working with normal vectors
+  GNC_ASSERT_NORMALIZED(u);
+  GNC_ASSERT_NORMALIZED(v);
+
   // Handle u and v being near anitparallel
   T x = lin::dot(u, v);
   if (std::abs(x + static_cast<T>(1)) < static_cast<T>(0.0001)) {

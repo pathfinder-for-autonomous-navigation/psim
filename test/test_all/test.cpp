@@ -11,7 +11,7 @@
 
 int test() {
   UNITY_BEGIN();
-  attitude_estimation_test();
+  attitude_estimator_test();
   containers_test();
   environment_test();
   ode_test();
