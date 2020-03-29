@@ -104,8 +104,17 @@ struct PointingActuation {
  *  @param[out]   actuation Controller's outputs.
  *  Calculates wheel and MTR actuations to point to spacecraft according to the
  *  passed objectives. */
+#ifndef MEX
 void control_pointing(PointingControllerState &state,
     PointingControllerData const &data, PointingActuation &actuation);
+#else
+/** @fn mex_control_pointing
+ *  Mex function entrypoint for MATLAB use. It decouples the pointing controller
+ *  from the global controller gains and satellite's moment of inertia value. */
+void mex_control_pointing(control_pointing(PointingControllerState &state,
+    PointingControllerData const &data, PointingActuation &actuation, float Kp,
+    float Kd, lin::Matrix3x3f const &J);
+#endif
 
 }  // namespace gnc
 

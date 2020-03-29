@@ -116,8 +116,12 @@ constexpr float sign(float val) {
     return static_cast<float>((0.0f < val) - (val < 0.0f));
 }
 
-void control_pointing(PointingControllerState &state,
-    PointingControllerData const &data, PointingActuation &actuation) {
+#ifndef MEX
+static
+#endif
+void mex_control_pointing(PointingControllerState &state,
+    PointingControllerData const &data, PointingActuation &actuation, float Kp,
+    float Kd, lin::Matrix3x3f const &J) {
 
   // Default everything to NaN
   actuation = PointingActuation();
@@ -150,14 +154,14 @@ void control_pointing(PointingControllerState &state,
   GNC_ASSERT(!std::isnan(err(0)));
 
   // Determine the wheel actation
-  actuation.rwa_body_cmd = -(constant::pointer_Kp * err + constant::pointer_Kd * data.w_sat);
+  actuation.rwa_body_cmd = -(Kp * err + Kd * data.w_sat);
 
   // Ensure we have wheel speed data and a magnetic field to perform angular
   // momentum control with
   if (std::isnan(data.w_wheels(0)) || std::isnan(data.b(0))) return;
 
   // Total angular momentum of the satellite in the body frame
-  lin::Vector3f L = constant::J_sat * data.w_sat + constant::J_wheel * data.w_wheels;
+  lin::Vector3f L = J * data.w_sat + constant::J_wheel * data.w_wheels;
 
   // Total angular momentum should never be NaN here
   GNC_ASSERT(!std::isnan(L(0)));
@@ -172,6 +176,14 @@ void control_pointing(PointingControllerState &state,
   // No momentum control required at this time
   else
     actuation.mtr_body_cmd = lin::zeros<decltype(actuation.mtr_body_cmd)>();
-
 }
+
+#ifndef MEX
+void control_pointing(PointingControllerState &state,
+    PointingControllerData const &data, PointingActuation &actuation) {
+  mex_control_pointing(state, data, actuation, constant::pointer_Kp,
+      constant::pointer_Kd, constant::J_sat);
+}
+#endif
+
 }  // namespace gnc
