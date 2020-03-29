@@ -91,6 +91,25 @@ inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q);
  *  the function will return a quaternion of NaNs. Otherwise, a finite input
  *  will always yield a finite result.
  *  REQUIRES: R1, R2, r1, and r2 to be unit vectors. */
+
+/** @fn triad
+ *  @param[in]  R1 First reference vector in a known frame.
+ *  @param[in]  R2 Second reference vector in a known frame.
+ *  @param[in]  r1 First reference vector in an unknown frame.
+ *  @param[in]  r2 Second reference vector in an unknown frame.
+ *  @param[out] q  Quaternion from known to unknown frame.
+ *  Determines the rotation from a known frame to an unknown frame in the form
+ *  of a quaternion.
+ *  The vectors R1 & r1 and R2 & r2 represent two vector in two different
+ *  frames. As an example, R1 & r1 could be an expected and measured sun vector
+ *  while R2 & r2 are an expected and measured magnetic field vector.
+ *  The triad algorithm first determines a rotation to move R1 onto r1 and then,
+ *  with the last degree of freedom, gets R2 as close as possible to r2 when
+ *  operated on with the same rotation that places R1 perfectly on r1.
+ *  If R1 & R2 or r1 &r2 are too close to parallel/antiparallel (currently, the
+ *  threshold is within a degree of one another) the quaternion q is set to
+ *  NaNs. Otherwise, a finite input will always yield a finite result.
+ *  REQUIRES: R1, R2, r1, and r2 to be unit vectors. */
 template <typename T>
 inline void triad(lin::Vector<T, 3> const &R1, lin::Vector<T, 3> const &R2,
     lin::Vector<T, 3> const &r1, lin::Vector<T, 3> const &r2,

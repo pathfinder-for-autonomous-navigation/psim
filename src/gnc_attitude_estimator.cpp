@@ -29,13 +29,17 @@ AttitudeEstimate::AttitudeEstimate()
 static void estimate_q_body_eci(double t, lin::Vector3d const &r_ecef,
     lin::Vector3f const &s_body, lin::Vector3f const &b_body,
     lin::Vector4f &q_body_eci) {
+  lin::Vector4f q;
   lin::Vector3f s_eci, b_eci;
 
   // Default to NaNs
   q_body_eci = lin::nans<lin::Vector4f>();
 
-  // Determine the expected magnetic field
-  env::magnetic_field(t, lin::Vector3f(r_ecef), b_eci);
+  // Determine the magnetic field in ECI (it's given in ECEF)
+  env::magnetic_field(t, lin::Vector3f(r_ecef), b_eci);  // b_eci = b_ecef
+  env::earth_attitude(t, q);                             // q = q_ecef_eci
+  utl::quat_conj(q);                                     // q = q_eci_ecef
+  utl::rotate_frame(q, b_eci);                           // b_eci = b_eci
 
   // Ensure the measured and expected magnetic field are large enough
   float thresh = constant::b_noise_floor * constant::b_noise_floor;
