@@ -28,7 +28,7 @@
 #define GNC_ASSERT_NEAR(a, b, delta) GNC_ASSERT(std::abs(a - b) < delta)
 
 /** Assert a vector is normalized. */
-#define GNC_ASSERT_NORMALIZED(a) GNC_ASSERT_NEAR(1.0f, lin::norm(a), 1.0e-4f)
+#define GNC_ASSERT_NORMALIZED(a) GNC_ASSERT_NEAR(1.0f, lin::fro(a), 1.0e-2f)
 
 /* Ensure float literals are actually floats and double literals are actually
  * doubles. */
