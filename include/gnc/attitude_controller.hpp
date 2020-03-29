@@ -98,13 +98,13 @@ struct PointingActuation {
   PointingActuation();
 };
 
+#ifndef MEX
 /** @fn control_pointing
  *  @param[inout] state     Controller's internal state information.
  *  @param[in]    data      Controller's inputs.
  *  @param[out]   actuation Controller's outputs.
  *  Calculates wheel and MTR actuations to point to spacecraft according to the
  *  passed objectives. */
-#ifndef MEX
 void control_pointing(PointingControllerState &state,
     PointingControllerData const &data, PointingActuation &actuation);
 #else
