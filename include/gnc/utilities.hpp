@@ -4,7 +4,12 @@
 #ifndef GNC_UTILITIES_HPP_
 #define GNC_UTILITIES_HPP_
 
+#include "config.hpp"
+#include "constants.hpp"
+
 #include <lin/core.hpp>
+#include <lin/generators/constants.hpp>
+#include <lin/references.hpp>
 
 #ifdef abs
 #undef abs
@@ -15,60 +20,99 @@ namespace gnc {
 namespace utl {
 
 /** @fn quat_conj
- *  Stores the conjugate of the quaternion q in res. */
+ *  @param[in]  q   Input quaternion.
+ *  @param[out] res Output, conjugated quaternion.
+ *  Calculates the conjugate of a quaternion. There is no explicit handling of
+ *  NaNs built into this function; however, a finite input will always yield a
+ *  finite result. */
 template <typename T>
 constexpr void quat_conj(lin::Vector<T, 4> const &q, lin::Vector<T, 4> &res);
 
 /** @fn quat_conj
- *  Takes the conjugate of the quaternion q in place. */
+ *  @param[inout] q
+ *  Calculates the conjugate of a quaternion in place. There is no explicit
+ *  handling of NaNs built into this function; however, a finite input will
+ *  always yield a finite result. */
 template <typename T>
 constexpr void quat_conj(lin::Vector<T, 4> &q);
 
 /** @fn quat_cross_mult
- *  Cross multiply quaternions q1 and q2 then store the result in res. */
+ *  @param[in]  q1
+ *  @param[in]  q2
+ *  @param[out] res
+ *  Cross multiplies two quaternions. This function essentially performs
+ *  res = q1 x q2. There is no explicit handling of NaNs built into this
+ *  function; however, a finite input will always yield a finite result. */
 template <typename T>
 constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1,
-    lin::Vector<T, 4> const &q2, lin::Vector<T, 4> &res);
+        lin::Vector<T, 4> const &q2, lin::Vector<T, 4> &res);
 
 /** @fn rotate_frame
- *  Rotates the vector v according to the quaternion q. The result is stored in
- *  res. */
+ *  @param[in]  q   Quaternion specifying the frame rotation.
+ *  @param[in]  v   Vector to be transformed.
+ *  @param[out] res Result of the transformation.
+ *  Rotates a vector as specified by a quaternion. There is no explicit handling
+ *  of NaNs built into this function; however, a finite input will always yield
+ *  a finite result. */
 template <typename T>
-constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> const &v,
-    lin::Vector<T, 3> &res);
+constexpr void rotate_frame(lin::Vector<T, 4> const &q,
+    lin::Vector<T, 3> const &v, lin::Vector<T, 3> &res);
 
 /** @fn rotate_frame
- *  Rotates the vector v in-place according to the quaternion q. */
+ *  @param[in]    q Quaternion specifying the frame rotation.
+ *  @param[inout] v Vector rotated in place. 
+ *  Rotates a vector as specified by a quaternion in place. There is no explicit
+ *  handling of NaNs built into this function; however, a finite input will
+ *  always yield a finite result. */
 template <typename T>
 constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> &v);
 
 /** @fn dcm_to_quat
- *  Calculates the quaternion corresponding to the DCM m and stores the result
- *  in q. */ 
+ *  @param[in]  M Direction cosine matrix.
+ *  @param[out] q Output quaternion.
+ *  Determines the quaternion corresponding to the provided direction cosine
+ *  matrix. The input direction cosine matrix needs to be orthonormal. There is
+ *  no explicit handling of NaNs built into this function; however, a finite
+ *  input will always yield a finite result. */ 
 template <typename T>
-inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &m, lin::Vector<T, 4> &q);
+inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q);
 
 /** @fn triad
- *  Given a set of vectors in a knows frame (N_*), and a matching set of
- *  measured vectors in an unknown frame (B_*), this function will determine the
- *  quaternion required to rotate the unknown frame to the known frame. This
- *  result is stored in q.
- *  @returns Zero if the function was succesful and false otherwise.
- * 
- *  REQUIRES: N_* and B_* vectors must be unit vectors. */
+ *  @param[in]  R1 First reference vector in a known frame.
+ *  @param[in]  R2 Second reference vector in a known frame.
+ *  @param[in]  r1 First reference vector in an unknown frame.
+ *  @param[in]  r2 Second reference vector in an unknown frame.
+ *  @param[out] q  Quaternion from known to unknown frame.
+ *  Determines the rotation from a known frame to an unknown frame in the form
+ *  of a quaternion.
+ *  The vectors R1 & r1 and R2 & r2 represent two vector in two different
+ *  frames. As an example, R1 & r1 could be an expected and measured sun vector
+ *  while R2 & r2 are an expected and measured magnetic field vector.
+ *  The triad algorithm first determines a rotation to move R1 onto r1 and then,
+ *  with the last degree of freedom, gets R2 as close as possible to r2 when
+ *  operated on with the same rotation that places R1 perfectly on r1.
+ *  If R1 & R2 or r1 &r2 are too close to parallel/antiparallel (currently, the
+ *  threshold is within a degree of one another) the quaternion q is set to
+ *  NaNs. Otherwise, a finite input will always yield a finite result.
+ *  REQUIRES: R1, R2, r1, and r2 to be unit vectors. */
 template <typename T>
-inline int triad(lin::Vector<T, 3> const &N_sun, lin::Vector<T, 3> const &N_mag,
-    lin::Vector<T, 3> const &B_sun, lin::Vector<T, 3> const &B_mag, lin::Vector<T, 4> &q);
+inline void triad(lin::Vector<T, 3> const &R1, lin::Vector<T, 3> const &R2,
+    lin::Vector<T, 3> const &r1, lin::Vector<T, 3> const &r2,
+    lin::Vector<T, 4> &q);
 
 /** @fn vec_rot_to_quat
+ *  @param[in]  u Unit vector being rotated to.
+ *  @param[in]  v Unit vector being rotated from.
+ *  @param[out] q Quaternion storing the calculated rotation.
  *  Calculates the quaternion which would rotate vector v onto vector u in the
- *  smallest possible rotation. If the vector are near antiparallel, the
- *  rotations is defaulted to about the z-axis.
- * 
+ *  smallest possible rotation. If the vectors are antiparallel, the quaternion
+ *  defaults to a rotation about the z-axis. There is no explicit handling of
+ *  NaNs built into this function; however, a finite input will always yield a
+ *  finite result.
  *  REQUIRES: Vectors u and v must both be unit vectors. */
 template <typename T>
-inline void vec_rot_to_quat(lin::Vector<T, 3> const &u, lin::Vector<T, 3> const &v,
-    lin::Vector<T, 4> &q);
+inline void vec_rot_to_quat(lin::Vector<T, 3> const &u,
+    lin::Vector<T, 3> const &v, lin::Vector<T, 4> &q);
 
 }  // namespace utl
 }  // namespace gnc

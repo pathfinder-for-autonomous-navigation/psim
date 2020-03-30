@@ -1,10 +1,11 @@
-/** @file gnc/attitude_estimation.hpp
+/** @file gnc/attitude_estimator.hpp
  *  @author Kyle Krol
  *  Defines the interface for the attitude estimators. */
 
-#ifndef GNC_ATTITUDE_ESTIMATION_HPP_
-#define GNC_ATTITUDE_ESTIMATION_HPP_
+#ifndef GNC_ATTITUDE_ESTIMATOR_HPP_
+#define GNC_ATTITUDE_ESTIMATOR_HPP_
 
+#include "config.hpp"
 #include "containers.hpp"
 
 #include <lin/core.hpp>
@@ -15,9 +16,6 @@ namespace gnc {
  *  Contains internal state information needed by the estimate_attitude
  *  function. */
 struct AttitudeEstimatorState {
-  double t;
-  lin::Vector4f q_body_eci;
-  CircularBuffer<lin::Vector3f, 5> w_buffer;
   /** Defaults everything's value to NaN. */
   AttitudeEstimatorState();
 };
@@ -32,10 +30,12 @@ struct AttitudeEstimatorData {
   double t;
   /** Position of the satellite in ECEF (units m). */
   lin::Vector3d r_ecef;
-  /** Magnetic field vector in the body frame of the spacecraft (units T). */
+  /** Measured magnetic field in the body frame of the satellite (units T). */
   lin::Vector3f b_body;
-  /** Sun vector in the body frame of the spacecraft (unit vector). */
+  /** Measured sun vector in the body frame of the satellite (unit vector). */
   lin::Vector3f s_body;
+  /** Measured angular rate of the satellite (units radians/s). */
+  lin::Vector3f w_body;
   /** Defaults everything's value to NaN. */
   AttitudeEstimatorData();
 };
