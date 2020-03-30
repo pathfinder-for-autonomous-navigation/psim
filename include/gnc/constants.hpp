@@ -33,6 +33,10 @@ GNC_TRACKED_CONSTANT(constexpr static double, mu_earth, 3.986004418e14);
 
 GNC_TRACKED_CONSTANT(constexpr static float, mu_earth_f, mu_earth);
 
+GNC_TRACKED_CONSTANT(constexpr static double, nan, std::numeric_limits<double>::quiet_NaN());
+
+GNC_TRACKED_CONSTANT(constexpr static float, nan_f, std::numeric_limits<float>::quiet_NaN());
+
 extern unsigned short init_gps_week_number;
 
 extern unsigned int init_gps_time_of_week;
