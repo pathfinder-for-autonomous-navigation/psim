@@ -10,6 +10,8 @@
 #include <lin/core/matrix/matrix.hpp>
 #include <lin/core/vector/vector.hpp>
 
+#include <limits>
+
 namespace gnc {
 namespace constant {
 
