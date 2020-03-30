@@ -10,6 +10,8 @@
 #include <lin/core/matrix/matrix.hpp>
 #include <lin/core/vector/vector.hpp>
 
+#include <limits>
+
 namespace gnc {
 namespace constant {
 
@@ -32,6 +34,10 @@ GNC_TRACKED_CONSTANT(constexpr static float, rad_to_deg_f, rad_to_deg);
 GNC_TRACKED_CONSTANT(constexpr static double, mu_earth, 3.986004418e14);
 
 GNC_TRACKED_CONSTANT(constexpr static float, mu_earth_f, mu_earth);
+
+GNC_TRACKED_CONSTANT(constexpr static double, nan, std::numeric_limits<double>::quiet_NaN());
+
+GNC_TRACKED_CONSTANT(constexpr static float, nan_f, std::numeric_limits<float>::quiet_NaN());
 
 extern unsigned short init_gps_week_number;
 
