@@ -1,0 +1,13 @@
+{
+    "leader" : {
+        "position" : {
+            "frame" : "eci",
+            "value" : [[1.0], [1.0], [1.0]]
+        }
+    },
+    "shared" : {
+        "fuel_mass" : {
+            "value" : 1.0
+        }
+    }
+}

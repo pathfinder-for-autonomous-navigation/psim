@@ -18,7 +18,6 @@ main_state.follower.sensors=sensors;
 
 %perturb follower orbit
 main_state.follower.dynamics.velocity_eci=main_state.leader.dynamics.velocity_eci+randn(3,1)*0.1;
-
 end
 
 function [dynamics,actuators,sensors] = initialize_states(condition)
@@ -41,7 +40,7 @@ nu = 0*pi/180;   % True anamoly                          (rad)
 
 [   r,...  % Position (m)   [eci]
     v,...  % Velocity (m/s) [eci]
-] = utl_orb2rv(a*(1-e), e, i, O, o, nu, const.mu);
+] = utl_orb2rv(a*(1-e*e), e, i, O, o, nu, const.mu);
 dynamics.position_eci= r;
 dynamics.velocity_eci= v;
 
@@ -62,8 +61,8 @@ dynamics.fuel_mass=0.16;
 actuators= actuators_off_state();
 
 % sensors
-sensors.gyro_bias= zeros(3,1);
-sensors.magnetometer_bias= zeros(3,1);
+sensors.gyro_bias= const.gyro_bias_sdiv*randn(3,1);
+sensors.magnetometer_bias= const.magnetometer_bias_sdiv*randn(3,1);
 sensors.sunsensor_real_normals= transpose([ 0.9397	0.3420      0
                                     0.9397	-0.3420 	0
                                     0.9397	0           0.3420
@@ -87,9 +86,11 @@ sensors.sunsensor_real_normals= transpose([ 0.9397	0.3420      0
 sensors.sunsensor_real_voltage_maximums= 3.3 * ones(20, 1);
 sensors.sunsensor_measured_voltage_maximums= sensors.sunsensor_real_voltage_maximums;
 sensors.sunsensor_measured_normals= sensors.sunsensor_real_normals;
-sensors.gps_bias= zeros(6,1);
+%gps model
+sensors.gps_position_bias_ecef= const.gps_position_bias_sdiv*randn(3,1);
+sensors.gps_velocity_bias_ecef= const.gps_velocity_bias_sdiv*randn(3,1);
 sensors.gps_time_till_lock= const.GPS_LOCK_TIME;
-sensors.cdgps_bias= zeros(6,1);
+sensors.cdgps_position_bias_ecef= const.cdgps_position_bias_sdiv*randn(3,1);
 sensors.cdgps_time_till_lock= const.CDGPS_LOCK_TIME;
 end
 

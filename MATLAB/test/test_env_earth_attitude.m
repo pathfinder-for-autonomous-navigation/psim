@@ -1,11 +1,6 @@
 %TEST_ENV_EARTH_ATTITUDE Tests env_earth_attitude.m
 %   has an error if earth_attitude is over 0.1 degrees off matlab model
-
-clearvars;
-
 global const
-
-config();
 
 years_to_test= 5;
 angle_error_margin= 0.1*pi/180;%radians
@@ -22,7 +17,7 @@ for time = test_times
     quat_ecef_eci(1)=q(2);
     quat_ecef_eci(2)=q(3);
     quat_ecef_eci(3)=q(4);
-    rate_ecef_truth=[0;0;7.2921158553E-5;];
+    rate_ecef_truth=const.earth_rate_ecef;
     quat_ecef_eci_truth=quat_ecef_eci';
     [quat_ecef_eci_test,rate_ecef_test] = env_earth_attitude(time);
     

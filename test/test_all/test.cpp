@@ -1,18 +1,9 @@
-//
-// test/test_all/test.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file test_all/test.cpp
+ *  @author Kyle Krol */
 
 #include "test.hpp"
 
-#include "attitude_estimation_test.hpp"
+#include "attitude_estimator_test.hpp"
 #include "containers_test.hpp"
 #include "environment_test.hpp"
 #include "ode_test.hpp"
@@ -20,7 +11,7 @@
 
 int test() {
   UNITY_BEGIN();
-  attitude_estimation_test();
+  attitude_estimator_test();
   containers_test();
   environment_test();
   ode_test();

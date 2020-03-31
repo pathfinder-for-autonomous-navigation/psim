@@ -3,7 +3,7 @@ Started by Kyle Krol on Sep 4, 2019
 
 **Authors** Nathan Zimmerberg, Kyle Krol
 
-Latest Revision: Oct 27, 2019
+Latest Revision: Feb 3, 2019
 
 Pathfinder for Autonomous Navigation
 
@@ -57,6 +57,10 @@ Most Matlab types are compatible with python types: [Python to Matlab function i
  * `./environmental_models/helper_functions/*` - helper functions for environmental functions.
  * `./test/*` - standalone scripts that test almost every function in the simulation.
  * `./plot/*` - functions to create plots of the `main_state_trajectory`
+ * `./adcs/*` - attitude determination and control functions.
+ * `./estimator_prototypes/*` - prototypes for estimators.
+ * `./orbit_propagator_prototypes/*` - prototypes for orbit propagators.
+ * `./orbit_estimation/*` - orbit estimator, main initialization, run, and some helper and test functions.
 
 ## Main State Data Structure
 
@@ -81,19 +85,23 @@ Each satellites state has the following members and submembers:
    * `wheel_commanded_ramp`(3x1 matrix): Commanded x,y,z wheel ramp (rad/s/s)
    * `magrod_real_moment_body`(3x1 matrix): Real magnetorquer moment (Am^2)
    * `magrod_hysteresis_body`(3x1 matrix): Real magnetorquer hysteresis moment (Am^2)
+   * `ground_position_ecef`(3x1 matrix): ground known estimated position of the satellite (m)
+   * `ground_velocity_ecef`(3x1 matrix): ground known estimated velocity of the gps reciever of the satellite (m/s)
+   * `ground_time`(scalar): ground known estimated time since initial GPS week (s)
  * `sensors`
-   * `gyro_bias`, (rad/s)
-   * `magnetometer_bias`, (T)
-   * `sunsensor_real_normals`, (unitless)
-   * `sunsensor_real_voltage_maximums`, normalization constants for voltage measurements (V)
-   * `sunsensor_measured_normals`, (unitless)
-   * `sunsensor_measured_voltage_maximums`, (V)
-   * `gps_bias`,  (m and m/s)
-   * `gps_time_till_lock`,
+   * `gyro_bias`: (rad/s)
+   * `magnetometer_bias`: (T)
+   * `sunsensor_real_normals`: (unitless)
+   * `sunsensor_real_voltage_maximums`: normalization constants for voltage measurements (V)
+   * `sunsensor_measured_normals`: (unitless)
+   * `sunsensor_measured_voltage_maximums`: (V)
+   * `gps_position_bias_ecef`: (m)
+   * `gps_velocity_bias_ecef`: (m/s)
+   * `cdgps_position_bias_ecef`: (m)
+   * `gps_time_till_lock`:
        time till the GPS gets a lock, starts at `const.GPS_LOCK_TIME`, then counts down and stays at 0
        when the antenna is pointing towards the GPS constellation (s)
-   * `cdgps_bias`, (m and m/s)
-   * `cdgps_time_till_lock`,
+   * `cdgps_time_till_lock`:
         time till the carrier-phase differential GPS(CDGPS) gets a lock, starts at `const.CDGPS_LOCK_TIME`, then counts down and stays at 0
         when the gps antenna is pointing towards the GPS constellation the piksi antenna is pointing at the other sattelite (s)
 
@@ -141,13 +149,17 @@ actuator commands is a struct with elements:
  * `wheel_enable`, commanded x,y,z wheel enables, whether each wheel
            should be on, if false, the wheel rate is commanded to zero.
  * `magrod_moment`, commanded x,y,z magnetorquer moments (Am^2)
+ * `position_ecef`(3x1 matrix): estimated position of the satellite to send to ground (m)
+ * `velocity_ecef`(3x1 matrix): estimated velocity of the satellite to send to ground (m/s)
+ * `time`(scalar): time since initial GPS week, time of the orbit estimate to send to ground (s)
 
 ## Functions
 
-`config()`: sets up path and constants
-`generate_mex_code()`: generates mex code from C++ wrapper function
-`config()`: sets up path and constants
+`config()`: sets up path and constants and generates mex code from C++ wrapper function
+
 `get_truth(name,dynamics)`: returns named value from dynamics
+
+`[main_state_trajectory,computer_state_follower_trajectory,computer_state_leader_trajectory,rng_state_trajectory] = run_sim(num_steps,sample_rate,main_state,computer_state_follower,computer_state_leader)`: runs a simulation given the initial conditions and saves the trajectories. This is called in `main` and will be used for parallel monte carlo simulations.
 
 The simulator has four main functions that preform computations with `main_state`.
  * `initialize_main_state`: Constructs the main state given a seed, and situation.
@@ -163,21 +175,16 @@ The matlab prototype of gnc flight software has two main functions.
 main_state_update has a few main helper funtions.
  * `dynamics=dynamics_update(dynamics,actuators)`
         Update the orbital and attitude dynamics, and time using numerical integration.
- * `sensors=sensors_update(sensors,dynamics)`
-        Update the sensor state given `dynamics`.
+ * `sensors=sensors_update(self_state,other_state)`
+        Update the sensor state given both satellite states.
 
-update_FC_state is also broken in to a few main helper functions.
- * `[orbit_controller_state, delta_v, delta_time]=get_next_maneuver(orbit_controller_state, current_orbit,target_orbit,current_time)`
-        Calculate the next maneuver to rendevous with target_orbit.
- * `[orbit,jacobian] = orbit_propagator(orbit,current_time,delta_time)`
-        Propagate orbit forward delta_time and calculate the jacobian of the translation.
- * `[orbit_estimator_state, both_orbits, time]=estimate_orbits(orbit_estimator_state,my_gps_readings,other_gps_readings,cdgps_readings)`
-        Update estimates of my orbit and other orbit.
- * `[adcs_state,magrod_moment,wheel_torque,wheel_enable]=adcs_update(adcs_state,time,orbit,target_orbit,gyro,magnetometer,sat2sun)`
-        Attitude Determination and Control System (ADCS) update.
-
+update_FC_state is also broken into a few main helper functions.
+ * `[state,self2target_r_ecef,self2target_v_ecef,r_ecef,v_ecef] = orb_run_estimator( state, maneuver_ecef, fixedrtk, reset_all, reset_target, gps_r_ecef, gps_v_ecef, gps_self2target_r_ecef, time_ns, ground_target_r_ecef, ground_target_v_ecef, ground_time_ns)`
+ * `state = adcs_mag_bias_est(state,SdotB_true,SdotB_measured,S)`
+ * `[state,magrod_moment_cmd,wheel_torque_cmd]=adcs_pointer(state, angular_momentum_body, magnetic_field_body, primary_current_direction_body, primary_desired_direction_body, secondary_current_direction_body, secondary_desired_direction_body, rate_body)`
+ * `[state,magrod_moment_cmd] = adcs_detumbler(state,magnetometer_body)`
+ 
 Environmental functions.
- * `density= env_atmosphere_density(time,x)`
  * `[quat_ecef_eci,rate_ecef]= env_earth_attitude(time)`
  * `eclipse = env_eclipse(earth2sat,sat2sun)`
  * `[acceleration,potential,hessian]= env_gravity(time,x)`
@@ -219,8 +226,9 @@ Plotting and visualization functions:
         plots power stuff.
  * `plot_orbit_error(main_state_trajectory)`
         plots differences in leader and follower orbits.
- * `fancy_animation(main_state_trajectory)`
+ * `plot_fancy_animation(main_state_trajectory)`
         creates a fancy animation from the simulation data.
+ * Other plot functions have documentation in the function file.
 
 ## Controllers
  <img src="https://docs.google.com/drawings/d/e/2PACX-1vQ36cMMJu3pSCEW4oTc9ZblkLZlGmEKQNGi2ywjk4QizGxEGnlWA3RTp1Hhh_5vhKp9Q6UxJgSJFVQZ/pub?w=846&amp;h=547">
@@ -246,16 +254,47 @@ Constants are stored in the `const` global struct.
    * `MAXWHEELRAMP`(positive scalar), Max wheel ramp (rad/s/s)
    * `MAXMOMENT`(positive scalar), Max magrod moment on one axis (Am^2)
    * `MASS`(positive scalar), Dry mass of satellite (kg)
-   * `JB`(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame (kgm^2)
+   * `JB`(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame, measurement described [here](https://cornellprod-my.sharepoint.com/:w:/g/personal/saa243_cornell_edu/EfnqDGLGxSJKsCPZ2Gi0n2UBek152YP_spoqLfRybCa9pQ?e=2S4hV4) (kgm^2)
    * `JBINV`(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kgm^2))
    * `JWHEEL`(positive scalar),  Wheel Inertia (kgm^2)
    * `JFUEL_NORM`(positive scalar), Moment of inertia of the fuel/mass of the fuel (m^2)
    * `SLOSH_DAMPING`(positive scalar), Torque on fuel/difference in angular rates in eci (Nm/(rad/s))
    * `ATTITUDE_PD_KP`(scalar), Attitude PD controller K_p (Nm)
    * `ATTITUDE_PD_KD`(scalar), Attitude PD controller K_d (Nm/(rad/s))
-   * `GPS_LOCK_TIME`(positive scalar), Time it takes the GPS to get a lock (s)
-   * `CDGPS_LOCK_TIME`(positive scalar), Time it takes the CDGPS to get a lock (s)
-
+   * `detumble_safety_factor`(scalar range (0,1)):
+The fraction of max wheel momentum detumbling ends at.
+### GPS sensor constants 
+   * `GPS_LOCK_TIME`(positive scalar): Time it takes the GPS to get a lock (s)
+   * `CDGPS_LOCK_TIME`(positive scalar): Time it takes the CDGPS to get a lock (s)
+   * `gps_max_angle`(positive scalar): Max angle of gps antenna to radia out where gps can work (rad)
+   * `cdgps_max_angle`(positive scalar): Max angle of cdgps antenna to other sat where cdgps can work (rad)
+   * `cdgps_max_range`(positive scalar): Max range of cdgps antenna to other sat where cdgps can work (m)
+   * `probability_of_ground_gps`(scalar 0-1): Propability of getting a ground gps reading over radio any control cycle the sat
+also can get regular gps.
+   * `gps_position_bias_sdiv`(positive scalar): standard diviation of bias of gps position measurements (m)
+   * `cdgps_position_bias_sdiv`(positive scalar): standard diviation of bias of cdgps relative position measurements (m)
+   * `gps_velocity_bias_sdiv`(positive scalar): standard diviation of bias of gps velocity measurements (m/s)
+   * `gps_position_noise_sdiv`(positive scalar): standard diviation of gps position measurements (m)
+   * `gps_velocity_noise_sdiv`(positive scalar): standard diviation of gps position measurements (m)
+   * `magnetometer_bias_readings_min`(positive int): number of readings per axis to get a 
+good magnetometer bias estimate.
+   * `magnetometer_noise_sdiv`(positive scalar): 
+standard diviation of the magnetometer noise (T)
+   * `magnetometer_bias_sdiv`(positive scalar): 
+standard diviation of the magnetometer bias (T)
+   * `gyro_noise_sdiv`(positive scalar):
+standard diviation of the gyro noise (rad/s)
+   * `gyro_bias_sdiv`(positive scalar):
+standard diviation of the gyro bias (rad/s)
+### ORBIT_ESTIMATION parameters
+   * `time_for_stale_cdgps`(int64 scalar): time to wait before making the target estimate stale (ns)
+   * `orb_process_noise_var`(12x12 symetric matrix) Added variance for bad force models divided by timestep (mks units)
+   * `single_gps_noise_covariance`(6x6 symetric matrix) noise covariance of gps reading  (mks units)
+   * `initial_target_covariance`(6x6 symetric matrix) initial covariance used to initialize target state  (mks units)
+   * `fixed_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in fixed mode  (mks units)
+   * `float_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in float mode  (mks units)
+   * `orb_self_thrust_noise_sdiv` (positive scalar) ratio of thruster impulse that is noise
+   * `orb_target_thrust_noise_sdiv` (positive scalar) ratio of thruster impulse that is noise
 
 ## Functions to be implemented in C++
 update_FC_state and any function it uses including:
@@ -293,7 +332,7 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 
 | Function                     | Person  | Priority | Basic Matlab Version | Test Script | C++ Version |
 |------------------------------|---------|----------|----------------------|-------------|-------------|
-| get_truth                    | Nathan  |          | not started          | not started | NA          |
+| get_truth                    | Nathan  |          | wip          | wip | NA          |
 | initialize_main_state        | Nathan  |          | wip                  | not started | NA          |
 | sensor_reading               | Kyle    |          | wip                  | not started | NA          |
 | main_state_update            | Nathan  |          | wip                  | not started | NA          |
@@ -309,8 +348,8 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | env_atmosphere_density       | Sruti   |          | not started          | not started | NA          |
 | env_earth_attitude           | Nathan  |          | done                 | done        | wip         |
 | env_eclipse                  | Nathan  |          | done                 | not started | not started |
-| env_gravity                  |         |          | wip                  | not started | NA          |
-| env_magnetic_field           | Nathan  |          | wip                  | done        | wip         |
+| env_gravity                  | Nathan  |          | done                 | done | done          |
+| env_magnetic_field           | Nathan  |          | done                 | done        | wip         |
 | env_sun_vector               | Nathan  |          | done                 | done        | wip         |
 | utl_rotateframe              | Kyle    |          | done                 | done        | done        |
 | utl_quat_conj                | Kyle    |          | done                 | done        | done        |
@@ -318,20 +357,27 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | utl_quat_cross_mult          | Kyle    |          | done                 | done        | done        |
 | utl_triad                    | Kyle    |          | done                 | done        | done        |
 | utl_vect_rot2quat            | Kyle    |          | done                 | done        | done        |
+| utl_cw                       | Kyle    |          | done                 | not started | not started |
+| utl_orbrate                  | Kyle    |          | done                 | not started | not started |
+| utl_eci2hill                 | Kyle    |          | done                 | not started | not started |
+| utl_l1costiter               | Kyle    |          | done                 | not started | not started |
+| utl_l1cost                   | Kyle    |          | done                 | not started | not started |
 | utl_compare_main_states      |         |          | not started          | not started | NA          |
 | utl_compare_dynamics         |         |          | not started          | not started | NA          |
 | utl_compare_actuators        |         |          | not started          | not started | NA          |
 | utl_compare_sensors          |         |          | not started          | not started | NA          |
-| true_orbit_propagator        | Sruti   |          | not started          | not started | NA          |
-| plot_almost_conserved_values |         |          | not started          | NA          | NA          |
-| plot_pointing_errors         |         |          | not started          | NA          | NA          |
-| plot_wheel_rates             |         |          | not started          | NA          | NA          |
-| plot_orbit_error             |         |          | not started          | NA          | NA          |
-| fancy_animation              |         |          | not started          | NA          | NA          |
+| true_orbit_propagator        | Sruti   |          | wip                  | wip         | NA          |
+| plot_almost_conserved_values | Nathan  |          | done                 | NA          | NA          |
+| plot_pointing_errors         | Nathan  |          | done                 | NA          | NA          |
+| plot_wheel_rates             | Nathan  |          | done                 | NA          | NA          |
+| plot_orbit_error             | Nathan  |          | done                 | NA          | NA          |
+| plot_fancy_animation         | Nathan  |          | done                 | NA          | NA          |
 
+# Installation
+1. Install MATLAB R2019b, Matlab Add-Ons, and ensure you have a C++ compiler by running `mex -setup C++`
+2. Run `install.m` script to compile all C code into mex and download data.
 
-
-
+Run `install.m` everytime you reclone or redownload the repo. 
 
 ## Matlab Add-Ons
 
@@ -341,3 +387,6 @@ There are a few required Add-Ons for Matlab
  * Ephemeris Data for Aerospace Toolbox
  * Aerospace Toolbox
  * Robotics System Toolbox
+ * Convert between RGB and Color Names
+ * [TrackerComponentLibrary](https://github.com/pathfinder-for-autonomous-navigation/TrackerComponentLibrary/releases/download/v4.1/TrackerComponentLibrary.mltbx)
+    * Download this file and then open it using matlab to add it as an addon
