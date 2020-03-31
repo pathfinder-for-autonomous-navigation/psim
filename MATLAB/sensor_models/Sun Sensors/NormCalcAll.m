@@ -2,30 +2,30 @@
 %%% Leader F2, F3, F4, F5, F6
 %%% Follower F2, F3, F4, F5, F6
 
-% ysetL = {'Face2+XLeader13180055raw_Data.csv',...
-%     'Face3-YLeader16204111raw_Data.csv',...
-%     %'Face3-YLeader16204804raw_Data.csv',...
-%     %'Face3-YLeader16205336raw_Data.csv',...
-%     'Face4-XLeader16214521raw_Data.csv',...
-%     'Face5+YLeader16213139raw_Data.csv', ...
-%     %'Face6+ZLeader13211918raw_Data.csv',...
-%     'Face6+ZLeader13212220raw_Data.csv'};
-% 
-% % ysetF = {'Face2+XFollower10011528raw_Data.csv','Face2+XFollower10012437raw_Data.csv',...
-% % 'Face3-YFollower09203820raw_Data.csv','Face3-YFollower09205506raw_Data.csv','Face4-XFollower09220818raw_Data.csv',...
-% % 'Face4-XFollower09221556raw_Data.csv','Face4-XFollower09223912raw_Data.csv','Face4-XFollower09225254raw_Data.csv',...
-% % 'Face5+YFollower09232347raw_Data.csv','Face6+ZFollower11011312raw_Data.csv','newFace4-XFollower11220604raw_Data.csv'};
-% 
-% xsetL = {'BFace2+XLeader13180828raw_Data.csv',...
-%     'BFace3-YLeader16210220raw_Data.csv',...
-%     'BFace4-XLeader16215313raw_Data.csv',...
-%     %'BFace5+YLeader16211518raw_Data.csv',...
-%     %'BFace5+YLeader16212019raw_Data.csv',...
-%     'BFace5+YLeader16212326raw_Data.csv',...
-%     'BFace6+ZLeader13212849raw_Data.csv'};
-% % xsetF = {'BFace2+XFollower10212928raw_Data.csv', 'BFace3-YFollower10214639raw_Data.csv'...
-% % 'BFace4-XFollower11001858raw_Data.csv','BFace5+YFollower10220404raw_Data.csv','BFace6+ZFollower11010110raw_Data.csv',...
-% % 'newBFace4-XFollower11221636raw_Data.csv', 'newBFace4-XFollower11222209raw_Data.csv'};
+% Need the following data sets:
+% 'Face2+XFollower10011528raw_Data.csv'
+% 'Face2+XFollower10012437raw_Data.csv'
+% 'BFace2+XFollower10212928raw_Data.csv'
+% 'Face3-YFollower09205506raw_Data.csv'
+% 'Face3-YFollower09203820raw_Data.csv'
+% 'BFace2+XFollower10212928raw_Data.csv'
+% 'newFace4-XFollower11220604raw_Data.csv'
+% 'newBFace4-XFollower11222209raw_Data.csv'
+% 'Face3-YLeader16204111raw_Data.csv'
+% 'BFace5+YFollower10220404raw_Data.csv'
+% 'Face6+ZFollower11011312raw_Data.csv'
+% 'BFace6+ZFollower11010110raw_Data.csv'
+% 'Face2+XLeader13180055raw_Data.csv'
+% 'BFace2+XLeader13180828raw_Data.csv'
+% 'Face3-YLeader16204111raw_Data.csv'
+% 'BFace3-YLeader16210220raw_Data.csv'
+% 'Face4-XLeader16214521raw_Data.csv'
+% 'BFace4-XLeader16215313raw_Data.csv'
+% 'Face5+YLeader16213139raw_Data.csv'
+% 'BFace5+YLeader16212326raw_Data.csv'
+% 'Face6+ZLeader13212220raw_Data.csv'
+% 'BFace6+ZLeader13212849raw_Data.csv'
+    
 clc
 clear all
 close all
@@ -33,7 +33,7 @@ close all
 normsL = {};
 normsF = {};
 global const
-factors = 0.1:0.01:1;
+factors = 0.5; %0.1:0.01:1; %decided to keep 0.5 as the threshold
 tallies = zeros(length(factors),1);
 ers = zeros(length(factors),4);
 count  = 0;

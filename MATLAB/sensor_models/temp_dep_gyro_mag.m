@@ -208,43 +208,43 @@ title('Noise Density')
 
 %% time dependence plots
 figure(1)
-subplot(3,1,1); plot(time,gyrox); xlabel('time'); ylabel('gyrox rad/s');
+subplot(3,1,1); scatter(time,gyrox,'.'); xlabel('time [ms]'); ylabel('gyrox rad/s');
 title('time dependence plots gyro')
-subplot(3,1,2); plot(time,gyroy); xlabel('time'); ylabel('gyroy rad/s');
-subplot(3,1,3); plot(time,gyroz); xlabel('time'); ylabel('gyroz rad/s');
+subplot(3,1,2); scatter(time,gyroy,'.'); xlabel('time [ms]'); ylabel('gyroy rad/s');
+subplot(3,1,3); scatter(time,gyroz,'.'); xlabel('time [ms] '); ylabel('gyroz rad/s');
 figure(2)
-subplot(3,1,1); plot(time,mag1x); xlabel('time'); ylabel('mag1x T');
+subplot(3,1,1); scatter(time,mag1x,'.'); xlabel('time [ms]'); ylabel('mag1x T');
 title('time dependence plots mag')
-subplot(3,1,2); plot(time,mag1y); xlabel('time'); ylabel('mag1y T');
-subplot(3,1,3); plot(time,mag1z); xlabel('time'); ylabel('mag1z T');
+subplot(3,1,2); scatter(time,mag1y,'.'); xlabel('time [ms]'); ylabel('mag1y T');
+subplot(3,1,3); scatter(time,mag1z,'.'); xlabel('time [ms]'); ylabel('mag1z T');
 
 %% temp dependence plots (using continuous temp recorded by satellite)
 figure(3)
-subplot(3,1,1); plot(temp,gyrox); xlabel('temp'); ylabel('gyrox rad/s');
+subplot(3,1,1); scatter(temp,gyrox,'.'); xlabel('temp [uncalibrated]'); ylabel('gyrox rad/s');
 title('temp dependence plots gyro using uncalibrated satellite recorded temp')
-subplot(3,1,2); plot(temp,gyroy); xlabel('temp'); ylabel('gyroy rad/s');
-subplot(3,1,3); plot(temp,gyroz); xlabel('temp'); ylabel('gyroz rad/s');
+subplot(3,1,2); scatter(temp,gyroy,'.'); xlabel('temp [uncalibrated]'); ylabel('gyroy rad/s');
+subplot(3,1,3); scatter(temp,gyroz,'.'); xlabel('temp [uncalibrated]'); ylabel('gyroz rad/s');
 figure(4)
-subplot(3,1,1); plot(temp,mag1x); xlabel('temp'); ylabel('mag1x T');
+subplot(3,1,1); scatter(temp,mag1x,'.'); xlabel('temp [uncalibrated]'); ylabel('mag1x T');
 title('temp dependence plots mag using uncalibrated satellite recorded temp')
-subplot(3,1,2); plot(temp,mag1y); xlabel('temp'); ylabel('mag1y T');
-subplot(3,1,3); plot(temp,mag1z); xlabel('temp'); ylabel('mag1z T');
+subplot(3,1,2); scatter(temp,mag1y,'.'); xlabel('temp [uncalibrated]'); ylabel('mag1y T');
+subplot(3,1,3); scatter(temp,mag1z,'.'); xlabel('temp [uncalibrated]'); ylabel('mag1z T');
 
 %% temp dependence plots (using discrete temp hand-recorded)
 figure(1)
-subplot(3,1,1); plot(tempd(1:length(temp)),gyrox); xlabel('temp'); ylabel('gyrox rad/s');
+subplot(3,1,1); scatter(tempd(1:length(temp)),gyrox,'.'); xlabel('temp [C]'); ylabel('gyrox rad/s');
 title('temp dependence plots gyro using hand-recorded temp')
-subplot(3,1,2); plot(tempd(1:length(temp)),gyroy); xlabel('temp'); ylabel('gyroy rad/s');
-subplot(3,1,3); plot(tempd(1:length(temp)),gyroz); xlabel('temp'); ylabel('gyroz rad/s');
+subplot(3,1,2); scatter(tempd(1:length(temp)),gyroy,'.'); xlabel('temp [C]'); ylabel('gyroy rad/s');
+subplot(3,1,3); scatter(tempd(1:length(temp)),gyroz,'.'); xlabel('temp [C]'); ylabel('gyroz rad/s');
 figure(2)
-subplot(3,1,1); plot(tempd(1:length(temp)),mag1x); xlabel('temp'); ylabel('mag1x T');
+subplot(3,1,1); scatter(tempd(1:length(temp)),mag1x,'.'); xlabel('temp [C]'); ylabel('mag1x T');
 title('temp dependence plots mag using hand-recorded temp')
-subplot(3,1,2); plot(tempd(1:length(temp)),mag1y); xlabel('temp'); ylabel('mag1y T');
-subplot(3,1,3); plot(tempd(1:length(temp)),mag1z); xlabel('temp'); ylabel('mag1z T');
+subplot(3,1,2); scatter(tempd(1:length(temp)),mag1y,'.'); xlabel('temp [C]'); ylabel('mag1y T');
+subplot(3,1,3); scatter(tempd(1:length(temp)),mag1z,'.'); xlabel('temp [C]'); ylabel('mag1z T');
 
 %% time vs. temperature
 figure(1)
-plot(time,temp); xlabel('time (ms)'); ylabel('temp (uncalibrated)');
+scatter(time,temp,'.'); xlabel('time (ms)'); ylabel('temp (uncalibrated)');
 title('uncalibrated temperature vs time')
 
 function [freq,PSD,RMS,RND] = ProcessNoise(RawData,fs,freqBand)
