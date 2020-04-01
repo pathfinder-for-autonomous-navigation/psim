@@ -8,7 +8,9 @@ close all
 tic 
 warning('off','all') %disabled warning related to large output file sizes
 
-data = csvread('mag_data_2_13_20.csv',1,0); %%%starts reading from row 2
+% use 'mag_data_2_13_20.csv' file from OAAN Drive
+[file, path] = uigetfile({'*.*'});
+data  = csvread([path file],1,0);
 
 %convert wheel freq from rad/sec to Hz
 data(:,8) = data(:,8)/(2*pi); %wheel 0 on [Hz]

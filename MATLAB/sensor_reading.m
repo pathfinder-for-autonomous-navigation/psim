@@ -99,37 +99,157 @@ success = 0;
 sun_vec = NaN(3,1);
 
 if (~eclipse)
-
     %generate voltages that would be measured by the ADCS
-    [~, N] = size(real_n);
+    [~, N] = size(real_n); % I'm assuming N between [2,4]
     voltages = zeros(N, 1);
-    for i = 1:N
-        %magnitude of a normal is the inverse of the max voltage reading so
-        %dividing by the frobenius norm gives a voltage measure.
-        voltages(i) = sat2sun' * real_n(:, i) * real_v(i);
+    
+    if N == 2
+        %assuming 2 sun sensors are reading full voltage
+    elseif N == 3
+        %assuming 3 sun sensors are reading full voltage
+    elseif N == 4
+        %assuming 4 sun sensors are reading full voltage
+        %reads Josh's sun sensor log to get voltage-angle relations for ONE FACE
+        %we need to use the mu and sig values somehow to scale/offset the 'voltages' vector
+        [V_Photo0_trim, V_Photo1_trim, V_Photo2_trim, V_Photo3_trim, mus, sigs] = read_log();
+        for i = 1:N   
+            %magnitude of a normal is the inverse of the max voltage reading so
+            %dividing by the frobenius norm gives a voltage measure.
+            voltages(i) = sat2sun' * real_n(:, i) * real_v(i) * sigs(i); 
+       end
     end
-
-    %run sun vector determination algorithm run by the adcs computer
-    A = zeros(N, 3);
-    Y = zeros(N, 1);
+    
+   
+    %%% trimming algorithm
+    S = zeros(N, 3);
+    v = zeros(N, 1);
+    thresh = max(voltages)*0.5;
     j = 0;
     for i = 1:N
         %enforce voltage threshold for inclusion in sun vector calculation
         voltages(i) = voltages(i) / measured_v(i);
-        if voltages(i) > 0.5
+        if voltages(i) > thresh
             j = j + 1;
-            A(j, :) = measured_n(:, i)';
-            Y(j) = voltages(i);
+            S(j, :) = measured_n(:, i)';
+            v(j) = voltages(i);
         end
     end
-    if j >= 3  % TODO : Perhaps play with this parameter
-        A = A(1:j, :);
-        Y = Y(1:j, :);
-        [Q, R] = qr(A);
-        sun_vec = R \ (Q' * Y);
+    
+    %%%% least squares
+    %run sun vector determination algorithm run by the adcs computer
+    %%% takes in S, v to output sun_vector
+    if j >= 3  % TODO : Perhaps play with this parameter; larger j --> smaller residuals
+        S = S(1:j, :);
+        v = v(1:j, :);
+        [Q, R] = qr(S);
+        sun_vec = R \ (Q' * v);
         sun_vec = sun_vec / norm(sun_vec);
         success = 1;
     end
     
+    %%%% convert sun_vector into spherical coords
+    %%%% get error of sun vector in spherical coords
+    
 end
+end
+
+function [V_Photo0_trim, V_Photo1_trim, V_Photo2_trim, V_Photo3_trim, mus, sigs] = read_log()
+    %read Josh's sun sensor logs to get voltage-angle relations
+    
+    %open voltage log data for ONE FACE
+    fid = fopen('Face3-YLeader16204804','r');
+    tline = fgetl(fid);
+    
+    while ischar(tline)
+        A{length(A)+1} = tline;
+        tline = fgetl(fid);
+    end
+    fclose(fid);
+    
+    for k = 1:length(A)-1
+        j = 1;
+        while A{k}(j) ~= '='
+            j = j+1;
+        end
+        A{k} = A{k}(j+1:end);
+    end
+    
+    inclinometerX = [];
+    inclinometerY = [];
+    V_Photo0 = [];
+    V_Photo1 = [];
+    V_Photo2 = [];
+    V_Photo3 = [];
+    for l = 1:6:length(A)
+        inclinometerX(length(inclinometerX)+1) = str2double(A{l});
+    end
+    for l = 2:6:length(A)
+        inclinometerY(length(inclinometerY)+1) = str2double(A{l});
+    end
+    for m = 3:6:length(A)
+        V_Photo0(length(V_Photo0)+1) = str2double(A{m});
+    end
+    for m = 4:6:length(A)
+        V_Photo1(length(V_Photo1)+1) = str2double(A{m});
+    end
+    for m = 5:6:length(A)
+        V_Photo2(length(V_Photo2)+1) = str2double(A{m});
+    end
+    for m = 6:6:length(A)
+        V_Photo3(length(V_Photo3)+1) = str2double(A{m});
+    end
+    
+    %select data range
+    figure
+    plot(V_Photo0)
+    title('Click on Left and Right to Choose X Bounds')
+    [x,y] = ginput(2);
+    x = sort(x);
+    close
+    x = floor(x);
+    
+    % trim data to range
+    inclinometerX_trim = inclinometerX(x(1):x(2));
+    inclinometerY_trim = inclinometerY(x(1):x(2));
+    V_Photo0_trim = V_Photo0(x(1):x(2));
+    V_Photo1_trim = V_Photo1(x(1):x(2));
+    V_Photo2_trim = V_Photo2(x(1):x(2));
+    V_Photo3_trim = V_Photo3(x(1):x(2));
+    
+    % apply low pass filter
+    V_Photo0_filt = V_Photo0_trim;
+    V_Photo1_filt = V_Photo1_trim;
+    V_Photo2_filt = V_Photo2_trim;
+    V_Photo3_filt = V_Photo3_trim;
+    
+    inclinometerX_filt = inclinometerX_trim;
+    inclinometerY_filt = inclinometerY_trim;
+    a = 0.92;
+    for i = 2:length(V_Photo0_filt)
+        V_Photo0_filt(i) = V_Photo0_filt(i-1)*a + V_Photo0_filt(i)*(1-a);
+        V_Photo1_filt(i) = V_Photo1_filt(i-1)*a + V_Photo1_filt(i)*(1-a);
+        V_Photo2_filt(i) = V_Photo2_filt(i-1)*a + V_Photo2_filt(i)*(1-a);
+        V_Photo3_filt(i) = V_Photo3_filt(i-1)*a + V_Photo3_filt(i)*(1-a);
+        inclinometerY_filt(i) = inclinometerY_filt(i-1)*a + inclinometerY_filt(i)*(1-a);
+        inclinometerX_filt(i) = inclinometerX_filt(i-1)*a + inclinometerX_filt(i)*(1-a);
+    end    
+    
+    %get angle plot (y-axis angle)
+    if file(1) == 'B'
+        inclinometerPlot = inclinometerX_trim;
+    else
+        inclinometerPlot = inclinometerY_trim;
+    end
+   
+    % voltage-angle plot
+    mus = zeros(4,1);
+    sigs = zeros(4,1);
+    
+    for h = 0:3
+        %x-axis angle in degrees, y-axis voltage in V
+        eval(['scatter(inclinometerPlot,V_Photo' num2str(h) '_trim,''k.'')']);
+        [mu,sig] = normfit(inclinometerPlot, 'V_Photo1_trim');
+        mus(h) = mu; sigs(h) = sig;
+    end
+
 end

@@ -3,7 +3,9 @@
 
 %%%ETU test Stewart's house 3/21/2020
 %uses continuous temperature recorded by satellite; need to calibrate
-data = csvread('gyro_bias_stability_3-21-20.csv',1,0);
+% use 'gyro_bias_stability_3-21-20.csv' file from OAAN Drive
+[file, path] = uigetfile({'*.*'});
+data  = csvread([path file],1,0);
 
 %time in ms
 time = data(:,1);

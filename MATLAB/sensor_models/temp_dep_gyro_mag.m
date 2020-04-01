@@ -3,10 +3,14 @@
 %%%%%% last editted Sruti Vutukury 3/27/2020
 
 %uses continuous temperature recorded by satellite; need to calibrate
-data = csvread('TVCtest3_7_20.csv',1,0);
+% use 'TVCtest3_7_20.csv' file from OAAN Drive
+[file, path] = uigetfile({'*.*'});
+data  = csvread([path file],1,0);
 
 %uses discrete temperature steps using hand-recorded temperature
-data2 = csvread('ETUColdTest3_7_20.csv',1,1);
+% use 'ETUColdTest3_7_20.csv' file from OAAN Drive
+[file, path] = uigetfile({'*.*'});
+data2  = csvread([path file],1,1);
 
 %remove 2 random spikes in gyrox data
 idx = find(data(:,5) <= -0.08) ; % from first column get values greater then 0.5
