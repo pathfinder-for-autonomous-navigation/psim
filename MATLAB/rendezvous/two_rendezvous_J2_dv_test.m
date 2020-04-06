@@ -10,8 +10,8 @@ M = 4.0; % Mass (kg)
 J_min = 2e-4; % Min impulse (Ns)
 J_max = 2e-2;%2e-2; % Max impulse (Ns)
 max_dv_thrust= J_max/M;
-V_rel   = 0.6; % Relative velocity at deployment (m/s)
-t_drift = 4.0 * 90.0 * 60.0; % Drift time (s)
+V_rel   = 5; % Relative velocity at deployment (m/s)
+t_drift = 40.0 * 90.0 * 60.0; % Drift time (s)
 p = 0.7E-2;
 d = 1;
 thrust_noise_ratio = 0;
@@ -52,7 +52,9 @@ dv_vec = zeros(1, 3);
 
 for i = 1:(N - 1)
     
-    fprintf('orbit %d / %d\n', i, N);
+    if ~mod(i, 10)
+        fprintf('orbit %d / %d\n', i, N);
+    end
     
     % add measurement noise (zero for now)
     r1_measure=r1; % +0.1*randn(3,1);
@@ -70,25 +72,25 @@ for i = 1:(N - 1)
     energy1 = 0.5*dot(v1_measure,v1_measure)-potential;
     [~,potential,~] = env_gravity(0,r2_measure);
     energy2 = 0.5*dot(v2_measure,v2_measure)-potential;
-    if (norm(r_hill(2))<10E3 && abs(energy1-energy2)<200)
-        %do cw
-%         fprintf('cw\n')
-        x_dv=-v_hill(1);
-        y_x= r_hill(2);
-        y_v= (-12*pi*r_hill(1)-1/n*6*pi*v_hill(2));
-        y_maxu= 1/n*6*pi*sqrt(2)/2*max_dv_thrust;
-        y_u= discrete_suicide_burn(y_maxu, y_v,y_x);
-        y_dv= y_u/(-1/n*6*pi);
-        dv=y_dv*v2_measure/norm(v2_measure);
-    else
-        %just use energy pd
-        x_dv=0;
-        %zero energy diff pd control
-        pterm= p*r_hill(2);
-        dterm= d*(energy1-energy2);
-        dv=(pterm+dterm)*v2_measure;
-        dv= max(min(dv,sqrt(2)/2*max_dv_thrust),-sqrt(2)/2*max_dv_thrust);
-    end
+%     if (norm(r_hill(2))<10E3 && abs(energy1-energy2)<200)
+%         %do cw
+% %         fprintf('cw\n')
+%         x_dv=-v_hill(1);
+%         y_x= r_hill(2);
+%         y_v= (-12*pi*r_hill(1)-1/n*6*pi*v_hill(2));
+%         y_maxu= 1/n*6*pi*sqrt(2)/2*max_dv_thrust;
+%         y_u= discrete_suicide_burn(y_maxu, y_v,y_x);
+%         y_dv= y_u/(-1/n*6*pi);
+%         dv=y_dv*v2_measure/norm(v2_measure);
+%     else
+    %just use energy pd
+    x_dv=0;
+    %zero energy diff pd control
+    pterm= p*r_hill(2);
+    dterm= d*(energy1-energy2);
+    dv=(pterm+dterm)*v2_measure;
+    dv= max(min(dv,sqrt(2)/2*max_dv_thrust),-sqrt(2)/2*max_dv_thrust);
+%     end
     u_now_hill= [x_dv;0;0;];
     
     % Apply actuation
@@ -116,22 +118,22 @@ for i = 1:(N - 1)
     energy1= 0.5*dot(v1_measure,v1_measure)-potential;
     [~,potential,~]= env_gravity(0,r2_measure);
     energy2= 0.5*dot(v2_measure,v2_measure)-potential;
-    if (norm(r_hill(2))<10E3 && abs(energy1-energy2)<200)
-        %do cw
-%         fprintf('cw\n')
-        x_dv= -n*(4*r_hill(1)+1/n*v_hill(1)+2/n*v_hill(2));
-        x_dv=max(min(x_dv,sqrt(2)/2*max_dv_thrust),-sqrt(2)/2*max_dv_thrust);
-        dv=0;
-    else
-        %just use energy
-        x_dv=0;
-        %zero energy diff
-        %zero energy diff pd control
-        pterm= p*r_hill(2);
-        dterm= d*(energy1-energy2);
-        dv=(pterm+dterm)*v2_measure;
-        dv= max(min(dv,sqrt(2)/2*max_dv_thrust),-sqrt(2)/2*max_dv_thrust);
-    end
+%     if (norm(r_hill(2))<10E3 && abs(energy1-energy2)<200)
+%         %do cw
+% %         fprintf('cw\n')
+%         x_dv= -n*(4*r_hill(1)+1/n*v_hill(1)+2/n*v_hill(2));
+%         x_dv=max(min(x_dv,sqrt(2)/2*max_dv_thrust),-sqrt(2)/2*max_dv_thrust);
+%         dv=0;
+%     else
+    %just use energy
+    x_dv=0;
+    %zero energy diff
+    %zero energy diff pd control
+    pterm= p*r_hill(2);
+    dterm= d*(energy1-energy2);
+    dv=(pterm+dterm)*v2_measure;
+    dv= max(min(dv,sqrt(2)/2*max_dv_thrust),-sqrt(2)/2*max_dv_thrust);
+% end
     u_now_hill= [x_dv;0;0];
     
     % Apply actuation
@@ -170,6 +172,21 @@ title('Relative Position of Satellite Two (rgb ~ xyz LVLH)')
 xlabel('Time (s)')
 ylabel('Position (m)')
 
+% relative position
+rel_pos = zeros(1, N);
+
+for i = 1 : N
+    
+    rel_pos(i) = norm(X(1:3, i));
+    
+end
+
+figure;
+plot(rel_pos)
+xlabel('orbit')
+ylabel('position [m]')
+title('relative position norm')
+
 figure
 hold on
 plot(X(4, :), '-r')
@@ -179,6 +196,21 @@ hold off
 title('Relative Velocity of Satellite Two (rgb ~ xyz LVLH)')
 xlabel('Time (s)')
 ylabel('Velocity (m/s)')
+
+% relative velocity
+rel_vel = zeros(1, N);
+
+for i = 1 : N
+    
+    rel_vel(i) = norm(X(4:6, i));
+    
+end
+
+figure;
+plot(rel_vel)
+xlabel('orbit')
+ylabel('position [m/s]')
+title('relative velocity norm')
 
 figure;
 plot(deltaenergies);
@@ -203,6 +235,12 @@ for i = 1 : N
 end
 
 dv_total = cumsum(dv_norm);
+
+figure;
+plot(dv_norm)
+xlabel('burn')
+ylabel('\Delta v [m/s]')
+title('\Delta v norm')
 
 figure;
 plot(dv_total)
