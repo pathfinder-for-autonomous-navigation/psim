@@ -7,8 +7,7 @@
 
 #include "config.hpp"
 
-#include <lin/core/matrix/matrix.hpp>
-#include <lin/core/vector/vector.hpp>
+#include <lin/core.hpp>
 
 #include <limits>
 
