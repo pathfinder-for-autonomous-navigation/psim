@@ -77,8 +77,8 @@ constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> &v);
  *  frame. The y vector's projection along x is removed resulting in the second
  *  basis vector for the new frame. The third is generated assuming a right hand
  *  coordinate system.
- *  There is no explicit handling of NaNs built into this functions; however, a
- *  finite input will always yield a finite result. */
+ *  If the vector x and y are very near to being parallel/anti-parallel, DCM is
+ *  set to NaNs. */
 template <typename T>
 constexpr void dcm(lin::Matrix<T, 3, 3> &DCM, lin::Vector<T, 3> const &x,
     lin::Vector<T, 3> const &y);

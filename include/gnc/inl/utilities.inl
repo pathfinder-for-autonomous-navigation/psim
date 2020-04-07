@@ -43,6 +43,12 @@ constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> &v) {
 template <typename T>
 constexpr void dcm(lin::Matrix<T, 3, 3> &DCM, lin::Vector<T, 3> const &x,
     lin::Vector<T, 3> const &y) {
+  // Check if x and y are parallel or antiparallel
+  if (std::abs(lin::dot(x / lin::norm(x), y / lin::norm(y))) > 0.999) {
+    DCM = lin::nans<lin::Matrix<T, 3, 3>>();
+    return;
+  }
+
   // Generate references to our unit vector destinations
   auto x_hat = lin::ref_row(DCM, 0);
   auto y_hat = lin::ref_row(DCM, 1);
