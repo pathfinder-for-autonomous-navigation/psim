@@ -5,7 +5,10 @@
 #include "utilities_test.hpp"
 
 #include <gnc/utilities.hpp>
-#include <lin.hpp>
+
+#include <lin/core.hpp>
+#include <lin/generators/randoms.hpp>
+#include <lin/math.hpp>
 
 void test_utilities_quatconj() {
   lin::Vector4f q = {2.0f, 1.0f, -2.5f, 1.0f};
@@ -35,6 +38,19 @@ void test_utilities_rotate_frame() {
   // Expected answer was calculated in MATLAB
   lin::Vector3f ans = { 54.73333f, -0.66667f, -6.46667f};
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, v, ans);
+}
+
+void test_dcm() {
+  lin::Vector3f x {1.0f, 1.0f, 0.0f};
+  lin::Vector3f y {1.0f, 0.0f, 1.0f};
+  lin::Matrix3x3f DCM;
+  gnc::utl::dcm(DCM, x, y);
+  lin::Matrix3x3f ans {
+    0.7071f,  0.7071f,  0.0f,
+    0.4082f, -0.4082f,  0.8165f,
+    0.5774f, -0.5774f, -0.5774f
+  }; // Calculated in MATLAB
+  TEST_ASSERT_FLOAT_WITHIN(1e-3f, 0.0f, lin::fro(DCM - ans));
 }
 
 void test_utilities_dcm_to_quat_case0() {
@@ -143,6 +159,7 @@ void utilities_test() {
   RUN_TEST(test_utilities_quatconj);
   RUN_TEST(test_utilities_quat_cross_mult);
   RUN_TEST(test_utilities_rotate_frame);
+  RUN_TEST(test_dcm);
   RUN_TEST(test_utilities_dcm_to_quat_case0);
   RUN_TEST(test_utilities_dcm_to_quat_case1);
   RUN_TEST(test_utilities_dcm_to_quat_case2);
