@@ -9,6 +9,7 @@
 #include <lin/core.hpp>
 #include <lin/generators/randoms.hpp>
 #include <lin/math.hpp>
+#include <lin/queries.hpp>
 
 void test_utilities_quatconj() {
   lin::Vector4f q = {2.0f, 1.0f, -2.5f, 1.0f};
@@ -51,6 +52,13 @@ void test_dcm() {
     0.5774f, -0.5774f, -0.5774f
   }; // Calculated in MATLAB
   TEST_ASSERT_FLOAT_WITHIN(1e-3f, 0.0f, lin::fro(DCM - ans));
+  // Parallel inputs should give NaNs
+  gnc::utl::dcm(DCM, x, x);
+  TEST_ASSERT(lin::all(lin::isnan(DCM)));
+  // Anti-parallel inputs should give NaNs as well
+  DCM = lin::zeros<decltype(DCM)>();
+  gnc::utl::dcm(DCM, x, (-x).eval());
+  TEST_ASSERT(lin::all(lin::isnan(DCM)));
 }
 
 void test_utilities_dcm_to_quat_case0() {
