@@ -68,7 +68,7 @@ template <typename T>
 constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> &v);
 
 /** @fn dcm
- *  @param[out] DCM Direction cosine matrix.
+ *  @param[out] DCM Direction cosine matrix.oth x and y must not be the zero vector.
  *  @param[in]  x
  *  @param[in]  y
  *  Generates a DCM from two reference vector in a particular frame. The DCM
@@ -77,8 +77,9 @@ constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> &v);
  *  frame. The y vector's projection along x is removed resulting in the second
  *  basis vector for the new frame. The third is generated assuming a right hand
  *  coordinate system.
- *  If the vector x and y are very near to being parallel/anti-parallel, DCM is
- *  set to NaNs. */
+ *  Both x and y must not be the zero vector.
+ *  If the vector x and y are very near to being parallel/anti-parallel (
+ *  abs(dot(x_hat, y_hat)) > 0.999), DCM is set to NaNs. */
 template <typename T>
 constexpr void dcm(lin::Matrix<T, 3, 3> &DCM, lin::Vector<T, 3> const &x,
     lin::Vector<T, 3> const &y);

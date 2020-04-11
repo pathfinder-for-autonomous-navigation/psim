@@ -135,6 +135,19 @@ void test_utilities_triad() {
   // Perform triad
   gnc::utl::triad(n1, n2, b1, b2, q);
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, q, ans);
+  // Parallel inputs should result in NaNs
+  gnc::utl::triad(n1, n1, b1, b2, q);
+  TEST_ASSERT(lin::all(lin::isnan(q)));
+  q = lin::zeros<decltype(q)>();
+  gnc::utl::triad(n1, n2, b1, b1, q);
+  TEST_ASSERT(lin::all(lin::isnan(q)));
+  q = lin::zeros<decltype(q)>();
+  // Anti-parellel inputs should result in NaNs
+  gnc::utl::triad(n1, (-n1).eval(), b1, b2, q);
+  TEST_ASSERT(lin::all(lin::isnan(q)));
+  q = lin::zeros<decltype(q)>();
+  gnc::utl::triad(n1, n2, b1, (-b1).eval(), q);
+  TEST_ASSERT(lin::all(lin::isnan(q)));
 }
 
 void test_utilities_vec_rot_to_quat() {

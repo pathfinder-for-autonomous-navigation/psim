@@ -3,6 +3,11 @@
 
 #include "../utilities.hpp"
 
+#include <lin/core.hpp>
+#include <lin/generators/constants.hpp>
+#include <lin/math.hpp>
+#include <lin/queries.hpp>
+
 namespace gnc {
 namespace utl {
 
@@ -44,7 +49,7 @@ template <typename T>
 constexpr void dcm(lin::Matrix<T, 3, 3> &DCM, lin::Vector<T, 3> const &x,
     lin::Vector<T, 3> const &y) {
   // Check if x and y are parallel or antiparallel
-  if (std::abs(lin::dot(x / lin::norm(x), y / lin::norm(y))) > 0.999) {
+  if (std::abs(lin::dot(x / lin::norm(x), y / lin::norm(y))) > T(0.999)) {
     DCM = lin::nans<lin::Matrix<T, 3, 3>>();
     return;
   }
@@ -158,7 +163,7 @@ constexpr void triad(lin::Vector<T, 3> const &R1, lin::Vector<T, 3> const &R2,
 
   // Ensure that sun and magnetic field vectors aren't parallel or anitparallel
   T thresh = std::cos(1.0f * constant::deg_to_rad);
-  if ((lin::dot(R1, R2) > thresh) || (lin::dot(r1, r2) > thresh))
+  if ((lin::abs(lin::dot(R1, R2)) > thresh) || (lin::abs(lin::dot(r1, r2)) > thresh))
     return;
 
   // Calculate right handed bases for the known frame
