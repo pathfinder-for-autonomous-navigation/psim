@@ -1,16 +1,17 @@
-#include <unity.h>
-#include "../custom_assertions.hpp"
 #include <stdio.h>
 #include <orb/Orbit.h>
 #include <cstdint>
 #include <limits>
 #include <lin.hpp>
 #include <gnc/constants.hpp>
-#define NANOSECONDS_IN_WEEK (7ULL*24ULL*60ULL*60ULL*1'000'000'000ULL)
 #include <gnc/config.hpp>
 
 
 //UTILITY MACROS
+#include <unity.h>
+#include "../custom_assertions.hpp"
+
+#define NANOSECONDS_IN_WEEK (7ULL*24ULL*60ULL*60ULL*1'000'000'000ULL)
 
 //0 or 1 that can't be calculated at compile time.
 #ifdef DESKTOP
