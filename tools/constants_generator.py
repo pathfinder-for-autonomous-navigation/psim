@@ -15,6 +15,8 @@ HPP_HEADER='''\
 
 #include <lin/core.hpp>
 
+#include <cstdint>
+
 #include <limits>
 
 namespace gnc {
