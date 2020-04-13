@@ -11,8 +11,6 @@
 #include <unity.h>
 #include "../custom_assertions.hpp"
 
-#define NANOSECONDS_IN_WEEK (7ULL*24ULL*60ULL*60ULL*1'000'000'000ULL)
-
 //0 or 1 that can't be calculated at compile time.
 #ifdef DESKTOP
 #define notcompiletime (rand()%2)
@@ -61,13 +59,13 @@ T det(const lin::Matrix<T, 0, 0, MR, MR>& x){
 }
 
 //grace orbit initial
-const orb::Orbit gracestart(uint64_t(gnc::constant::init_gps_week_number)*NANOSECONDS_IN_WEEK,{-6522019.833240811L, 2067829.846415895L, 776905.9724453629L},{941.0211143841228L, 85.66662333729801L, 7552.870253470936L});
+const orb::Orbit gracestart(uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK,{-6522019.833240811L, 2067829.846415895L, 776905.9724453629L},{941.0211143841228L, 85.66662333729801L, 7552.870253470936L});
 
 //grace orbit 100 seconds later
-const orb::Orbit grace100s(uint64_t(gnc::constant::init_gps_week_number)*NANOSECONDS_IN_WEEK+100'000'000'000ULL,{-6388456.55330517L, 2062929.296577276L, 1525892.564091281L},{1726.923087560988L, -185.5049475128178L, 7411.544615026139L});
+const orb::Orbit grace100s(uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK+100'000'000'000ULL,{-6388456.55330517L, 2062929.296577276L, 1525892.564091281L},{1726.923087560988L, -185.5049475128178L, 7411.544615026139L});
 
 //grace orbit 13700 seconds later
-const orb::Orbit grace13700s(uint64_t(gnc::constant::init_gps_week_number)*NANOSECONDS_IN_WEEK+13700'000'000'000ULL,{1579190.147083268L, -6066459.613667888L, 2785708.976728437L},{480.8261476296949L, -3083.977113497177L, -6969.470748202005L});
+const orb::Orbit grace13700s(uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK+13700'000'000'000ULL,{1579190.147083268L, -6066459.613667888L, 2785708.976728437L},{480.8261476296949L, -3083.977113497177L, -6969.470748202005L});
 
 //earth rate in ecef (rad/s)
 lin::Vector3d earth_rate_ecef= {0.000000707063506E-4,-0.000001060595259E-4,0.729211585530000E-4};
@@ -84,14 +82,14 @@ void test_basic_constructors() {
     //test invalid orbit
     lin::Vector3d r2 {0.0L, 0.0L, 0.0L};
     lin::Vector3d v2 {941.0211143841228L, 85.66662333729801L, 7552.870253470936L};
-    uint64_t t2= uint64_t(gnc::constant::init_gps_week_number)*NANOSECONDS_IN_WEEK;
+    uint64_t t2= uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
     orb::Orbit y2(t2,r2,v2);
     TEST_ASSERT_FALSE(y2.valid());
 
     //test NAN invalid orbit
-    lin::Vector3d r3 {0.0, std::numeric_limits<double>::quiet_NaN(), 0.0};
+    lin::Vector3d r3 {0.0, gnc::constant::nan, 0.0};
     lin::Vector3d v3 {941.0211143841228L, 85.66662333729801L, 7552.870253470936L};
-    uint64_t t3= uint64_t(gnc::constant::init_gps_week_number)*NANOSECONDS_IN_WEEK;
+    uint64_t t3= uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
     orb::Orbit y3(t3,r3,v3);
     TEST_ASSERT_FALSE(y3.valid());
 }
@@ -136,7 +134,7 @@ void test_calc_geograv() {
         {-5.273243501305509, -5.864689616987217, 2.842381806608654}
     };
     lin::Vector3d gs[numtests]= {lin::nans<lin::Vector3d>()};
-    double ps[numtests]= {std::numeric_limits<double>::quiet_NaN()};
+    double ps[numtests]= {gnc::constant::nan};
     for (int i=0; i< numtests; i++){
         orb::Orbit::calc_geograv(rs[i],gs[i],ps[i]);
         PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1E-6, (g_trues[i]), (gs[i]));
@@ -148,7 +146,7 @@ void test_calc_geograv() {
             {-10.0,0.4,-.043}
         };
         for (int j=0; j<4; j++){
-            double p_at_delta= {std::numeric_limits<double>::quiet_NaN()};
+            double p_at_delta= {gnc::constant::nan};
             lin::Vector3d junk;
             double predicted_deltap= lin::dot(delta_rs[j],gs[i]);
             orb::Orbit::calc_geograv(rs[i]+delta_rs[j],junk,p_at_delta);

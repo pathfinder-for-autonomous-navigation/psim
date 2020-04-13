@@ -37,6 +37,7 @@ SOFTWARE.
 #include <lin/core.hpp>
 #include <lin/generators.hpp>
 #include <gnc/config.hpp>
+#include <gnc/constants.hpp>
 #include "JacobianHelpers/jacobian_autocoded.h"
 
 #include "geograv.hpp"
@@ -206,7 +207,7 @@ class Orbit {
             return 0.5L*lin::fro(v_ecef0) - potential;
         }
         else{
-            return std::numeric_limits<double>::quiet_NaN();
+            return gnc::constant::nan;
         }
     }
 
@@ -352,10 +353,10 @@ class Orbit {
     void shortupdate(int32_t dt_ns,const lin::Vector3d& earth_rate_ecef, double& specificenergy, lin::Matrix<double, 6, 6>& jac){
         if (!valid()){
             jac= lin::nans<lin::Matrix<double, 6, 6>>();
-            specificenergy= std::numeric_limits<double>::quiet_NaN();
+            specificenergy= gnc::constant::nan;
             return;
         }
-        assert(dt_ns<=200'000'000L && dt_ns>=-200'000'000L);
+        assert(dt_ns<=200'000'000 && dt_ns>=-200'000'000);
         _ns_gps_time+= dt_ns;
         lin::Vector3d r_half_ecef0;
         double dt= double(dt_ns)*1E-9L;
@@ -377,7 +378,7 @@ class Orbit {
      */
     void shortupdate(int32_t dt_ns,const lin::Vector3d& earth_rate_ecef, double& specificenergy){
         if (!valid()){
-            specificenergy= std::numeric_limits<double>::quiet_NaN();
+            specificenergy= gnc::constant::nan;
             return;
         }
         assert(dt_ns<=200'000'000 && dt_ns>=-200'000'000);
