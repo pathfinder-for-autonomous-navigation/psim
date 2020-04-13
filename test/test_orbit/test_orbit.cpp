@@ -321,7 +321,6 @@ void test_shortupdate_f() {
  * Test invalid orbit update gives NAN outputs
  */
 void test_shortupdate_g() {
-    //test invalid orbit update gives NAN outputs
     orb::Orbit invalidorbit;
     TEST_ASSERT_FALSE(invalidorbit.valid());
     double invalidenergy= 0.0;
