@@ -393,10 +393,10 @@ class Orbit {
     //some varables to handle long updates
     int _longstep{0};
     int _numgravcallsleft{0};
-    uint64_t _totalduration{0};
+    double _t{0};
     uint64_t _targetgpstime{0};
     double _currentdt{0};
-    double _a;
+    double _mu_a3;
     lin::Vector3d _x;
     lin::Vector3d _y;
     lin::Vector3d _omega;
@@ -424,9 +424,9 @@ class Orbit {
         int64_t deltatime= _targetgpstime-_ns_gps_time;
         int64_t absdeltatime= std::abs(deltatime);
         if((_numgravcallsleft==0) && (deltatime!=0)){
-            //starting convert ecef to ecef0
+            //starting save earth rate 
             _earth_rate_ecef= earth_rate_ecef;
-            _vecef= lin::cross(earth_rate_ecef,_recef)+_vecef;
+            
         }
         _numgravcallsleft= _longstep?(7-_longstep):0;
         if (absdeltatime>maxshorttimestep*6){
@@ -480,20 +480,23 @@ class Orbit {
         }
         //now what dt should be used?
         double dt;
-        //aready in ecef0
-        lin::Vector3d v_ecef0=_vecef;
-        lin::Vector3d r_ecef0=_recef;
         if (_longstep==0){
             //not inside a long step
-            //get reference orbit
+            //covert to ecef0
+            _t=0;
+            _vecef= lin::cross(_earth_rate_ecef,_recef)+_vecef;
+            lin::Vector3d v_ecef0=_vecef;
+            lin::Vector3d r_ecef0=_recef;
+            //get new reference orbit
             double energy= 0.5*lin::dot(v_ecef0,v_ecef0)-mu/lin::norm(r_ecef0);
-            _a= -mu/2/energy;
+            double a= -mu/2/energy;
+            _mu_a3= mu/(a*a*a);
             lin::Vector3d h_ecef0= lin::cross(r_ecef0,v_ecef0);
             _x= r_ecef0;
             _x= _x/lin::norm(_x)*a;
             _y= lin::cross(h_ecef0,r_ecef0);
             _y= _y/lin::norm(_y)*a;
-            _omega= h_ecef0/lin::norm(h_ecef0)*std::sqrt(mu/(a*a*a));
+            _omega= h_ecef0/lin::norm(h_ecef0)*std::sqrt(_mu_a3);
             //store relative positions and velocities
             _recef= r_ecef0-_x;
             _vecef= v_ecef0-lin::cross(_omega,_x);
@@ -531,12 +534,49 @@ class Orbit {
             _longstep++;
             if (_longstep>=7) _longstep=0;    
         }
-        lin::Vector3d junk;
-        double alsojunk;
-        _shortupdate_helper(dt,_earth_rate_ecef, junk, alsojunk);
+        //retrieve relative coords
+        lin::Vector3d rel_r= _recef;
+        lin::Vector3d rel_v= _vecef;
+        // drift
+        rel_r= rel_r+rel_v*dt*0.5;
+        // step 3a calc acceleration at the half step
+        _t+= 0.5*dt;
+        double theta= _t*lin::norm(_omega);
+        double costheta= std::cos(theta);
+        double sintheta= std::sin(theta);
+        lin::Vector3d orb_r= _x*costheta+_y*sintheta;
+        lin::Vector3d r_ecef0= rel_r+orb_r;
+        lin::Matrix<double, 3, 3> dcm_ecef_ecef0;
+        relative_earth_dcm_helper(_earth_rate_ecef, _t, dcm_ecef_ecef0);
+        lin::Vector3d pos_ecef= dcm_ecef_ecef0*r_ecef0;
+        lin::Vector3d g_ecef;
+        double potential;
+        calc_geograv(pos_ecef, g_ecef, potential);
+        //convert to ECEF0
+        lin::Vector3d g_ecef0= lin::transpose(dcm_ecef_ecef0)*g_ecef + orb_r*_mu_a3;
+        // step 3b kick velocity
+        rel_v= rel_v + g_ecef0*dt;
+        // step 4 drift
+        rel_r= rel_r+rel_v*dt*0.5;
+        _t+= 0.5*dt;
+        //store relative coords
+        _recef= rel_r;
+        _vecef= rel_v;
         _numgravcallsleft--;
-        if(_numgravcallsleft==0){
-            //convert back to ecef TODO
+        if(_longstep==0){
+            //done with a step
+            //convert back to absolute ecef
+            theta= _t*lin::norm(_omega);
+            costheta= std::cos(theta);
+            sintheta= std::sin(theta);
+            _recef= _recef+ orb_r;
+            _vecef= _vecef+ lin::cross(omega,orb_r);
+            // step 5b rotate back to ecef
+            relative_earth_dcm_helper(_earth_rate_ecef, _t, dcm_ecef_ecef0);
+            _recef= dcm_ecef_ecef0*_recef;
+            _vecef= dcm_ecef_ecef0*_vecef;
+            // step 6 remove cross r term from velocity
+            _vecef= _vecef-lin::cross(_earth_rate_ecef,_recef);
         }
         return;
     }
