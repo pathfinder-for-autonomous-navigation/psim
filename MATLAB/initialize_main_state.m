@@ -93,14 +93,16 @@ sensors.sunsensor_measured_voltage_maximums= sensors.sunsensor_real_voltage_maxi
 sensors.sunsensor_measured_normals= sensors.sunsensor_real_normals;
 
 %load voltage data for Leader
-load('leader_ssvoltages','inclinometerPlotsL','voltages_measuredL')
+load('leader_ssvoltages','inclinometerPlotsL','voltages_measuredL','curvefit_mL')
 sensors.inclinometerPlotsL = inclinometerPlotsL;
 sensors.voltages_measuredL = voltages_measuredL;
+sensors.curvefitsL = curvefit_mL;
 
 %load voltage data for Follower
-load('follower_ssvoltages','inclinometerPlotsF','voltages_measuredF') 
+load('follower_ssvoltages','inclinometerPlotsF','voltages_measuredF','curvefit_mF') 
 sensors.inclinometerPlotsF = inclinometerPlotsF;
 sensors.voltages_measuredF = voltages_measuredF;
+sensors.curvefitsF = curvefit_mF;
 
 %tag = 1 if Leader, tag = 0 if Follower; default = 0
 sensors.tag = 0; 

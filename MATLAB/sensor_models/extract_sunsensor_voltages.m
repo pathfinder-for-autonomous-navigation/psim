@@ -1,18 +1,44 @@
+%%% this script is used to extract and preload voltage-angle data relations for sun sensor characterization.
+%%% to be used in `initialize_main_state.m` and `update_sun_sensors` in MATLAB psim
+%%% input data from "Real Tests" folder in OAAN drive
+%%% last editted 4/8/2020 by Sruti Vutukury
+
 %if Follower
-%voltages_measuredF = {};
-%inclinometerPlotsF = {};
+voltages_measuredF = {};
+inclinometerPlotsF = {};
 
-% %face2 photodiodes 1:4
-% [voltages_measuredF{1}, voltages_measuredF{2}, voltages_measuredF{3}, voltages_measuredF{4}, inclinometerPlotsF{2}] = get_log('Face2+XFollower10011528.log');
-% %face3 photodiodes 5:8
-% [voltages_measuredF{5}, voltages_measuredF{6}, voltages_measuredF{7}, voltages_measuredF{8}, inclinometerPlotsF{3}] = get_log('Face3-YFollower09205506.log');
-% %face4 photodiodes 9:12
-% [voltages_measuredF{9}, voltages_measuredF{10}, voltages_measuredF{11}, voltages_measuredF{12}, inclinometerPlotsF{4}] = get_log('newFace4-XFollower11220604.log');
-% %face5 photodiodes 13:16
-% [voltages_measuredF{13}, voltages_measuredF{14}, voltages_measuredF{15}, voltages_measuredF{16}, inclinometerPlotsF{5}] = get_log('Face3-YLeader16204111.log');
-% %face6 photodiodes 17:20
-% [voltages_measuredF{17}, voltages_measuredF{18}, voltages_measuredF{19}, voltages_measuredF{20}, inclinometerPlotsF{6}] = get_log('Face6+ZFollower11011312.log');        
+%face2 photodiodes 1:4
+[voltages_measuredF{1}, voltages_measuredF{2}, voltages_measuredF{3}, voltages_measuredF{4}, inclinometerPlotsF{2}] = get_log('Face2+XFollower10011528.log');
+%face3 photodiodes 5:8
+[voltages_measuredF{5}, voltages_measuredF{6}, voltages_measuredF{7}, voltages_measuredF{8}, inclinometerPlotsF{3}] = get_log('Face3-YFollower09205506.log');
+%face4 photodiodes 9:12
+[voltages_measuredF{9}, voltages_measuredF{10}, voltages_measuredF{11}, voltages_measuredF{12}, inclinometerPlotsF{4}] = get_log('newFace4-XFollower11220604.log');
+%face5 photodiodes 13:16
+[voltages_measuredF{13}, voltages_measuredF{14}, voltages_measuredF{15}, voltages_measuredF{16}, inclinometerPlotsF{5}] = get_log('Face3-YLeader16204111.log');
+%face6 photodiodes 17:20
+[voltages_measuredF{17}, voltages_measuredF{18}, voltages_measuredF{19}, voltages_measuredF{20}, inclinometerPlotsF{6}] = get_log('Face6+ZFollower11011312.log');
 
+%%
+curvefit_mF = {};
+for i = 1:20
+    if (1 <= i) && (i <= 4) %photodiodes 1-4; on face 1
+        curvefit_mF{i} = fit(inclinometerPlotsF{2}',voltages_measuredF{i}','poly3','normalize','on');
+        plot(curvefit_mF{i}', inclinometerPlotsF{2}',voltages_measuredF{i}')
+    elseif (5 <= i) && (i <= 8)
+        curvefit_mF{i} = fit(inclinometerPlotsF{3}',voltages_measuredF{i}','poly3','normalize','on');
+        plot(curvefit_mF{i}', inclinometerPlotsF{3}',voltages_measuredF{i}')
+    elseif (9 <= i) && (i <= 12)
+        curvefit_mF{i} = fit(inclinometerPlotsF{4}',voltages_measuredF{i}','poly3','normalize','on');
+        plot(curvefit_mF{i}', inclinometerPlotsF{4}',voltages_measuredF{i}')
+    elseif (13 <= i) && (i <= 16)
+        curvefit_mF{i} = fit(inclinometerPlotsF{5}',voltages_measuredF{i}','poly3','normalize','on');
+        plot(curvefit_mF{i}', inclinometerPlotsF{5}',voltages_measuredF{i}')
+    elseif (17 <= i) && (i <= 20)
+        curvefit_mF{i} = fit(inclinometerPlotsF{6}',voltages_measuredF{i}','poly3','normalize','on');
+        plot(curvefit_mF{i}', inclinometerPlotsF{6}',voltages_measuredF{i}')
+    end
+end
+%%
 
 %if Leader
 voltages_measuredL = {};
@@ -29,7 +55,27 @@ inclinometerPlotsL = {};
 %face6 photodiodes 17:20
 [voltages_measuredL{17}, voltages_measuredL{18}, voltages_measuredL{19}, voltages_measuredL{20}, inclinometerPlotsL{6}] = get_log('Face6+ZLeader13212220.log');
 
-   
+%%  
+curvefit_mL = {};
+for i = 1:20
+    if (1 <= i) && (i <= 4) %photodiodes 1-4; on face 1
+        curvefit_mL{i} = fit(inclinometerPlotsL{2}',voltages_measuredL{i}','poly3','normalize','on');
+        plot(curvefit_mL{i}', inclinometerPlotsL{2}',voltages_measuredL{i}')
+    elseif (5 <= i) && (i <= 8)
+        curvefit_mL{i} = fit(inclinometerPlotsL{3}',voltages_measuredL{i}','poly3','normalize','on');
+        plot(curvefit_mL{i}', inclinometerPlotsL{3}',voltages_measuredL{i}')
+    elseif (9 <= i) && (i <= 12)
+        curvefit_mL{i} = fit(inclinometerPlotsL{4}',voltages_measuredL{i}','poly3','normalize','on');
+        plot(curvefit_mL{i}', inclinometerPlotsL{4}',voltages_measuredL{i}')
+    elseif (13 <= i) && (i <= 16)
+        curvefit_mL{i} = fit(inclinometerPlotsL{5}',voltages_measuredL{i}','poly3','normalize','on');
+        plot(curvefit_mL{i}', inclinometerPlotsL{5}',voltages_measuredL{i}')
+    elseif (17 <= i) && (i <= 20)
+        curvefit_mL{i} = fit(inclinometerPlotsL{6}',voltages_measuredL{i}','poly3','normalize','on');
+        plot(curvefit_mL{i}', inclinometerPlotsL{6}',voltages_measuredL{i}')
+    end
+end
+
   function [V_Photo0_trim, V_Photo1_trim, V_Photo2_trim, V_Photo3_trim, inclinometerPlot] = get_log(input)
     %read Josh's sun sensor logs to get voltage-angle relations
     A = {};

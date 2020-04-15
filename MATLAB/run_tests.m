@@ -5,6 +5,7 @@ runtests('test_main_state_update');
 runtests('test_dynamics_update');
 runtests('test_sensors_update');
 runtests('test_sensor_reading');
+runtests('test_update_sun_sensors');
 runtests('test_actuator_command');
 runtests('test_initialize_computer_states');
 runtests('test_quaternion_math');
