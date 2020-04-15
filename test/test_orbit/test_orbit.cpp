@@ -337,6 +337,86 @@ void test_shortupdate_g() {
     }
 }
 
+/**
+ * Test startpropagating scheduals the correct numgravcalls
+ */
+void test_startnumgravcalls(){
+    uint64_t startns= gracestart.nsgpstime();
+    orb::Orbit y;
+    TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
+    y= gracestart;
+    TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
+    y.startpropagating(startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
+    y.startpropagating(10+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(1,y.numgravcallsleft());
+    y.startpropagating(10+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(1,y.numgravcallsleft());
+    y.startpropagating(y.maxshorttimestep+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(1,y.numgravcallsleft());
+    y.startpropagating(y.maxshorttimestep+1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(2,y.numgravcallsleft());
+    y.startpropagating(y.maxshorttimestep-1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(1,y.numgravcallsleft());
+    y.startpropagating(2*y.maxshorttimestep-1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(2,y.numgravcallsleft());
+    y.startpropagating(2*y.maxshorttimestep+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(2,y.numgravcallsleft());
+    y.startpropagating(2*y.maxshorttimestep+1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(3,y.numgravcallsleft());
+    y.startpropagating(5*y.maxshorttimestep-1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(5,y.numgravcallsleft());
+    y.startpropagating(5*y.maxshorttimestep+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(5,y.numgravcallsleft());
+    y.startpropagating(5*y.maxshorttimestep+1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(6,y.numgravcallsleft());
+    y.startpropagating(6*y.maxshorttimestep-1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(6,y.numgravcallsleft());
+    y.startpropagating(6*y.maxshorttimestep+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(6,y.numgravcallsleft());
+    y.startpropagating(6*y.maxshorttimestep+1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(7,y.numgravcallsleft());
+    y.startpropagating(8*y.maxshorttimestep+1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(7,y.numgravcallsleft());
+    y.startpropagating(y.maxlongtimestep-1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(7,y.numgravcallsleft());
+    y.startpropagating(y.maxlongtimestep+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(7,y.numgravcallsleft());
+    y.startpropagating(y.maxlongtimestep+1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(7+1,y.numgravcallsleft());
+    y.startpropagating(y.maxlongtimestep+6*y.maxshorttimestep+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(7+6,y.numgravcallsleft());
+    y.startpropagating(10*y.maxlongtimestep+6*y.maxshorttimestep+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(10*7+6,y.numgravcallsleft());
+    y.startpropagating(10*y.maxlongtimestep+6*y.maxshorttimestep+1+startns,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(10*7+7,y.numgravcallsleft());
+}
+
+/**
+ * Higher order 13700s update test vs grace data
+ * This also does the reverse update to check reverability
+ */
+void test_longupdate(){
+    orb::Orbit y= gracestart;
+    //force not compile time
+    y.applydeltav({0.0,(notcompiletime*1E-10),0.0});
+    TEST_ASSERT_TRUE(y.valid());
+    y.startpropagating(y.nsgpstime()+13700'000'000'000LL,earth_rate_ecef);
+    y.finishpropagating();
+    TEST_ASSERT_TRUE(y.valid());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1E-1, y.vecef(), grace13700s.vecef());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(20.0, y.recef(), grace13700s.recef());
+
+    // test reversibility of propagator
+    y.startpropagating(y.nsgpstime()-13700'000'000'000LL,earth_rate_ecef);
+    y.finishpropagating();
+    TEST_ASSERT_TRUE(y.valid());
+    TEST_ASSERT_TRUE(y.nsgpstime()==gracestart.nsgpstime());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1.0E-5, y.vecef(), gracestart.vecef());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1.0E-2, y.recef(), gracestart.recef());
+
+}
+
 int test_orbit() {
     UNITY_BEGIN();
     RUN_TEST(test_basic_constructors);
@@ -350,6 +430,8 @@ int test_orbit() {
     RUN_TEST(test_shortupdate_e);
     RUN_TEST(test_shortupdate_f);
     RUN_TEST(test_shortupdate_g);
+    RUN_TEST(test_startnumgravcalls);
+    RUN_TEST(test_longupdate);
     return UNITY_END();
 }
 

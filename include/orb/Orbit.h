@@ -396,6 +396,10 @@ class Orbit {
     uint64_t _totalduration{0};
     uint64_t _targetgpstime{0};
     double _currentdt{0};
+    double _a;
+    lin::Vector3d _x;
+    lin::Vector3d _y;
+    lin::Vector3d _omega;
     lin::Vector3d _earth_rate_ecef=lin::nans<lin::Vector3d>();
     GNC_TRACKED_CONSTANT(static const int64_t,maxlongtimestep,105'000'000'000LL);
     GNC_TRACKED_CONSTANT(static const int64_t,maxshorttimestep,200'000'000LL);
@@ -409,29 +413,33 @@ class Orbit {
      * 
      * grav calls: 0
      * @param[in] end_gps_time_ns: Time to propagate to (ns).
-     * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame (rad/s).
+     * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored if already propagating(rad/s).
      */
     void startpropagating(const uint64_t& end_gps_time_ns, const lin::Vector3d& earth_rate_ecef){
         if (!valid()){
             return;
         }
-        _earth_rate_ecef= earth_rate_ecef;
         _targetgpstime= end_gps_time_ns;
         //now get _numgravcallsleft
         int64_t deltatime= _targetgpstime-_ns_gps_time;
         int64_t absdeltatime= std::abs(deltatime);
+        if((_numgravcallsleft==0) && (deltatime!=0)){
+            //starting convert ecef to ecef0
+            _earth_rate_ecef= earth_rate_ecef;
+            _vecef= lin::cross(earth_rate_ecef,_recef)+_vecef;
+        }
         _numgravcallsleft= _longstep?(7-_longstep):0;
         if (absdeltatime>maxshorttimestep*6){
             //how many long steps
             int n= absdeltatime/maxlongtimestep;//full long steps
-            _numgravcallsleft+=n;
+            _numgravcallsleft+=n*7;
             absdeltatime-=n*maxlongtimestep;
         }
 
         if (absdeltatime==0){
             return;
         }
-        _numgravcallsleft+=std::min((absdeltatime-1)/maxshorttimestep+1,7);
+        _numgravcallsleft+=std::min((absdeltatime-1)/maxshorttimestep+1,7LL);
     }
 
     /**
@@ -452,19 +460,17 @@ class Orbit {
      * 
      * grav calls: 1 if propagating, 0 if not propagating
      */
-    //d: 0.7845    0.2356   -1.1777    1.3152   -1.1777    0.2356    0.7845
-    //c: 0.3923    0.5100   -0.4711    0.0688    0.0688   -0.4711    0.5100    0.3923
-
     void onegravcall(){
+        double mu= PANGRAVITYMODEL.earth_gravity_constant;
         //high order integrators
         //https://doi.org/10.1016/0375-9601(90)90092-3
-        static const std::array<double,7> d = {0.784513610477560L,
+        static const std::array<double,7> d{{0.784513610477560L,
                                         0.235573213359357L,
                                         -1.177679984178870L,
                                         1.315186320683906L,
                                         -1.177679984178870L,
                                         0.235573213359357L,
-                                        0.784513610477560L};
+                                        0.784513610477560L}};
         if (!valid()){
             return;
         }
@@ -474,18 +480,34 @@ class Orbit {
         }
         //now what dt should be used?
         double dt;
+        //aready in ecef0
+        lin::Vector3d v_ecef0=_vecef;
+        lin::Vector3d r_ecef0=_recef;
         if (_longstep==0){
-            //not in a long step
+            //not inside a long step
+            //get reference orbit
+            double energy= 0.5*lin::dot(v_ecef0,v_ecef0)-mu/lin::norm(r_ecef0);
+            _a= -mu/2/energy;
+            lin::Vector3d h_ecef0= lin::cross(r_ecef0,v_ecef0);
+            _x= r_ecef0;
+            _x= _x/lin::norm(_x)*a;
+            _y= lin::cross(h_ecef0,r_ecef0);
+            _y= _y/lin::norm(_y)*a;
+            _omega= h_ecef0/lin::norm(h_ecef0)*std::sqrt(mu/(a*a*a));
+            //store relative positions and velocities
+            _recef= r_ecef0-_x;
+            _vecef= v_ecef0-lin::cross(_omega,_x);
             int64_t deltatime= _targetgpstime-_ns_gps_time;
             int signofdt= (deltatime<0)?-1:1;
+            int64_t currentdtns;
             if (_numgravcallsleft>=7){
                 // do a long step
                 if (std::abs(deltatime)>=std::abs(maxlongtimestep)){
                     // take a full time step
-                    int64_t currentdtns= signofdt*maxlongtimestep;
+                    currentdtns= signofdt*maxlongtimestep;
                 }else{
                     // take a partial time step
-                    int64_t currentdtns= deltatime;
+                    currentdtns= deltatime;
                 }
                 _ns_gps_time+=currentdtns;
                 _currentdt= double(currentdtns)*1E-9L;
@@ -495,10 +517,10 @@ class Orbit {
                 // do a short step
                 if (std::abs(deltatime)>=std::abs(maxshorttimestep)){
                     // take a full time step
-                    int64_t currentdtns= signofdt*maxshorttimestep;
+                    currentdtns= signofdt*maxshorttimestep;
                 }else{
                     // take a partial time step
-                    int64_t currentdtns= deltatime;
+                    currentdtns= deltatime;
                 }
                 _ns_gps_time+=currentdtns;
                 dt= double(currentdtns)*1E-9L;
@@ -513,7 +535,21 @@ class Orbit {
         double alsojunk;
         _shortupdate_helper(dt,_earth_rate_ecef, junk, alsojunk);
         _numgravcallsleft--;
+        if(_numgravcallsleft==0){
+            //convert back to ecef TODO
+        }
         return;
+    }
+
+    /**
+     * Do all remaining grav calls to finish propagating.
+     * 
+     * grav calls: numgravcallsleft()
+     */
+    void finishpropagating(){
+        while(numgravcallsleft()){
+            onegravcall();
+        }
     }
 };
 }
