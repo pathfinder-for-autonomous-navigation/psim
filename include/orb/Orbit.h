@@ -32,8 +32,10 @@ SOFTWARE.
 #pragma once
 
 #include <cstdint>
+#include <cstdlib>
 #include <cmath>
 #include <limits>
+#include <array>
 #include <lin/core.hpp>
 #include <lin/generators.hpp>
 #include <gnc/config.hpp>
@@ -388,5 +390,130 @@ class Orbit {
         _shortupdate_helper(dt,earth_rate_ecef, r_half_ecef0, specificenergy);
     }
 
+    //some varables to handle long updates
+    int _longstep{0};
+    int _numgravcallsleft{0};
+    uint64_t _totalduration{0};
+    uint64_t _targetgpstime{0};
+    double _currentdt{0};
+    lin::Vector3d _earth_rate_ecef=lin::nans<lin::Vector3d>();
+    GNC_TRACKED_CONSTANT(static const int64_t,maxlongtimestep,105'000'000'000LL);
+    GNC_TRACKED_CONSTANT(static const int64_t,maxshorttimestep,200'000'000LL);
+
+
+    /**
+     * Puts the Orbit in propagating mode.
+     * call finishpropagating() or onegravcall() numgravcallsleft() times to finish the propagating.
+     * This function can also be used to change the end time of a propagating Orbit.
+     * This doesn't do anything if the orbit is invalid.
+     * 
+     * grav calls: 0
+     * @param[in] end_gps_time_ns: Time to propagate to (ns).
+     * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame (rad/s).
+     */
+    void startpropagating(const uint64_t& end_gps_time_ns, const lin::Vector3d& earth_rate_ecef){
+        if (!valid()){
+            return;
+        }
+        _earth_rate_ecef= earth_rate_ecef;
+        _targetgpstime= end_gps_time_ns;
+        //now get _numgravcallsleft
+        int64_t deltatime= _targetgpstime-_ns_gps_time;
+        int64_t absdeltatime= std::abs(deltatime);
+        _numgravcallsleft= _longstep?(7-_longstep):0;
+        if (absdeltatime>maxshorttimestep*6){
+            //how many long steps
+            int n= absdeltatime/maxlongtimestep;//full long steps
+            _numgravcallsleft+=n;
+            absdeltatime-=n*maxlongtimestep;
+        }
+
+        if (absdeltatime==0){
+            return;
+        }
+        _numgravcallsleft+=std::min((absdeltatime-1)/maxshorttimestep+1,7);
+    }
+
+    /**
+     * Return the number of grav calls needed to finish propagating.
+     * If not propagating Return 0.
+     * 
+     * grav calls: 0
+     */
+    int numgravcallsleft(){
+        return _numgravcallsleft;
+    }
+
+    /**
+     * If propagating call the gravity model once
+     * to move the propagtor forward, otherwise do nothing.
+     * High order integrators from:
+     * https://doi.org/10.1016/0375-9601(90)90092-3
+     * 
+     * grav calls: 1 if propagating, 0 if not propagating
+     */
+    //d: 0.7845    0.2356   -1.1777    1.3152   -1.1777    0.2356    0.7845
+    //c: 0.3923    0.5100   -0.4711    0.0688    0.0688   -0.4711    0.5100    0.3923
+
+    void onegravcall(){
+        //high order integrators
+        //https://doi.org/10.1016/0375-9601(90)90092-3
+        static const std::array<double,7> d = {0.784513610477560L,
+                                        0.235573213359357L,
+                                        -1.177679984178870L,
+                                        1.315186320683906L,
+                                        -1.177679984178870L,
+                                        0.235573213359357L,
+                                        0.784513610477560L};
+        if (!valid()){
+            return;
+        }
+        if (_numgravcallsleft==0){
+            //done propagating
+            return;
+        }
+        //now what dt should be used?
+        double dt;
+        if (_longstep==0){
+            //not in a long step
+            int64_t deltatime= _targetgpstime-_ns_gps_time;
+            int signofdt= (deltatime<0)?-1:1;
+            if (_numgravcallsleft>=7){
+                // do a long step
+                if (std::abs(deltatime)>=std::abs(maxlongtimestep)){
+                    // take a full time step
+                    int64_t currentdtns= signofdt*maxlongtimestep;
+                }else{
+                    // take a partial time step
+                    int64_t currentdtns= deltatime;
+                }
+                _ns_gps_time+=currentdtns;
+                _currentdt= double(currentdtns)*1E-9L;
+                dt= _currentdt*d[_longstep];
+                _longstep++;
+            }else{
+                // do a short step
+                if (std::abs(deltatime)>=std::abs(maxshorttimestep)){
+                    // take a full time step
+                    int64_t currentdtns= signofdt*maxshorttimestep;
+                }else{
+                    // take a partial time step
+                    int64_t currentdtns= deltatime;
+                }
+                _ns_gps_time+=currentdtns;
+                dt= double(currentdtns)*1E-9L;
+            }
+        }else{
+            //in the middle of a long step
+            dt= _currentdt*d[_longstep];
+            _longstep++;
+            if (_longstep>=7) _longstep=0;    
+        }
+        lin::Vector3d junk;
+        double alsojunk;
+        _shortupdate_helper(dt,_earth_rate_ecef, junk, alsojunk);
+        _numgravcallsleft--;
+        return;
+    }
 };
 }
