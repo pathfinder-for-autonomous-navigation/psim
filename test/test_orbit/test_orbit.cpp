@@ -438,18 +438,18 @@ void test_longupdate(){
 
 int test_orbit() {
     UNITY_BEGIN();
-    // RUN_TEST(test_basic_constructors);
-    // RUN_TEST(test_applydeltav);
-    // RUN_TEST(test_calc_geograv);
-    // RUN_TEST(test_specificenergy);
-    // RUN_TEST(test_shortupdate_a);
-    // RUN_TEST(test_shortupdate_b);
-    // RUN_TEST(test_shortupdate_c);
-    // RUN_TEST(test_shortupdate_d);
-    // RUN_TEST(test_shortupdate_e);
-    // RUN_TEST(test_shortupdate_f);
-    // RUN_TEST(test_shortupdate_g);
-    // RUN_TEST(test_startnumgravcalls);
+    RUN_TEST(test_basic_constructors);
+    RUN_TEST(test_applydeltav);
+    RUN_TEST(test_calc_geograv);
+    RUN_TEST(test_specificenergy);
+    RUN_TEST(test_shortupdate_a);
+    RUN_TEST(test_shortupdate_b);
+    RUN_TEST(test_shortupdate_c);
+    RUN_TEST(test_shortupdate_d);
+    RUN_TEST(test_shortupdate_e);
+    RUN_TEST(test_shortupdate_f);
+    RUN_TEST(test_shortupdate_g);
+    RUN_TEST(test_startnumgravcalls);
     RUN_TEST(test_shortupdatevsonegravcall);
     RUN_TEST(test_longupdate);
     return UNITY_END();
