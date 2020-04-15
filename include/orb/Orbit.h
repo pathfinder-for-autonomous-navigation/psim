@@ -31,6 +31,9 @@ SOFTWARE.
 
 #pragma once
 
+#include <iostream>
+
+
 #include <cstdint>
 #include <cstdlib>
 #include <cmath>
@@ -327,8 +330,8 @@ class Orbit {
         r_ecef0= rel_r+ orb_r;
         v_ecef0= rel_v+ lin::cross(omega,orb_r);
         // step 5b rotate back to ecef
-        _recef= dcm_ecefhalf_ecef0*dcm_ecefhalf_ecef0*r_ecef0;
-        _vecef= dcm_ecefhalf_ecef0*dcm_ecefhalf_ecef0*v_ecef0;
+        _recef= dcm_ecefhalf_ecef0*(dcm_ecefhalf_ecef0*r_ecef0);
+        _vecef= dcm_ecefhalf_ecef0*(dcm_ecefhalf_ecef0*v_ecef0);
         // step 6 remove cross r term from velocity
         _vecef= _vecef-lin::cross(earth_rate_ecef,_recef);
         specificenergy= halfstepke - potential;
@@ -401,7 +404,7 @@ class Orbit {
     lin::Vector3d _y;
     lin::Vector3d _omega;
     lin::Vector3d _earth_rate_ecef=lin::nans<lin::Vector3d>();
-    GNC_TRACKED_CONSTANT(static const int64_t,maxlongtimestep,105'000'000'000LL);
+    GNC_TRACKED_CONSTANT(static const int64_t,maxlongtimestep,100'000'000'000LL);
     GNC_TRACKED_CONSTANT(static const int64_t,maxshorttimestep,200'000'000LL);
 
 
@@ -482,7 +485,7 @@ class Orbit {
         double dt;
         if (_longstep==0){
             //not inside a long step
-            //covert to ecef0
+            //convert to relative ecef0
             _t=0;
             _vecef= lin::cross(_earth_rate_ecef,_recef)+_vecef;
             lin::Vector3d v_ecef0=_vecef;
@@ -540,14 +543,14 @@ class Orbit {
         // drift
         rel_r= rel_r+rel_v*dt*0.5;
         // step 3a calc acceleration at the half step
-        _t+= 0.5*dt;
-        double theta= _t*lin::norm(_omega);
+        double halft= _t+0.5*dt;
+        double theta= halft*lin::norm(_omega);
         double costheta= std::cos(theta);
         double sintheta= std::sin(theta);
         lin::Vector3d orb_r= _x*costheta+_y*sintheta;
         lin::Vector3d r_ecef0= rel_r+orb_r;
         lin::Matrix<double, 3, 3> dcm_ecef_ecef0;
-        relative_earth_dcm_helper(_earth_rate_ecef, _t, dcm_ecef_ecef0);
+        relative_earth_dcm_helper(_earth_rate_ecef, halft, dcm_ecef_ecef0);
         lin::Vector3d pos_ecef= dcm_ecef_ecef0*r_ecef0;
         lin::Vector3d g_ecef;
         double potential;
@@ -558,7 +561,7 @@ class Orbit {
         rel_v= rel_v + g_ecef0*dt;
         // step 4 drift
         rel_r= rel_r+rel_v*dt*0.5;
-        _t+= 0.5*dt;
+        _t+= dt;
         //store relative coords
         _recef= rel_r;
         _vecef= rel_v;
@@ -569,12 +572,13 @@ class Orbit {
             theta= _t*lin::norm(_omega);
             costheta= std::cos(theta);
             sintheta= std::sin(theta);
+            orb_r= _x*costheta+_y*sintheta;
             _recef= _recef+ orb_r;
-            _vecef= _vecef+ lin::cross(omega,orb_r);
+            _vecef= _vecef+ lin::cross(_omega,orb_r);
             // step 5b rotate back to ecef
             relative_earth_dcm_helper(_earth_rate_ecef, _t, dcm_ecef_ecef0);
-            _recef= dcm_ecef_ecef0*_recef;
-            _vecef= dcm_ecef_ecef0*_vecef;
+            _recef= (dcm_ecef_ecef0*_recef).eval();
+            _vecef= (dcm_ecef_ecef0*_vecef).eval();
             // step 6 remove cross r term from velocity
             _vecef= _vecef-lin::cross(_earth_rate_ecef,_recef);
         }

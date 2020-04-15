@@ -1,15 +1,14 @@
 #include <stdio.h>
-#include <orb/Orbit.h>
 #include <cstdint>
 #include <limits>
 #include <lin.hpp>
 #include <gnc/constants.hpp>
 #include <gnc/config.hpp>
 
-
 //UTILITY MACROS
 #include <unity.h>
 #include "../custom_assertions.hpp"
+#include <orb/Orbit.h>
 
 //0 or 1 that can't be calculated at compile time.
 #ifdef DESKTOP
@@ -393,6 +392,26 @@ void test_startnumgravcalls(){
 }
 
 /**
+ * Test that a short update with the asyc api is the same as shortupdate
+ */
+void test_shortupdatevsonegravcall(){
+    double junk;
+    orb::Orbit yshortu= gracestart;
+    orb::Orbit ygravcall= gracestart;
+    yshortu.shortupdate(100'000'000,earth_rate_ecef,junk);
+    ygravcall.startpropagating(ygravcall.nsgpstime()+100'000'000,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(1,ygravcall.numgravcallsleft());
+    ygravcall.onegravcall();
+    TEST_ASSERT_EQUAL_INT(0,ygravcall.numgravcallsleft());
+    TEST_ASSERT_TRUE(ygravcall.valid());
+    TEST_ASSERT_TRUE(yshortu.valid());
+    TEST_ASSERT_TRUE(yshortu.nsgpstime()==ygravcall.nsgpstime());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1.0E-9, yshortu.vecef(), ygravcall.vecef());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1.0E-9, yshortu.recef(), ygravcall.recef());
+
+}
+
+/**
  * Higher order 13700s update test vs grace data
  * This also does the reverse update to check reverability
  */
@@ -419,18 +438,19 @@ void test_longupdate(){
 
 int test_orbit() {
     UNITY_BEGIN();
-    RUN_TEST(test_basic_constructors);
-    RUN_TEST(test_applydeltav);
-    RUN_TEST(test_calc_geograv);
-    RUN_TEST(test_specificenergy);
-    RUN_TEST(test_shortupdate_a);
-    RUN_TEST(test_shortupdate_b);
-    RUN_TEST(test_shortupdate_c);
-    RUN_TEST(test_shortupdate_d);
-    RUN_TEST(test_shortupdate_e);
-    RUN_TEST(test_shortupdate_f);
-    RUN_TEST(test_shortupdate_g);
-    RUN_TEST(test_startnumgravcalls);
+    // RUN_TEST(test_basic_constructors);
+    // RUN_TEST(test_applydeltav);
+    // RUN_TEST(test_calc_geograv);
+    // RUN_TEST(test_specificenergy);
+    // RUN_TEST(test_shortupdate_a);
+    // RUN_TEST(test_shortupdate_b);
+    // RUN_TEST(test_shortupdate_c);
+    // RUN_TEST(test_shortupdate_d);
+    // RUN_TEST(test_shortupdate_e);
+    // RUN_TEST(test_shortupdate_f);
+    // RUN_TEST(test_shortupdate_g);
+    // RUN_TEST(test_startnumgravcalls);
+    RUN_TEST(test_shortupdatevsonegravcall);
     RUN_TEST(test_longupdate);
     return UNITY_END();
 }
