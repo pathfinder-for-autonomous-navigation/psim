@@ -445,7 +445,8 @@ class Orbit {
         if (absdeltatime==0){
             return;
         }
-        _numgravcallsleft+=std::min((absdeltatime-1)/maxshorttimestep+1,7LL);
+        int shortstepsleft=(absdeltatime-1)/maxshorttimestep+1;
+        _numgravcallsleft+=std::min(shortstepsleft,7);
     }
 
     /**
