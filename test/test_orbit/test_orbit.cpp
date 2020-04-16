@@ -415,7 +415,7 @@ void test_shortupdatevsonegravcall(){
  * Higher order 13700s update test vs grace data
  * This also does the reverse update to check reverability
  */
-void test_longupdate(){
+void test_longupdate13700(){
     orb::Orbit y= gracestart;
     //force not compile time
     y.applydeltav({0.0,(notcompiletime*1E-10),0.0});
@@ -433,7 +433,90 @@ void test_longupdate(){
     TEST_ASSERT_TRUE(y.nsgpstime()==gracestart.nsgpstime());
     PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1.0E-5, y.vecef(), gracestart.vecef());
     PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1.0E-2, y.recef(), gracestart.recef());
+}
 
+/**
+ * Higher order 100s update test vs grace data
+ * This also does the reverse update to check reverability
+ */
+void test_longupdate100(){
+    orb::Orbit y= gracestart;
+    //force not compile time
+    y.applydeltav({0.0,(notcompiletime*1E-10),0.0});
+    TEST_ASSERT_TRUE(y.valid());
+    y.startpropagating(y.nsgpstime()+100'000'000'000LL,earth_rate_ecef);
+    y.finishpropagating();
+    TEST_ASSERT_TRUE(y.valid());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1E-4, y.vecef(), grace100s.vecef());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1E-2, y.recef(), grace100s.recef());
+
+    // test reversibility of propagator
+    y.startpropagating(y.nsgpstime()-100'000'000'000LL,earth_rate_ecef);
+    y.finishpropagating();
+    TEST_ASSERT_TRUE(y.valid());
+    TEST_ASSERT_TRUE(y.nsgpstime()==gracestart.nsgpstime());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1.0E-7, y.vecef(), gracestart.vecef());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1.0E-5, y.recef(), gracestart.recef());
+}
+
+/**
+ * Test resetting the final time while propagating
+ */
+void test_resetfinaltime(){
+    orb::Orbit y= gracestart;
+    TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
+    y.startpropagating(gracestart.nsgpstime()+y.maxshorttimestep+100'000'000LL,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(2,y.numgravcallsleft());
+    y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(1,y.numgravcallsleft());
+    //change final times
+    y.startpropagating(gracestart.nsgpstime()+y.maxshorttimestep+100'000'000LL,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(1,y.numgravcallsleft());
+    y.startpropagating(gracestart.nsgpstime()+y.maxshorttimestep+y.maxshorttimestep+100'000'000LL,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(2,y.numgravcallsleft());
+    y.startpropagating(gracestart.nsgpstime()+y.maxshorttimestep,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
+
+    //make sure long steps aren't interupted
+    y= gracestart;
+    TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
+    y.startpropagating(gracestart.nsgpstime()+y.maxlongtimestep,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(7,y.numgravcallsleft());
+    y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(6,y.numgravcallsleft());
+    y.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(6+7,y.numgravcallsleft());
+    y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(5+7,y.numgravcallsleft());
+    y.startpropagating(gracestart.nsgpstime()+y.maxlongtimestep,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(5,y.numgravcallsleft());
+    y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(4,y.numgravcallsleft());
+    y.startpropagating(gracestart.nsgpstime()+y.maxlongtimestep+1,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_INT(4+1,y.numgravcallsleft());
+    y.onegravcall();
+    y.onegravcall();
+    y.onegravcall();
+    y.onegravcall();
+    y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
+}
+
+/** A semi realistic case of what could happen on flight.*/
+void test_semirealistic_update(){
+    uint64_t gpstime=gracestart.nsgpstime()+10000'000'000'000LL;
+    int controlcycle=0;
+    orb::Orbit y=gracestart; //10000s old Orbit data sent from ground
+    while(y.numgravcallsleft() || y.nsgpstime()!=gracestart.nsgpstime()+13700'000'000'000LL){
+        y.startpropagating(gpstime,earth_rate_ecef);
+        y.onegravcall();
+        y.onegravcall();
+        gpstime+= 185'000'000LL;
+        controlcycle+=1;
+    }
+    TEST_ASSERT_TRUE(y.valid());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1E-1, y.vecef(), grace13700s.vecef());
+    PAN_TEST_ASSERT_LIN_3VECT_WITHIN(20.0, y.recef(), grace13700s.recef());
 }
 
 int test_orbit() {
@@ -451,7 +534,10 @@ int test_orbit() {
     RUN_TEST(test_shortupdate_g);
     RUN_TEST(test_startnumgravcalls);
     RUN_TEST(test_shortupdatevsonegravcall);
-    RUN_TEST(test_longupdate);
+    RUN_TEST(test_longupdate100);
+    RUN_TEST(test_longupdate13700);
+    RUN_TEST(test_resetfinaltime);
+    RUN_TEST(test_semirealistic_update);
     return UNITY_END();
 }
 

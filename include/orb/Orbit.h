@@ -60,10 +60,14 @@ GNC_TRACKED_CONSTANT(const double, MINORBITRADIUS, 6378.0E3L);
  */
 class Orbit {
   public:
-    /** Position of the sat (m).*/
+    /** Position of the sat (m).
+     * Also stores relative position inside a higher order step while propagating.
+     */
     lin::Vector3d _recef= lin::nans<lin::Vector3d>();
 
-    /** Velocity of the sat (m/s).*/
+    /** Velocity of the sat (m/s).
+     * Also stores relative velocity inside a higher order step while propagating.
+     */
     lin::Vector3d _vecef= lin::nans<lin::Vector3d>();
 
     /** Time since gps epoch (ns).*/
@@ -212,7 +216,7 @@ class Orbit {
         }
     }
 
-    /************* PROPAGATION ******************/
+    /************* Single Cycle Propagation ******************/
 
     /** Gets the dcm to rotate from initial ecef to ecef dt seconds latter.
      * Use equation 2.110 from Markley, Crassidis, Fundamentals of Spacecraft Attitude Determination and Control.
@@ -389,18 +393,20 @@ class Orbit {
         _shortupdate_helper(dt,earth_rate_ecef, r_half_ecef0, specificenergy);
     }
 
+    /************* Multi Cycle Propagation ******************/
+
     //some varables to handle long updates
+    /** Stage in a long step range 0 to 6. 0 is not inside a higher order step.*/
     int _longstep{0};
+    /** Number of grav calls needed to finish propagating.*/
     int _numgravcallsleft{0};
-    double _t{0};
+    /** Final gps time to propagate to (ns).*/
     uint64_t _targetgpstime{0};
-    double _currentdt{0};
-    double _mu_a3;
-    lin::Vector3d _x;
-    lin::Vector3d _y;
-    lin::Vector3d _omega;
-    lin::Vector3d _earth_rate_ecef=lin::nans<lin::Vector3d>();
+    /** The earth's angular rate in ecef frame used for the multi cycle propagation (rad/s). */
+    lin::Vector3d _earth_rate_ecef;
+    /** The maximum size of a 7 grav call higher order step (ns). */
     GNC_TRACKED_CONSTANT(static const int64_t,maxlongtimestep,100'000'000'000LL);
+    /** The maximum size of a 1 grav call step (ns). */
     GNC_TRACKED_CONSTANT(static const int64_t,maxshorttimestep,200'000'000LL);
 
 
@@ -409,6 +415,9 @@ class Orbit {
      * call finishpropagating() or onegravcall() numgravcallsleft() times to finish the propagating.
      * This function can also be used to change the end time of a propagating Orbit.
      * This doesn't do anything if the orbit is invalid.
+     * 
+     * This will schedual greedily by taking large steps first then smaller steps if needed.
+     * If the Orbit is inside a higher order step, that won't get interrupted.
      * 
      * grav calls: 0
      * @param[in] end_gps_time_ns: Time to propagate to (ns).
@@ -425,8 +434,8 @@ class Orbit {
         if((_numgravcallsleft==0) && (deltatime!=0)){
             //starting save earth rate 
             _earth_rate_ecef= earth_rate_ecef;
-            
         }
+        //dont interrupt a higher order step.
         _numgravcallsleft= _longstep?(7-_longstep):0;
         if (absdeltatime>maxshorttimestep*6){
             //how many long steps
@@ -434,7 +443,6 @@ class Orbit {
             _numgravcallsleft+=n*7;
             absdeltatime-=n*maxlongtimestep;
         }
-
         if (absdeltatime==0){
             return;
         }
@@ -447,9 +455,99 @@ class Orbit {
      * 
      * grav calls: 0
      */
-    int numgravcallsleft(){
+    int numgravcallsleft() const{
         return _numgravcallsleft;
     }
+
+    //variables for relative orbit
+    /** relative time (s).*/
+    double _t{0};
+    /** higher order step total dt (s).*/
+    double _currentdt{0};
+    /** mu/(a*a*a) where a is the semimajor axis of the referance orbit (MKS units). */
+    double _mu_a3;
+    /** x axis of reference orbit (m).*/
+    lin::Vector3d _x;
+    /** y axis of reference orbit (m).*/
+    lin::Vector3d _y;
+    /** reference orbit rate (rad/s).*/
+    lin::Vector3d _omega;
+
+    /**
+     * Convert _recef and _vecef to relative position and velocity in inertial ecef0.
+     * Also stores reference orbit info, _t, _mu_a3, _x, _y, _omega
+     * 
+     * grav calls: 0
+     */
+    void _relativize_helper(){
+        double mu= PANGRAVITYMODEL.earth_gravity_constant;
+        //convert to relative ecef0
+        _t=0;
+        _vecef= lin::cross(_earth_rate_ecef,_recef)+_vecef;
+        lin::Vector3d v_ecef0=_vecef;
+        lin::Vector3d r_ecef0=_recef;
+        //get new reference orbit
+        double energy= 0.5*lin::dot(v_ecef0,v_ecef0)-mu/lin::norm(r_ecef0);
+        double a= -mu/2/energy;
+        _mu_a3= mu/(a*a*a);
+        lin::Vector3d h_ecef0= lin::cross(r_ecef0,v_ecef0);
+        _x= r_ecef0;
+        _x= _x/lin::norm(_x)*a;
+        _y= lin::cross(h_ecef0,r_ecef0);
+        _y= _y/lin::norm(_y)*a;
+        _omega= h_ecef0/lin::norm(h_ecef0)*std::sqrt(_mu_a3);
+        //store relative positions and velocities
+        _recef= r_ecef0-_x;
+        _vecef= v_ecef0-lin::cross(_omega,_x);
+    }
+
+    /**
+     * Returns the relative acceleration in ECEF0 at relative time t(s) and relative position rel_r in ECEF0(m).
+     * 
+     * grav calls: 1
+     */
+    lin::Vector3d _get_rel_accel_helper(const double& t, const lin::Vector3d& rel_r) const{
+        double theta= t*lin::norm(_omega);
+        double costheta= std::cos(theta);
+        double sintheta= std::sin(theta);
+        lin::Vector3d orb_r= _x*costheta+_y*sintheta;
+        lin::Vector3d r_ecef0= rel_r+orb_r;
+        lin::Matrix<double, 3, 3> dcm_ecef_ecef0;
+        relative_earth_dcm_helper(_earth_rate_ecef, t, dcm_ecef_ecef0);
+        lin::Vector3d pos_ecef= dcm_ecef_ecef0*r_ecef0;
+        double potential;
+        lin::Vector3d g_ecef;
+        calc_geograv(pos_ecef, g_ecef, potential);
+        //convert to ECEF0
+        return (lin::transpose(dcm_ecef_ecef0)*g_ecef + orb_r*_mu_a3).eval();
+    }
+
+    /**
+     * Convert _recef and _vecef back to ecef from relative position and velocity in inertial ecef0.
+     * uses orbit info, _t, _mu_a3, _x, _y, _omega
+     * 
+     * grav calls: 0
+     */
+    void _unrelativize_helper(){
+        //convert back to absolute ecef
+        double theta= _t*lin::norm(_omega);
+        double costheta= std::cos(theta);
+        double sintheta= std::sin(theta);
+        lin::Vector3d orb_r= _x*costheta+_y*sintheta;
+        _recef= _recef+ orb_r;
+        _vecef= _vecef+ lin::cross(_omega,orb_r);
+        // rotate back to ecef
+        lin::Matrix<double, 3, 3> dcm_ecef_ecef0;
+        relative_earth_dcm_helper(_earth_rate_ecef, _t, dcm_ecef_ecef0);
+        _recef= (dcm_ecef_ecef0*_recef).eval();
+        _vecef= (dcm_ecef_ecef0*_vecef).eval();
+        // remove cross r term from velocity
+        _vecef= _vecef-lin::cross(_earth_rate_ecef,_recef);
+    }
+
+
+
+
 
     /**
      * If propagating call the gravity model once
@@ -460,7 +558,6 @@ class Orbit {
      * grav calls: 1 if propagating, 0 if not propagating
      */
     void onegravcall(){
-        double mu= PANGRAVITYMODEL.earth_gravity_constant;
         //high order integrators
         //https://doi.org/10.1016/0375-9601(90)90092-3
         static const std::array<double,7> d{{0.784513610477560L,
@@ -482,23 +579,7 @@ class Orbit {
         if (_longstep==0){
             //not inside a long step
             //convert to relative ecef0
-            _t=0;
-            _vecef= lin::cross(_earth_rate_ecef,_recef)+_vecef;
-            lin::Vector3d v_ecef0=_vecef;
-            lin::Vector3d r_ecef0=_recef;
-            //get new reference orbit
-            double energy= 0.5*lin::dot(v_ecef0,v_ecef0)-mu/lin::norm(r_ecef0);
-            double a= -mu/2/energy;
-            _mu_a3= mu/(a*a*a);
-            lin::Vector3d h_ecef0= lin::cross(r_ecef0,v_ecef0);
-            _x= r_ecef0;
-            _x= _x/lin::norm(_x)*a;
-            _y= lin::cross(h_ecef0,r_ecef0);
-            _y= _y/lin::norm(_y)*a;
-            _omega= h_ecef0/lin::norm(h_ecef0)*std::sqrt(_mu_a3);
-            //store relative positions and velocities
-            _recef= r_ecef0-_x;
-            _vecef= v_ecef0-lin::cross(_omega,_x);
+            _relativize_helper();
             int64_t deltatime= _targetgpstime-_ns_gps_time;
             int signofdt= (deltatime<0)?-1:1;
             int64_t currentdtns;
@@ -540,19 +621,7 @@ class Orbit {
         rel_r= rel_r+rel_v*dt*0.5;
         // step 3a calc acceleration at the half step
         double halft= _t+0.5*dt;
-        double theta= halft*lin::norm(_omega);
-        double costheta= std::cos(theta);
-        double sintheta= std::sin(theta);
-        lin::Vector3d orb_r= _x*costheta+_y*sintheta;
-        lin::Vector3d r_ecef0= rel_r+orb_r;
-        lin::Matrix<double, 3, 3> dcm_ecef_ecef0;
-        relative_earth_dcm_helper(_earth_rate_ecef, halft, dcm_ecef_ecef0);
-        lin::Vector3d pos_ecef= dcm_ecef_ecef0*r_ecef0;
-        lin::Vector3d g_ecef;
-        double potential;
-        calc_geograv(pos_ecef, g_ecef, potential);
-        //convert to ECEF0
-        lin::Vector3d g_ecef0= lin::transpose(dcm_ecef_ecef0)*g_ecef + orb_r*_mu_a3;
+        lin::Vector3d g_ecef0= _get_rel_accel_helper(halft,rel_r);
         // step 3b kick velocity
         rel_v= rel_v + g_ecef0*dt;
         // step 4 drift
@@ -565,18 +634,7 @@ class Orbit {
         if(_longstep==0){
             //done with a step
             //convert back to absolute ecef
-            theta= _t*lin::norm(_omega);
-            costheta= std::cos(theta);
-            sintheta= std::sin(theta);
-            orb_r= _x*costheta+_y*sintheta;
-            _recef= _recef+ orb_r;
-            _vecef= _vecef+ lin::cross(_omega,orb_r);
-            // step 5b rotate back to ecef
-            relative_earth_dcm_helper(_earth_rate_ecef, _t, dcm_ecef_ecef0);
-            _recef= (dcm_ecef_ecef0*_recef).eval();
-            _vecef= (dcm_ecef_ecef0*_vecef).eval();
-            // step 6 remove cross r term from velocity
-            _vecef= _vecef-lin::cross(_earth_rate_ecef,_recef);
+            _unrelativize_helper();
         }
         return;
     }
