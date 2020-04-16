@@ -548,13 +548,28 @@ class Orbit {
     /**
      * If propagating call the gravity model once
      * to move the propagtor forward, otherwise do nothing.
-     * High order integrators from:
+     * High order integrators Yoshida coefficients from:
      * https://doi.org/10.1016/0375-9601(90)90092-3
      *
      * grav calls: 1 if propagating, 0 if not propagating
+     * 
+     * 
+     * Propagator details:
+     * The higher order propagator step right now works like this, 
+     * first it converts position and velocity in ecef to relative 
+     * inertial coordinates to a close reference circular orbit. 
+     * Then it does a series of drift-kick-drift steps 
+     * (see https://en.wikipedia.org/wiki/Leapfrog_integration ) 
+     * where a drift is `rel_r= rel_r+rel_v*dt*0.5;`
+     *  and a kick is `rel_v= rel_v + g_ecef0*dt;` 
+     * For the low order step(2nd ish) there is just one drift-kick-drift, 
+     * for the higher order step(6th ish) Yoshida coefficients 
+     * are used to do 7 drift-kick-drifts with a series of d*dt:
+     * Where somehow this magical series of time steps cause some errors to cancel out. 
+     * Finally when the step(s) are done the relative position and velocity are converted back to ecef.
      */
     void onegravcall(){
-        //high order integrators
+        //high order integrators Yoshida coefficients
         //https://doi.org/10.1016/0375-9601(90)90092-3
         static const std::array<double,7> d{{0.784513610477560L,
                                         0.235573213359357L,
