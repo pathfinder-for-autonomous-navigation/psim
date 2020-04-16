@@ -330,8 +330,8 @@ class Orbit {
         r_ecef0= rel_r+ orb_r;
         v_ecef0= rel_v+ lin::cross(omega,orb_r);
         // step 5b rotate back to ecef
-        _recef= dcm_ecefhalf_ecef0*(dcm_ecefhalf_ecef0*r_ecef0);
-        _vecef= dcm_ecefhalf_ecef0*(dcm_ecefhalf_ecef0*v_ecef0);
+        _recef= dcm_ecefhalf_ecef0*(dcm_ecefhalf_ecef0*r_ecef0).eval();
+        _vecef= dcm_ecefhalf_ecef0*(dcm_ecefhalf_ecef0*v_ecef0).eval();
         // step 6 remove cross r term from velocity
         _vecef= _vecef-lin::cross(earth_rate_ecef,_recef);
         specificenergy= halfstepke - potential;
@@ -544,10 +544,6 @@ class Orbit {
         // remove cross r term from velocity
         _vecef= _vecef-lin::cross(_earth_rate_ecef,_recef);
     }
-
-
-
-
 
     /**
      * If propagating call the gravity model once
