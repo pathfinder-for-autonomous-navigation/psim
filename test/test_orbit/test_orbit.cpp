@@ -495,9 +495,15 @@ void test_resetfinaltime(){
     y.startpropagating(gracestart.nsgpstime()+y.maxlongtimestep+1,earth_rate_ecef);
     TEST_ASSERT_EQUAL_INT(4+1,y.numgravcallsleft());
     y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(4,y.numgravcallsleft());
     y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(3,y.numgravcallsleft());
     y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(2,y.numgravcallsleft());
     y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(1,y.numgravcallsleft());
+    y.onegravcall();
+    TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
     y.onegravcall();
     TEST_ASSERT_EQUAL_INT(0,y.numgravcallsleft());
 }
@@ -506,7 +512,7 @@ void test_resetfinaltime(){
 void test_semirealistic_update(){
     uint64_t gpstime=gracestart.nsgpstime()+10000'000'000'000LL;
     int controlcycle=0;
-    orb::Orbit y=gracestart; //10000s old Orbit data sent from ground
+    orb::Orbit y=gracestart; //10'000s old Orbit data sent from ground
     while(y.numgravcallsleft() || y.nsgpstime()!=gracestart.nsgpstime()+13700'000'000'000LL){
         y.startpropagating(gpstime,earth_rate_ecef);
         y.onegravcall();
@@ -517,6 +523,24 @@ void test_semirealistic_update(){
     TEST_ASSERT_TRUE(y.valid());
     PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1E-1, y.vecef(), grace13700s.vecef());
     PAN_TEST_ASSERT_LIN_3VECT_WITHIN(20.0, y.recef(), grace13700s.recef());
+}
+
+/** Test that invalid Orbits and not propagating orbits don't get modified by onegravcall(). */
+void test_onegravcall_nomod(){
+    //invalid
+    orb::Orbit yinvalid0;
+    orb::Orbit yinvalid1= yinvalid0;
+    TEST_ASSERT_FALSE(yinvalid0.valid());
+    TEST_ASSERT_FALSE(yinvalid1.valid());
+    yinvalid1.onegravcall();
+    TEST_ASSERT_EQUAL_MEMORY (&yinvalid0, &yinvalid1, sizeof(orb::Orbit));
+    //not propagating
+    orb::Orbit ynonprop0=gracestart;
+    orb::Orbit ynonprop1=ynonprop0;
+    TEST_ASSERT_FALSE(ynonprop0.numgravcallsleft());
+    TEST_ASSERT_FALSE(ynonprop1.numgravcallsleft());
+    ynonprop1.onegravcall();
+    TEST_ASSERT_EQUAL_MEMORY (&ynonprop0, &ynonprop1, sizeof(orb::Orbit));
 }
 
 int test_orbit() {
@@ -538,6 +562,7 @@ int test_orbit() {
     RUN_TEST(test_longupdate13700);
     RUN_TEST(test_resetfinaltime);
     RUN_TEST(test_semirealistic_update);
+    RUN_TEST(test_onegravcall_nomod);
     return UNITY_END();
 }
 

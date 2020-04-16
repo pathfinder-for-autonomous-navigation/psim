@@ -395,7 +395,7 @@ class Orbit {
 
     /************* Multi Cycle Propagation ******************/
 
-    //some varables to handle long updates
+    //some attributes to handle long updates
     /** Stage in a long step range 0 to 6. 0 is not inside a higher order step.*/
     int _longstep{0};
     /** Number of grav calls needed to finish propagating.*/
@@ -411,13 +411,12 @@ class Orbit {
 
 
     /**
-     * Puts the Orbit in propagating mode.
-     * call finishpropagating() or onegravcall() numgravcallsleft() times to finish the propagating.
-     * This function can also be used to change the end time of a propagating Orbit.
-     * This doesn't do anything if the orbit is invalid.
+     * Put the Orbit in propagating mode or change the end time of a propagating Orbit.
+     * Future calls to finishpropagating() or onegravcall() numgravcallsleft() times will finish the propagating.
+     * Don't do anything if the orbit is invalid.
      * 
-     * This will schedual greedily by taking large steps first then smaller steps if needed.
-     * If the Orbit is inside a higher order step, that won't get interrupted.
+     * Schedual greedily by taking large steps first then smaller steps if needed.
+     * If the Orbit is inside a higher order step, don't interrupt it, just schedual onto the end.
      * 
      * grav calls: 0
      * @param[in] end_gps_time_ns: Time to propagate to (ns).
@@ -459,7 +458,7 @@ class Orbit {
         return _numgravcallsleft;
     }
 
-    //variables for relative orbit
+    //attributes for relative orbit
     /** relative time (s).*/
     double _t{0};
     /** higher order step total dt (s).*/
@@ -502,7 +501,7 @@ class Orbit {
     }
 
     /**
-     * Returns the relative acceleration in ECEF0 at relative time t(s) and relative position rel_r in ECEF0(m).
+     * Return the relative acceleration (m/s^2) in ECEF0 at relative time t(s) and relative position rel_r in ECEF0(m).
      * 
      * grav calls: 1
      */
