@@ -55,10 +55,11 @@ if (~eclipse)
     end
     
     %%% get offset angles off major axis
-    alphas = zeros(N,1);
+    psi = zeros(N,1);
     for k = 1:N
         v = PCBnorms{i};
-        alphas(k) = acosd(dot(v,real_n(:, k))/(norm(v)*norm(real_n(:, k))));
+        %psi(k) = acosd(dot(v,real_n(:, k))/(norm(v)*norm(real_n(:, k))));
+        psi(k) = acosd(dot(v,sat2sun')/(norm(v)*norm(sat2sun')));
     end
     
     fitted_voltages = zeros(20,1); %get fitted voltages using the nonlinear fitting
@@ -77,11 +78,15 @@ if (~eclipse)
             thetas_measured = inclinometerPlots{6};
         end
         
+        %redefine thetas measured
+        thetas_measured = thetas_measured-psi(i);
+        
         %using the measured voltages, do a nonlinear fitting
         voltages = voltages_measured{i};
         fun = @(Cs,thetas_measured)(Cs(1) + Cs(2)*cos(thetas_measured) + ...
                             Cs(3)*thetas_measured.^1 + Cs(4)*thetas_measured.^2 +...
-                            Cs(5)*thetas_measured.^4);    
+                            Cs(5)*thetas_measured.^4);
+                        
         opts = optimset('Display','off');
         Cs = lsqcurvefit(fun,[0.4,max(voltages),...
                       0.1,0.01,0.1,0.1],thetas_measured,voltages,[],[],opts);
@@ -98,7 +103,7 @@ if (~eclipse)
 %         plot(thetas_measured,voltages,'ko',angles,fun(Cs,angles),'b-')
 %         legend('Data','fitted function'); 
 %         xlabel('theta (degrees)'); ylabel('voltages (V)')
-%         title(['fitted function for measured voltages (Joshs data) #',int2str(i)]);
+%        title(['fitted function for measured voltages (Joshs data) #',int2str(i)]);
 %         saveas(gcf,['data_and_fits' int2str(i) '.png'])
         
     end

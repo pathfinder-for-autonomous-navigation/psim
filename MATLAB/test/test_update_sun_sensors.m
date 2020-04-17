@@ -1,4 +1,4 @@
-config()
+%config()
 main_state = initialize_main_state(1,'default');
 sensor_readings_follower = sensor_reading(main_state.follower,main_state.leader);
 sensor_readings_leader = sensor_reading(main_state.leader,main_state.follower);
@@ -7,7 +7,7 @@ assert(isstruct(sensor_readings_leader),'sensor_readings_leader is not a struct'
 assert(sensor_readings_follower.sun_sensor_true == 1, 'sun_vec not generated for follower')
 assert(sensor_readings_leader.sun_sensor_true == 1, 'sun_vec not generated for leader')
 
-n = 1; %number of tests
+n = 50; %number of tests
 mus = zeros(n,1); %stores means of voltages for the random test cases
 sigs = zeros(n,1); %stores the standard deviations (noise) of voltages for the random test cases
 offset_angles = zeros(n,1); %offset angle between input and output sun_vec
