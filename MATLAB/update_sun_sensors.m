@@ -47,9 +47,18 @@ if (~eclipse)
     if my_satellite_sensors.tag == 1 %uses Leader voltage data if Leader
         voltages_measured = my_satellite_sensors.voltages_measuredL;
         inclinometerPlots = my_satellite_sensors.inclinometerPlotsL;
+        PCBnorms = my_satellite_sensors.normsL(:); %turn into collumn vector
     elseif my_satellite_sensors.tag == 0 %uses Follower voltage data if Follower
         voltages_measured = my_satellite_sensors.voltages_measuredF;
         inclinometerPlots = my_satellite_sensors.inclinometerPlotsF;
+        PCBnorms = my_satellite_sensors.normsF(:); %turn into collumn vector
+    end
+    
+    %%% get offset angles off major axis
+    alphas = zeros(N,1);
+    for k = 1:N
+        v = PCBnorms{i};
+        alphas(k) = acosd(dot(v,real_n(:, k))/(norm(v)*norm(real_n(:, k))));
     end
     
     fitted_voltages = zeros(20,1); %get fitted voltages using the nonlinear fitting

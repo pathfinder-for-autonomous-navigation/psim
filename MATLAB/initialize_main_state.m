@@ -97,12 +97,16 @@ load('leader_ssvoltages','inclinometerPlotsL','voltages_measuredL','curvefit_mL'
 sensors.inclinometerPlotsL = inclinometerPlotsL;
 sensors.voltages_measuredL = voltages_measuredL;
 sensors.curvefitsL = curvefit_mL;
+load('normsL','normsL') 
+sensors.normsL = normsL;
 
 %load voltage data for Follower
 load('follower_ssvoltages','inclinometerPlotsF','voltages_measuredF','curvefit_mF') 
 sensors.inclinometerPlotsF = inclinometerPlotsF;
 sensors.voltages_measuredF = voltages_measuredF;
 sensors.curvefitsF = curvefit_mF;
+load('normsF','normsF') 
+sensors.normsF = normsF;
 
 %tag = 1 if Leader, tag = 0 if Follower; default = 0
 sensors.tag = 0; 

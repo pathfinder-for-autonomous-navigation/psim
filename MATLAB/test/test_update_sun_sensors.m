@@ -7,7 +7,7 @@ assert(isstruct(sensor_readings_leader),'sensor_readings_leader is not a struct'
 assert(sensor_readings_follower.sun_sensor_true == 1, 'sun_vec not generated for follower')
 assert(sensor_readings_leader.sun_sensor_true == 1, 'sun_vec not generated for leader')
 
-n = 100; %number of tests
+n = 1; %number of tests
 mus = zeros(n,1); %stores means of voltages for the random test cases
 sigs = zeros(n,1); %stores the standard deviations (noise) of voltages for the random test cases
 offset_angles = zeros(n,1); %offset angle between input and output sun_vec
