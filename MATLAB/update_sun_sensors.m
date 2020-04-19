@@ -54,13 +54,13 @@ if (~eclipse)
         PCBnorms = my_satellite_sensors.normsF(:); %turn into collumn vector
     end
     
-    %%% get offset angles off major axis
-    psi = zeros(N,1);
-    for k = 1:N
-        v = PCBnorms{i};
-        %psi(k) = acosd(dot(v,real_n(:, k))/(norm(v)*norm(real_n(:, k))));
-        psi(k) = acosd(dot(v,sat2sun')/(norm(v)*norm(sat2sun')));
-    end
+%     %%% get offset angles off major axis
+%     psi = zeros(N,1);
+%     for k = 1:N
+%         v = PCBnorms{i};
+%         %psi(k) = acosd(dot(v,real_n(:, k))/(norm(v)*norm(real_n(:, k))));
+%         psi(k) = acosd(dot(v,sat2sun')/(norm(v)*norm(sat2sun')));
+%     end
     
     fitted_voltages = zeros(20,1); %get fitted voltages using the nonlinear fitting
     
@@ -79,7 +79,7 @@ if (~eclipse)
         end
         
         %redefine thetas measured
-        thetas_measured = thetas_measured-psi(i);
+        %thetas_measured = thetas_measured-psi(i);
         
         %using the measured voltages, do a nonlinear fitting
         voltages = voltages_measured{i};
@@ -134,6 +134,8 @@ if (~eclipse)
     %%% trimming algorithm
     S = zeros(N, 3);
     v = zeros(N, 1);
+    newPCBnorms = zeros(N,3);
+    
     thresh = max(voltages_generated)*0.5;
     j = 0;
     for i = 1:N
@@ -142,13 +144,29 @@ if (~eclipse)
             j = j + 1;
             S(j, :) = measured_n(:, i)';
             v(j) = voltages_generated(i);
+            newPCBnorms(j,:) = PCBnorms{i}'; %prep for matrix mult
         end
     end
+    
+    x = 'test';
+    alphas = zeros(j,1);
+    newVolts = zeros(j,1);
+    %%% get rotation off of major axis
+    if j >= 3  %larger j --> smaller residuals           
+        S = S(1:j, :); %psim generated
+        newPCBnorms = newPCBnorms(1:j,:); 
+        for i = 1:j
+            alphas(i) = acosd(mtimes(S(i)', newPCBnorms(i)));
+            newVolts(i) = mtimes(S(i)', newPCBnorms(i));
+        end
+    end
+    
+    x = 'test';
     
     %%%% least squares
     %run sun vector determination algorithm run by the adcs computer
     %%% takes in S, v to output sun_vector
-    if j >= 3  % TODO : Perhaps play with this parameter; larger j --> smaller residuals
+    if j >= 3  % larger j --> smaller residuals
         S = S(1:j, :);
         v = v(1:j, :);
         [Q, R] = qr(S);
