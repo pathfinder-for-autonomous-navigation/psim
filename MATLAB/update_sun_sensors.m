@@ -134,8 +134,7 @@ if (~eclipse)
     %%% trimming algorithm
     S = zeros(N, 3);
     v = zeros(N, 1);
-    newPCBnorms = zeros(N,3);
-    
+    newPCBnorms = zeros(N,3);    
     thresh = max(voltages_generated)*0.5;
     j = 0;
     for i = 1:N
@@ -147,28 +146,24 @@ if (~eclipse)
             newPCBnorms(j,:) = PCBnorms{i}'; %prep for matrix mult
         end
     end
-    
-    x = 'test';
     alphas = zeros(j,1);
     newVolts = zeros(j,1);
     %%% get rotation off of major axis
     if j >= 3  %larger j --> smaller residuals           
         S = S(1:j, :); %psim generated
-        newPCBnorms = newPCBnorms(1:j,:); 
+        newPCBnorms = newPCBnorms(1:j,:); %from NormCalcAll.m
         for i = 1:j
-            alphas(i) = acosd(mtimes(S(i)', newPCBnorms(i)));
-            newVolts(i) = mtimes(S(i)', newPCBnorms(i));
+            %newPCBnorms(i,:) = newPCBnorms(i,:)/norm(newPCBnorms(i,:));
+            newVolts(i) = dot(S(i,:),newPCBnorms(i,:));
+            alphas(i) = acosd(newVolts(i));
         end
-    end
-    
-    x = 'test';
-    
-    %%%% least squares
+    end    
+    plot(alphas,newVolts); xlabel('alphas = acos([S]n) (deg)');ylabel('newVolts=[S]n (V)')   
+    %%%% least squares: takes in S, v to output sun_vector
     %run sun vector determination algorithm run by the adcs computer
-    %%% takes in S, v to output sun_vector
     if j >= 3  % larger j --> smaller residuals
-        S = S(1:j, :);
         v = v(1:j, :);
+        v = v + newVolts;
         [Q, R] = qr(S);
         sun_vec = R \ (Q' * v);
         sun_vec = sun_vec / norm(sun_vec);
