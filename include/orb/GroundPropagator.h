@@ -38,6 +38,14 @@ namespace orb
 
 /**
  * Class to propagate orbits sent from ground.
+ * 
+ * The GroundPropagator trys to first minimize the number of grav calls needed to get a 
+ * not propagating orbit estimate, and second use the most recently input Orbit.
+ * 
+ * The GroundPropagator assumes the new ground_data is closer to the current time 
+ * than previous ground data, so over writing some ground data if new orbits are sent
+ * faster than they can be processed shouldn't be an issue. 
+ * If that assumion is wrong, then the estimator isn't optimal, but it still works.
  */
 class GroundPropagator {
   private:
@@ -82,6 +90,10 @@ class GroundPropagator {
                 catching_up= ground_data;
             } else{
                 to_catch_up= ground_data;
+                //Assuming the new ground_data is closer to the current time 
+                //than previous ground data, over writing this shouldn't be losing any important 
+                //information. 
+                //If that assumion is wrong, then the estimator isn't optimal, but it still works.
             }
         }
         //start propagators
