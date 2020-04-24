@@ -131,9 +131,9 @@ class GroundPropagator {
      */
     void one_grav_call(){
         if(current.numgravcallsleft()){
-            current.one_grav_call();
+            current.onegravcall();
         } else { 
-            catching_up.one_grav_call();
+            catching_up.onegravcall();
         }
         //sort stuff
         if (catching_up.valid() && catching_up.numgravcallsleft()<=current.numgravcallsleft()){
