@@ -127,13 +127,13 @@ class GroundPropagator {
     /** Do one grav call to move the propagator towards the current time if needed.
      * The Orbit closest to finish propagating is propagated first.
      * 
-     * grav calls: 1 or 0 if totalnumgravcallsleft() == 0 
+     * grav calls: 1 or 0 if total_num_grav_calls_left() == 0 
      */
-    void onegravcall(){
+    void one_grav_call(){
         if(current.numgravcallsleft()){
-            current.onegravcall();
+            current.one_grav_call();
         } else { 
-            catching_up.onegravcall();
+            catching_up.one_grav_call();
         }
         //sort stuff
         if (catching_up.valid() && catching_up.numgravcallsleft()<=current.numgravcallsleft()){
@@ -147,7 +147,7 @@ class GroundPropagator {
      *
      * grav calls: 0
      */
-    int totalnumgravcallsleft(){
+    int total_num_grav_calls_left() const{
         return current.numgravcallsleft()+catching_up.numgravcallsleft()+to_catch_up.numgravcallsleft();
     }
 
@@ -155,7 +155,7 @@ class GroundPropagator {
      * 
      * grav calls: 0
      */
-    Orbit bestestimate() const{
+    Orbit best_estimate() const{
         return current;
     }
 
@@ -163,7 +163,7 @@ class GroundPropagator {
      * 
      * grav calls: 0
      */
-    void resetorbits(){
+    void reset_orbits(){
         Orbit invalid;
         current=invalid;
         catching_up=invalid;
