@@ -42,10 +42,22 @@ namespace orb
  * The GroundPropagator trys to first minimize the number of grav calls needed to get a 
  * not propagating orbit estimate, and second use the most recently input Orbit.
  * 
- * The GroundPropagator assumes the new ground_data is closer to the current time 
- * than previous ground data, so over writing some ground data if new orbits are sent
- * faster than they can be processed shouldn't be an issue. 
- * If that assumion is wrong, then the estimator isn't optimal, but it still works.
+ * Implimentation details:
+ * 
+ * Under normal conditions, this estimator just propagates the most recently uplinked Orbit.
+ * in current.
+ * 
+ * If a new Orbit get uplinked it will normally get put in catching_up, and the 
+ * estimator will propagate it to the current time in the background 
+ * while still propagating current as the best estimate. 
+ * Once catching_up is done propagating it replaces current.
+ * 
+ * If another Orbit gets uplinked while catching_up is still being propagated 
+ * in the background, it gets stored in to_catch_up. This ensures too many Orbits getting 
+ * uplinked won't overload the estimator and prevent it from making progress.
+ * If to_catch_up takes fewer grav calls to finish propagating than catching_up 
+ * it replaces catching_up.
+ * Also to_catch_up replaces catching_up if catching_up finishes propagating.
  */
 class GroundPropagator {
   private:
