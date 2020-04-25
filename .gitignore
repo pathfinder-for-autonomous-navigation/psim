@@ -115,6 +115,8 @@ venv.bak/
 
 # mkdocs documentation
 /site
+docs/*
+!docs/Doxyfile
 
 # mypy
 .mypy_cache/
