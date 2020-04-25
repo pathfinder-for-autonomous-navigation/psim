@@ -2,7 +2,7 @@
 # PSim
 
 This repository will hold all GNC code for the PAN mission. It will largely be
-comprised of the two main executbales/modules:
+comprised of the two main executables/modules:
 
  1. MATLAB simulation to support GNC algorithm development.
  2. C++ versions of all flight GNC algorithms.
