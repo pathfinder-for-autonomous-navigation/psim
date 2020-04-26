@@ -11,14 +11,6 @@
 #include <orb/Orbit.h>
 #include <orb/GroundPropagator.h>
 
-//0 or 1 that can't be calculated at compile time.
-#ifdef DESKTOP
-#define notcompiletime (rand()%2)
-#else
-#include <Arduino.h>
-#define notcompiletime (millis()%2)
-#endif
-
 /** Check some of the internal invariants are true.*/
 #define CHECKINVARIANT(est) do {\
             if (est.catching_up.valid()){ \
@@ -931,9 +923,11 @@ void test_reset_orbits() {
     TEST_ASSERT(!est.current.valid());
     TEST_ASSERT(!est.catching_up.valid());
     TEST_ASSERT(!est.to_catch_up.valid());
-    est.input(gracestart,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(gracestart,gracestart.nsgpstime()+1000'000'000'000LL,earth_rate_ecef);
+    est.input(gracestart,gracestart.nsgpstime()+2000'000'000'000LL,earth_rate_ecef);
+    est.input(gracestart,gracestart.nsgpstime()+3000'000'000'000LL,earth_rate_ecef);
     est.reset_orbits();
-    // reseting should revert to init
+    // reseting should invalidate all orbits
     TEST_ASSERT(!est.current.valid());
     TEST_ASSERT(!est.catching_up.valid());
     TEST_ASSERT(!est.to_catch_up.valid());
