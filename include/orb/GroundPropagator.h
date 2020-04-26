@@ -60,7 +60,7 @@ namespace orb
  * Also to_catch_up replaces catching_up if catching_up finishes propagating.
  */
 class GroundPropagator {
-  private:
+  public:
     /** Current Orbit estimate.*/
     Orbit current;
 
@@ -78,7 +78,6 @@ class GroundPropagator {
      */
     Orbit to_catch_up;
 
-  public:
     /**
      * Construct GroundPropagator.
      *
@@ -94,25 +93,11 @@ class GroundPropagator {
      * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored for orbits already propagating(rad/s).
      */
     void input(const Orbit& ground_data, const uint64_t& gps_time_ns, const lin::Vector3d& earth_rate_ecef){
-        //add to queue
-        if (ground_data.valid()){
-            if(!current.valid()){
-                current= ground_data;
-            } else if(!catching_up.valid()){
-                catching_up= ground_data;
-            } else{
-                to_catch_up= ground_data;
-                //Assuming the new ground_data is closer to the current time 
-                //than previous ground data, over writing this shouldn't be losing any important 
-                //information. 
-                //If that assumion is wrong, then the estimator isn't optimal, but it still works.
-            }
-        }
         //start propagators
         current.startpropagating(gps_time_ns,earth_rate_ecef);
         catching_up.startpropagating(gps_time_ns,earth_rate_ecef);
         to_catch_up.startpropagating(gps_time_ns,earth_rate_ecef);
-        //sort stuff
+        //presort stuff
         if (to_catch_up.valid() && to_catch_up.numgravcallsleft()<=catching_up.numgravcallsleft()){
             catching_up= to_catch_up;
             to_catch_up= Orbit();
@@ -121,6 +106,19 @@ class GroundPropagator {
             current= catching_up;
             catching_up= to_catch_up;
             to_catch_up= Orbit();
+        }
+        //add to sorted queue
+        if (ground_data.valid()){
+            to_catch_up= ground_data;
+            to_catch_up.startpropagating(gps_time_ns,earth_rate_ecef);
+            if(!current.valid() || to_catch_up.numgravcallsleft()<=current.numgravcallsleft()){
+                current= to_catch_up;
+                to_catch_up= orb::Orbit();
+                catching_up= orb::Orbit();
+            } else if(!catching_up.valid() || to_catch_up.numgravcallsleft()<=catching_up.numgravcallsleft()){
+                catching_up= to_catch_up;
+                to_catch_up= orb::Orbit();
+            }
         }
     }
 
