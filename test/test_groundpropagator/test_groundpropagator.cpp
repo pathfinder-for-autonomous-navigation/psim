@@ -522,6 +522,10 @@ void test_four_inputs_c() {
     est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
     est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
     est.input(x3,gracestart.nsgpstime(),earth_rate_ecef);
+    CHECKINVARIANT(est);
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(!est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
     x3.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
     orb::Orbit best= est.best_estimate();
     TEST_ASSERT_EQUAL_MEMORY (&best, &x3, sizeof(orb::Orbit));   
@@ -529,7 +533,7 @@ void test_four_inputs_c() {
 
 /** Test inputting 4 valid Orbits.
  * The 4th input should replace the 1st because it is most up to date.*/
-void test_four_inputs_c() {
+void test_four_inputs_d() {
     orb::GroundPropagator est;
     orb::Orbit x0(gracestart.nsgpstime()-1000'000'000'000LL,gracestart.recef(),gracestart.vecef());
     orb::Orbit x1(gracestart.nsgpstime()-2000'000'000'000LL,gracestart.recef(),gracestart.vecef());
@@ -542,9 +546,212 @@ void test_four_inputs_c() {
     est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
     est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
     est.input(x3,gracestart.nsgpstime(),earth_rate_ecef);
+    CHECKINVARIANT(est);
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(!est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
     x3.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
     orb::Orbit best= est.best_estimate();
     TEST_ASSERT_EQUAL_MEMORY (&best, &x3, sizeof(orb::Orbit));   
+}
+
+/** Test inputting 4 valid Orbits.
+ * The 4th input should replace the 1st because it is equally to date.*/
+void test_four_inputs_e() {
+    orb::GroundPropagator est;
+    orb::Orbit x0(gracestart.nsgpstime()-1000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    orb::Orbit x1(gracestart.nsgpstime()-2000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x1.applydeltav({1.0,0.0,0.0});
+    orb::Orbit x2(gracestart.nsgpstime()-3000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x2.applydeltav({2.0,0.0,0.0});
+    orb::Orbit x3(gracestart.nsgpstime()-1000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x3.applydeltav({3.0,0.0,0.0});
+    est.input(x0,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x3,gracestart.nsgpstime(),earth_rate_ecef);
+    CHECKINVARIANT(est);
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(!est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
+    x3.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    orb::Orbit best= est.best_estimate();
+    TEST_ASSERT_EQUAL_MEMORY (&best, &x3, sizeof(orb::Orbit));   
+}
+
+/** Test inputting 4 valid Orbits.
+ * The 4th input should replace the 2st because it is more up to date.*/
+void test_four_inputs_f() {
+    orb::GroundPropagator est;
+    orb::Orbit x0(gracestart.nsgpstime()-1000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    orb::Orbit x1(gracestart.nsgpstime()-2000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x1.applydeltav({1.0,0.0,0.0});
+    orb::Orbit x2(gracestart.nsgpstime()-3000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x2.applydeltav({2.0,0.0,0.0});
+    orb::Orbit x3(gracestart.nsgpstime()-1500'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x3.applydeltav({3.0,0.0,0.0});
+    est.input(x0,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x3,gracestart.nsgpstime(),earth_rate_ecef);
+    CHECKINVARIANT(est);
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
+    x0.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    x1.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    x2.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    x3.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    TEST_ASSERT_EQUAL_MEMORY (&est.current, &x0, sizeof(orb::Orbit));
+    TEST_ASSERT_EQUAL_MEMORY (&est.catching_up, &x3, sizeof(orb::Orbit));   
+}
+
+/** Test inputting 4 valid Orbits.
+ * The 4th input should replace the 2st because it is equally up to date.*/
+void test_four_inputs_g() {
+    orb::GroundPropagator est;
+    orb::Orbit x0(gracestart.nsgpstime()-1000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    orb::Orbit x1(gracestart.nsgpstime()-2000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x1.applydeltav({1.0,0.0,0.0});
+    orb::Orbit x2(gracestart.nsgpstime()-3000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x2.applydeltav({2.0,0.0,0.0});
+    orb::Orbit x3(gracestart.nsgpstime()-2000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x3.applydeltav({3.0,0.0,0.0});
+    est.input(x0,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x3,gracestart.nsgpstime(),earth_rate_ecef);
+    CHECKINVARIANT(est);
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
+    x0.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    x1.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    x2.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    x3.startpropagating(gracestart.nsgpstime(),earth_rate_ecef);
+    TEST_ASSERT_EQUAL_MEMORY (&est.current, &x0, sizeof(orb::Orbit));
+    TEST_ASSERT_EQUAL_MEMORY (&est.catching_up, &x3, sizeof(orb::Orbit));   
+}
+
+/** Test inputting 4 valid Orbits.
+ * The 3rd input should replace the 1st 
+ * because it is more up to date when the current time changes,
+ * but the 4th input should be moved to catching_up because it 2nd closest.*/
+void test_four_inputs_h() {
+    orb::GroundPropagator est;
+    orb::Orbit x0(gracestart.nsgpstime()-1000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    orb::Orbit x1(gracestart.nsgpstime()-2000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x1.applydeltav({1.0,0.0,0.0});
+    orb::Orbit x2(gracestart.nsgpstime()-3000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x2.applydeltav({2.0,0.0,0.0});
+    orb::Orbit x3(gracestart.nsgpstime()-4000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x3.applydeltav({3.0,0.0,0.0});
+    est.input(x0,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
+    uint64_t t= gracestart.nsgpstime()-3200'000'000'000LL;
+    est.input(x3,t,earth_rate_ecef);
+    CHECKINVARIANT(est);
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
+    x0.startpropagating(t,earth_rate_ecef);
+    x1.startpropagating(t,earth_rate_ecef);
+    x2.startpropagating(t,earth_rate_ecef);
+    x3.startpropagating(t,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_MEMORY (&est.current, &x2, sizeof(orb::Orbit));
+    TEST_ASSERT_EQUAL_MEMORY (&est.catching_up, &x3, sizeof(orb::Orbit));   
+}
+
+/** Test inputting 4 valid Orbits.
+ * The 2rd input should replace the 1st 
+ * because it is more up to date when the current time changes,
+ * but the 4th input should be moved to to_catch_up.*/
+void test_four_inputs_i() {
+    orb::GroundPropagator est;
+    orb::Orbit x0(gracestart.nsgpstime()-1000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    orb::Orbit x1(gracestart.nsgpstime()-2000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x1.applydeltav({1.0,0.0,0.0});
+    orb::Orbit x2(gracestart.nsgpstime()-3000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x2.applydeltav({2.0,0.0,0.0});
+    orb::Orbit x3(gracestart.nsgpstime()-4000'000'000'000LL,gracestart.recef(),gracestart.vecef());
+    x3.applydeltav({3.0,0.0,0.0});
+    est.input(x0,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
+    est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
+    uint64_t t= gracestart.nsgpstime()-2200'000'000'000LL;
+    est.input(x3,t,earth_rate_ecef);
+    CHECKINVARIANT(est);
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(est.catching_up.valid());
+    TEST_ASSERT(est.to_catch_up.valid());
+    x0.startpropagating(t,earth_rate_ecef);
+    x1.startpropagating(t,earth_rate_ecef);
+    x2.startpropagating(t,earth_rate_ecef);
+    x3.startpropagating(t,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_MEMORY (&est.current, &x1, sizeof(orb::Orbit));
+    TEST_ASSERT_EQUAL_MEMORY (&est.catching_up, &x2, sizeof(orb::Orbit));
+    TEST_ASSERT_EQUAL_MEMORY (&est.to_catch_up, &x3, sizeof(orb::Orbit));
+}
+
+/** Test propagating only one orbit.*/
+void test_one_orbit_prop() {
+    orb::GroundPropagator est;
+    orb::Orbit x0= gracestart;
+    uint64_t t0= gracestart.nsgpstime();
+    est.input(x0,t0,earth_rate_ecef);
+    auto est_copy= est;
+    TEST_ASSERT_FALSE(est.total_num_grav_calls_left());
+    est.one_grav_call();
+    //there should be no effect because everything is caught up
+    TEST_ASSERT_EQUAL_MEMORY(&est, &est_copy, sizeof(orb::GroundPropagator));
+    //propagate
+    est.input(orb::Orbit(),t0+100'000'000'000LL,earth_rate_ecef);
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(!est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
+    x0.startpropagating(t0+100'000'000'000LL,earth_rate_ecef);
+    TEST_ASSERT_EQUAL_MEMORY (&est.current, &x0, sizeof(orb::Orbit));
+    while(x0.numgravcallsleft()){
+        est.one_grav_call();
+        x0.onegravcall();
+    }
+    TEST_ASSERT(est.current.valid());
+    TEST_ASSERT(!est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
+    TEST_ASSERT_EQUAL_MEMORY (&est.current, &x0, sizeof(orb::Orbit));
+}
+
+/** Test that propagator can't be overloaded.*/
+void test_overloading() {
+    orb::GroundPropagator est;
+    uint64_t t0= gracestart.nsgpstime();
+    lin::Vector3d v0= gracestart.vecef();
+    lin::Vector3d r0= gracestart.recef();
+    orb::Orbit x0(t0,r0,v0);
+    orb::Orbit x1(t0-1000'000'000'000LL,r0,v0);
+    x1.applydeltav({1.0,0.0,0.0});
+    orb::Orbit x2(t0-2000'000'000'000LL,r0,v0);
+    x2.applydeltav({2.0,0.0,0.0});
+    est.input(x0,t0,earth_rate_ecef);
+    est.input(x1,t0,earth_rate_ecef);
+    est.input(x2,t0,earth_rate_ecef);
+    x1.startpropagating(t0,earth_rate_ecef);
+    int64_t dt= 120'000'000LL;
+    int i=0;
+    while(x1.numgravcallsleft()){
+        i++;
+        //every cycle add on Orbit data 1500s old
+        orb::Orbit x3(t0-1500'000'000'000LL+i*dt,r0,v0);
+        x3.applydeltav({3.0,0.0,0.0});
+        est.input(x3,t0+i*dt,earth_rate_ecef);
+        x1.startpropagating(t0+i*dt,earth_rate_ecef);
+        est.one_grav_call();//this props current
+        x1.onegravcall();
+        est.one_grav_call();//this should prop catching_up
+    }
+    //x1 should be caugth up now
+    TEST_ASSERT_EQUAL_MEMORY (&est.current, &x1, sizeof(orb::Orbit));
 }
 
 
@@ -718,63 +925,6 @@ void test_lots_of_ground_data_catchingup() {
     PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1E-3, best.recef(), lastsentorbit.recef());
 }
 
-void test_edge_cases() {
-    orb::GroundPropagator est;
-    uint64_t t0= gracestart.nsgpstime();
-    lin::Vector3d r0= gracestart.recef();
-    lin::Vector3d v0= gracestart.vecef();
-    est.input(orb::Orbit(t0+100,r0,v0),t0,earth_rate_ecef);
-    orb::Orbit best= est.best_estimate();
-    TEST_ASSERT_TRUE(best.valid());
-    TEST_ASSERT_EQUAL_INT(best.numgravcallsleft(),1);
-
-    est.input(orb::Orbit(t0,r0,v0),t0,earth_rate_ecef);
-    best= est.best_estimate();
-    TEST_ASSERT_TRUE(best.valid());
-    TEST_ASSERT_FALSE(best.numgravcallsleft());
-    TEST_ASSERT_FALSE(est.total_num_grav_calls_left());
-    TEST_ASSERT_TRUE(best.nsgpstime()==t0);
-
-    est.input(orb::Orbit(t0,r0,v0),t0,earth_rate_ecef);
-    best= est.best_estimate();
-    TEST_ASSERT_TRUE(best.valid());
-    TEST_ASSERT_FALSE(best.numgravcallsleft());
-    TEST_ASSERT_FALSE(est.total_num_grav_calls_left());
-    TEST_ASSERT_TRUE(best.nsgpstime()==t0);
-
-    est.input(orb::Orbit(t0-100,r0,v0),t0,earth_rate_ecef);
-    best= est.best_estimate();
-    TEST_ASSERT_TRUE(best.valid());
-    TEST_ASSERT_FALSE(best.numgravcallsleft());
-    TEST_ASSERT_EQUAL_INT(est.total_num_grav_calls_left(),1);
-    TEST_ASSERT_TRUE(best.nsgpstime()==t0);
-
-    est.input(orb::Orbit(t0-1'000'000'000LL,r0,v0),t0,earth_rate_ecef);
-    best= est.best_estimate();
-    TEST_ASSERT_TRUE(best.valid());
-    TEST_ASSERT_FALSE(best.numgravcallsleft());
-    TEST_ASSERT_TRUE(est.total_num_grav_calls_left()>1);
-    TEST_ASSERT_TRUE(best.nsgpstime()==t0);
-
-    est.input(orb::Orbit(t0+100LL,r0,v0),t0-1'000'000'000LL,earth_rate_ecef);
-    best= est.best_estimate();
-    TEST_ASSERT_TRUE(best.valid());
-    TEST_ASSERT_FALSE(best.numgravcallsleft());
-    TEST_ASSERT_TRUE(est.total_num_grav_calls_left());
-
-    est.input(orb::Orbit(),t0+100LL,earth_rate_ecef);
-    best= est.best_estimate();
-    TEST_ASSERT_TRUE(best.valid());
-    TEST_ASSERT_FALSE(best.numgravcallsleft());
-    TEST_ASSERT_TRUE(est.total_num_grav_calls_left()==0);
-    TEST_ASSERT_TRUE(best.nsgpstime()==t0+100);
-
-    est.reset_orbits();
-    best= est.best_estimate();
-    TEST_ASSERT_FALSE(best.valid());
-
-}
-
 int test_orbit() {
     UNITY_BEGIN();
     RUN_TEST(test_basic_constructors);
@@ -791,15 +941,21 @@ int test_orbit() {
     RUN_TEST(test_three_inputs_b);
     RUN_TEST(test_three_inputs_c);
     RUN_TEST(test_three_inputs_d);
-    RUN_TEST(test_three_inputs_d);
     RUN_TEST(test_four_inputs_a);
     RUN_TEST(test_four_inputs_b);
     RUN_TEST(test_four_inputs_c);
+    RUN_TEST(test_four_inputs_d);
+    RUN_TEST(test_four_inputs_e);
+    RUN_TEST(test_four_inputs_f);
+    RUN_TEST(test_four_inputs_g);
+    RUN_TEST(test_four_inputs_h);
+    RUN_TEST(test_four_inputs_i);
+    RUN_TEST(test_one_orbit_prop);
+    RUN_TEST(test_overloading);
     RUN_TEST(test_normal_use);
     RUN_TEST(test_time_going_backwards);
     RUN_TEST(test_lots_of_ground_data);
     RUN_TEST(test_lots_of_ground_data_catchingup);
-    RUN_TEST(test_edge_cases);
     return UNITY_END();
 }
 
