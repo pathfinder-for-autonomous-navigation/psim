@@ -149,7 +149,7 @@ class GroundPropagator {
         return current.numgravcallsleft()+catching_up.numgravcallsleft()+to_catch_up.numgravcallsleft();
     }
 
-    /** Returns a reference to the best estimate of the Orbit.
+    /** Return the best estimate of the Orbit.
      * 
      * grav calls: 0
      */
@@ -157,7 +157,7 @@ class GroundPropagator {
         return current;
     }
 
-    /** reset all internal orbits to invalid.
+    /** Reset all internal orbits to invalid.
      * 
      * grav calls: 0
      */
