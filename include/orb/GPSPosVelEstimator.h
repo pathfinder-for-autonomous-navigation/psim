@@ -51,14 +51,18 @@ class GPSPosVelEstimator {
     GPSPosVelEstimator(){}
 
     /**
+     * Input the newest Orbit sent from ground.
      * 
-     * 
+     * grav calls: 5 or less
+     * @param[in] ground_data: Orbit sent from ground.
+     * @param[in] gps_time_ns: Time to propagate to (ns).
+     * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored for orbits already propagating(rad/s).
      */
     void input(const Orbit& gps_data, const uint64_t& gps_time_ns, const lin::Vector3d& earth_rate_ecef){ 
         
 
     }
-    
+
     /** Return the best estimate of the Orbit.
      * 
      * grav calls: 0
