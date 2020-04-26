@@ -925,6 +925,20 @@ void test_lots_of_ground_data_catchingup() {
     PAN_TEST_ASSERT_LIN_3VECT_WITHIN(1E-3, best.recef(), lastsentorbit.recef());
 }
 
+void test_reset_orbits() {
+    orb::GroundPropagator est;
+    est.reset_orbits();
+    TEST_ASSERT(!est.current.valid());
+    TEST_ASSERT(!est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
+    est.input(gracestart,gracestart.nsgpstime(),earth_rate_ecef);
+    est.reset_orbits();
+    // reseting should revert to init
+    TEST_ASSERT(!est.current.valid());
+    TEST_ASSERT(!est.catching_up.valid());
+    TEST_ASSERT(!est.to_catch_up.valid());
+}
+
 int test_orbit() {
     UNITY_BEGIN();
     RUN_TEST(test_basic_constructors);
@@ -956,6 +970,7 @@ int test_orbit() {
     RUN_TEST(test_time_going_backwards);
     RUN_TEST(test_lots_of_ground_data);
     RUN_TEST(test_lots_of_ground_data_catchingup);
+    RUN_TEST(test_reset_orbits);
     return UNITY_END();
 }
 
