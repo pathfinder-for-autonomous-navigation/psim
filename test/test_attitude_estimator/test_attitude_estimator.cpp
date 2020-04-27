@@ -39,7 +39,11 @@ static void test_attitude_estimate_constructor() {
 }
 
 static int test() {
+<<<<<<< HEAD
   UNITY_BEGIN();
+=======
+  UNITY_BEGIN()
+>>>>>>> 91e3de0... initial attitude estimator tests
   RUN_TEST(test_attitude_estimator_state_constructor);
   RUN_TEST(test_attitude_estimator_data_constructor);
   RUN_TEST(test_attitude_estimate_constructor);
