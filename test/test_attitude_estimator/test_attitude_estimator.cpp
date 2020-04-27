@@ -39,7 +39,7 @@ static void test_attitude_estimate_constructor() {
 }
 
 static int test() {
-  UNITY_BEGIN()
+  UNITY_BEGIN();
   RUN_TEST(test_attitude_estimator_state_constructor);
   RUN_TEST(test_attitude_estimator_data_constructor);
   RUN_TEST(test_attitude_estimate_constructor);
