@@ -5,6 +5,10 @@
 #include <gnc/constants.hpp>
 #include <gnc/config.hpp>
 
+#ifndef DESKTOP
+#include <Arduino.h>
+#endif
+
 //UTILITY MACROS
 #include <unity.h>
 #include "../custom_assertions.hpp"
