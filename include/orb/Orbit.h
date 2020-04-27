@@ -409,7 +409,6 @@ class Orbit {
     /** The maximum size of a 1 grav call step (ns). */
     GNC_TRACKED_CONSTANT(static const int64_t,maxshorttimestep,200'000'000LL);
 
-
     /**
      * Put the Orbit in propagating mode or change the end time of a propagating Orbit.
      * Future calls to finishpropagating() or onegravcall() numgravcallsleft() times will finish the propagating.
@@ -451,7 +450,7 @@ class Orbit {
 
     /**
      * Return the number of grav calls needed to finish propagating.
-     * If not propagating Return 0.
+     * If not propagating or invalid Return 0.
      *
      * grav calls: 0
      */
@@ -661,4 +660,4 @@ class Orbit {
         }
     }
 };
-}
+} //namespace orb
