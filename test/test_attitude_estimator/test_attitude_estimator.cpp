@@ -93,6 +93,7 @@ static void test_update() {
 
   std::cout << "q_body_eci=" << lin::transpose(estimate.q_body_eci) << std::endl;
   std::cout << "gyro_bias= " << lin::transpose(estimate.gyro_bias) << std::endl;
+  std::cout << "P=\n" << estimate.P << std::endl;
   std::cout << "x_bar= " << lin::transpose(state.x_bar) << std::endl;
   std::cout << "z_bar= " << lin::transpose(state.z_bar) << std::endl;
   std::cout << "P_bar=\n" << state.P_bar << std::endl;
