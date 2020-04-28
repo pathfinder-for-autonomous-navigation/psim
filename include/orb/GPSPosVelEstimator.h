@@ -25,12 +25,13 @@ SOFTWARE.
 /**
  * \file GPSPosVelEstimator.h
  * \author Nathan Zimmerberg
- * \date 26 APR 2020
+ * \date 27 APR 2020
  * \brief An estimator of the current Orbit from GPS measurements.
  */
 
 #pragma once
-
+#include <lin/core.hpp>
+#include <lin/generators.hpp>
 #include "Orbit.h"
 
 namespace orb
