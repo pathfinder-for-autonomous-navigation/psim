@@ -256,22 +256,22 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
 
     // TODO : Numerical precision issues
     // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
-    x_bar = weight_c * state.sigmas[0];
-    z_bar = weight_c * state.measures[0];
-    for (lin::size_t i = 1; i < 13; i++) {
-      x_bar = x_bar + weight_o * state.sigmas[i];
-      z_bar = z_bar + weight_o * state.measures[i] + state.measures[i+6];
-    }
-    //x_bar= -1.59519e-08 2.30328e-08 -8.14907e-10 0 0 0
-    //z_bar= -0.361642 11.6351 0.0305016 0.214268 0.0826427
     // x_bar = weight_c * state.sigmas[0];
     // z_bar = weight_c * state.measures[0];
-    // for (lin::size_t i = 1; i < 7; i++) {
-    //   x_bar = x_bar + weight_o * (state.sigmas[i] + state.sigmas[i+6]);
-    //   z_bar = z_bar + weight_o * (state.measures[i] + state.measures[i+6]);
+    // for (lin::size_t i = 1; i < 13; i++) {
+    //   x_bar = x_bar + weight_o * state.sigmas[i];
+    //   z_bar = z_bar + weight_o * state.measures[i] + state.measures[i+6];
     // }
-    //x_bar= -2.12296e-08 2.47928e-08 -1.81249e-09 0 0 0
-    //z_bar= -0.117957 1.45314 -2.24962e-07 1.54626e-05 2.28017e-05
+    // q_body_eci= 0.267956 0.0233846 -0.0179891 0.962979
+    // gyro_bias= -0.00203587 8.39815e-07 1.23536e-06
+    x_bar = weight_c * state.sigmas[0];
+    z_bar = weight_c * state.measures[0];
+    for (lin::size_t i = 1; i < 7; i++) {
+      x_bar = x_bar + weight_o * (state.sigmas[i] + state.sigmas[i+6]);
+      z_bar = z_bar + weight_o * (state.measures[i] + state.measures[i+6]);
+    }
+    // q_body_eci= 0.265934 0.0140192 0.0175119 0.96373
+    // gyro_bias= -0.00177162 1.17908e-06 2.37971e-08
 
     UkfVector6 dx1 = state.sigmas[0] - x_bar;
     UkfVector5 dz1 = state.measures[0] - z_bar;
