@@ -104,28 +104,14 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
   q_new = q_new / lin::norm(q_new);
 }
 
-/** @fn ukf_m
- *  Update attitude estimator state given a magnetometer reading.
+/** @fn ukf
+ *  Performs a single attitude estimator update step.
  *
- *  @param[inout] state Attitude estimator state.
- *  @param[in]    data  Input sensor data. */
-static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &data) {
-  GNC_ASSERT_NORMALIZED(state.q_body_eci);
-
-  // TODO : Implement this
-  // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/189
-  state = AttitudeEstimatorState();
-}
-
-/** @fn ukf_ms
- *  Update attitude estimator state given magnetometer and sun vector readings.
- * 
- *  @param[inout] state Attitude filter state.
- *  @param[in]    data  Input sensor data. */
-static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &data) {
-  GNC_ASSERT_NORMALIZED(state.q_body_eci);
-  GNC_ASSERT_NORMALIZED(data.s_body);
-
+ *  @param[inout] state             Attitude estimator state.
+ *  @param[in]    data              Input sensor measurements.
+ *  @param[in]    ukf_kalman_update Kalman gain update step function. */
+static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data,
+    void (*ukf_kalman_update)(AttitudeEstimatorState &state, AttitudeEstimatorData const &data)) {
   /** Tuning parameter for the shape of the sigma point distribution. */
   GNC_TRACKED_CONSTANT(constexpr static ukf_float, lambda, 1.0);
   /** GRP conversion parameters. @{ */
@@ -163,27 +149,22 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
     Q(5, 5) = Q(3, 3);
   }
 
-  // Previous state vector
-  UkfVector6 x_old {
-    0.0f, 0.0f, 0.0f, state.gyro_bias(0), state.gyro_bias(1), state.gyro_bias(2)
-  };
-
-  // Determine q_new - i.e. result of propegating the first sigma point
-  UkfVector4 q_new;
-  {
-    UkfVector3 w = data.w_body - lin::ref<3, 1>(x_old, 3, 0);
-    ukf_propegate(dt, w, state.q_body_eci, q_new);
-  }
-
   // Generate sigma points
   {
     UkfMatrix6x6 L = state.P + Q;
     lin::chol(L);
 
-    state.sigmas[0] = x_old;
+    state.sigmas[0] = state.x;
     L = lin::sqrt(N + lambda) * L;
-    for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + 1] = x_old + lin::ref_col(L, i);
-    for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + L.cols() + 1] = x_old - lin::ref_col(L, i);
+    for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + 1] = state.x + lin::ref_col(L, i);
+    for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + L.cols() + 1] = state.x - lin::ref_col(L, i);
+  }
+
+  // Propegate the center sigma points attitude
+  UkfVector4 q_new;
+  {
+    UkfVector3 w = data.w_body - lin::ref<3, 1>(state.x, 3, 0);
+    ukf_propegate(dt, w, state.q, q_new);
   }
 
   // Propegate sigma points forward and calculate expected measurements
@@ -227,7 +208,7 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
       {
         UkfVector4 q, _q_old;
         utl::grp_to_quat(lin::ref<3, 1>(state.sigmas[i], 0, 0).eval(), a, f, q);
-        utl::quat_cross_mult(q, UkfVector4(state.q_body_eci), _q_old);
+        utl::quat_cross_mult(q, UkfVector4(state.q), _q_old);
 
         UkfVector3 w = data.w_body - lin::ref<3, 1>(state.sigmas[i], 3, 0);
         ukf_propegate(dt, w, _q_old, _q_new);
@@ -260,35 +241,58 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
     }
   }
 
-  // Calculate sigma point and covariance weights
-  ukf_float weight_c = lambda / (N + lambda);
-  ukf_float weight_o = 1.0f / (2.0f * (N + lambda));
-
-  // lin::Vectorf<N> x_bar = weight_c * _sigmas[0];
-  // lin::Vectorf<M> z_bar = weight_c * _measures[0];
-  // for (lin::size_t i = 1; i < 13; i++) {
-  //   x_bar = x_bar + weight_o * _sigmas[i];
-  //   z_bar = z_bar + weight_o * _measures[i] + _measures[i+6];
-  // }
-  //x_bar= -1.59519e-08 2.30328e-08 -8.14907e-10 0 0 0
-  //z_bar= -0.361642 11.6351 0.0305016 0.214268 0.0826427
-
-  // TODO : Numerical precision issues
-  // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
-  UkfVector6 x_bar = weight_c * state.sigmas[0];
-  UkfVector5 z_bar = weight_c * state.measures[0];
-  for (lin::size_t i = 1; i < 7; i++) {
-    x_bar = x_bar + weight_o * (state.sigmas[i] + state.sigmas[i+6]);
-    z_bar = z_bar + weight_o * (state.measures[i] + state.measures[i+6]);
-  }
-  //x_bar= -2.12296e-08 2.47928e-08 -1.81249e-09 0 0 0
-  //z_bar= -0.117957 1.45314 -2.24962e-07 1.54626e-05 2.28017e-05
-
-  // Compute weighted covariances
-  UkfMatrix6x6 P_bar;
-  UkfMatrix5x5 P_yy;
-  UkfMatrix6x5 P_xy;
+  // Calculate mean expected state, mean expected measurements, and associated
+  // covariances
   {
+    UkfVector6   &x_bar = state.x_bar;
+    UkfVector5   &z_bar = state.z_bar;
+    UkfMatrix6x6 &P_bar = state.P_bar;
+    UkfMatrix5x5 &P_vv  = state.P_vv;
+    UkfMatrix6x5 &P_xy  = state.P_xy;
+
+    // Calculate sigma point and covariance weights
+    ukf_float weight_c = lambda / (N + lambda);
+    ukf_float weight_o = 1.0f / (2.0f * (N + lambda));
+
+    // TODO : Numerical precision issues
+    // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
+    x_bar = weight_c * state.sigmas[0];
+    z_bar = weight_c * state.measures[0];
+    for (lin::size_t i = 1; i < 13; i++) {
+      x_bar = x_bar + weight_o * state.sigmas[i];
+      z_bar = z_bar + weight_o * state.measures[i] + state.measures[i+6];
+    }
+    //x_bar= -1.59519e-08 2.30328e-08 -8.14907e-10 0 0 0
+    //z_bar= -0.361642 11.6351 0.0305016 0.214268 0.0826427
+    // x_bar = weight_c * state.sigmas[0];
+    // z_bar = weight_c * state.measures[0];
+    // for (lin::size_t i = 1; i < 7; i++) {
+    //   x_bar = x_bar + weight_o * (state.sigmas[i] + state.sigmas[i+6]);
+    //   z_bar = z_bar + weight_o * (state.measures[i] + state.measures[i+6]);
+    // }
+    //x_bar= -2.12296e-08 2.47928e-08 -1.81249e-09 0 0 0
+    //z_bar= -0.117957 1.45314 -2.24962e-07 1.54626e-05 2.28017e-05
+
+    UkfVector6 dx1 = state.sigmas[0] - x_bar;
+    UkfVector5 dz1 = state.measures[0] - z_bar;
+    P_bar = P_bar + weight_c * dx1 * lin::transpose(dx1);
+    P_vv = P_vv + weight_c * dz1 * lin::transpose(dz1);
+    P_xy = P_xy + weight_c * dx1 * lin::transpose(dz1);
+
+    // TODO : Numerical precision issues
+    // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
+    for (lin::size_t i = 1; i < 7; i++) {
+      UkfVector6 dx2;
+      UkfVector5 dz2;
+      dx1 = state.sigmas[i] - x_bar;
+      dz1 = state.measures[i] - z_bar;
+      dx2 = state.sigmas[i+6] - x_bar;
+      dz2 = state.measures[i+6] - z_bar;
+      P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1) + dx2 * lin::transpose(dx2));
+      P_vv = P_vv + weight_o * (dz1 * lin::transpose(dz1) + dz2 * lin::transpose(dz2));
+      P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1) + dx2 * lin::transpose(dz2));
+    }
+
     // Sensor noise covariance
     UkfMatrix5x5 R = lin::zeros<UkfMatrix5x5>();
     {
@@ -299,71 +303,72 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
       R(4, 4) = R(2, 2);
     }
 
-    UkfVector6 dx1 = state.sigmas[0] - x_bar;
-    UkfVector5 dz1 = state.measures[0] - z_bar;
-    P_bar = P_bar + weight_c * dx1 * lin::transpose(dx1);
-    P_yy = P_yy + weight_c * dz1 * lin::transpose(dz1);
-    P_xy = P_xy + weight_c * dx1 * lin::transpose(dz1);
-
-    // TODO : Numerical precision issues
-    // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
-    for (lin::size_t i = 1; i < 7; i++) {
-      UkfVector6 dx2;
-      UkfVector5 dz2;
-
-      dx1 = state.sigmas[i] - x_bar;
-      dz1 = state.measures[i] - z_bar;
-      dx2 = state.sigmas[i+6] - x_bar;
-      dz2 = state.measures[i+6] - z_bar;
-      P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1) + dx2 * lin::transpose(dx2));
-      P_yy = P_yy + weight_o * (dz1 * lin::transpose(dz1) + dz2 * lin::transpose(dz2));
-      P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1) + dx2 * lin::transpose(dz2));
-    }
-
     P_bar = P_bar + Q; // Add process noise to predicted covariance
-    P_yy = P_yy + R;   // Add sensor noise to innovation covariance
+    P_vv = P_vv + R;   // Add sensor noise to innovation covariance
   }
 
-  // Calculate Kalman gain
-  UkfMatrix6x5 K;
+  // Kalman gain step
+  ukf_kalman_update(state, data);
+
+  // Process x (which is now x_new) and P (which is now P_new)
   {
-    // TODO : Numerical precision issues
-    // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
-    UkfMatrix5x5 Q, R;
-    lin::qr(P_yy, Q, R);
-    lin::backward_sub(R, Q, lin::transpose(Q).eval()); // Q = inv(P_yy)    
-    K = P_xy * Q;
-  }
+    // Perturb q_new according to the new state
+    lin::Vector4d q;
+    utl::grp_to_quat(lin::ref<3, 1>(state.x, 0, 0).eval(), a, f, q);
+    utl::quat_cross_mult(q, q_new, state.q);
 
-  // Calculate this steps measurement
-  UkfVector5 z_new {
-    lin::atan(data.s_body(1) / data.s_body(0)),
-    lin::acos(data.s_body(2)),
-    data.b_body(0),
-    data.b_body(1),
-    data.b_body(2)
-  };
-
-  // Calculate our new state
-  UkfVector6 x_new = x_bar + K * (z_new - z_bar).eval();
-
-  // Update state members
-  {
-    state.P = P_bar - K * (P_yy * lin::transpose(K)).eval();
-    state.gyro_bias = lin::ref<3, 1>(x_new, 3, 0);
-    state.t = data.t;
-
-    lin::Vector4d q, q_body_eci;
-    utl::grp_to_quat(lin::ref<3, 1>(x_new, 0, 0).eval(), a, f, q);
-    utl::quat_cross_mult(q, q_new, q_body_eci);
-    state.q_body_eci = q_body_eci; // TODO : Normalize here perhaps?
+    // Reset the attitude portion of the state to zeros
+    lin::ref<3, 1>(state.x, 0, 0) = lin::zeros<UkfVector3>();
   }
 }
 
+/** @fn ukf_m
+ *  Update attitude estimator state given a magnetometer reading.
+ * 
+ *  @param[inout] state Attitude filter state.
+ *  @param[in]    data  Input sensor data. */
+static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &data) {
+  // TODO : Implement this
+  state = AttitudeEstimatorState();
+}
+
+/** @fn ukf_ms
+ *  Update attitude estimator state given magnetometer and sun vector readings.
+ * 
+ *  @param[inout] state Attitude filter state.
+ *  @param[in]    data  Input sensor data. */
+static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &data) {
+  ukf(state, data, [](AttitudeEstimatorState &state, AttitudeEstimatorData const &data) -> void {
+    // Calculate Kalman gain
+    UkfMatrix6x5 K;
+    {
+      // TODO : Numerical precision issues
+      // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
+      UkfMatrix5x5 Q, R;
+      lin::qr(state.P_vv, Q, R);
+      lin::backward_sub(R, Q, lin::transpose(Q).eval()); // Q = inv(P_yy)    
+      K = state.P_xy * Q;
+    }
+
+    // Calculate this steps measurement
+    UkfVector5 z_new {
+      lin::atan(data.s_body(1) / data.s_body(0)),
+      lin::acos(data.s_body(2)),
+      data.b_body(0),
+      data.b_body(1),
+      data.b_body(2)
+    };
+
+    // Update the state vector and covariance
+    state.x = state.x_bar + K * (z_new - state.z_bar).eval();
+    state.P = state.P_bar - K * (state.P_vv * lin::transpose(K)).eval();
+  });
+}
+
 AttitudeEstimatorState::AttitudeEstimatorState()
-: q_body_eci(lin::nans<lin::Vector4f>()),
-  gyro_bias(lin::nans<lin::Vector3f>()),
-  P(lin::nans<lin::Matrixf<6, 6>>()),
+: q(lin::nans<UkfVector4>()),
+  x(lin::nans<UkfVector6>()),
+  P(lin::nans<UkfMatrix6x6>()),
   t(constant::nan),
   is_valid(false) { }
 
@@ -389,13 +394,13 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   /** Default, initial gyro bias covariance (units of radians per second all
    *  squared). */
   GNC_TRACKED_CONSTANT(constexpr static float, var_g, 0.0049);
-  /** Default, initial gyro bias. */
-  GNC_TRACKED_CONSTANT(constexpr static lin::Vector3f, init_gyr_bias, 0.0, 0.0, 0.0);
+  /** Default, initial state. */
+  GNC_TRACKED_CONSTANT(constexpr static UkfVector6, init_state, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
 
   // Set the proper fields in state
   state.t = t;
-  state.q_body_eci = q_body_eci;
-  state.gyro_bias = init_gyr_bias;
+  state.q = q_body_eci;
+  state.x = init_state;
   state.P = lin::zeros<decltype(state.P)>();
   state.P(0, 0) = var_q;
   state.P(1, 1) = state.P(0, 0);
@@ -407,8 +412,8 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
 
   // If invalid, set everything back to NaNs
   if (!lin::isfinite(state.t) ||
-      !lin::all(lin::isfinite(state.q_body_eci)) ||
-      !lin::all(lin::isfinite(state.gyro_bias)) ||
+      !lin::all(lin::isfinite(state.q)) ||
+      !lin::all(lin::isfinite(state.x)) ||
       !lin::all(lin::isfinite(state.P)))
     state = AttitudeEstimatorState();
 }
@@ -439,8 +444,8 @@ void attitude_estimator_update(AttitudeEstimatorState &state,
   }
 
   // State should be valid
-  GNC_ASSERT(lin::all(lin::isfinite(state.q_body_eci)));
-  GNC_ASSERT(lin::all(lin::isfinite(state.gyro_bias)));
+  GNC_ASSERT(lin::all(lin::isfinite(state.q)));
+  GNC_ASSERT(lin::all(lin::isfinite(state.x)));
   GNC_ASSERT(lin::all(lin::isfinite(state.P)));
 
   // Run the magnetomter and sun vector implementation
@@ -453,8 +458,8 @@ void attitude_estimator_update(AttitudeEstimatorState &state,
   }
 
   // Update resulted in an invalid state
-  if (!lin::all(lin::isfinite(state.q_body_eci)) ||
-      !lin::all(lin::isfinite(state.gyro_bias)) ||
+  if (!lin::all(lin::isfinite(state.q)) ||
+      !lin::all(lin::isfinite(state.x)) ||
       !lin::all(lin::isfinite(state.P)) ||
       !lin::isfinite(state.t)) {
     state = AttitudeEstimatorState();
@@ -462,8 +467,8 @@ void attitude_estimator_update(AttitudeEstimatorState &state,
   }
   // Update gave a valid output
   else {
-    estimate.q_body_eci = state.q_body_eci;
-    estimate.gyro_bias = state.gyro_bias;
+    estimate.q_body_eci = state.q;
+    estimate.gyro_bias = lin::ref<3, 1>(state.x, 3, 0);
     estimate.P = state.P;
     estimate.is_valid = true;
   }

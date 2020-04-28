@@ -16,8 +16,8 @@
 static void test_state_constructor() {
   gnc::AttitudeEstimatorState state;
 
-  TEST_ASSERT_TRUE(lin::all(lin::isnan(state.q_body_eci)));
-  TEST_ASSERT_TRUE(lin::all(lin::isnan(state.gyro_bias)));
+  TEST_ASSERT_TRUE(lin::all(lin::isnan(state.x)));
+  TEST_ASSERT_TRUE(lin::all(lin::isnan(state.x)));
   TEST_ASSERT_TRUE(lin::all(lin::isnan(state.P)));
   TEST_ASSERT_TRUE(lin::isnan(state.t));
   TEST_ASSERT_FALSE(state.is_valid);

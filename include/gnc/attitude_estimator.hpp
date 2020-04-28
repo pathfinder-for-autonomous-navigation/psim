@@ -102,21 +102,32 @@ extern float ukf_sigma_s;
  *  Contains the internal state of an attitude estimator.
  *
  *  The internal state of the attitude estimator includes the previous estimates
- *  attitude quaternion, gyro bias estimate, state covariance matrix, and
- *  timestamp. After an `attitude_estimator_*` function call, the `is_valid`
- *  member variable can be read to check if all stored values are finite - i.e.
- *  not NaN or inifinity.
+ *  attitude quaternion, gyro bias estimate, state covariance matrix, timestamp,
+ *  and some other variables to act as a buffer for intermediate calculations.
+ * 
+ *  After an `attitude_estimator_*` function call, the `is_valid` member variable
+ *  can be read to check if all stored values are finite - i.e. not NaN or
+ *  inifinity.
  *
  *  Prior to being used with the `attitude_estimator_update` function, the state
  *  variable must be initialized with a call to `attitude_estimator_reset`. See
  *  more documentation below. */
 struct AttitudeEstimatorState {
-  lin::Vectord<6> sigmas[13];
-  lin::Vectord<5> measures[13];
-  lin::Vector4f q_body_eci;
-  lin::Vector3f gyro_bias;
-  lin::Matrixf<6, 6> P;
+  /** Variables acting as a calculation buffer
+   *  @{ */
+  lin::Vectord<6>    x_bar, sigmas[13];
+  lin::Vectord<5>    z_bar, measures[13];
+  lin::Matrixd<6, 6> P_bar;
+  lin::Matrixd<5, 5> P_vv;
+  lin::Matrixd<6, 5> P_xy;
+  /** @} */
+  /** Persistant, state varibles
+   *  @{ */
+  lin::Vectord<4> q;
+  lin::Vectord<6> x;
+  lin::Matrixd<6, 6> P;
   double t;
+  /** @} */
   /** Default everything to NaN and sets `is_valid` to `false`. */
   AttitudeEstimatorState();
   /** Signals whether the struct specifies a valid filter state. If invalid, all
