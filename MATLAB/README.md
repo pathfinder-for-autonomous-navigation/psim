@@ -254,7 +254,7 @@ Constants are stored in the `const` global struct.
    * `MAXWHEELRAMP`(positive scalar), Max wheel ramp (rad/s/s)
    * `MAXMOMENT`(positive scalar), Max magrod moment on one axis (Am^2)
    * `MASS`(positive scalar), Dry mass of satellite (kg)
-   * `JB`(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame (kgm^2)
+   * `JB`(3x3 symmetric matrix), Dry moment of inertia of satellite in body frame, measurement described [here](https://cornellprod-my.sharepoint.com/:w:/g/personal/saa243_cornell_edu/EfnqDGLGxSJKsCPZ2Gi0n2UBek152YP_spoqLfRybCa9pQ?e=2S4hV4) (kgm^2)
    * `JBINV`(3x3 symmetric matrix), Inverse of dry moment of inertia of satellite in body frame (1/(kgm^2))
    * `JWHEEL`(positive scalar),  Wheel Inertia (kgm^2)
    * `JFUEL_NORM`(positive scalar), Moment of inertia of the fuel/mass of the fuel (m^2)
@@ -288,11 +288,13 @@ standard diviation of the gyro noise (rad/s)
 standard diviation of the gyro bias (rad/s)
 ### ORBIT_ESTIMATION parameters
    * `time_for_stale_cdgps`(int64 scalar): time to wait before making the target estimate stale (ns)
-   * `orb_process_noise_var`(6x6 symetric matrix) Added variance for bad force models divided by timestep (mks units)
-   * `single_gps_noise_covariance`(6x6 symetric matrix) noise covariance of gps reading
-   * `fixed_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in fixed mode
-   * `float_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in float mode
-
+   * `orb_process_noise_var`(12x12 symetric matrix) Added variance for bad force models divided by timestep (mks units)
+   * `single_gps_noise_covariance`(6x6 symetric matrix) noise covariance of gps reading  (mks units)
+   * `initial_target_covariance`(6x6 symetric matrix) initial covariance used to initialize target state  (mks units)
+   * `fixed_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in fixed mode  (mks units)
+   * `float_cdgps_noise_covariance`(9x9 symetric matrix) noise covariance of cdgps reading in float mode  (mks units)
+   * `orb_self_thrust_noise_sdiv` (positive scalar) ratio of thruster impulse that is noise
+   * `orb_target_thrust_noise_sdiv` (positive scalar) ratio of thruster impulse that is noise
 
 ## Functions to be implemented in C++
 update_FC_state and any function it uses including:
@@ -330,7 +332,7 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 
 | Function                     | Person  | Priority | Basic Matlab Version | Test Script | C++ Version |
 |------------------------------|---------|----------|----------------------|-------------|-------------|
-| get_truth                    | Nathan  |          | not started          | not started | NA          |
+| get_truth                    | Nathan  |          | wip          | wip | NA          |
 | initialize_main_state        | Nathan  |          | wip                  | not started | NA          |
 | sensor_reading               | Kyle    |          | wip                  | not started | NA          |
 | main_state_update            | Nathan  |          | wip                  | not started | NA          |
@@ -346,8 +348,8 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | env_atmosphere_density       | Sruti   |          | not started          | not started | NA          |
 | env_earth_attitude           | Nathan  |          | done                 | done        | wip         |
 | env_eclipse                  | Nathan  |          | done                 | not started | not started |
-| env_gravity                  |         |          | wip                  | not started | NA          |
-| env_magnetic_field           | Nathan  |          | wip                  | done        | wip         |
+| env_gravity                  | Nathan  |          | done                 | done | done          |
+| env_magnetic_field           | Nathan  |          | done                 | done        | wip         |
 | env_sun_vector               | Nathan  |          | done                 | done        | wip         |
 | utl_rotateframe              | Kyle    |          | done                 | done        | done        |
 | utl_quat_conj                | Kyle    |          | done                 | done        | done        |
@@ -364,13 +366,18 @@ One the Matlab simulation side, next getting a complete version of `sensor_readi
 | utl_compare_dynamics         |         |          | not started          | not started | NA          |
 | utl_compare_actuators        |         |          | not started          | not started | NA          |
 | utl_compare_sensors          |         |          | not started          | not started | NA          |
-| true_orbit_propagator        | Sruti   |          | not started          | not started | NA          |
-| plot_almost_conserved_values |         |          | not started          | NA          | NA          |
-| plot_pointing_errors         |         |          | not started          | NA          | NA          |
-| plot_wheel_rates             |         |          | not started          | NA          | NA          |
-| plot_orbit_error             |         |          | not started          | NA          | NA          |
-| fancy_animation              |         |          | not started          | NA          | NA          |
+| true_orbit_propagator        | Sruti   |          | wip                  | wip         | NA          |
+| plot_almost_conserved_values | Nathan  |          | done                 | NA          | NA          |
+| plot_pointing_errors         | Nathan  |          | done                 | NA          | NA          |
+| plot_wheel_rates             | Nathan  |          | done                 | NA          | NA          |
+| plot_orbit_error             | Nathan  |          | done                 | NA          | NA          |
+| plot_fancy_animation         | Nathan  |          | done                 | NA          | NA          |
 
+# Installation
+1. Install MATLAB R2019b, Matlab Add-Ons, and ensure you have a C++ compiler by running `mex -setup C++`
+2. Run `install.m` script to compile all C code into mex and download data.
+
+Run `install.m` everytime you reclone or redownload the repo. 
 
 ## Matlab Add-Ons
 
@@ -380,5 +387,6 @@ There are a few required Add-Ons for Matlab
  * Ephemeris Data for Aerospace Toolbox
  * Aerospace Toolbox
  * Robotics System Toolbox
-
-In addition a C++ compiler is need, in matlab run `mex -setup C++` to ensure you have one.
+ * Convert between RGB and Color Names
+ * [TrackerComponentLibrary](https://github.com/pathfinder-for-autonomous-navigation/TrackerComponentLibrary/releases/download/v4.1/TrackerComponentLibrary.mltbx)
+    * Download this file and then open it using matlab to add it as an addon

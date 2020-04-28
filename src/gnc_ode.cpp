@@ -1,16 +1,8 @@
-//
-// src/gnc_ode.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file gnc_ode.cpp
+ *  @author Kyle Krol */
 
-#include <gnc_ode.hpp>
+#include <gnc/config.hpp>
+#include <gnc/ode.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -39,8 +31,8 @@ void ode1(T ti, T dt, T const *yi, T *yf, unsigned int ne, T *bf,
   for (unsigned int i = 0; i < ne; i++) yf[i] = yi[i] + dt * k1[i];
 }
 
-PAN_GNC_ODEX_SINGLE_TEMPLATE(ode1, float);
-PAN_GNC_ODEX_SINGLE_TEMPLATE(ode1, double);
+GNC_ODEX_SINGLE_TEMPLATE(ode1, float);
+GNC_ODEX_SINGLE_TEMPLATE(ode1, double);
 
 template <typename T>
 void ode1(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
@@ -48,8 +40,8 @@ void ode1(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
   odex<T, ode1>(t, nt, y, ne, bf, f);
 }
 
-PAN_GNC_ODEX_MULTI_TEMPLATE(ode1, float);
-PAN_GNC_ODEX_MULTI_TEMPLATE(ode1, double);
+GNC_ODEX_MULTI_TEMPLATE(ode1, float);
+GNC_ODEX_MULTI_TEMPLATE(ode1, double);
 
 // Reference:
 //  https://en.wikipedia.org/wiki/List_of_Runge–Kutta_methods#Heun's_method
@@ -71,8 +63,8 @@ void ode2(T ti, T dt, T const *yi, T *yf, unsigned int ne, T *bf,
   for (unsigned int i = 0; i < ne; i++) yf[i] = yi[i] + dt * (b1 * k1[i] + b2 * k2[i]);
 }
 
-PAN_GNC_ODEX_SINGLE_TEMPLATE(ode2, float);
-PAN_GNC_ODEX_SINGLE_TEMPLATE(ode2, double);
+GNC_ODEX_SINGLE_TEMPLATE(ode2, float);
+GNC_ODEX_SINGLE_TEMPLATE(ode2, double);
 
 template <typename T>
 void ode2(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
@@ -80,8 +72,8 @@ void ode2(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
   odex<T, ode2>(t, nt, y, ne, bf, f);
 }
 
-PAN_GNC_ODEX_MULTI_TEMPLATE(ode2, float);
-PAN_GNC_ODEX_MULTI_TEMPLATE(ode2, double);
+GNC_ODEX_MULTI_TEMPLATE(ode2, float);
+GNC_ODEX_MULTI_TEMPLATE(ode2, double);
 
 // Reference:
 //  https://en.wikipedia.org/wiki/List_of_Runge–Kutta_methods#Ralston's_method
@@ -108,8 +100,8 @@ void ode3(T ti, T dt, T const *yi, T *yf, unsigned int ne, T *bf,
   for (unsigned int i = 0; i < ne; i++) yf[i] = yi[i] + dt * (b1 * k1[i] + b2 * k2[i] + b3 * k3[i]);
 }
 
-PAN_GNC_ODEX_SINGLE_TEMPLATE(ode3, float);
-PAN_GNC_ODEX_SINGLE_TEMPLATE(ode3, double);
+GNC_ODEX_SINGLE_TEMPLATE(ode3, float);
+GNC_ODEX_SINGLE_TEMPLATE(ode3, double);
 
 template <typename T>
 void ode3(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
@@ -117,8 +109,8 @@ void ode3(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
   odex<T, ode3>(t, nt, y, ne, bf, f);
 }
 
-PAN_GNC_ODEX_MULTI_TEMPLATE(ode3, float);
-PAN_GNC_ODEX_MULTI_TEMPLATE(ode3, double);
+GNC_ODEX_MULTI_TEMPLATE(ode3, float);
+GNC_ODEX_MULTI_TEMPLATE(ode3, double);
 
 // Reference:
 //  https://en.wikipedia.org/wiki/List_of_Runge–Kutta_methods#Classic_fourth-order_method
@@ -149,8 +141,8 @@ void ode4(T ti, T dt, T const *yi, T *yf, unsigned int ne, T *bf,
     yf[i] = yi[i] + dt * (b1 * k1[i] + b2 * k2[i] + b3 * k3[i] + b4 * k4[i]);
 }
 
-PAN_GNC_ODEX_SINGLE_TEMPLATE(ode4, float);
-PAN_GNC_ODEX_SINGLE_TEMPLATE(ode4, double);
+GNC_ODEX_SINGLE_TEMPLATE(ode4, float);
+GNC_ODEX_SINGLE_TEMPLATE(ode4, double);
 
 template <typename T>
 void ode4(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
@@ -158,8 +150,8 @@ void ode4(T const *t, unsigned int nt, T **y, unsigned int ne, T *bf,
   odex<T, ode4>(t, nt, y, ne, bf, f);
 }
 
-PAN_GNC_ODEX_MULTI_TEMPLATE(ode4, float);
-PAN_GNC_ODEX_MULTI_TEMPLATE(ode4, double);
+GNC_ODEX_MULTI_TEMPLATE(ode4, float);
+GNC_ODEX_MULTI_TEMPLATE(ode4, double);
 
 // Reference:
 //  https://en.wikipedia.org/wiki/Bogacki–Shampine_method
@@ -267,8 +259,8 @@ int ode23(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
   }
 }
 
-PAN_GNC_ODEXX_TEMPLATE(ode23, float);
-PAN_GNC_ODEXX_TEMPLATE(ode23, double);
+GNC_ODEXX_TEMPLATE(ode23, float);
+GNC_ODEXX_TEMPLATE(ode23, double);
 
 // Reference:
 //  https://en.wikipedia.org/wiki/Dormand–Prince_method
@@ -400,7 +392,7 @@ int ode45(T ti, T tf, T const *yi, T *yf, unsigned int ne, T *bf, T h_min,
   }
 }
 
-PAN_GNC_ODEXX_TEMPLATE(ode45, float);
-PAN_GNC_ODEXX_TEMPLATE(ode45, double);
+GNC_ODEXX_TEMPLATE(ode45, float);
+GNC_ODEXX_TEMPLATE(ode45, double);
 
 }  // namespace gnc

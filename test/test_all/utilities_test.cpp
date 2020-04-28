@@ -1,20 +1,15 @@
-//
-// test/test_all/utilities_test.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file test_all/utilities_test.cpp
+ *  @author Kyle Krol */
 
 #include "test.hpp"
 #include "utilities_test.hpp"
 
-#include <gnc_utilities.hpp>
-#include <lin.hpp>
+#include <gnc/utilities.hpp>
+
+#include <lin/core.hpp>
+#include <lin/generators/randoms.hpp>
+#include <lin/math.hpp>
+#include <lin/queries.hpp>
 
 void test_utilities_quatconj() {
   lin::Vector4f q = {2.0f, 1.0f, -2.5f, 1.0f};
@@ -44,6 +39,26 @@ void test_utilities_rotate_frame() {
   // Expected answer was calculated in MATLAB
   lin::Vector3f ans = { 54.73333f, -0.66667f, -6.46667f};
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, v, ans);
+}
+
+void test_dcm() {
+  lin::Vector3f x {1.0f, 1.0f, 0.0f};
+  lin::Vector3f y {1.0f, 0.0f, 1.0f};
+  lin::Matrix3x3f DCM;
+  gnc::utl::dcm(DCM, x, y);
+  lin::Matrix3x3f ans {
+    0.7071f,  0.7071f,  0.0f,
+    0.4082f, -0.4082f,  0.8165f,
+    0.5774f, -0.5774f, -0.5774f
+  }; // Calculated in MATLAB
+  TEST_ASSERT_FLOAT_WITHIN(1e-3f, 0.0f, lin::fro(DCM - ans));
+  // Parallel inputs should give NaNs
+  gnc::utl::dcm(DCM, x, x);
+  TEST_ASSERT(lin::all(lin::isnan(DCM)));
+  // Anti-parallel inputs should give NaNs as well
+  DCM = lin::zeros<decltype(DCM)>();
+  gnc::utl::dcm(DCM, x, (-x).eval());
+  TEST_ASSERT(lin::all(lin::isnan(DCM)));
 }
 
 void test_utilities_dcm_to_quat_case0() {
@@ -120,6 +135,19 @@ void test_utilities_triad() {
   // Perform triad
   gnc::utl::triad(n1, n2, b1, b2, q);
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-4f, q, ans);
+  // Parallel inputs should result in NaNs
+  gnc::utl::triad(n1, n1, b1, b2, q);
+  TEST_ASSERT(lin::all(lin::isnan(q)));
+  q = lin::zeros<decltype(q)>();
+  gnc::utl::triad(n1, n2, b1, b1, q);
+  TEST_ASSERT(lin::all(lin::isnan(q)));
+  q = lin::zeros<decltype(q)>();
+  // Anti-parellel inputs should result in NaNs
+  gnc::utl::triad(n1, (-n1).eval(), b1, b2, q);
+  TEST_ASSERT(lin::all(lin::isnan(q)));
+  q = lin::zeros<decltype(q)>();
+  gnc::utl::triad(n1, n2, b1, (-b1).eval(), q);
+  TEST_ASSERT(lin::all(lin::isnan(q)));
 }
 
 void test_utilities_vec_rot_to_quat() {
@@ -152,6 +180,7 @@ void utilities_test() {
   RUN_TEST(test_utilities_quatconj);
   RUN_TEST(test_utilities_quat_cross_mult);
   RUN_TEST(test_utilities_rotate_frame);
+  RUN_TEST(test_dcm);
   RUN_TEST(test_utilities_dcm_to_quat_case0);
   RUN_TEST(test_utilities_dcm_to_quat_case1);
   RUN_TEST(test_utilities_dcm_to_quat_case2);
@@ -160,4 +189,3 @@ void utilities_test() {
   RUN_TEST(test_utilities_vec_rot_to_quat);
   RUN_TEST(test_utilities_vec_rot_to_quat_antiparallel);
 }
-

@@ -1,29 +1,12 @@
-//
-// test/test_all/environment_test.cpp
-// PSim
-//
-// Contributors:
-//   Kyle Krol  kpk63@cornell.edu
-//
-// Pathfinder for Autonomous Navigation
-// Space Systems Design Studio
-// Cornell Univeristy
-//
+/** @file test_all/environmental_test.cpp
+ *  @author Kyle Krol */
 
 #include "test.hpp"
 #include "environment_test.hpp"
 
-#include <gnc_constants.hpp>
-#include <gnc_environment.hpp>
+#include <gnc/constants.hpp>
+#include <gnc/environment.hpp>
 #include <lin.hpp>
-
-// Tests are broken otherwise
-static_assert(gnc::constant::init_gps_week_number == 2045,
-    "Tests are only applicable if the GPS week number is 2045!");
-static_assert(gnc::constant::init_gps_time_of_week == 0,
-    "Tests are only applicable if the GPS time of the week is 0!");
-static_assert(gnc::constant::init_gps_nanoseconds == 0,
-    "Tests are only applicable if the GPS nanoseconds is 0!");
 
 void test_environment_earth_attitude() {
   lin::Vector3d w;

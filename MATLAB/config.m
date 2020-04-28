@@ -7,14 +7,7 @@ Script to initialize const global variables.
 %}
 global const
 
-[filepath, name, ext] = fileparts(mfilename("fullpath"));
-addpath(strcat(filepath, '/utl'));
-addpath(strcat(filepath, '/environmental_models'));
-addpath(strcat(filepath, '/environmental_models/helper_functions'));
-addpath(strcat(filepath, '/plot'));
-addpath(strcat(filepath, '/adcs'));
-addpath(strcat(filepath, '/orbit_estimation'));
-addpath(strcat(filepath, '/test'));
+setup_path()
 
 
 %Time
@@ -78,10 +71,12 @@ const.MAXMOMENT= 0.08;% positive scalar
 % Max magrod moment on one axis (A*m^2)
 const.MASS= 4.0;% positive scalar
 %dry mass of satellite, kg.
-const.JB=[1/12*const.MASS*(0.3^2+0.1^2) 0 0;
-          0 1/12*const.MASS*(0.3^2+0.1^2) 0;
-          0 0 1/12*const.MASS*(0.1^2+0.1^2);];% 3x3 symmetric matrix
-%dry moment of inertia of the satellite in body frame (kg*m^2)
+const.JB=[0.03798 0 0;
+          0 0.03957 0;
+          0 0 0.00688;];% 3x3 symmetric matrix
+%Dry moment of inertia of satellite in body frame (kgm^2),
+% measurement described here:
+% https://cornellprod-my.sharepoint.com/:w:/g/personal/saa243_cornell_edu/EfnqDGLGxSJKsCPZ2Gi0n2UBek152YP_spoqLfRybCa9pQ?e=2S4hV4
 const.JWHEEL=135.0e-7;% positive scalar
 % Wheel Inertia kg*m^2
 const.JFUEL_NORM=0.1^2;% positive scalar
@@ -98,11 +93,11 @@ const.JBINV=inv(const.JB);% 3x3 symmetric matrix
 % inverse of dry moment of inertia of satellite in body frame
 
 %% GPS sensor constants %%
-const.GPS_LOCK_TIME=1*60;% (positive scalar):
+const.GPS_LOCK_TIME=0;%1*60;% (positive scalar):
 %Time it takes the GPS to get a lock (s)
 const.CDGPS_LOCK_TIME=15*60;% (positive scalar):
 %Time it takes the CDGPS to get a lock (s)
-const.gps_max_angle= 60*pi/180;% (positive scalar):
+const.gps_max_angle= pi;%60*pi/180;% (positive scalar):
 % Max angle of gps antenna to radia out where gps can work (rad)
 const.cdgps_max_angle= 60*pi/180;% (positive scalar):
 % Max angle of cdgps antenna to other sat where cdgps can work (rad)
@@ -134,16 +129,32 @@ const.gyro_noise_sdiv= 0.1*pi/180;% (positive scalar):
 const.gyro_bias_sdiv= 1*pi/180;% (positive scalar):
 %standard diviation of the gyro bias (rad/s)
 %% ORBIT_ESTIMATION parameters %%
-const.time_for_stale_cdgps= int64(1E9)*int64(24*60*60);% (int64 scalar):
+const.time_for_stale_cdgps= int64(1E9)*int64(2*60*60);% (int64 scalar):
 % time to wait before making the target estimate stale (ns)
-const.orb_process_noise_var= diag([1E-10;1E-10;1E-10;1E-8;1E-8;1E-8;]);% (6x6 symetric matrix)
+sharedposprosdiv= 1E-2;
+indposprosdiv= 1E-2;
+sharedvelprosdiv= 1E-5;
+indvelprosdiv= 1E-6;
+selfprocessvar= diag([(indposprosdiv^2+sharedposprosdiv^2)*ones(3,1);(indvelprosdiv^2+sharedvelprosdiv^2)*ones(3,1);]);
+coprocessvar= diag([(sharedposprosdiv^2)*ones(3,1);(sharedvelprosdiv^2)*ones(3,1);]);
+const.orb_process_noise_var= [selfprocessvar, coprocessvar;
+                              coprocessvar',selfprocessvar;];% (12x12 symetric matrix)
 % Added variance for bad force models divided by timestep (mks units)
-const.single_gps_noise_covariance= diag([1;1;1;1;1;1;]);% (6x6 symetric matrix)
-%noise covariance of gps reading
-const.fixed_cdgps_noise_covariance= diag([1;1;1;1;1;1;0.1^2;0.1^2;0.1^2;]);% (9x9 symetric matrix)
-%noise covariance of cdgps reading in fixed mode
+const.orb_self_thrust_noise_sdiv= 0.2;% (positive scalar)
+% ratio of thruster impulse that is noise
+const.orb_target_thrust_noise_sdiv= 1.0;% (positive scalar)
+% ratio of thruster impulse that is noise
+gpspossdiv=30;
+gpsvelsdiv=10;
+cdgpspossdiv=0.5;
+const.single_gps_noise_covariance= diag([gpspossdiv^2*ones(3,1);gpsvelsdiv^2*ones(3,1);]);% (6x6 symetric matrix)
+%noise covariance of gps reading  (mks units)
+const.initial_target_covariance= diag([10;10;10;1E-4;1E-4;1E-4;]);% (6x6 symetric matrix)
+%initial covariance used to initialize target state  (mks units)
+const.fixed_cdgps_noise_covariance= diag([gpspossdiv^2*ones(3,1);gpsvelsdiv^2*ones(3,1);cdgpspossdiv^2*ones(3,1);]);% (9x9 symetric matrix)
+%noise covariance of cdgps reading in fixed mode  (mks units)
 const.float_cdgps_noise_covariance= diag([1;1;1;1;1;1;1;1;1;]);% (9x9 symetric matrix)
-%noise covariance of cdgps reading in float mode
+%noise covariance of cdgps reading in float mode  (mks units)
 
 
 

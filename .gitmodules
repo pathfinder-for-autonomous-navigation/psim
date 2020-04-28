@@ -1,4 +1,4 @@
 [submodule "lin"]
-	path = lin
-	url = https://github.com/kkrol27/lin.git
-	branch = pan/master
+	path = lib/lin
+	url = https://github.com/pathfinder-for-autonomous-navigation/lin.git
+	branch = master

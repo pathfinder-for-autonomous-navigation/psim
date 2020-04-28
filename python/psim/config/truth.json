@@ -1,0 +1,66 @@
+{
+    "follower" : {
+        "position" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "velocity" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "angular_rate" : {
+            "frame" : "body",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "quaternion_body" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0], [1.0]]
+        },
+        "wheel_rate" : {
+            "frame" : "body",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "fuel_angular_momentum" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "fuel_mass" : {
+            "value" : 0.0
+        }
+    },
+    "leader": {
+        "position" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "velocity" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "angular_rate" : {
+            "frame" : "body",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "quaternion_body" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0], [1.0]]
+        },
+        "wheel_rate" : {
+            "frame" : "body",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "fuel_angular_momentum" : {
+            "frame" : "eci",
+            "value" : [[0.0], [0.0], [0.0]]
+        },
+        "fuel_mass" : {
+            "value" : 0.0
+        }
+    },
+    "shared" : {
+        "time" : {
+            "units" : "nanoseconds",
+            "value" : 0
+        }
+    }
+}

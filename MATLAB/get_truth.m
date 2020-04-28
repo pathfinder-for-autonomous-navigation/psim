@@ -43,6 +43,7 @@ if startsWith(name,"help",'IgnoreCase',true)
 '    ''time'': Time since initial GPS week (s)'
 '    ''fuel mass'': The mass of the fuel (kg)'
 '    ''orbital energy'': (J)'
+'    ''specific orbital energy'': (J/kg)'
 '    ''rotational energy'': (J)'
 '    ''semimajor axis'': osculating semimajor axis (m)'
 '    ''eccentricity'': osculating eccentricity (unitless)'
@@ -134,6 +135,12 @@ elseif startsWith(name,"orbital energy",'IgnoreCase',true)
     PE=-PG*(const.MASS+dynamics.fuel_mass);
     KE= 0.5*(dynamics.fuel_mass+const.MASS)*dynamics.velocity_eci'*dynamics.velocity_eci;
     value= KE+PE;
+elseif startsWith(name,"specific orbital energy",'IgnoreCase',true)
+    [quat_ecef_eci,~]=env_earth_attitude(dynamics.time);
+    [~,PG,~]= env_gravity(dynamics.time,utl_rotateframe(quat_ecef_eci,dynamics.position_eci));
+    PE=-PG;
+    KE= 0.5*dynamics.velocity_eci'*dynamics.velocity_eci;
+    value= KE+PE;    
 elseif startsWith(name,"rotational energy",'IgnoreCase',true)
     rotational_energy= dynamics.angular_rate_body'*const.JB*dynamics.angular_rate_body;
     rotational_energy= rotational_energy+dynamics.wheel_rate_body'*const.JWHEEL*dynamics.wheel_rate_body;

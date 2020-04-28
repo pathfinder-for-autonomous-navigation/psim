@@ -1,0 +1,31 @@
+false,double,pi,3.141592653589793
+false,float,pi_f,pi
+false,double,two_pi,2.0 * pi
+false,float,two_pi_f,two_pi
+false,double,deg_to_rad,pi / 180.0
+false,float,deg_to_rad_f,deg_to_rad
+false,double,rad_to_deg,180.0 / pi
+false,float,rad_to_deg_f,rad_to_deg
+false,double,mu_earth,3.986004418e14
+false,float,mu_earth_f,mu_earth
+false,double,nan,std::numeric_limits<double>::quiet_NaN()
+false,float,nan_f,std::numeric_limits<float>::quiet_NaN()
+true,unsigned short,init_gps_week_number,2045
+true,unsigned int,init_gps_time_of_week,0
+true,unsigned long,init_gps_nanoseconds,0
+true,double,init_dec_year,2.019205478881278e3
+true,double,earth_rate_ecef_z,1.0e-4 * 0.729211585530000
+true,lin::Vector3d,earth_precession_rate,1.0e-11 * 0.069896936522494,1.0e-11 * -0.315732660584366,0.0
+true,lin::Vector4d,q_ecef0_eci,0.000917219458782,0.000038843277811,0.998612074831165,0.052660053181324
+false,double,earth_eccentricity,0.0167086
+false,double,earth_perihelion_time,-6287982.0
+false,double,earth_period,365.256363004 * 24.0 * 60.0 * 60.0
+false,lin::Vector4d,q_eci_perifocal,0.127456632677880,-0.158124280715206,0.762378784011859,-0.614434787689722
+false,float,b_noise_floor,0.0f
+false,double,max_mtr_moment,0.113337 / 2.0
+true,lin::Matrix3x3f,J_sat,0.03798,0.0,0.0,0.0,0.03957,0.0,0.0,0.0,0.00688
+true,float,pointer_Kp,20.0e-4f
+true,float,pointer_Kd,22.5e-4f
+false,float,J_wheel,135.0e-7f
+false,float,w_wheel_max,677.0f
+false,uint64_t,NANOSECONDS_IN_WEEK,7ULL*24ULL*60ULL*60ULL*1'000'000'000ULL
