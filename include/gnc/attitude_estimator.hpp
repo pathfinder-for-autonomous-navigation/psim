@@ -25,7 +25,7 @@
 /** @file gnc/attitude_estimator.hpp
  *  @author Kyle Krol
  *  Defines the interface for the attitude estimator.
- * 
+ *
  *  At a high level, the attitude estimator implemented here is an unscented
  *  Kalman filter estimating both attitude and gyro bias. It's based on "Unscented
  *  Filtering for Spacecraft Attitude Estimation" by John Crassidis and Landis
@@ -68,6 +68,35 @@
 #include <lin/core.hpp>
 
 namespace gnc {
+namespace constant {
+
+/** Standard deviation of gyro noise.
+ * 
+ *  This parameter tunes the expected amount of gyro noise within the attitude
+ *  estimator. It's defaulted to a value of `1.0e-6f` (units of radians per
+ *  second). */
+extern float ukf_sigma_v;
+
+/** Standard deviation of gyro bias noise.
+ * 
+ *  This parameter tunes the expected amount of gyro bias noise within the
+ *  attitude estimator. It's defaulted to a value of `2.75e-4f` (MKS units). */
+extern float ukf_sigma_u;
+
+/** Standard deviation of magnetometer noise.
+ * 
+ *  This parameter tunes the expected amount of magnetometer noise within the
+ *  attitude estimator. It's defaulted to a value of `5.0e-7f` (units of Tesla) */
+extern float ukf_sigma_b;
+
+/** Standard deviation of sun vector noise (in terms of angle error).
+ * 
+ *  This parameter tunes the expected amount of sun vector noise within the
+ *  attitude estimator. It's defaulted to a value of
+ *  `2.0f * constant::deg_to_rad_f` (units of radians). */
+extern float ukf_sigma_s;
+
+}  // namespace constant
 
 /** @struct AttitudeEstimatorState
  *  Contains the internal state of an attitude estimator.
@@ -145,6 +174,20 @@ struct AttitudeEstimate {
 };
 
 /** @fn attitude_estimator_reset
+ *  Initializes the attitude filter state.
+ *
+ *  @param[out] state      Attitude estimator state to be reset/initialized.
+ *  @param[in]  t          Time since the PAN epoch (units of seconds).
+ *  @param[in]  q_body_eci Quaternion rotating from the body frame to ECI.
+ *
+ *  Initializes the current time and attitude estimate to the passed arguments.
+ *  The gyro bias and covariance is set to default values.
+ *
+ *  The state will be valid as long as the passed arguments were finite. */
+void attitude_estimator_reset(AttitudeEstimatorState &state,
+    double t, lin::Vector4f const &q_body_eci);
+
+/** @fn attitude_estimator_reset
  *  Initializes the attitude filter state using the triad method.
  *
  *  @param[out] state  Attitude estimator state to be reset/initialized.
@@ -161,29 +204,15 @@ struct AttitudeEstimate {
  *  the estimator state was succesfully reset. The reset call will fail is
  *  parameters given failed the triad algorithm - i.e the sun and magnetic field
  *  vector were nearly parallel.
- * 
+ *
  *  See the `gnc::utl::triad` documentation for more information. */
 void attitude_estimator_reset(AttitudeEstimatorState &state,
     double t, lin::Vector3d const &r_ecef, lin::Vector3f const &b_body,
     lin::Vector3f const &s_body);
 
-/** @fn attitude_estimator_reset
- *  Initializes the attitude filter state.
- *
- *  @param[out] state      Attitude estimator state to be reset/initialized.
- *  @param[in]  t          Time since the PAN epoch (units of seconds).
- *  @param[in]  q_eci_body Quaternion rotating from ECI to the body frame.
- *
- *  Initializes the current time and attitude estimate to the passed arguments.
- *  The gyro bias and covariance is set to default values.
- *
- *  The state will be valid as long as the passed arguments were finite. */
-void attitude_estimator_reset(AttitudeEstimatorState &state,
-    double t, lin::Vector4f const &q_eci_body);
-
 /** @fn attitude_estimator_update
  *  Updates the attitude estimate given a set of sensor readings.
- * 
+ *
  *  @param[inout] state    Previous filter state.
  *  @param[in]    data     Sensor readings.
  *  @param[out]   estimate Updated attitude estimate.
@@ -192,7 +221,7 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
  *  filter implementations. The first runs if all required elements of the `data`
  *  struct as well an a sun vector readings are specified; it's the superior
  *  filter. The latter runs when no sun vector is specified.
- * 
+ *
  *  After calling, it's recommended to check the `state.is_valid` or
  *  `estiamte.is_valid` field to ensure the update step completed succesfully.
  *  Further checks on the updated covariance matrix are also suggested to check

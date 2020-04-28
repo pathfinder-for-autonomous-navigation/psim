@@ -1,0 +1,416 @@
+/** @file gnc_attitude_estimator.cpp
+ *  @author Kyle Krol
+ *  @author Stewart Aslan */
+
+#include <gnc/attitude_estimator.hpp>
+#include <gnc/constants.hpp>
+#include <gnc/environment.hpp>
+#include <gnc/utilities.hpp>
+
+#include <lin/core.hpp>
+#include <lin/factorizations/chol.hpp>
+#include <lin/factorizations/qr.hpp>
+#include <lin/generators/constants.hpp>
+#include <lin/generators/identity.hpp>
+#include <lin/math.hpp>
+#include <lin/queries.hpp>
+#include <lin/references.hpp>
+#include <lin/substitutions/backward_substitution.hpp>
+
+// #include <iostream>
+
+namespace gnc {
+
+/** Standard deviation of gyro noise. */
+GNC_TRACKED_CONSTANT(constexpr static double, sigma_v, 2.75e-4);
+/** Standard deviation of gyro bias noise. */
+GNC_TRACKED_CONSTANT(constexpr static double, sigma_u, 1.0e-6);
+/** Tuning parameter for the shape of the sigma point distribution. */
+GNC_TRACKED_CONSTANT(constexpr static double, lambda, 1.0);
+
+/** Standard deviation of magnetomter noise (units of Tesla). */
+GNC_TRACKED_CONSTANT(constexpr static double, sigma_b, 5.0e-7);
+/** Standard deviation of sun vector "angle" noise (units of randians). */
+GNC_TRACKED_CONSTANT(constexpr static double, sigma_s, 2.0 * constant::deg_to_rad);
+
+GNC_TRACKED_CONSTANT(lin::Vector3d const, AttitudeEstimator::init_gyr_bias,
+  0.0,
+  0.0,
+  0.0
+);
+
+GNC_TRACKED_CONSTANT(decltype(AttitudeEstimator::init_P), AttitudeEstimator::init_P,
+  0.0305,    0.0,    0.0,     0.0,    0.0,    0.0,
+     0.0, 0.0305,    0.0,     0.0,    0.0,    0.0,
+     0.0,    0.0, 0.0305,     0.0,    0.0,    0.0,
+     0.0,    0.0,    0.0,  0.0049,    0.0,    0.0,
+     0.0,    0.0,    0.0,     0.0, 0.0049,    0.0,
+     0.0,    0.0,    0.0,     0.0,    0.0, 0.0049
+);
+
+void AttitudeEstimator::is_valid_check() const {
+  _is_valid = lin::isfinite(_t) && lin::all(lin::isfinite(_q_body_eci)) &&
+      lin::all(lin::isfinite(_gyro_bias)) && lin::all(lin::isfinite(_P));
+}
+
+AttitudeEstimator::AttitudeEstimator(AttitudeEstimator const &estimator) {
+  *this = estimator;
+}
+
+AttitudeEstimator::AttitudeEstimator(AttitudeEstimator &&estimator) {
+  *this = estimator;
+}
+
+AttitudeEstimator &AttitudeEstimator::operator=(AttitudeEstimator const &estimator) {
+  _is_valid = estimator._is_valid;
+  _t = estimator._t;
+  _q_body_eci = estimator._q_body_eci;
+  _gyro_bias = estimator._gyro_bias;
+  _P = estimator._P;
+  return *this;
+}
+
+AttitudeEstimator &AttitudeEstimator::operator=(AttitudeEstimator &&estimator) {
+  _is_valid = std::move(estimator._is_valid);
+  _t = std::move(estimator._t);
+  _q_body_eci = std::move(estimator._q_body_eci);
+  _gyro_bias = std::move(estimator._gyro_bias);
+  _P = std::move(estimator._P);
+  return *this;
+}
+
+void AttitudeEstimator::reset(double t, lin::Vector4d const &q_body_eci,
+    lin::Vector3d const &gyro_bias, lin::Matrixd<6, 6> const &P) {
+  _t = t;
+  _q_body_eci = q_body_eci;
+  _gyro_bias = gyro_bias;
+  _P = P;
+  is_valid_check();
+}
+
+void AttitudeEstimator::reset(double t, lin::Vector3d const &r_ecef,
+    lin::Vector3d const &s_body, lin::Vector3d const &b_body) {
+  // TODO
+  is_valid_check();
+}
+
+/** @fn propegate
+ *  @param[in]  dt    Timestep.
+ *  @param[in]  w     Angular rate in radians per second.
+ *  @param[in]  q_old Initial attitude.
+ *  @param[out] q_new Final attitude.
+ *  Updates the attitude of a body rotating at an angular rate w over a time dt
+ *  from q_old to q_new.
+ *  The input quaternion should be normalized. */
+template <typename T>
+static void propegate(T dt, lin::Vector<T, 3> const &w, lin::Vector<T, 4> const &q_old,
+    lin::Vector<T, 4> &q_new) {
+  GNC_ASSERT_NORMALIZED(q_old);
+
+  // Calculate transition matrix
+  lin::Matrix<T, 4, 4> O;
+  {
+    T norm_w = lin::norm(w);
+    lin::Vector<T, 3> psi = lin::sin(T(0.5) * dt * norm_w) * w / norm_w;
+    lin::Matrix<T, 3, 3> psi_x = {
+      T(0.0), -psi(2),  psi(1),
+       psi(2),  T(0.0), -psi(0),
+      -psi(1),  psi(0),  T(0.0)
+    };
+
+    O = lin::cos(T(0.5) * norm_w * dt) * lin::identity<T, 4>();
+    lin::ref<3, 3>(O, 0, 0) = lin::ref<3, 3>(O, 0, 0) - psi_x;
+    lin::ref<3, 1>(O, 0, 3) = psi;
+    lin::ref<1, 3>(O, 3, 0) = -lin::transpose(psi);
+  }
+
+  // Propegate our quaternion forward
+  q_new = O * q_old; // TODO : normalize here?
+}
+
+// #define PRINT_SIGMA(n) std::cout << "sig" << n << " " << _sigmas[n](0) << " " << _sigmas[n](1) << " " << _sigmas[n](2) << " " << _sigmas[n](3) << " " << _sigmas[n](4) << " " << _sigmas[n](5) << std::endl;
+// #define PRINT_MEASURE(n) std::cout << "mea" << n << " " << _measures[n](0) << " " << _measures[n](1) << " " << _measures[n](2) << " " << _measures[n](3) << " " << _measures[n](4) << std::endl;
+
+void AttitudeEstimator::update(double t, lin::Vector3d const &r_ecef,
+    lin::Vector3d const &s_body, lin::Vector3d const &b_body, lin::Vector3d const &w_body) {
+  GNC_ASSERT_NORMALIZED(s_body);
+
+  /** GRP conversion parameters. @{ */
+  constexpr static double a = 1.0;
+  constexpr static double f = 2.0 * (a + 1.0);
+  /** @} 
+   *  Length of a state vector. @{ */
+  constexpr static lin::size_t N = 6;
+  constexpr static double N_d = N;
+  /** @}
+   *  Length of a measurement vector. @{ */
+  constexpr static lin::size_t M = 5;
+  /** @} */
+
+  // Timestep
+  double dt;
+  {
+    dt = t - this->_t;
+    /** Smallest possible timestep we'll allow this filter to take. */
+    GNC_TRACKED_CONSTANT(constexpr static double, dt_thresh, 1.0e-3);
+    /* This check is to ensure we don't initialize and call update on the filter
+     * in the same timestep. */
+    if (dt < dt_thresh) return;
+  }
+
+  // Process noise covariance
+  lin::Matrixd<N, N> Q = lin::zeros<double, N, N>();
+  {
+    /** Tuning factor scaling the process noise covariance matrix. */
+    GNC_TRACKED_CONSTANT(constexpr static double, Q_factor, 1.0e3);
+
+    double factor = Q_factor * dt / 2.0f;
+    Q(0, 0) = factor * (sigma_v * sigma_v - sigma_u * sigma_u * dt * dt / 6.0f);
+    Q(1, 1) = Q(0, 0);
+    Q(2, 2) = Q(0, 0);
+    Q(3, 3) = factor * (sigma_u * sigma_u);
+    Q(4, 4) = Q(3, 3);
+    Q(5, 5) = Q(3, 3);
+  }
+
+  // Sensor noise covariance
+  lin::Matrixd<M, M> R = lin::zeros<double, M, M>();
+  {
+    R(0, 0) = sigma_s * sigma_s;
+    R(1, 1) = R(0, 0);
+    R(2, 2) = sigma_b * sigma_b;
+    R(3, 3) = R(2, 2);
+    R(4, 4) = R(2, 2);
+  }
+
+  // Previous state vector, state covariance, and attitude quaternion
+  lin::Vectord<N> x_old { 0.0, 0.0, 0.0, _gyro_bias(0), _gyro_bias(1), _gyro_bias(2) };
+  lin::Matrixd<N, N> P_old = _P;
+  lin::Vector4d q_old = _q_body_eci;
+
+  // Determine q_new - i.e. result of propegating the first sigma point
+  lin::Vector4d q_new;
+  {
+    lin::Vector3d w = w_body - lin::ref<3, 1>(x_old, 3, 0);
+    propegate(dt, w, q_old, q_new);
+  }
+
+  // Generate sigma points
+  {
+    lin::Matrixd<N, N> L = P_old + Q;
+    lin::chol(L);
+
+    _sigmas[0] = x_old;
+    L = lin::sqrt(N_d + lambda) * L;
+    for (lin::size_t i = 0; i < L.cols(); i++) _sigmas[i + 1] = x_old + lin::ref_col(L, i);
+    for (lin::size_t i = 0; i < L.cols(); i++) _sigmas[i + L.cols() + 1] = x_old - lin::ref_col(L, i);
+  }
+
+  // PRINT_SIGMA(0);
+  // PRINT_SIGMA(1);
+  // PRINT_SIGMA(2);
+  // PRINT_SIGMA(3);
+  // PRINT_SIGMA(4);
+  // PRINT_SIGMA(5);
+  // PRINT_SIGMA(6);
+  // PRINT_SIGMA(7);
+  // PRINT_SIGMA(8);
+  // PRINT_SIGMA(9);
+  // PRINT_SIGMA(10);
+  // PRINT_SIGMA(11);
+  // PRINT_SIGMA(12);
+  
+  // Propegate sigma points forward and calculate expected measurements
+  {
+    // Generate expected sun and magnetic field vectors
+    lin::Vector3d s_exp, b_exp;
+    {
+      env::sun_vector(t, s_exp); // s_exp in ECI
+
+      lin::Vector4d q_eci_ecef;
+      env::earth_attitude(t, q_eci_ecef); // q_eci_ecef = q_ecef_eci
+      utl::quat_conj(q_eci_ecef);         // q_eci_ecef = q_eci_ecef
+
+      env::magnetic_field(t, r_ecef, b_exp); // b_exp in ECEF
+      utl::rotate_frame(q_eci_ecef, b_exp);  // b_exp in ECI
+    }
+
+    // Calculate the expected measurements for the zeroth sigma point
+    {
+      lin::Vector3d s, b;
+      utl::rotate_frame(q_new, s_exp, s); // s in the body frame
+      utl::rotate_frame(q_new, b_exp, b); // b in the body frame
+
+      _measures[0] = {
+        lin::atan(s(1) / s(0)),
+        lin::acos(s(2)),
+        b(0),
+        b(1),
+        b(2)
+      };
+    }
+
+    // Conjugate of the q_new
+    lin::Vector4d conj_q_new;
+    utl::quat_conj(q_new, conj_q_new);
+
+    // Propegate and generate expected measurements for the other sigma points
+    for (lin::size_t i = 1; i < 13; i++) {
+      // Calculate this sigma's propegated attitude
+      lin::Vector4d _q_new;
+      {
+        lin::Vector4d q, _q_old;
+        utl::grp_to_quat(lin::ref<3, 1>(_sigmas[i], 0, 0).eval(), a, f, q);
+        utl::quat_cross_mult(q, q_old, _q_old);
+
+        lin::Vector3d w = w_body - lin::ref<3, 1>(_sigmas[i], 3, 0);
+        propegate(dt, w, _q_old, _q_new);
+      }
+
+      // Determine expected measurements
+      {
+        lin::Vector3d s, b;
+        utl::rotate_frame(_q_new, s_exp, s); // s in the body frame
+        utl::rotate_frame(_q_new, b_exp, b); // b_exp in the body frame
+
+        _measures[i] = {
+          lin::atan(s(1) / s(0)),
+          lin::acos(s(2)),
+          b(0),
+          b(1),
+          b(2)
+        };
+      }
+
+      // Determine the propegated sigmas
+      {
+        lin::Vector4d q;
+        utl::quat_cross_mult(_q_new, conj_q_new, q); // q = "residual" propegated rotation
+
+        lin::Vector3d p;
+        utl::quat_to_qrp(q, a, f, p);
+        lin::ref<3, 1>(_sigmas[i], 0, 0) = p;
+      }
+    }
+  }
+
+  // PRINT_SIGMA(0);
+  // PRINT_SIGMA(1);
+  // PRINT_SIGMA(2);
+  // PRINT_SIGMA(3);
+  // PRINT_SIGMA(4);
+  // PRINT_SIGMA(5);
+  // PRINT_SIGMA(6);
+  // PRINT_SIGMA(7);
+  // PRINT_SIGMA(8);
+  // PRINT_SIGMA(9);
+  // PRINT_SIGMA(10);
+  // PRINT_SIGMA(11);
+  // PRINT_SIGMA(12);
+
+  // PRINT_MEASURE(0);
+  // PRINT_MEASURE(1);
+  // PRINT_MEASURE(2);
+  // PRINT_MEASURE(3);
+  // PRINT_MEASURE(4);
+  // PRINT_MEASURE(5);
+  // PRINT_MEASURE(6);
+  // PRINT_MEASURE(7);
+  // PRINT_MEASURE(8);
+  // PRINT_MEASURE(9);
+  // PRINT_MEASURE(10);
+  // PRINT_MEASURE(11);
+  // PRINT_MEASURE(12);
+
+  // Calculate sigma point and covariance weights
+  double weight_c = lambda / (N_d + lambda);
+  double weight_o = 1.0 / (2.0 * (N_d + lambda));
+
+  // lin::Vectorf<N> x_bar = weight_c * _sigmas[0];
+  // lin::Vectorf<M> z_bar = weight_c * _measures[0];
+  // for (lin::size_t i = 1; i < 13; i++) {
+  //   x_bar = x_bar + weight_o * _sigmas[i];
+  //   z_bar = z_bar + weight_o * _measures[i] + _measures[i+6];
+  // }
+  //x_bar= -1.59519e-08 2.30328e-08 -8.14907e-10 0 0 0
+  //z_bar= -0.361642 11.6351 0.0305016 0.214268 0.0826427
+
+  lin::Vectord<N> x_bar = weight_c * _sigmas[0];
+  lin::Vectord<M> z_bar = weight_c * _measures[0];
+  for (lin::size_t i = 1; i < 7; i++) {
+    x_bar = x_bar + weight_o * (_sigmas[i] + _sigmas[i+6]);
+    z_bar = z_bar + weight_o * (_measures[i] + _measures[i+6]);
+  }
+  //x_bar= -2.12296e-08 2.47928e-08 -1.81249e-09 0 0 0
+  //z_bar= -0.117957 1.45314 -2.24962e-07 1.54626e-05 2.28017e-05
+
+  std::cout << "x_bar= " << x_bar(0) << " " << x_bar(1) << " " << x_bar(2) << " " << x_bar(3) << " " << x_bar(4) << " " << x_bar(5) << " " << std::endl;
+  std::cout << "z_bar= " << z_bar(0) << " " << z_bar(1) << " " << z_bar(2) << " " << z_bar(3) << " " << z_bar(4) << std::endl;
+
+  // Compute weighted covariances
+  lin::Matrixd<N, N> P_bar;
+  lin::Matrixd<M, M> P_yy;
+  lin::Matrixd<N, M> P_xy;
+  {
+    lin::Vectord<N> dx1 = _sigmas[0] - x_bar;
+    lin::Vectord<M> dz1 = _measures[0] - z_bar;
+    P_bar = P_bar + weight_c * (dx1 * lin::transpose(dx1));
+    P_yy = P_yy + weight_c * (dz1 * lin::transpose(dz1));
+    P_xy = P_xy + weight_c * (dx1 * lin::transpose(dz1));
+
+    for (lin::size_t i = 1; i < 7; i++) {
+      lin::Vectord<N> dx2;
+      lin::Vectord<M> dz2;
+
+      dx1 = _sigmas[i] - x_bar;
+      dz1 = _measures[i] - z_bar;
+      dx2 = _sigmas[i+6] - x_bar;
+      dz2 = _measures[i+6] - z_bar;
+      P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1) + dx2 * lin::transpose(dx2));
+      P_yy = P_yy + weight_o * (dz1 * lin::transpose(dz1) + dz2 * lin::transpose(dz2));
+      P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1) + dx2 * lin::transpose(dz2));
+    }
+
+    P_bar = P_bar + Q; // Add process noise to predicted covariance
+    P_yy = P_yy + R;   // Add sensor noise to innovation covariance
+  }
+
+  // Calculate Kalman gain
+  lin::Matrixf<N, M> K;
+  {
+    lin::Matrixd<M, M> Q, R;
+    lin::qr(P_yy, Q, R);
+    lin::backward_sub(R, Q, lin::transpose(Q).eval()); // Q = inv(P_yy)    
+    K = P_xy * Q;
+  }
+
+  std::cout << "K_00= " << K(0, 0) << std:: endl;
+
+  // Calculate this steps measurement
+  lin::Vectord<M> z_new {
+    lin::atan(s_body(1) / s_body(0)),
+    lin::acos(s_body(2)),
+    b_body(0),
+    b_body(1),
+    b_body(2)
+  };
+
+  // Calculate our new state
+  lin::Vectord<N> x_new = x_bar + K * (z_new - z_bar).eval();
+
+  // Update class members
+  {
+    this->_P = P_bar - K * (P_yy * lin::transpose(K)).eval();
+    this->_gyro_bias = lin::ref<3, 1>(x_new, 3, 0);
+    this->_t = t;
+
+    lin::Vector4d q;
+    utl::grp_to_quat(lin::ref<3, 1>(x_new, 0, 0).eval(), a, f, q);
+    utl::quat_cross_mult(q, q_new, this->_q_body_eci);
+    this->_q_body_eci = this->_q_body_eci / lin::norm(this->_q_body_eci);
+  }
+
+  // Update validity
+  is_valid_check();
+}
+}  // namespace gnc

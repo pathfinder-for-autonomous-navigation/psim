@@ -60,23 +60,23 @@ void test_environment_sun_vector() {
   // Calculate and check for t=0.0 (comparing against MATLAB)
   gnc::env::sun_vector(0.0L, s);
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-5, s, lin::Vector3f({
-     0.997341623364311f,
-    -0.066845783473014f,
-    -0.029005646638551f
+    -0.799739280399221,
+     0.463585679812799,
+     0.381451701869374
   }));
   // Calculate and check for t=100000.0 (comparing against MATLAB)
   gnc::env::sun_vector(100000.0L, s);
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-5, s, lin::Vector3f({
-     0.998604978312986f,
-    -0.048435925195477f,
-    -0.021025185825087f
+    -0.808776458089373,
+     0.445760043285879,
+     0.383638664175262
   }));
   // Calculate and check for t=200000.0 (comparing against MATLAB)
   gnc::env::sun_vector(200000.0L, s);
   TEST_ASSERT_FLOAT_VEC_NEAR(1e-5, s, lin::Vector3f({
-     0.999464270282190f,
-    -0.030018263209437f,
-    -0.013041330575474f
+    -0.817481265280114,
+     0.427765782728485,
+     0.385669309179135
   }));
 }
 
