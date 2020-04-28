@@ -33,13 +33,13 @@
 
 #include <lin/core.hpp>
 #include <lin/factorizations/chol.hpp>
-#include <lin/factorizations/qr.hpp>
 #include <lin/generators/constants.hpp>
 #include <lin/generators/identity.hpp>
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
 #include <lin/substitutions/backward_substitution.hpp>
+#include <lin/substitutions/forward_substitution.hpp>
 
 namespace gnc {
 namespace constant {
@@ -104,6 +104,8 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
   q_new = q_new / lin::norm(q_new);
 }
 
+#include <iostream>
+
 /** @fn ukf
  *  Performs a single attitude estimator update step.
  *
@@ -152,13 +154,21 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
   // Generate sigma points
   {
     UkfMatrix6x6 L = state.P + Q;
+
+    std::cout << "P+Q=\n" << L;
+
     lin::chol(L);
+
+    std::cout << "L=\n" << L;
 
     state.sigmas[0] = state.x;
     L = lin::sqrt(N + lambda) * L;
     for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + 1] = state.x + lin::ref_col(L, i);
     for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + L.cols() + 1] = state.x - lin::ref_col(L, i);
   }
+
+  for (lin::size_t i = 0; i < 13; i++)
+    std::cout << "sigma" << i << "= " << lin::transpose(state.sigmas[i]);
 
   // Propegate the center sigma points attitude
   UkfVector4 q_new;
@@ -406,8 +416,8 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   state.P(1, 1) = state.P(0, 0);
   state.P(2, 2) = state.P(0, 0);
   state.P(3, 3) = var_g;
-  state.P(3, 3) = state.P(3, 3);
-  state.P(4, 4) = state.P(4, 4);
+  state.P(4, 4) = state.P(3, 3);
+  state.P(5, 5) = state.P(4, 4);
   state.is_valid = true;
 
   // If invalid, set everything back to NaNs
