@@ -36,6 +36,7 @@ SOFTWARE.
 #include <limits>
 #include <array>
 #include <lin.hpp>
+#include <lin/factorizations/qr.hpp>
 
 namespace orb
 {
