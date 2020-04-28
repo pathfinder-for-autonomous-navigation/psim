@@ -33,13 +33,14 @@
 
 #include <lin/core.hpp>
 #include <lin/factorizations/chol.hpp>
+#include <lin/factorizations/qr.hpp>
 #include <lin/generators/constants.hpp>
 #include <lin/generators/identity.hpp>
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
 #include <lin/substitutions/backward_substitution.hpp>
-#include <lin/substitutions/forward_substitution.hpp>
+//#include <lin/substitutions/forward_substitution.hpp>
 
 namespace gnc {
 namespace constant {
@@ -358,6 +359,17 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
       lin::qr(state.P_vv, Q, R);
       lin::backward_sub(R, Q, lin::transpose(Q).eval()); // Q = inv(P_yy)    
       K = state.P_xy * Q;
+      //q_body_eci=0.265939 0.0140163 0.0174969 0.963729
+      //gyro_bias= -0.00177179 0.00152657 3.14674e-05
+
+      // UkfMatrix5x6 M, N;
+      // UkfMatrix5x5 L = state.P_vv;
+      // lin::chol(L);
+      // lin::forward_sub(L, M, lin::transpose(state.P_xy).eval());
+      // lin::backward_sub(lin::transpose(L).eval(), N, M);
+      // K = lin::transpose(N);
+      //q_body_eci=0.265939 0.0140163 0.0174969 0.963729
+      //gyro_bias= -0.00177179 0.00152657 3.14674e-05
     }
 
     // Calculate this steps measurement
