@@ -91,8 +91,13 @@ static void test_update() {
       0.000003146367224, -0.000019614885086, -0.000015421716731,  0.000000007334188,  0.000000394646413,  0.004892241707372
   };
 
-  std::cout << "q_body_eci= " << estimate.q_body_eci(0) << " " << estimate.q_body_eci(1) << " " << estimate.q_body_eci(2) << " " << estimate.q_body_eci(3) << std::endl;
-  std::cout << "gyro_bias= " << estimate.gyro_bias(0) << " " << estimate.gyro_bias(1) << " " << estimate.gyro_bias(2) << std::endl;
+  std::cout << "q_body_eci=" << lin::transpose(estimate.q_body_eci) << std::endl;
+  std::cout << "gyro_bias= " << lin::transpose(estimate.gyro_bias) << std::endl;
+  std::cout << "x_bar= " << lin::transpose(state.x_bar) << std::endl;
+  std::cout << "z_bar= " << lin::transpose(state.z_bar) << std::endl;
+  std::cout << "P_bar=\n" << state.P_bar << std::endl;
+  std::cout << "P_vv=\n" << state.P_vv << std::endl;
+  std::cout << "P_xy=\n" << state.P_xy << std::endl;
 
   // TODO : Numerical precision issues
   // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
