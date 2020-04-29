@@ -40,7 +40,6 @@
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
 #include <lin/substitutions/backward_substitution.hpp>
-//#include <lin/substitutions/forward_substitution.hpp>
 
 namespace gnc {
 namespace constant {
@@ -105,8 +104,6 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
   q_new = q_new / lin::norm(q_new);
 }
 
-#include <iostream>
-
 /** @fn ukf
  *  Performs a single attitude estimator update step.
  *
@@ -155,21 +152,13 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
   // Generate sigma points
   {
     UkfMatrix6x6 L = state.P + Q;
-
-    std::cout << "P+Q=\n" << L;
-
     lin::chol(L);
-
-    std::cout << "L=\n" << L;
 
     state.sigmas[0] = state.x;
     L = lin::sqrt(N + lambda) * L;
     for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + 1] = state.x + lin::ref_col(L, i);
     for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + L.cols() + 1] = state.x - lin::ref_col(L, i);
   }
-
-  for (lin::size_t i = 0; i < 13; i++)
-    std::cout << "sigma" << i << "= " << lin::transpose(state.sigmas[i]);
 
   // Propegate the center sigma points attitude
   UkfVector4 q_new;
@@ -265,33 +254,20 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
     ukf_float weight_c = lambda / (N + lambda);
     ukf_float weight_o = 1.0f / (2.0f * (N + lambda));
 
-    // TODO : Numerical precision issues
-    // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
-    // x_bar = weight_c * state.sigmas[0];
-    // z_bar = weight_c * state.measures[0];
-    // for (lin::size_t i = 1; i < 13; i++) {
-    //   x_bar = x_bar + weight_o * state.sigmas[i];
-    //   z_bar = z_bar + weight_o * state.measures[i] + state.measures[i+6];
-    // }
-    // q_body_eci= 0.267956 0.0233846 -0.0179891 0.962979
-    // gyro_bias= -0.00203587 8.39815e-07 1.23536e-06
+    // Calculate x_bar and z_bar
     x_bar = weight_c * state.sigmas[0];
     z_bar = weight_c * state.measures[0];
-    for (lin::size_t i = 1; i < 7; i++) {
-      x_bar = x_bar + weight_o * (state.sigmas[i] + state.sigmas[i+6]);
-      z_bar = z_bar + weight_o * (state.measures[i] + state.measures[i+6]);
+    for (lin::size_t i = 1; i < 13; i++) {
+      x_bar = x_bar + weight_o * state.sigmas[i];
+      z_bar = z_bar + weight_o * state.measures[i];
     }
-    // q_body_eci= 0.265934 0.0140192 0.0175119 0.96373
-    // gyro_bias= -0.00177162 1.17908e-06 2.37971e-08
 
+    // Plus the associated covariances
     UkfVector6 dx1 = state.sigmas[0] - x_bar;
     UkfVector5 dz1 = state.measures[0] - z_bar;
     P_bar = P_bar + weight_c * dx1 * lin::transpose(dx1);
     P_vv = P_vv + weight_c * dz1 * lin::transpose(dz1);
     P_xy = P_xy + weight_c * dx1 * lin::transpose(dz1);
-
-    // TODO : Numerical precision issues
-    // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
     for (lin::size_t i = 1; i < 7; i++) {
       UkfVector6 dx2;
       UkfVector5 dz2;
@@ -353,23 +329,10 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
     // Calculate Kalman gain
     UkfMatrix6x5 K;
     {
-      // TODO : Numerical precision issues
-      // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/191
       UkfMatrix5x5 Q, R;
       lin::qr(state.P_vv, Q, R);
       lin::backward_sub(R, Q, lin::transpose(Q).eval()); // Q = inv(P_yy)    
       K = state.P_xy * Q;
-      //q_body_eci=0.265939 0.0140163 0.0174969 0.963729
-      //gyro_bias= -0.00177179 0.00152657 3.14674e-05
-
-      // UkfMatrix5x6 M, N;
-      // UkfMatrix5x5 L = state.P_vv;
-      // lin::chol(L);
-      // lin::forward_sub(L, M, lin::transpose(state.P_xy).eval());
-      // lin::backward_sub(lin::transpose(L).eval(), N, M);
-      // K = lin::transpose(N);
-      //q_body_eci=0.265939 0.0140163 0.0174969 0.963729
-      //gyro_bias= -0.00177179 0.00152657 3.14674e-05
     }
 
     // Calculate this steps measurement
@@ -412,7 +375,7 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   GNC_ASSERT_NORMALIZED(q_body_eci);
 
   /** Default, initial attitude covariance (units of radiancs squared). */
-  GNC_TRACKED_CONSTANT(constexpr static float, var_q, 0.030461741978671);
+  GNC_TRACKED_CONSTANT(constexpr static float, var_q, 0.0305);
   /** Default, initial gyro bias covariance (units of radians per second all
    *  squared). */
   GNC_TRACKED_CONSTANT(constexpr static float, var_g, 0.0049);

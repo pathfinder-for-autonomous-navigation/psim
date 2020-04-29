@@ -71,26 +71,26 @@ namespace gnc {
 namespace constant {
 
 /** Standard deviation of gyro noise.
- * 
+ *
  *  This parameter tunes the expected amount of gyro noise within the attitude
  *  estimator. It's defaulted to a value of `1.0e-6f` (units of radians per
  *  second). */
 extern float ukf_sigma_v;
 
 /** Standard deviation of gyro bias noise.
- * 
+ *
  *  This parameter tunes the expected amount of gyro bias noise within the
  *  attitude estimator. It's defaulted to a value of `2.75e-4f` (MKS units). */
 extern float ukf_sigma_u;
 
 /** Standard deviation of magnetometer noise.
- * 
+ *
  *  This parameter tunes the expected amount of magnetometer noise within the
  *  attitude estimator. It's defaulted to a value of `5.0e-7f` (units of Tesla) */
 extern float ukf_sigma_b;
 
 /** Standard deviation of sun vector noise (in terms of angle error).
- * 
+ *
  *  This parameter tunes the expected amount of sun vector noise within the
  *  attitude estimator. It's defaulted to a value of
  *  `2.0f * constant::deg_to_rad_f` (units of radians). */
@@ -104,7 +104,7 @@ extern float ukf_sigma_s;
  *  The internal state of the attitude estimator includes the previous estimates
  *  attitude quaternion, gyro bias estimate, state covariance matrix, timestamp,
  *  and some other variables to act as a buffer for intermediate calculations.
- * 
+ *
  *  After an `attitude_estimator_*` function call, the `is_valid` member variable
  *  can be read to check if all stored values are finite - i.e. not NaN or
  *  inifinity.
