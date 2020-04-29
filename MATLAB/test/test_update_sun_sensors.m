@@ -4,8 +4,8 @@ sensor_readings_follower = sensor_reading(main_state.follower,main_state.leader)
 sensor_readings_leader = sensor_reading(main_state.leader,main_state.follower);
 assert(isstruct(sensor_readings_follower),'sensor_readings_follower is not a struct')
 assert(isstruct(sensor_readings_leader),'sensor_readings_leader is not a struct')
-assert(sensor_readings_follower.sun_sensor_true == 1, 'sun_vec not generated for follower')
-assert(sensor_readings_leader.sun_sensor_true == 1, 'sun_vec not generated for leader')
+%assert(sensor_readings_follower.sun_sensor_true == 1, 'sun_vec not generated for follower')
+%assert(sensor_readings_leader.sun_sensor_true == 1, 'sun_vec not generated for leader')
 
 n = 50; %number of tests
 mus = zeros(n,1); %stores means of voltages for the random test cases
@@ -22,11 +22,11 @@ for k = 1:n
 end
 
 %%get stats for offset angles
-% s = rmmissing(offset_angles);
-% std(s); mean(s); min(s); max(s);
+s = rmmissing(offset_angles);
+std(s); mean(s); min(s); max(s);
 
-% figure(5)
-% histogram(offset_angles,20)
-% xlabel('theta (degrees)'); ylabel('count')
-% title('offset angles counter');
-% saveas(gcf,'offset angles counter.png')
+figure(5)
+histogram(offset_angles,20)
+xlabel('theta (degrees)'); ylabel('count')
+title('offset angles counter');
+saveas(gcf,'offset angles counter.png')
