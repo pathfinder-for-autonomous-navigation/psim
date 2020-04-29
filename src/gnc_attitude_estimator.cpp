@@ -109,11 +109,28 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
  *
  *  @param[inout] state             Attitude estimator state.
  *  @param[in]    data              Input sensor measurements.
- *  @param[in]    ukf_kalman_update Kalman gain update step function. */
+ *  @param[in]    ukf_kalman_update Kalman gain update step function.
+ * 
+ *  This functions takes `state.q`, `state.x`, `state.t`, and `data.*` (with the
+ *  potential exception of `data.s_body`) as inputs. It's assumed that the values
+ *  in both structs are finite.
+ * 
+ *  This function will determine sigma points, propegate sigma points, simulate
+ *  expected measurements, and populate the `x_bar`, `z_bar`, `P_bar`, `P_vv`,
+ *  and `P_xy` fields of the estimator state.
+ * 
+ *  The `ukf_kalman_update` function will then be called and is responsible for
+ *  calculating the Kalman gain and updating the estimator state vector
+ *  (`state.x`) and covariance (`state.P`). This was done so the magnetometer only
+ *  and magnetomter plus sun vector filters could share a large amount of code.
+ * 
+ *  Once the function returns, `ukf` will update `state.t`, zero the first three
+ *  components of `state.x` (zeroth sigma point has "no" attitude error), and
+ *  update `state.q`. */
 static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data,
     void (*ukf_kalman_update)(AttitudeEstimatorState &state, AttitudeEstimatorData const &data)) {
   /** Tuning parameter for the shape of the sigma point distribution. */
-  GNC_TRACKED_CONSTANT(constexpr static ukf_float, lambda, 1.0);
+  constexpr static ukf_float lambda = 1.0;
   /** GRP conversion parameters. @{ */
   constexpr static ukf_float a = 1.0;
   constexpr static ukf_float f = 2.0 * (a + 1.0);
@@ -268,16 +285,12 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
     P_bar = P_bar + weight_c * dx1 * lin::transpose(dx1);
     P_vv = P_vv + weight_c * dz1 * lin::transpose(dz1);
     P_xy = P_xy + weight_c * dx1 * lin::transpose(dz1);
-    for (lin::size_t i = 1; i < 7; i++) {
-      UkfVector6 dx2;
-      UkfVector5 dz2;
+    for (lin::size_t i = 1; i < 13; i++) {
       dx1 = state.sigmas[i] - x_bar;
       dz1 = state.measures[i] - z_bar;
-      dx2 = state.sigmas[i+6] - x_bar;
-      dz2 = state.measures[i+6] - z_bar;
-      P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1) + dx2 * lin::transpose(dx2));
-      P_vv = P_vv + weight_o * (dz1 * lin::transpose(dz1) + dz2 * lin::transpose(dz2));
-      P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1) + dx2 * lin::transpose(dz2));
+      P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1));
+      P_vv = P_vv + weight_o * (dz1 * lin::transpose(dz1));
+      P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1));
     }
 
     // Sensor noise covariance
@@ -299,6 +312,9 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
 
   // Process x (which is now x_new) and P (which is now P_new)
   {
+    // Update time
+    state.t = data.t;
+
     // Perturb q_new according to the new state
     lin::Vector4d q;
     utl::grp_to_quat(lin::ref<3, 1>(state.x, 0, 0).eval(), a, f, q);
@@ -428,13 +444,14 @@ void attitude_estimator_update(AttitudeEstimatorState &state,
     return;
   }
 
-  // State should be valid
   GNC_ASSERT(lin::all(lin::isfinite(state.q)));
   GNC_ASSERT(lin::all(lin::isfinite(state.x)));
   GNC_ASSERT(lin::all(lin::isfinite(state.P)));
+  GNC_ASSERT_NORMALIZED(state.q);
 
   // Run the magnetomter and sun vector implementation
   if (lin::all(lin::isfinite(data.s_body))) {
+    GNC_ASSERT_NORMALIZED(data.s_body);
     ukf_ms(state, data);
   }
   // Run the magnetometer only implementation
