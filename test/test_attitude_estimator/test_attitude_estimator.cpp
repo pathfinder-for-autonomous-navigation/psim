@@ -108,7 +108,7 @@ static void test_update() {
   TEST_ASSERT_TRUE(state.is_valid);
   TEST_ASSERT_LIN_FRO_NEAR_REL(1.0e-3f, q_out, estimate.q_body_eci);
   TEST_ASSERT_LIN_FRO_NEAR_REL(1.0e-3f, gyr_bias_out, estimate.gyro_bias);
-  TEST_ASSERT_LIN_FRO_NEAR_REL(1.0e-3f, P_out, estimate.P); // Makes sense this would be the least accurate
+  TEST_ASSERT_LIN_FRO_NEAR_REL(1.0e-2f, P_out, estimate.P); // Makes sense this would be the least accurate
 }
 
 static int test() {

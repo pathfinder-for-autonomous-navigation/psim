@@ -412,7 +412,7 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   GNC_ASSERT_NORMALIZED(q_body_eci);
 
   /** Default, initial attitude covariance (units of radiancs squared). */
-  GNC_TRACKED_CONSTANT(constexpr static float, var_q, 0.0305);
+  GNC_TRACKED_CONSTANT(constexpr static float, var_q, 0.030461741978671);
   /** Default, initial gyro bias covariance (units of radians per second all
    *  squared). */
   GNC_TRACKED_CONSTANT(constexpr static float, var_g, 0.0049);
