@@ -50,12 +50,10 @@ namespace orb
 template <typename T, lin::size_t N>
 void matrix_hypot(const lin::Matrix<T,N,N>& A,const lin::Matrix<T,N,N>& B,lin::Matrix<T,N,N>& C){
     lin::Matrix<T,N*2,N> M;
-    lin::Matrix<T,N*2,N*2> junk;
-    lin::Matrix<T,N*2,N> R;
+    lin::Matrix<T,N*2,N> junk;
     lin::ref<N, N> (M, 0, 0) = A;
     lin::ref<N, N> (M, N, 0) = B;
-    lin::qr(M, junk, R);
-    C= lin::ref<N, N> (R, 0, 0);
+    lin::qr(M, junk, C);
 }
 
 }

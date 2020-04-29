@@ -10,13 +10,42 @@
 #include <unity.h>
 
 void test_matrix_hypot() {
-    lin::internal::RandomsGenerator const rand;
+    lin::internal::RandomsGenerator const rand(0);
+    {
     lin::Matrixf<8, 8> A, B, C;
     for (int i = 0; i < 25; i++) {
         A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         orb::matrix_hypot(A,B,C);
-        TEST_ASSERT(0.0==lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+        TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+    }
+    }
+    {
+    lin::Matrixd<8, 8> A, B, C;
+    for (int i = 0; i < 25; i++) {
+        A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        orb::matrix_hypot(A,B,C);
+        TEST_ASSERT_FLOAT_WITHIN(1E-12, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+    }
+    }
+    {
+    lin::Matrixf<6, 6> A, B, C;
+    for (int i = 0; i < 25; i++) {
+        A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        orb::matrix_hypot(A,B,C);
+        TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+    }
+    }
+    {
+    lin::Matrixd<6, 6> A, B, C;
+    for (int i = 0; i < 25; i++) {
+        A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        orb::matrix_hypot(A,B,C);
+        TEST_ASSERT_FLOAT_WITHIN(1E-12, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+    }
     }
 }
 
