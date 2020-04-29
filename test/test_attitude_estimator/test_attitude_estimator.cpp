@@ -1,7 +1,9 @@
 
 #include <gnc/attitude_estimator.hpp>
+#include <gnc/constants.hpp>
 
 #include <lin/core.hpp>
+#include <lin/generators.hpp>
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 
@@ -10,6 +12,8 @@
 #undef isinf
 #undef isfinite
 
+#define TEST_ASSERT_LIN_NEAR_ABS(tol, e, a) \
+    TEST_ASSERT_TRUE(lin::all(tol > lin::abs(e - a))); static_assert(true, "")
 #define TEST_ASSERT_LIN_FRO_NEAR_REL(tol, e, a) \
     TEST_ASSERT_TRUE(tol > lin::abs(lin::fro(e) - lin::fro(a)) / lin::fro(e)); static_assert(true, "")
 
@@ -43,7 +47,20 @@ static void test_estimate_constructor() {
 }
 
 static void test_simple_reset() {
-  // TODO : Implement this
+  lin::internal::RandomsGenerator randoms;
+  double t = randoms.next();
+  lin::Vector4d q = lin::rands<lin::Vector4d>(4, 1, randoms);
+  q = q / lin::norm(q);
+
+  gnc::AttitudeEstimatorState state;
+
+  gnc::attitude_estimator_reset(state, t, q);
+  TEST_ASSERT_TRUE(state.is_valid);
+  TEST_ASSERT_DOUBLE_WITHIN(1.0e-6, t, state.t);
+  TEST_ASSERT_LIN_NEAR_ABS(1.0e-5f, q, state.q);
+
+  gnc::attitude_estimator_reset(state, gnc::constant::nan, q);
+  TEST_ASSERT_FALSE(state.is_valid);
 }
 
 static void test_triad_reset() {
@@ -92,7 +109,7 @@ static void test_update() {
   TEST_ASSERT_TRUE(estimate.is_valid);
   TEST_ASSERT_TRUE(state.is_valid);
   TEST_ASSERT_LIN_FRO_NEAR_REL(1.0e-3f, q_out, estimate.q_body_eci);
-  TEST_ASSERT_LIN_FRO_NEAR_REL(1.0e-2f, gyr_bias_out, estimate.gyro_bias);
+  TEST_ASSERT_LIN_FRO_NEAR_REL(1.0e-3f, gyr_bias_out, estimate.gyro_bias);
   TEST_ASSERT_LIN_FRO_NEAR_REL(1.0e-2f, P_out, estimate.P); // Makes sense this would be the least accurate
 }
 

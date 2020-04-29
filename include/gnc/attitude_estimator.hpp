@@ -231,7 +231,8 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
  *  Calculates an updated attitude estimate using one of two unscented Kalman
  *  filter implementations. The first runs if all required elements of the `data`
  *  struct as well an a sun vector readings are specified; it's the superior
- *  filter. The latter runs when no sun vector is specified.
+ *  filter. The latter runs when no sun vector is specified. The estimator state
+ *  and estimate will default to invalid if some expected input isn't provided.
  *
  *  After calling, it's recommended to check the `state.is_valid` or
  *  `estiamte.is_valid` field to ensure the update step completed succesfully.
