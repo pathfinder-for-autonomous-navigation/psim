@@ -24,7 +24,8 @@
 
 /** @file gnc/attitude_estimator.hpp
  *  @author Kyle Krol
- *  Defines the interface for the attitude estimator.
+ *
+ *  @brief Defines the interface for the attitude estimator.
  *
  *  At a high level, the attitude estimator implemented here is an unscented
  *  Kalman filter estimating both attitude and gyro bias. It's based on "Unscented
@@ -39,8 +40,7 @@
  *
  *  gnc::AttitudeEstimatorState state; 
  *
- *  void loop(double t, lin::Vector3d const &r_ecef,...,
- *      lin::Vector4f q_eci_body,...) {
+ *  void loop(double t, lin::Vector3d const &r_ecef, ..., lin::Vector4f q_eci_body, ...) {
  *    if (state.is_valid) {
  *      gnc::AttitudeEstimatorData data;
  *      data.t = t;
@@ -70,26 +70,26 @@
 namespace gnc {
 namespace constant {
 
-/** Standard deviation of gyro noise.
+/** @brief Standard deviation of gyro noise.
  *
  *  This parameter tunes the expected amount of gyro noise within the attitude
  *  estimator. It's defaulted to a value of `1.0e-6f` (units of radians per
  *  second). */
 extern float ukf_sigma_v;
 
-/** Standard deviation of gyro bias noise.
+/** @brief Standard deviation of gyro bias noise.
  *
  *  This parameter tunes the expected amount of gyro bias noise within the
  *  attitude estimator. It's defaulted to a value of `2.75e-4f` (MKS units). */
 extern float ukf_sigma_u;
 
-/** Standard deviation of magnetometer noise.
+/** @brief Standard deviation of magnetometer noise.
  *
  *  This parameter tunes the expected amount of magnetometer noise within the
  *  attitude estimator. It's defaulted to a value of `5.0e-7f` (units of Tesla) */
 extern float ukf_sigma_b;
 
-/** Standard deviation of sun vector noise (in terms of angle error).
+/** @brief Standard deviation of sun vector noise (in terms of angle error).
  *
  *  This parameter tunes the expected amount of sun vector noise within the
  *  attitude estimator. It's defaulted to a value of
@@ -98,8 +98,7 @@ extern float ukf_sigma_s;
 
 }  // namespace constant
 
-/** @struct AttitudeEstimatorState
- *  Contains the internal state of an attitude estimator.
+/** @brief Contains the internal state of an attitude estimator.
  *
  *  The internal state of the attitude estimator includes the previous estimates
  *  attitude quaternion, gyro bias estimate, state covariance matrix, timestamp,
@@ -135,8 +134,7 @@ struct AttitudeEstimatorState {
   bool is_valid;
 };
 
-/** @struct AttitudeEstimatorData
- *  Stores inputs to the `attitude_estimator_update` function.
+/** @brief Stores inputs to the `attitude_estimator_update` function.
  *
  *  These inputs include the current time since the PAN epoch (in seconds),
  *  position in ECEF (in meters), magnetic field reading in the body frame (in
@@ -157,8 +155,7 @@ struct AttitudeEstimatorData {
   AttitudeEstimatorData();
 };
 
-/** @struct AttitudeEstimate
- *  Stores outputs of the `attitude_estimator_update` function.
+/** @brief Stores outputs of the `attitude_estimator_update` function.
  *
  *  These outputs are the current attitude in quaternion representation
  *  (quaternion rotating from ECI to the the body frame), gyro bias estimate in
@@ -184,8 +181,7 @@ struct AttitudeEstimate {
   bool is_valid;
 };
 
-/** @fn attitude_estimator_reset
- *  Initializes the attitude filter state.
+/** @brief Initializes the attitude filter state.
  *
  *  @param[out] state      Attitude estimator state to be reset/initialized.
  *  @param[in]  t          Time since the PAN epoch (units of seconds).
@@ -198,8 +194,7 @@ struct AttitudeEstimate {
 void attitude_estimator_reset(AttitudeEstimatorState &state,
     double t, lin::Vector4f const &q_body_eci);
 
-/** @fn attitude_estimator_reset
- *  Initializes the attitude filter state using the triad method.
+/** @brief Initializes the attitude filter state using the triad method.
  *
  *  @param[out] state  Attitude estimator state to be reset/initialized.
  *  @param[in]  t      Time since the PAN epoch (units of seconds).
@@ -221,8 +216,7 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
     double t, lin::Vector3d const &r_ecef, lin::Vector3f const &b_body,
     lin::Vector3f const &s_body);
 
-/** @fn attitude_estimator_update
- *  Updates the attitude estimate given a set of sensor readings.
+/** @brief Updates the attitude estimate given a set of sensor readings.
  *
  *  @param[inout] state    Previous filter state.
  *  @param[in]    data     Sensor readings.
