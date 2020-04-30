@@ -46,6 +46,10 @@ namespace orb
  * @param[in] A
  * @param[in] B
  * @param[out] C
+ * REFERENCES:
+ * D. F. Crouse, "Basic tracking using nonlinear 3D monostatic and
+ *    bistatic measurements," IEEE Aerospace and Electronic Systems
+ *    Magazine, vol. 29, no. 8, Part II, pp. 4-53, Aug. 2014.
  */
 template <typename T, lin::size_t N>
 void matrix_hypot(const lin::Matrix<T,N,N>& A,const lin::Matrix<T,N,N>& B,lin::Matrix<T,N,N>& C){
