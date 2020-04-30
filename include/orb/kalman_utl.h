@@ -63,14 +63,15 @@ void matrix_hypot(const lin::Matrix<T,N,N>& A,const lin::Matrix<T,N,N>& B,lin::M
 
 /**
  * Potter Algorithm as described in
- * "Factorization Methods for Discrete Sequential Estimation, Volume 128"
+ * "Factorization Methods for Discrete Sequential Estimation", by Gerald J. Bierman
  * Appendix II.E
- * z= A*x + noise variance sigma
+ * z= A*x + noise with variance 1.0/(invstddiv*invstddiv)
+ * The measurement noise is assumed to be independent zero mean gaussian
  * @param[in,out] x: State estimate
  * @param[in,out] S: square root covariance
  * @param[in] z: Measurement
  * @param[in] A: Measurement coefficents
- * @param[in] invstddiv: Inverse of measurement standard diviation
+ * @param[in] invstddiv(finite): Inverse of measurement standard diviation
  */
 template <typename T, lin::size_t N>
 void potter_measurement_update(lin::Vector<T,N>& x, lin::Matrix<T,N,N>& S, const T& z, const lin::RowVector<T,N>& A, const T& invstddiv){

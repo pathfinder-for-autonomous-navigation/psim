@@ -50,6 +50,21 @@ void test_matrix_hypot() {
 }
 
 
+void test_potter_measurement_update(){
+    lin::internal::RandomsGenerator const rand(0);
+    {
+    lin::Matrixf<8, 8> S;
+    for (int i = 0; i < 25; i++) {
+        S= lin::rands<decltype(S)>(S.rows(), S.cols(), rand);
+        B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        orb::matrix_hypot(A,B,C);
+        TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+    }
+    }
+
+}
+
+
 int test_kalman_utl() {
     UNITY_BEGIN();
     RUN_TEST(test_matrix_hypot);
