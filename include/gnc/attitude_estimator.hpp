@@ -185,7 +185,7 @@ struct AttitudeEstimate {
  *
  *  @param[out] state      Attitude estimator state to be reset/initialized.
  *  @param[in]  t          Time since the PAN epoch (units of seconds).
- *  @param[in]  q_body_eci Quaternion rotating from the body frame to ECI.
+ *  @param[in]  q_body_eci Quaternion rotating from ECI to the body frame.
  *
  *  Initializes the current time and attitude estimate to the passed arguments.
  *  The gyro bias and covariance is set to default values.
