@@ -61,4 +61,23 @@ void matrix_hypot(const lin::Matrix<T,N,N>& A,const lin::Matrix<T,N,N>& B,lin::M
     lin::qr(M, junk, C);
 }
 
+/**
+ * Potter Algorithm as described in
+ * "Factorization Methods for Discrete Sequential Estimation, Volume 128"
+ * Appendix II.E
+ * z= A*x + noise variance sigma
+ * @param[in,out] x: State estimate
+ * @param[in,out] S: square root covariance
+ * @param[in] z: Measurement
+ * @param[in] A: Measurement coefficents
+ * @param[in] sigma: Measurement variance
+ */
+template <typename T, lin::size_t N>
+void potter_measurement_update(lin::Vector<T,N>& x,lin::Matrix<T,N,N>& S,const T& z,const lin::RowVector<T,N>& A,const T& sigma){
+    
 }
+
+
+
+
+} //namespace orb
