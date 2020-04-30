@@ -70,11 +70,19 @@ void matrix_hypot(const lin::Matrix<T,N,N>& A,const lin::Matrix<T,N,N>& B,lin::M
  * @param[in,out] S: square root covariance
  * @param[in] z: Measurement
  * @param[in] A: Measurement coefficents
- * @param[in] sigma: Measurement variance
+ * @param[in] invstddiv: Inverse of measurement standard diviation
  */
 template <typename T, lin::size_t N>
-void potter_measurement_update(lin::Vector<T,N>& x,lin::Matrix<T,N,N>& S,const T& z,const lin::RowVector<T,N>& A,const T& sigma){
-    
+void potter_measurement_update(lin::Vector<T,N>& x, lin::Matrix<T,N,N>& S, const T& z, const lin::RowVector<T,N>& A, const T& invstddiv){
+    T one= 1;
+    lin::Vector<T,N> v= lin::transpose(A*S);//n^2
+    v= v*invstddiv;
+    T sigma= one/(lin::fro(v)+one);
+    T delta= (z-A*x)*invstddiv;// predicted residuals 
+    lin::Vector<T,N> K= S*v;//n^2
+    x= x+K*(delta*sigma);
+    T gamma= sigma/(one+std::sqrt(sigma));
+    S= S-(gamma*K)*lin::transpose(v);//n^2
 }
 
 
