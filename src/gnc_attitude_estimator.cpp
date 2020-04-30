@@ -426,8 +426,8 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
 
   // TODO : Implement this
   // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/187
-  lin::Vector4f q_eci_body = lin::nans<float, 4, 1>();
-  attitude_estimator_reset(state, t, q_eci_body);
+  lin::Vector4f q_body_eci = lin::nans<float, 4, 1>();
+  attitude_estimator_reset(state, t, q_body_eci);
 }
 
 void attitude_estimator_update(AttitudeEstimatorState &state,
