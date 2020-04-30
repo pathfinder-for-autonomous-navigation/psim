@@ -35,7 +35,8 @@ SOFTWARE.
 #include <cmath>
 #include <limits>
 #include <array>
-#include <lin.hpp>
+#include <lin/core.hpp>
+#include <lin/references.hpp>
 #include <lin/factorizations/qr.hpp>
 
 namespace orb
