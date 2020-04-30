@@ -61,7 +61,7 @@ template <typename T>
 constexpr void quat_to_qrp(lin::Vector<T, 4> const &q, T a, T f, lin::Vector<T, 3> &p);
 
 /** @fn grp_to_quat
- *  @param[in]  p Input rogriquez parameters.
+ *  @param[in]  p Input Rodrigues parameters.
  *  @param[in]  a
  *  @param[in]  f
  *  @param[out] q Quaternion representation. */
