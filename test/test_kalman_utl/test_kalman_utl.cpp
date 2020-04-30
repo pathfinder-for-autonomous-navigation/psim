@@ -61,7 +61,7 @@ void test_potter_measurement_update(){
     lin::internal::RandomsGenerator const rand(0);
     {
         typedef float realtype;
-        constexpr static int N=8;
+        constexpr static int N=6;
         lin::Matrix<realtype,N, N> S;
         lin::Matrix<realtype,N, N> P;
         lin::Vector<realtype,N> x;
@@ -84,8 +84,37 @@ void test_potter_measurement_update(){
             lin::Vector<realtype,N> K= P*lin::transpose(A)/(lin::dot(A*P,lin::transpose(A))+R);
             P= ((lin::identity<realtype,N>()-K*A)*P*lin::transpose(lin::identity<realtype,N>()-K*A)+K*R*lin::transpose(K)).eval();
             x= (x + K*(z-lin::dot(A,x))).eval();
-            TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(x_test-x));
-            TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(P-S*lin::transpose(S)));
+            TEST_ASSERT_FLOAT_WITHIN(1E-11, 0.0,lin::fro(x_test-x));
+            TEST_ASSERT_FLOAT_WITHIN(1E-11, 0.0,lin::fro(P-S*lin::transpose(S)));
+        }
+    }
+    {
+        typedef double realtype;
+        constexpr static int N=12;
+        lin::Matrix<realtype,N, N> S;
+        lin::Matrix<realtype,N, N> P;
+        lin::Vector<realtype,N> x;
+        lin::Vector<realtype,N> x_test;
+        lin::RowVector<realtype,N> A;
+        realtype invstddiv;
+        realtype z;
+        for (int i = 0; i < 25; i++) {
+            S= lin::rands<decltype(S)>(S.rows(), S.cols(), rand);
+            P= S*lin::transpose(S);
+            A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+            x= lin::rands<decltype(x)>(x.rows(), x.cols(), rand);
+            x_test=x;
+            lin::Vectorf<2> B= lin::rands<lin::Vectorf<2>>(2, 1, rand);
+            invstddiv= std::abs(B(0));
+            z= B(1);
+            orb::potter_measurement_update(x_test,S,z,A,invstddiv);
+            // now use regular kalman update
+            realtype R= (1/invstddiv)*(1/invstddiv);
+            lin::Vector<realtype,N> K= P*lin::transpose(A)/(lin::dot(A*P,lin::transpose(A))+R);
+            P= ((lin::identity<realtype,N>()-K*A)*P*lin::transpose(lin::identity<realtype,N>()-K*A)+K*R*lin::transpose(K)).eval();
+            x= (x + K*(z-lin::dot(A,x))).eval();
+            TEST_ASSERT_FLOAT_WITHIN(1E-11, 0.0,lin::fro(x_test-x));
+            TEST_ASSERT_FLOAT_WITHIN(1E-11, 0.0,lin::fro(P-S*lin::transpose(S)));
         }
     }
 
