@@ -52,7 +52,7 @@ constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1,
  *  @param[in]  a 
  *  @param[in]  f
  *  @param[out] p Generalized Rodrigues parameter representation.
- *  Converts a quaternion attitude representation to generalized rodriquez
+ *  Converts a quaternion attitude representation to generalized Rodrigues
  *  parameters. There is no explicit handling of NaNs built into this function;
  *  however, a finite input will always yield a finite result.
  *  Source: "Unscented Filtering for Spacecraft Attitude Estimation"
