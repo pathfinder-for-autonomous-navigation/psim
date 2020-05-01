@@ -60,19 +60,23 @@ GNC_TRACKED_CONSTANT(const double, MINORBITRADIUS, 6378.0E3L);
  */
 class Orbit {
   public:
+    /// \private
     /** Position of the sat (m).
      * Also stores relative position inside a higher order step while propagating.
      */
     lin::Vector3d _recef= lin::nans<lin::Vector3d>();
 
+    /// \private
     /** Velocity of the sat (m/s).
      * Also stores relative velocity inside a higher order step while propagating.
      */
     lin::Vector3d _vecef= lin::nans<lin::Vector3d>();
 
+    /// \private
     /** Time since gps epoch (ns).*/
     uint64_t _ns_gps_time{0};
 
+    /// \private
     /** Validity of the orbit.
      * A valid orbit has finite and real position and velocity, is in low
      * earth orbit, and has a reasonable time stamp (within 20 years of pan epoch).
@@ -122,6 +126,7 @@ class Orbit {
         return _valid;
     }
 
+    /// \private
     /**
      * Helper function calculate if the Orbit is valid, see valid().
      * If the orbit is invalid set the orbit to the default values.
@@ -247,6 +252,7 @@ class Orbit {
         A_EI(2,2)= c+(1-c)*e3*e3;
     }
 
+    /// \private
     /** Get the jacobian of a shortupdate.
      * This is partially auto code from sympy in JacobianHelpers/jacobian_autocoder.py
      *
@@ -271,6 +277,7 @@ class Orbit {
         jacobian_autocoded(x_h,y_h,z_h,w,mu,dt,jac);
     }
 
+    /// \private
     /**
      * Helper to do a short update of the orbit.
      * The orbit propigator is designed for nearly circular low earth orbit, and
@@ -396,12 +403,16 @@ class Orbit {
     /************* Multi Cycle Propagation ******************/
 
     //some attributes to handle long updates
+    /// \private
     /** Stage in a long step range 0 to 6. 0 is not inside a higher order step.*/
     int _longstep{0};
+    /// \private
     /** Number of grav calls needed to finish propagating.*/
     int _numgravcallsleft{0};
+    /// \private
     /** Final gps time to propagate to (ns).*/
     uint64_t _targetgpstime{0};
+    /// \private
     /** The earth's angular rate in ecef frame used for the multi cycle propagation (rad/s). */
     lin::Vector3d _earth_rate_ecef;
     /** The maximum size of a 7 grav call higher order step (ns). */
@@ -459,19 +470,26 @@ class Orbit {
     }
 
     //attributes for relative orbit
+    /// \private
     /** relative time (s).*/
     double _t{0};
+    /// \private
     /** higher order step total dt (s).*/
     double _currentdt{0};
+    /// \private
     /** mu/(a*a*a) where a is the semimajor axis of the referance orbit (MKS units). */
     double _mu_a3;
+    /// \private
     /** x axis of reference orbit (m).*/
     lin::Vector3d _x;
+    /// \private
     /** y axis of reference orbit (m).*/
     lin::Vector3d _y;
+    /// \private
     /** reference orbit rate (rad/s).*/
     lin::Vector3d _omega;
 
+    /// \private
     /**
      * Convert _recef and _vecef to relative position and velocity in inertial ecef0.
      * Also stores reference orbit info, _t, _mu_a3, _x, _y, _omega
@@ -500,6 +518,7 @@ class Orbit {
         _vecef= v_ecef0-lin::cross(_omega,_x);
     }
 
+    /// \private
     /**
      * Return the relative acceleration (m/s^2) in ECEF0 at relative time t(s) and relative position rel_r in ECEF0(m).
      *
@@ -521,6 +540,7 @@ class Orbit {
         return (lin::transpose(dcm_ecef_ecef0)*g_ecef + orb_r*_mu_a3).eval();
     }
 
+    /// \private
     /**
      * Convert _recef and _vecef back to ecef from relative position and velocity in inertial ecef0.
      * uses orbit info, _t, _mu_a3, _x, _y, _omega
