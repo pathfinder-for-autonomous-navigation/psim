@@ -8,18 +8,19 @@ global const
 config();
 M = 3.7; % Mass (kg)
 J_min = 2e-4; % Min impulse (Ns)
-J_max = 2e-2; % Max impulse (Ns)
+J_max = 5 * 2e-2; % Max impulse (Ns)
 max_dv = J_max/M;
 v_rel   = 1; % Relative velocity at deployment (m/s)
 t_drift = 60.0 * 60.0; % Drift time (s)
 p = 0;
-d = 1e-8;
+d = 1.0e-8;
+h_gain = 1.0e-7;
 thrust_noise_ratio = 0;
 dt_fire_min = 10 * 60; % [s] minimum time between firings
-opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
+% opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
 
 % time
-tmax = 10 * 60 * 60; % [s]
+tmax = 500 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
@@ -66,7 +67,7 @@ energy1_vec = zeros(N, 1);
 energy1_j1_vec = zeros(N, 1);
 energy2_vec = zeros(N, 1);
 energy2_j1_vec = zeros(N, 1);
-dh = zeros(3, N);
+dh_vec = zeros(3, N);
 h1_vec = zeros(3, N);
 h2_vec = zeros(3, N);
 
@@ -94,16 +95,17 @@ energy2_vec(1) = energy2;
 % calculate orbital angular momentum
 h1 = cross(r1, v1);
 h2 = cross(r2, v2);
-dh(:, 1) = h1 - h2;
+dh = h1 - h2;
+dh_vec(:, 1) = dh;
 h1_vec(:, 1) = h1;
 h2_vec(:, 1) = h2;
 
 t_fire = -dt_fire_min; % set so we fire on the first orbit
 
-for i = 1:(N - 1)
+for i = 1 : N - 1
     
     if ~mod(i, 1000)
-        fprintf('progress: step %d / %d\n', i, N);
+        fprintf('progress: step %d / %d\n', i, N - 1);
     end
     
     % calculate follower orbital elements
@@ -139,20 +141,41 @@ for i = 1:(N - 1)
         dterm = -d * (energy2 - energy1);
         dv_energy = (pterm + dterm) * v2;
 %         dv = max(min(dv, sqrt(2) / 2 * max_dv), -sqrt(2) / 2 * max_dv);
-        u_now_hill = [0; 0; 0];
+%         u_now_hill = [0; 0; 0];
         
         % normal plane correction
-        dv_plane = normal_plane_correction(r1, v1, r2, v2, max_dv);
+        dhhat = dh / norm(dh);
+        r2hat = r2 / norm(r2);
+        Jhat_plane = cross(dhhat, r2hat);
+        Jhat_plane = Jhat_plane / norm(Jhat_plane);
+        J_plane = norm(dh) * Jhat_plane;
+        dv_plane = h_gain * J_plane / M;
         
-        dv = dv_energy;
+        if any(sign(cross(r2, dv_plane)) ~= sign(dh))
+            disp('dv_plane error')
+            pause;
+        end
+%         dv_plane = h_gain * normal_plane_correction(r1, v1, r2, v2, max_dv);
+        
+        dv = dv_plane;
         dv_des(i) = norm(dv);
         
         % Apply actuation
-        dv = Q_eci_hill' * u_now_hill + dv;
+%         dv = Q_eci_hill' * u_now_hill + dv;
 %         dv = dv / norm(dv) * min(norm(dv), max_dv);
         
         if norm(dv) > max_dv
             dv = max_dv * dv / norm(dv);
+        end
+        
+        if i == 5634
+            disp('5634')
+            pause;
+        end
+        
+        if any(sign(cross(r2, dv)) ~= sign(dh))
+            disp('dv error')
+            pause;
         end
         
         v2 = v2 + dv;
@@ -169,6 +192,7 @@ for i = 1:(N - 1)
     v2 = y(end, 10:12)';
     
     % Calculate new state
+    w_hill = [0.0; 0.0; n];
     Q_eci_hill = utl_eci2hill(r1, v1);
     r_hill = Q_eci_hill * (r2 - r1);
     v_hill = Q_eci_hill * (v2 - v1) - cross(w_hill, r_hill);
@@ -192,7 +216,8 @@ for i = 1:(N - 1)
     % calculate orbital angular momentum
     h1 = cross(r1, v1);
     h2 = cross(r2, v2);
-    dh(:, i + 1) = h1 - h2;
+    dh = h1 - h2;
+    dh_vec(:, i + 1) = dh;
     h1_vec(:, i + 1) = h1;
     h2_vec(:, i + 1) = h2;
     
@@ -202,8 +227,8 @@ end
 
 % follower ECI position
 figure;
-plot(r_eci(1, :), r_eci(2, :)); hold on
-plot(r_fire(1, :), r_fire(2, :), 'o')
+plot(r_eci(4, :), r_eci(5, :)); hold on
+plot(r_fire(4, :), r_fire(5, :), 'o')
 xlabel('x ECI [m]')
 ylabel('y ECI [m]')
 title('follower ECI position')
@@ -278,13 +303,14 @@ title('delta energies')
 
 % dv
 figure;
-plot(t, dv_vec(1, :)); hold on
-plot(t, dv_vec(2, :))
-plot(t, dv_vec(3, :))
+plot(dv_vec(1, :)); hold on
+plot(dv_vec(2, :))
+plot(dv_vec(3, :))
 xlabel('t [s]')
 ylabel('\Delta v [m/s]')
 legend('x', 'y', 'z')
 title('\Delta v')
+grid on
 
 dv_norm = zeros(N, 1);
 
@@ -317,13 +343,16 @@ title('Desired \Delta v norm')
 
 % angular momentum
 figure;
-plot(t, dh)
+plot(dh_vec(1, :)); hold on
+plot(dh_vec(2, :))
+plot(dh_vec(3, :))
 xlabel('t [s]')
 ylabel('h_1 - h_2')
 title('angular momentum difference')
+grid on
 
 for i = 1 : N
-    dh_norm(i) = norm(dh(:, i));
+    dh_norm(i) = norm(dh_vec(:, i));
     h1_norm(i) = norm(h1_vec(:, i));
     h2_norm(i) = norm(h2_vec(:, i));
 end
@@ -344,19 +373,23 @@ title('angular momentum norm')
 
 function dy = frhs(~, y)
 
+% global const
+
 dy = zeros(12, 1);
 
 [gx, gy, gz] = gravityzonal(y(1:3)', 'Earth', 4, 'Error');
 dy(1:3, 1) = y(4:6, 1);
 dy(4:6, 1) = [gx; gy; gz];
+% dy(4:6, 1) = -const.mu * y(1:3, 1) / norm(y(1:3, 1))^3;
 
 [gx, gy, gz] = gravityzonal(y(7:9)', 'Earth', 4, 'Error');
 dy(7:9, 1) = y(10:12, 1);
 dy(10:12, 1) = [gx; gy; gz];
+% dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
 
 end
 
-function normal_plane_dv2= normal_plane_correction(r1,v1,r2,v2,max)
+function normal_plane_dv2= normal_plane_correction(r1,v1,r2,v2,max_dv)
 
 %calc average angular momentum
 %[h1,h2] = average_angular_momentum(r1, v1, r2, v2);
@@ -365,9 +398,9 @@ h2 = cross(r2, v2);
 h2_hat = h2 / norm(h2);
 dh2 = dot(h2, h1) / dot(h1, h1) * h1 - h2;
 normal_plane_dv = dot(cross(r2, h2_hat) / norm(cross(r2, h2_hat)), dh2) / norm(r2);
-%     normal_plane_dv = max(min(normal_plane_dv,sqrt(2)/2*max_dv_thrust),-sqrt(2)/2*max_dv_thrust);
+% normal_plane_dv = max(min(normal_plane_dv,sqrt(2)/2*max_dv_thrust),-sqrt(2)/2*max_dv_thrust);
 normal_plane_dv2 = normal_plane_dv * h2_hat;
-    
+
 end
 
 
