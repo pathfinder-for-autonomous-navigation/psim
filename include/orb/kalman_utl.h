@@ -43,7 +43,7 @@ namespace orb
 {
 
 /** 
- * Solve C'xC = A'xA + B'xB for C, where A, B, and C are square matrices
+ * Solve CxC' = AxA' + BxB' for C, where A, B, and C are square matrices
  * @param[in] A
  * @param[in] B
  * @param[out] C
@@ -56,9 +56,10 @@ template <typename T, lin::size_t N>
 void matrix_hypot(const lin::Matrix<T,N,N>& A,const lin::Matrix<T,N,N>& B,lin::Matrix<T,N,N>& C){
     lin::Matrix<T,N*2,N> M;
     lin::Matrix<T,N*2,N> junk;
-    lin::ref<N, N> (M, 0, 0) = A;
-    lin::ref<N, N> (M, N, 0) = B;
+    lin::ref<N, N> (M, 0, 0) = lin::transpose(A);
+    lin::ref<N, N> (M, N, 0) = lin::transpose(B);
     lin::qr(M, junk, C);
+    C= lin::transpose(C).eval();
 }
 
 /**

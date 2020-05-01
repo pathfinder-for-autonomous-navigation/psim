@@ -33,9 +33,14 @@ SOFTWARE.
 #include <lin/core.hpp>
 #include <lin/generators.hpp>
 #include "Orbit.h"
+#include <array>
+#include <utility>
 
 namespace orb
 {
+
+/** The max number of control cycles a GPS readings time stamp can be under normal conditions.*/
+GNC_TRACKED_CONSTANT(constexpr static int, MAXGPS_CONTROLCYCLE_SLACK,5);
 
 /**
  * An estimator of the current Orbit from only GPS measurements.
@@ -43,7 +48,7 @@ namespace orb
  * 
  */
 class GPSPosVelEstimator {
-  public:
+    public:
     /**
      * Construct GPSPosVelEstimator.
      *
@@ -51,24 +56,101 @@ class GPSPosVelEstimator {
      */
     GPSPosVelEstimator(){}
 
-    /**
-     * Input the newest Orbit sent from ground.
-     * 
-     * grav calls: 5 or less
-     * @param[in] ground_data: Orbit sent from ground.
-     * @param[in] gps_time_ns: Time to propagate to (ns).
-     * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored for orbits already propagating(rad/s).
-     */
-    void input(const Orbit& gps_data, const uint64_t& gps_time_ns, const lin::Vector3d& earth_rate_ecef){ 
-        
-
-    }
+    // These buffers are needed in case a GPS reading is from the past
+    // Because of slack on the GPS reading
+    //P= S*S^T
+    std::array<std::pair<Orbit,lin::Matrixd<6,6>>,MAXGPS_CONTROLCYCLE_SLACK> buffer= {std::make_pair(Orbit(),lin::nans<lin::Matrixd<6,6>>())};
+    int bufferpointer{0};
 
     /** Return the best estimate of the Orbit.
      * 
      * grav calls: 0
      */
     Orbit best_estimate() const{
+        return buffer[bufferpointer].first;
+    }
+
+
+    /// \private
+    /** 
+     * Propagate state and covariance square root
+     * grav calls: 1 or 0
+     * @param[in] dt_ns (in the range [0,2E8]): Time step (ns).
+     */
+    void _propagate_helper(int32_t dt_ns,const lin::Vector3d& earth_rate_ecef,const double& processnoise_r,const double& processnoise_v){
+        lin::Matrixd<6,6> jac;
+        double junk;
+        double dt= ((double)dt_ns)*1E-9;
+        Orbit& x= buffer[bufferpointer].first;
+        lin::Matrixd<6,6>& S= buffer[bufferpointer].second;
+        if (x.valid()){
+            x.shortupdate(dt_ns,earth_rate_ecef,junk,jac);
+            S= (jac*S).eval();//P= S*S^T
+            lin::Matrixd<6,6>& Q= lin::zeros<lin::Matrixd<6,6>>();
+            sr= processnoise_r*dt;
+            sv= processnoise_v*dt;
+            Q(0,0)= sr;
+            Q(1,1)= sr;
+            Q(2,2)= sr;
+            Q(3,3)= sv;
+            Q(4,4)= sv;
+            Q(5,5)= sv;
+            matrix_hypot(S,Q,S);
+        }
+    }
+
+    /// \private
+    /** 
+     * update state and covariance square root with gpsdata
+     * grav calls: 0
+     * @param[in] .
+     */
+    void _sensor_update_helper(const lin::Vector3d& recef_gps_data, const lin::Vector3d& vecef_gps_data, const double& gps_r_invstddiv, const double& gps_v_invstddiv){
+        lin::Matrixd<6,6> jac;
+        double junk;
+        double dt= ((double)dt_ns)*1E-9;
+        Orbit& x= buffer[bufferpointer].first;
+        lin::Matrixd<6,6>& S= buffer[bufferpointer].second;
+        if (x.valid()){
+            x.shortupdate(dt_ns,earth_rate_ecef,junk,jac);
+            S= (jac*S).eval();//P= S*S^T
+            lin::Matrixd<6,6>& Q= lin::zeros<lin::Matrixd<6,6>>();
+            sr= processnoise_r*dt;
+            sv= processnoise_v*dt;
+            Q(0,0)= sr;
+            Q(1,1)= sr;
+            Q(2,2)= sr;
+            Q(3,3)= sv;
+            Q(4,4)= sv;
+            Q(5,5)= sv;
+            matrix_hypot(S,Q,S);
+        }
+    }
+
+
+
+
+    /**
+     * Input GPS data
+     * 
+     * grav calls: 5 or less
+     * @param[in] gps_data: Orbit from GPS
+     * @param[in] gps_time_ns: Time to propagate to (ns).
+     * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored for orbits already propagating(rad/s).
+     */
+    void input(const lin::Vector3d& recef_gps_data, 
+               const lin::Vector3d& vecef_gps_data, 
+               const uint64_t& gps_time_ns, 
+               const lin::Vector3d& earth_rate_ecef, 
+               const double& gps_r_invstddiv, 
+               const double& gps_v_invstddiv, 
+               const double& processnoise_r, 
+               const double& processnoise_v){
+        
+        
+
+        
+
     }
 
 

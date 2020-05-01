@@ -17,7 +17,7 @@ void test_matrix_hypot() {
         A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         orb::matrix_hypot(A,B,C);
-        TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+        TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(C*lin::transpose(C)-A*lin::transpose(A)-B*lin::transpose(B)));
     }
     }
     {
@@ -26,7 +26,7 @@ void test_matrix_hypot() {
         A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         orb::matrix_hypot(A,B,C);
-        TEST_ASSERT_FLOAT_WITHIN(1E-12, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+        TEST_ASSERT_FLOAT_WITHIN(1E-12, 0.0,lin::fro(C*lin::transpose(C)-A*lin::transpose(A)-B*lin::transpose(B)));
     }
     }
     {
@@ -35,7 +35,7 @@ void test_matrix_hypot() {
         A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         orb::matrix_hypot(A,B,C);
-        TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+        TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(C*lin::transpose(C)-A*lin::transpose(A)-B*lin::transpose(B)));
     }
     }
     {
@@ -44,7 +44,7 @@ void test_matrix_hypot() {
         A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
         orb::matrix_hypot(A,B,C);
-        TEST_ASSERT_FLOAT_WITHIN(1E-12, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
+        TEST_ASSERT_FLOAT_WITHIN(1E-12, 0.0,lin::fro(C*lin::transpose(C)-A*lin::transpose(A)-B*lin::transpose(B)));
     }
     }
 }
