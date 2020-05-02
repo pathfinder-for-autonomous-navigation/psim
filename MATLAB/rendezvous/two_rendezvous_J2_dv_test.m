@@ -12,15 +12,15 @@ J_max = 5 * 2e-2; % Max impulse (Ns)
 max_dv = J_max/M;
 v_rel   = 1; % Relative velocity at deployment (m/s)
 t_drift = 60.0 * 60.0; % Drift time (s)
-p = 0;
-d = 1.0e-8;
-h_gain = 1.0e-7;
+p = 1.0e-8;
+d = 5.0e-8;
+h_gain = 5.0e-8;
 thrust_noise_ratio = 0;
 dt_fire_min = 10 * 60; % [s] minimum time between firings
 % opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
 
 % time
-tmax = 500 * 60 * 60; % [s]
+tmax = 100 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
@@ -151,13 +151,9 @@ for i = 1 : N - 1
         J_plane = norm(dh) * Jhat_plane;
         dv_plane = h_gain * J_plane / M;
         
-        if any(sign(cross(r2, dv_plane)) ~= sign(dh))
-            disp('dv_plane error')
-            pause;
-        end
 %         dv_plane = h_gain * normal_plane_correction(r1, v1, r2, v2, max_dv);
         
-        dv = dv_plane;
+        dv = dv_energy + dv_plane;
         dv_des(i) = norm(dv);
         
         % Apply actuation
@@ -168,15 +164,10 @@ for i = 1 : N - 1
             dv = max_dv * dv / norm(dv);
         end
         
-        if i == 5634
-            disp('5634')
-            pause;
-        end
-        
-        if any(sign(cross(r2, dv)) ~= sign(dh))
-            disp('dv error')
-            pause;
-        end
+%         if i == 5634
+%             disp('5634')
+%             pause;
+%         end
         
         v2 = v2 + dv;
         dv_vec(:, i) = dv;
@@ -232,6 +223,7 @@ plot(r_fire(4, :), r_fire(5, :), 'o')
 xlabel('x ECI [m]')
 ylabel('y ECI [m]')
 title('follower ECI position')
+legend('ECI position', 'firing points')
 
 % relative position norm
 figure
@@ -340,6 +332,7 @@ plot(t, max_dv * ones(N, 1))
 xlabel('t [s]')
 ylabel('\Delta v [m/s]')
 title('Desired \Delta v norm')
+legend('commanded dv', 'max dv')
 
 % angular momentum
 figure;
@@ -369,7 +362,7 @@ figure;
 plot(t, dh_norm)
 xlabel('t [s]')
 ylabel('h')
-title('angular momentum norm')
+title('angular momentum difference norm')
 
 function dy = frhs(~, y)
 
