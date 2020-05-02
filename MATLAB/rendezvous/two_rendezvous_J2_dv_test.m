@@ -12,7 +12,7 @@ J_max = 5 * 2e-2; % Max impulse (Ns)
 max_dv = J_max/M;
 v_rel   = 1; % Relative velocity at deployment (m/s)
 t_drift = 60.0 * 60.0; % Drift time (s)
-p = 1.0e-8;
+p = 1.0e-5;
 d = 5.0e-8;
 h_gain = 5.0e-8;
 thrust_noise_ratio = 0;
@@ -137,14 +137,14 @@ for i = 1 : N - 1
         r_fire = [r_fire, [r1; r2]];
         
         % energy PD controller
-        pterm = p * r_hill(2);
+        pterm = p * r_hill(2); %try -atan2(r_hill(2), r_hill(1)), or maybe actual phase angle of orbits
         dterm = -d * (energy2 - energy1);
-        dv_energy = (pterm + dterm) * v2;
+        dv_energy = (pterm + dterm) * v2 / norm(v2);
 %         dv = max(min(dv, sqrt(2) / 2 * max_dv), -sqrt(2) / 2 * max_dv);
 %         u_now_hill = [0; 0; 0];
         
         % normal plane correction
-        dhhat = dh / norm(dh);
+        dhhat = dh / norm(dh); % instead calculate h2 - projection of h2 onto h1
         r2hat = r2 / norm(r2);
         Jhat_plane = cross(dhhat, r2hat);
         Jhat_plane = Jhat_plane / norm(Jhat_plane);
