@@ -12,7 +12,7 @@ J_max = 5 * 2e-2; % Max impulse (Ns)
 max_dv = J_max/M;
 v_rel   = 1; % Relative velocity at deployment (m/s)
 t_drift = 60.0 * 60.0; % Drift time (s)
-p = 1.0e-5;
+p = 1.0e-2;
 d = 5.0e-8;
 h_gain = 5.0e-8;
 thrust_noise_ratio = 0;
@@ -20,7 +20,7 @@ dt_fire_min = 10 * 60; % [s] minimum time between firings
 % opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
 
 % time
-tmax = 100 * 60 * 60; % [s]
+tmax = 200 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
@@ -137,7 +137,7 @@ for i = 1 : N - 1
         r_fire = [r_fire, [r1; r2]];
         
         % energy PD controller
-        pterm = p * r_hill(2); %try -atan2(r_hill(2), r_hill(1)), or maybe actual phase angle of orbits
+        pterm = p * atan2(r_hill(2), r_hill(1)); %try -atan2(r_hill(2), r_hill(1)), or maybe actual phase angle of orbits
         dterm = -d * (energy2 - energy1);
         dv_energy = (pterm + dterm) * v2 / norm(v2);
 %         dv = max(min(dv, sqrt(2) / 2 * max_dv), -sqrt(2) / 2 * max_dv);
