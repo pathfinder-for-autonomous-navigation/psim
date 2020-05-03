@@ -79,10 +79,7 @@ class Orbit {
     /// \private
     /** Validity of the orbit.
      * A valid orbit has finite and real position and velocity, is in low
-     * earth orbit, and has a reasonable time stamp (within 20 years of pan epoch).
-     * The validity check should not reject
-     * gps readings due to reasonable noise of:
-     * TODO add max expected gps error see issue #372
+     * earth orbit, and has a reasonable time stamp within MAXGPSTIME_NS, MINGPSTIME_NS.
      *
      * Low earth orbit is a Orbit that stays between MINORBITRADIUS and MAXORBITRADIUS.
      */
