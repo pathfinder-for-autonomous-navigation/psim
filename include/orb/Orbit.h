@@ -50,10 +50,6 @@ namespace orb
 GNC_TRACKED_CONSTANT(constexpr static int, PANGRAVORDER,40);
 GNC_TRACKED_CONSTANT(constexpr geograv::Coeff<PANGRAVORDER>, PANGRAVITYMODEL, static_cast<geograv::Coeff<PANGRAVORDER>>(GGM05S));
 
-GNC_TRACKED_CONSTANT(const double, MAXORBITRADIUS, 6378.0E3L+1000.0E3);
-
-GNC_TRACKED_CONSTANT(const double, MINORBITRADIUS, 6378.0E3L);
-
 
 /**
  * Class to handle most of the logic related to storing, serializing, propagating, and checking validity of an orbit.
@@ -74,7 +70,7 @@ class Orbit {
 
     /// \private
     /** Time since gps epoch (ns).*/
-    uint64_t _ns_gps_time{0};
+    int64_t _ns_gps_time{0};
 
     /// \private
     /** Validity of the orbit.
@@ -92,7 +88,7 @@ class Orbit {
      * The Orbit must be not propagating.
      *
      * grav calls: 0 */
-    uint64_t nsgpstime() const{
+    int64_t nsgpstime() const{
         return _ns_gps_time;
     }
 
@@ -112,12 +108,14 @@ class Orbit {
         return _vecef;
     }
 
+    GNC_TRACKED_CONSTANT(static const float, MAXORBITRADIUS, 6378.0E3L+1000.0E3);
+    GNC_TRACKED_CONSTANT(static const float, MINORBITRADIUS, 6378.0E3L);
+    GNC_TRACKED_CONSTANT(static const int64_t, MAXGPSTIME_NS, (20LL*52LL+(int64_t)gnc::constant::init_gps_week_number)*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK);
+    GNC_TRACKED_CONSTANT(static const int64_t, MINGPSTIME_NS, (-20LL*52LL+(int64_t)gnc::constant::init_gps_week_number)*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK);
+
     /** Return true if the Orbit is valid.
      * A valid orbit has finite and real position and velocity, is in low
-     * earth orbit, and has a reasonable time stamp (within 20 years of pan epoch).
-     * The validity check should not reject
-     * gps readings due to reasonable noise of:
-     * TODO add max expected gps error see issue #372
+     * earth orbit, and has a reasonable time stamp within MAXGPSTIME_NS, MINGPSTIME_NS.
      *
      * Low earth orbit is a Orbit that stays between MINORBITRADIUS and MAXORBITRADIUS.
      *
@@ -133,17 +131,36 @@ class Orbit {
      *
      * grav calls: 0 */
     void _check_validity(){
-        double r2= lin::fro(_recef);
-        //TODO add checks for time and velocity see issue #372
-        //note if position is NAN, these checks will be false.
-        if (r2<MAXORBITRADIUS*MAXORBITRADIUS && r2>MINORBITRADIUS*MINORBITRADIUS){
-            _valid= true;
-        } else {
+        //time check
+        if (!(_ns_gps_time <= MAXGPSTIME_NS)) goto INVALID;
+        if (!(_ns_gps_time >= MINGPSTIME_NS)) goto INVALID;
+        //position check
+        lin::Vector3f recef_f=_recef;
+        float r2= lin::fro(recef_f);
+        //note if position is NAN, these checks will fail.
+        if (!(r2 <= MAXORBITRADIUS*MAXORBITRADIUS)) goto INVALID;
+        if (!(r2 >= MINORBITRADIUS*MINORBITRADIUS)) goto INVALID;
+        //position and velocity check
+        float w= 0.729211585530000E-4;
+        float mu= PANGRAVITYMODEL.earth_gravity_constant;
+        lin::Vector3f vecef0_f=_vecef;
+        vecef0_f= vecef0_f + lin::Vector3f({-w*recef_f(1),w*recef_f(0),0.0});
+        float e= lin::fro(vecef0_f)*0.5f-mu/std::sqrt(r2);
+        float h2= lin::fro(lin::cross(recef_f,vecef0_f));
+        float ep= h2*(0.5f/(MINORBITRADIUS*MINORBITRADIUS))-mu/MINORBITRADIUS;
+        float ea= h2*(0.5f/(MAXORBITRADIUS*MAXORBITRADIUS))-mu/MAXORBITRADIUS;
+        //note if velocity is NAN, these checks will fail.
+        if (!(e <= ea)) goto INVALID;
+        if (!(e <= ep)) goto INVALID;
+        //made it through all checks
+        _valid= true;
+        return;
+        //failed a check
+        INVALID:
             _valid= false;
             _recef= lin::nans<lin::Vector3d>();
             _vecef= lin::nans<lin::Vector3d>();
             _ns_gps_time= 0;
-        }
     }
 
     /** Gravity function in International Terrestrial Reference System coordinates.
@@ -181,7 +198,7 @@ class Orbit {
      * @param[in] r_ecef: position of the center of mass of the sat (m).
      * @param[in] v_ecef: velocity of the sat (m/s).
      */
-    Orbit(const uint64_t& ns_gps_time,const lin::Vector3d& r_ecef,const lin::Vector3d& v_ecef):
+    Orbit(const int64_t& ns_gps_time,const lin::Vector3d& r_ecef,const lin::Vector3d& v_ecef):
         _recef(r_ecef),
         _vecef(v_ecef),
         _ns_gps_time(ns_gps_time) {
@@ -411,7 +428,7 @@ class Orbit {
     int _numgravcallsleft{0};
     /// \private
     /** Final gps time to propagate to (ns).*/
-    uint64_t _targetgpstime{0};
+    int64_t _targetgpstime{0};
     /// \private
     /** The earth's angular rate in ecef frame used for the multi cycle propagation (rad/s). */
     lin::Vector3d _earth_rate_ecef;
@@ -432,7 +449,7 @@ class Orbit {
      * @param[in] end_gps_time_ns: Time to propagate to (ns).
      * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored if already propagating(rad/s).
      */
-    void startpropagating(const uint64_t& end_gps_time_ns, const lin::Vector3d& earth_rate_ecef){
+    void startpropagating(const int64_t& end_gps_time_ns, const lin::Vector3d& earth_rate_ecef){
         if (!valid()){
             return;
         }

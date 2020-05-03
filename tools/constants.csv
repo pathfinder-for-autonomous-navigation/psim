@@ -28,4 +28,4 @@ true,float,pointer_Kp,20.0e-4f
 true,float,pointer_Kd,22.5e-4f
 false,float,J_wheel,135.0e-7f
 false,float,w_wheel_max,677.0f
-false,uint64_t,NANOSECONDS_IN_WEEK,7ULL*24ULL*60ULL*60ULL*1'000'000'000ULL
+false,int64_t,NANOSECONDS_IN_WEEK,7ULL*24ULL*60ULL*60ULL*1'000'000'000ULL

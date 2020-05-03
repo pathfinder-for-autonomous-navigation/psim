@@ -92,7 +92,7 @@ class GroundPropagator {
      * @param[in] gps_time_ns: Time to propagate to (ns).
      * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored for orbits already propagating(rad/s).
      */
-    void input(const Orbit& ground_data, const uint64_t& gps_time_ns, const lin::Vector3d& earth_rate_ecef){
+    void input(const Orbit& ground_data, const int64_t& gps_time_ns, const lin::Vector3d& earth_rate_ecef){
         //start propagators
         current.startpropagating(gps_time_ns,earth_rate_ecef);
         catching_up.startpropagating(gps_time_ns,earth_rate_ecef);
