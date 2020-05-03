@@ -39,6 +39,7 @@ SOFTWARE.
 #include <array>
 #include <utility>
 #include "kalman_utl.h"
+#include <gnc/constants.hpp>
 
 namespace orb
 {
@@ -127,26 +128,32 @@ class GPSPosVelEstimator {
      * Input GPS data
      * 
      * grav calls: MAXGRAVCALLS or less
-     * @param[in] gps_data: Orbit from GPS
-     * @param[in] gps_time_ns: Time to propagate to (ns).
+     * @param[in] gps_time_ns: Time to propagate to, 0 if not available (ns).
+     * @param[in] recef_gps_data: 
+     *      GPS position data, NAN if not availible (m).
+     * @param[in] vecef_gps_data: 
+     *      GPS velocity data, NAN if not availible (m/s).
      * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored for orbits already propagating(rad/s).
      * @param[in] max_dr_fro_valid(strictly positive and finite): 
      *      Max position squared valid gps data can be from the estimate before reset(m^2).
      * @param[in] max_dv_fro_valid(strictly positive and finite): 
      *      Max velocity squared valid gps data can be from the estimate before reset((m/s)^2).
      */
-    void input(const lin::Vector3d& recef_gps_data, 
-               const lin::Vector3d& vecef_gps_data, 
-               const int64_t& gps_time_ns, 
-               const lin::Vector3d& earth_rate_ecef, 
-               const double& gps_r_stddev, 
-               const double& gps_v_stddev, 
-               const double& processnoise_r, 
-               const double& processnoise_v,
-               const double& max_dr_fro_valid,
-               const double& max_dv_fro_valid){
+    void input(const int64_t& gps_time_ns,
+                const lin::Vector3d& recef_gps_data, 
+                const lin::Vector3d& vecef_gps_data, 
+                const lin::Vector3d& earth_rate_ecef, 
+                const double& gps_r_stddev, 
+                const double& gps_v_stddev, 
+                const double& processnoise_r, 
+                const double& processnoise_v,
+                const double& max_dr_fro_valid,
+                const double& max_dv_fro_valid){
         //test gps_time_ns is valid, if not valid return
-        //TODO
+        int64_t pan_epoch_gps_ns= gnc::constant::init_gps_week_number*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK
+        if (std::abs(pan_epoch_gps_ns-gps_time_ns) > 20LL*52LL*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK){
+            return;
+        }
         int64_t dt_ns= (int64_t)gps_time_ns-(int64_t)estorb.nsgpstime();
         Orbit gpsdata(gps_time_ns,recef_gps_data,vecef_gps_data);
         //first check if we need to initialize
@@ -201,5 +208,6 @@ class GPSPosVelEstimator {
             }  
         }
     }
+
 };
 } //namespace orb
