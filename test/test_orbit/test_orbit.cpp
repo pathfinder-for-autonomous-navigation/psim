@@ -72,25 +72,10 @@ lin::Vector3d earth_rate_ecef= {0.000000707063506E-4,-0.000001060595259E-4,0.729
 void test_basic_constructors() {
     orb::Orbit x;
     TEST_ASSERT_FALSE(x.valid());
-
     //test valid orbit
     TEST_ASSERT_TRUE(gracestart.valid());
     x=gracestart;
     TEST_ASSERT_TRUE(x.valid());
-
-    //test invalid orbit
-    lin::Vector3d r2 {0.0L, 0.0L, 0.0L};
-    lin::Vector3d v2 {941.0211143841228L, 85.66662333729801L, 7552.870253470936L};
-    int64_t t2= int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
-    orb::Orbit y2(t2,r2,v2);
-    TEST_ASSERT_FALSE(y2.valid());
-
-    //test NAN invalid orbit
-    lin::Vector3d r3 {0.0, gnc::constant::nan, 0.0};
-    lin::Vector3d v3 {941.0211143841228L, 85.66662333729801L, 7552.870253470936L};
-    int64_t t3= int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
-    orb::Orbit y3(t3,r3,v3);
-    TEST_ASSERT_FALSE(y3.valid());
 }
 
 
@@ -102,7 +87,84 @@ void test_applydeltav() {
     TEST_ASSERT_TRUE(y.vecef()(0)==942.0211143841228 );
     TEST_ASSERT_TRUE(y.vecef()(1)==87.66662333729801 );
     TEST_ASSERT_TRUE(y.vecef()(2)==7555.870253470936 );
-    //TODO add more valid checks for applying dv that make the orbit invalid.
+}
+
+void test_validity_checks () {
+    int64_t panepoch= int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
+    orb::Orbit y;
+    double x;
+
+    //time checks to fail
+    y=orb::Orbit(orb::MINGPSTIME_NS-1LL,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(orb::MAXGPSTIME_NS+1LL,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(0LL,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(-1LL,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+
+    //time checks to pass
+    y=orb::Orbit(orb::MINGPSTIME_NS,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_TRUE(y.valid());
+    y=orb::Orbit(orb::MAXGPSTIME_NS,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_TRUE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_TRUE(y.valid());
+
+    //position checks to fail
+    y=orb::Orbit(panepoch,{0.0,0.0,0.0},gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,{0.0, gnc::constant::nan,0.0},gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,{0.0,(double)orb::MAXORBITRADIUS+10.0,0.0},gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    x= (double)orb::MAXORBITRADIUS/std::sqrt(3.0)+10.0;
+    y=orb::Orbit(panepoch,{x,x,x},gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,{0.0,(double)orb::MINORBITRADIUS-10.0,0.0},gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    x= (double)orb::MINORBITRADIUS/std::sqrt(3.0)-10.0;
+    y=orb::Orbit(panepoch,{x,x,x},gracestart.vecef());
+    TEST_ASSERT_FALSE(y.valid());
+    
+    //position checks to pass
+    y=orb::Orbit(panepoch,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_TRUE(y.valid());
+
+    //orbit checks to fail
+    y=orb::Orbit(panepoch,gracestart.recef(),{0.0,0.0,0.0});
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),{0.0,gnc::constant::nan,0.0});
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),{0.0,1.0E5,0.0});
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),{0.0,1.0E10,0.0});
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),{0.0,4.0E3,0.0});
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),-1.0E-3*gracestart.recef());
+    TEST_ASSERT_FALSE(y.valid());
+
+    //orbit checks to pass
+    y=orb::Orbit(panepoch,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_TRUE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),-gracestart.vecef());
+    TEST_ASSERT_TRUE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),gracestart.vecef()+lin::Vector3d({0.0,10.0,0.0}));
+    TEST_ASSERT_TRUE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),gracestart.vecef()*(1.0-1.0E-3));
+    TEST_ASSERT_TRUE(y.valid());
+
+    //test validity is checked in applydeltav
+    y=orb::Orbit(panepoch,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_TRUE(y.valid());
+    y.applydeltav({0.0,gnc::constant::nan,0.0});
+    TEST_ASSERT_FALSE(y.valid());
+    y=orb::Orbit(panepoch,gracestart.recef(),gracestart.vecef());
+    TEST_ASSERT_TRUE(y.valid());
+    y.applydeltav({0.0,1.0E6,0.0});
+    TEST_ASSERT_FALSE(y.valid());
 }
 
 void test_calc_geograv() {
@@ -547,6 +609,7 @@ int test_orbit() {
     UNITY_BEGIN();
     RUN_TEST(test_basic_constructors);
     RUN_TEST(test_applydeltav);
+    RUN_TEST(test_validity_checks);
     RUN_TEST(test_calc_geograv);
     RUN_TEST(test_specificenergy);
     RUN_TEST(test_shortupdate_a);

@@ -49,6 +49,10 @@ namespace orb
 
 GNC_TRACKED_CONSTANT(constexpr static int, PANGRAVORDER,40);
 GNC_TRACKED_CONSTANT(constexpr geograv::Coeff<PANGRAVORDER>, PANGRAVITYMODEL, static_cast<geograv::Coeff<PANGRAVORDER>>(GGM05S));
+GNC_TRACKED_CONSTANT(const float, MAXORBITRADIUS, 6378.0E3L+1000.0E3);
+GNC_TRACKED_CONSTANT(const float, MINORBITRADIUS, 6378.0E3L);
+GNC_TRACKED_CONSTANT(const int64_t, MAXGPSTIME_NS, (20LL*52LL+(int64_t)gnc::constant::init_gps_week_number)*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK);
+GNC_TRACKED_CONSTANT(const int64_t, MINGPSTIME_NS, (-20LL*52LL+(int64_t)gnc::constant::init_gps_week_number)*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK);
 
 
 /**
@@ -108,11 +112,6 @@ class Orbit {
         return _vecef;
     }
 
-    GNC_TRACKED_CONSTANT(static const float, MAXORBITRADIUS, 6378.0E3L+1000.0E3);
-    GNC_TRACKED_CONSTANT(static const float, MINORBITRADIUS, 6378.0E3L);
-    GNC_TRACKED_CONSTANT(static const int64_t, MAXGPSTIME_NS, (20LL*52LL+(int64_t)gnc::constant::init_gps_week_number)*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK);
-    GNC_TRACKED_CONSTANT(static const int64_t, MINGPSTIME_NS, (-20LL*52LL+(int64_t)gnc::constant::init_gps_week_number)*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK);
-
     /** Return true if the Orbit is valid.
      * A valid orbit has finite and real position and velocity, is in low
      * earth orbit, and has a reasonable time stamp within MAXGPSTIME_NS, MINGPSTIME_NS.
@@ -131,36 +130,43 @@ class Orbit {
      *
      * grav calls: 0 */
     void _check_validity(){
-        //time check
-        if (!(_ns_gps_time <= MAXGPSTIME_NS)) goto INVALID;
-        if (!(_ns_gps_time >= MINGPSTIME_NS)) goto INVALID;
-        //position check
-        lin::Vector3f recef_f=_recef;
-        float r2= lin::fro(recef_f);
-        //note if position is NAN, these checks will fail.
-        if (!(r2 <= MAXORBITRADIUS*MAXORBITRADIUS)) goto INVALID;
-        if (!(r2 >= MINORBITRADIUS*MINORBITRADIUS)) goto INVALID;
-        //position and velocity check
-        float w= 0.729211585530000E-4;
-        float mu= PANGRAVITYMODEL.earth_gravity_constant;
-        lin::Vector3f vecef0_f=_vecef;
-        vecef0_f= vecef0_f + lin::Vector3f({-w*recef_f(1),w*recef_f(0),0.0});
-        float e= lin::fro(vecef0_f)*0.5f-mu/std::sqrt(r2);
-        float h2= lin::fro(lin::cross(recef_f,vecef0_f));
-        float ep= h2*(0.5f/(MINORBITRADIUS*MINORBITRADIUS))-mu/MINORBITRADIUS;
-        float ea= h2*(0.5f/(MAXORBITRADIUS*MAXORBITRADIUS))-mu/MAXORBITRADIUS;
-        //note if velocity is NAN, these checks will fail.
-        if (!(e <= ea)) goto INVALID;
-        if (!(e <= ep)) goto INVALID;
-        //made it through all checks
-        _valid= true;
-        return;
+        {
+            //time check
+            if (!(_ns_gps_time <= MAXGPSTIME_NS)) goto INVALID;
+            if (!(_ns_gps_time >= MINGPSTIME_NS)) goto INVALID;
+            //position check
+            lin::Vector3f recef_f=_recef;
+            float r2= lin::fro(recef_f);
+            //note if position is NAN, these checks will fail.
+            if (!(r2 <= MAXORBITRADIUS*MAXORBITRADIUS)) goto INVALID;
+            if (!(r2 >= MINORBITRADIUS*MINORBITRADIUS)) goto INVALID;
+            //position and velocity check
+            float w= 0.729211585530000E-4;
+            float mu= PANGRAVITYMODEL.earth_gravity_constant;
+            lin::Vector3f vecef0_f=_vecef;
+            vecef0_f= vecef0_f + lin::Vector3f({-w*recef_f(1),w*recef_f(0),0.0f});
+            //e is the specific orbital energy
+            float e= lin::fro(vecef0_f)*0.5f-mu/std::sqrt(r2);
+            //h2 is norm sqaured of specific orbital angular momentum
+            float h2= lin::fro(lin::cross(recef_f,vecef0_f));
+            //ep and ea are the lowest specific orbital energy if h2 is the same at max and min radius
+            float ep= h2*(0.5f/(MINORBITRADIUS*MINORBITRADIUS))-mu/MINORBITRADIUS;
+            float ea= h2*(0.5f/(MAXORBITRADIUS*MAXORBITRADIUS))-mu/MAXORBITRADIUS;
+            //note if velocity is NAN, these checks will fail.
+            if (!(e <= ea)) goto INVALID;
+            if (!(e <= ep)) goto INVALID;
+            //made it through all checks
+            _valid= true;
+            return;
+        }
         //failed a check
         INVALID:
+        {
             _valid= false;
             _recef= lin::nans<lin::Vector3d>();
             _vecef= lin::nans<lin::Vector3d>();
             _ns_gps_time= 0;
+        }
     }
 
     /** Gravity function in International Terrestrial Reference System coordinates.
