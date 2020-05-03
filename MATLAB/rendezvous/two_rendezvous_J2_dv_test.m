@@ -8,19 +8,19 @@ global const
 config();
 M = 3.7; % Mass (kg)
 J_min = 2e-4; % Min impulse (Ns)
-J_max = 5 * 2e-2; % Max impulse (Ns)
+J_max = 1e6 * 2e-2; % Max impulse (Ns)
 max_dv = J_max/M;
 v_rel   = 1; % Relative velocity at deployment (m/s)
 t_drift = 60.0 * 60.0; % Drift time (s)
 p = 1.0e-2;
-d = 5.0e-8;
-h_gain = 5.0e-8;
+d = 5.0e-6;
+h_gain = 1.0e-8;
 thrust_noise_ratio = 0;
 dt_fire_min = 10 * 60; % [s] minimum time between firings
 % opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
 
 % time
-tmax = 200 * 60 * 60; % [s]
+tmax = 500 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
@@ -70,6 +70,7 @@ energy2_j1_vec = zeros(N, 1);
 dh_vec = zeros(3, N);
 h1_vec = zeros(3, N);
 h2_vec = zeros(3, N);
+dh_angle = zeros(N, 1);
 
 % Calculate initial state
 Q_eci_hill = utl_eci2hill(r1, v1);
@@ -96,6 +97,9 @@ energy2_vec(1) = energy2;
 h1 = cross(r1, v1);
 h2 = cross(r2, v2);
 dh = h1 - h2;
+h1hat = h1 / norm(h1);
+h2hat = h2 / norm(h2);
+dh_angle(1) = dot(h1hat, h2hat);
 dh_vec(:, 1) = dh;
 h1_vec(:, 1) = h1;
 h2_vec(:, 1) = h2;
@@ -144,9 +148,12 @@ for i = 1 : N - 1
 %         u_now_hill = [0; 0; 0];
         
         % normal plane correction
-        dhhat = dh / norm(dh); % instead calculate h2 - projection of h2 onto h1
+        
+        dh2hat = - dot(h1, h1 - h2) / dot(h1, h1) * (h1 - h2); % component of dh not in the h1 direction
+%         dh2hat = dh2 / norm(dh2);
+%         dhhat = dh / norm(dh);
         r2hat = r2 / norm(r2);
-        Jhat_plane = cross(dhhat, r2hat);
+        Jhat_plane = cross(dh2hat, r2hat);
         Jhat_plane = Jhat_plane / norm(Jhat_plane);
         J_plane = norm(dh) * Jhat_plane;
         dv_plane = h_gain * J_plane / M;
@@ -163,11 +170,6 @@ for i = 1 : N - 1
         if norm(dv) > max_dv
             dv = max_dv * dv / norm(dv);
         end
-        
-%         if i == 5634
-%             disp('5634')
-%             pause;
-%         end
         
         v2 = v2 + dv;
         dv_vec(:, i) = dv;
@@ -207,6 +209,9 @@ for i = 1 : N - 1
     % calculate orbital angular momentum
     h1 = cross(r1, v1);
     h2 = cross(r2, v2);
+    h1hat = h1 / norm(h1);
+    h2hat = h2 / norm(h2);
+    dh_angle(i + 1) = dot(h1hat, h2hat);
     dh = h1 - h2;
     dh_vec(:, i + 1) = dh;
     h1_vec(:, i + 1) = h1;
@@ -363,6 +368,12 @@ plot(t, dh_norm)
 xlabel('t [s]')
 ylabel('h')
 title('angular momentum difference norm')
+
+figure;
+plot(t, dh_angle)
+xlabel('t [s]')
+ylabel('dot(h1hat, h2hat)')
+title('dot product of angular momentum unit vectors')
 
 function dy = frhs(~, y)
 
