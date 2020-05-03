@@ -107,27 +107,27 @@ const.probability_of_ground_gps= 1E-4;% (scalar 0-1):
 %Propability of getting a ground gps reading over radio any control cycle the sat
 %also can get regular gps.
 const.gps_position_bias_sdiv= 1;% (positive scalar):
-% standard diviation of bias of gps position measurements (m)
+% standard deviation of bias of gps position measurements (m)
 const.cdgps_position_bias_sdiv= 0.05;% (positive scalar):
-% standard diviation of bias of cdgps relative position measurements (m)
+% standard deviation of bias of cdgps relative position measurements (m)
 const.gps_velocity_bias_sdiv= 0.1;% (positive scalar):
-% standard diviation of bias of gps velocity measurements (m/s)
+% standard deviation of bias of gps velocity measurements (m/s)
 const.gps_position_noise_sdiv= 6;% (positive scalar):
-% standard diviation of gps position measurements (m)
+% standard deviation of gps position measurements (m)
 const.gps_velocity_noise_sdiv= 1;% (positive scalar):
-% standard diviation of gps position measurements (m)
+% standard deviation of gps position measurements (m)
 %% Magnetometer sensor constants
 const.magnetometer_bias_readings_min=50;% (positive int):
 %number of readings per axis to get a good magnetometer bias estimate.
 const.magnetometer_noise_sdiv= 2E-6;% (positive scalar):
-%standard diviation of the magnetometer noise (T)
+%standard deviation of the magnetometer noise (T)
 const.magnetometer_bias_sdiv= 50E-6;% (positive scalar):
-%standard diviation of the magnetometer bias (T)
+%standard deviation of the magnetometer bias (T)
 %% Gyro sensor constants
 const.gyro_noise_sdiv= 0.1*pi/180;% (positive scalar):
-%standard diviation of the gyro noise (rad/s)
+%standard deviation of the gyro noise (rad/s)
 const.gyro_bias_sdiv= 1*pi/180;% (positive scalar):
-%standard diviation of the gyro bias (rad/s)
+%standard deviation of the gyro bias (rad/s)
 %% ORBIT_ESTIMATION parameters %%
 const.time_for_stale_cdgps= int64(1E9)*int64(2*60*60);% (int64 scalar):
 % time to wait before making the target estimate stale (ns)

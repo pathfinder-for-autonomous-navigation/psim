@@ -67,7 +67,7 @@ void test_potter_measurement_update(){
         lin::Vector<realtype,N> x;
         lin::Vector<realtype,N> x_test;
         lin::RowVector<realtype,N> A;
-        realtype invstddiv;
+        realtype invstddev;
         realtype z;
         for (int i = 0; i < 25; i++) {
             S= lin::rands<decltype(S)>(S.rows(), S.cols(), rand);
@@ -76,11 +76,11 @@ void test_potter_measurement_update(){
             x= lin::rands<decltype(x)>(x.rows(), x.cols(), rand);
             x_test=x;
             lin::Vectorf<2> B= lin::rands<lin::Vectorf<2>>(2, 1, rand);
-            invstddiv= std::abs(B(0));
+            invstddev= std::abs(B(0));
             z= B(1);
-            orb::potter_measurement_update(x_test,S,z,A,invstddiv);
+            orb::potter_measurement_update(x_test,S,z,A,invstddev);
             // now use regular kalman update
-            realtype R= (1/invstddiv)*(1/invstddiv);
+            realtype R= (1/invstddev)*(1/invstddev);
             lin::Vector<realtype,N> K= P*lin::transpose(A)/(lin::dot(A*P,lin::transpose(A))+R);
             P= ((lin::identity<realtype,N>()-K*A)*P*lin::transpose(lin::identity<realtype,N>()-K*A)+K*R*lin::transpose(K)).eval();
             x= (x + K*(z-lin::dot(A,x))).eval();
@@ -96,7 +96,7 @@ void test_potter_measurement_update(){
         lin::Vector<realtype,N> x;
         lin::Vector<realtype,N> x_test;
         lin::RowVector<realtype,N> A;
-        realtype invstddiv;
+        realtype invstddev;
         realtype z;
         for (int i = 0; i < 25; i++) {
             S= lin::rands<decltype(S)>(S.rows(), S.cols(), rand);
@@ -105,11 +105,11 @@ void test_potter_measurement_update(){
             x= lin::rands<decltype(x)>(x.rows(), x.cols(), rand);
             x_test=x;
             lin::Vectorf<2> B= lin::rands<lin::Vectorf<2>>(2, 1, rand);
-            invstddiv= std::abs(B(0));
+            invstddev= std::abs(B(0));
             z= B(1);
-            orb::potter_measurement_update(x_test,S,z,A,invstddiv);
+            orb::potter_measurement_update(x_test,S,z,A,invstddev);
             // now use regular kalman update
-            realtype R= (1/invstddiv)*(1/invstddiv);
+            realtype R= (1/invstddev)*(1/invstddev);
             lin::Vector<realtype,N> K= P*lin::transpose(A)/(lin::dot(A*P,lin::transpose(A))+R);
             P= ((lin::identity<realtype,N>()-K*A)*P*lin::transpose(lin::identity<realtype,N>()-K*A)+K*R*lin::transpose(K)).eval();
             x= (x + K*(z-lin::dot(A,x))).eval();
