@@ -133,7 +133,8 @@ class Orbit {
             if (!(_ns_gps_time >= MINGPSTIME_NS)) goto INVALID;
             //position check
             lin::Vector3f recef_f=_recef;
-            float r2= lin::fro(recef_f);
+            float r2= lin::fro(recef_f);//lin::fro is Frobenius (aka Euclidean) norm squared
+            //r2 is r^2
             //note if position is NAN, these checks will fail.
             if (!(r2 <= MAXORBITRADIUS*MAXORBITRADIUS)) goto INVALID;
             if (!(r2 >= MINORBITRADIUS*MINORBITRADIUS)) goto INVALID;
@@ -143,8 +144,9 @@ class Orbit {
             lin::Vector3f vecef0_f=_vecef;
             vecef0_f= vecef0_f + lin::Vector3f({-w*recef_f(1),w*recef_f(0),0.0f});
             //e is the specific orbital energy
+            //lin::fro is Frobenius (aka Euclidean) norm squared
             float e= lin::fro(vecef0_f)*0.5f-mu/std::sqrt(r2);
-            //h2 is norm sqaured of specific orbital angular momentum
+            //h2 is norm squared of specific orbital angular momentum
             float h2= lin::fro(lin::cross(recef_f,vecef0_f));
             //ep and ea are the lowest specific orbital energy if h2 is the same at max and min radius
             float ep= h2*(0.5f/(MINORBITRADIUS*MINORBITRADIUS))-mu/MINORBITRADIUS;
