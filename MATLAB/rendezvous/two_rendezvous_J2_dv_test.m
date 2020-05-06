@@ -8,13 +8,15 @@ global const
 config();
 M = 3.7; % Mass (kg)
 J_min = 2e-4; % Min impulse (Ns)
-J_max = 1e6 * 2e-2; % Max impulse (Ns)
-max_dv = J_max/M;
+J_max = 2e-2; % Max impulse (Ns)
+% max_dv = J_max/M;
+max_dv = 1e3;
 v_rel   = 1; % Relative velocity at deployment (m/s)
 t_drift = 60.0 * 60.0; % Drift time (s)
-p = 1.0e-2;
-d = 5.0e-6;
-h_gain = 1.0e-8;
+% p = 0.1;
+p = 0;dot(h1proj, cross(r2, h2))
+d = 1.0e-6;
+h_gain = 0.001;
 thrust_noise_ratio = 0;
 dt_fire_min = 10 * 60; % [s] minimum time between firings
 % opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
@@ -42,11 +44,22 @@ w_hill = [0.0; 0.0; n];
 % Add initial velocity difference
 r2 = r1;
 % v2 = randn(3, 1);
-v2 = [1; 0.5; 0.25];
+v2 = [1.0; 0.5; 0.25];
 v2 = v1 + v_rel * (v2 / norm(v2));
 
 % Allow spacecraft to drift apart
 [~, r1, v1, r2, v2] = drift_phase(r1, v1, r2, v2, t_drift);
+
+% % specify follower orbital elements (for testing only)
+% a  = 6793137.0;  % Semimajor axis                        (m)
+% e  = 0.001;      % Eccentricity                          (unitless)
+% I  = 46*pi/180;  % Inclination angle                     (rad)
+% O  = 0.0;        % Right ascension of the ascending node (rad)
+% o  = 0.0;        % Argument of perigee                   (rad)
+% nu = 0*pi/180;   % True anamoly                          (rad)
+% [   r2,...  % Position (m)   [eci]
+%     v2,...  % Velocity (m/s) [eci]
+% ] = utl_orb2rv(a * (1 - e*e), e, I, O, o, nu, const.mu);
 
 % add measurement noise (zero for now)
 r1_measure = r1; % +0.1*randn(3,1);
@@ -99,7 +112,7 @@ h2 = cross(r2, v2);
 dh = h1 - h2;
 h1hat = h1 / norm(h1);
 h2hat = h2 / norm(h2);
-dh_angle(1) = dot(h1hat, h2hat);
+dh_angle(1) = acos(dot(h1hat, h2hat));
 dh_vec(:, 1) = dh;
 h1_vec(:, 1) = h1;
 h2_vec(:, 1) = h2;
@@ -149,14 +162,40 @@ for i = 1 : N - 1
         
         % normal plane correction
         
-        dh2hat = - dot(h1, h1 - h2) / dot(h1, h1) * (h1 - h2); % component of dh not in the h1 direction
+%         dh2hat = - dot(h1, h1 - h2) / dot(h1, h1) * (h1 - h2); % component of dh not in the h1 direction
 %         dh2hat = dh2 / norm(dh2);
 %         dhhat = dh / norm(dh);
         r2hat = r2 / norm(r2);
-        Jhat_plane = cross(dh2hat, r2hat);
-        Jhat_plane = Jhat_plane / norm(Jhat_plane);
-        J_plane = norm(dh) * Jhat_plane;
+%         Jhat_plane = cross(dhhat, r2hat);
+%         Jhat_plane = Jhat_plane / norm(Jhat_plane);
+
+        % define the direction of our impulse, always in the h2 direction
+        Jhat_plane = h2hat;
+
+        % project h1 onto the plane formed by h2 and (r2 x h2)
+        h1proj = h1 - dot(h1, r2hat) * r2hat;
+        
+        % calculate the angle between h1proj and h2 (this is what we are
+        % driving to zero with this burn)
+        theta = atan( dot(h1proj, cross(r2, h2)) / dot(h1proj, h2) );
+        
+        % scale the impulse delivered by the angle theta
+        J_plane = theta * Jhat_plane;
+        
+%         J_plane = (1 - dot(h1hat, h2hat)) * Jhat_plane;
         dv_plane = h_gain * J_plane / M;
+%         L = cross(r2, h2);
+%         Lhat = L / norm(L);
+%         h1projhat = h1proj / norm(h1proj);
+%         
+%         figure
+%         quiver3(0, 0, 0, h2hat(1), h2hat(2), h2hat(3)); hold on
+%         quiver3(0, 0, 0, r2hat(1), r2hat(2), r2hat(3))
+%         quiver3(0, 0, 0, Lhat(1), Lhat(2), Lhat(3))
+%         quiver3(0, 0, 0, h1hat(1), h1hat(2), h1hat(3))
+%         quiver3(0, 0, 0, h1projhat(1), h1projhat(2), h1projhat(3))
+%         legend('h_2', 'r_2', 'r_2 x h_2', 'h_1', 'h_{1, proj}')
+%         pause;
         
 %         dv_plane = h_gain * normal_plane_correction(r1, v1, r2, v2, max_dv);
         
@@ -211,7 +250,7 @@ for i = 1 : N - 1
     h2 = cross(r2, v2);
     h1hat = h1 / norm(h1);
     h2hat = h2 / norm(h2);
-    dh_angle(i + 1) = dot(h1hat, h2hat);
+    dh_angle(i + 1) = acos(dot(h1hat, h2hat));
     dh = h1 - h2;
     dh_vec(:, i + 1) = dh;
     h1_vec(:, i + 1) = h1;
@@ -372,24 +411,24 @@ title('angular momentum difference norm')
 figure;
 plot(t, dh_angle)
 xlabel('t [s]')
-ylabel('dot(h1hat, h2hat)')
-title('dot product of angular momentum unit vectors')
+ylabel('\phi [rad]')
+title('angle between h_1 and h_2')
 
 function dy = frhs(~, y)
 
-% global const
+global const
 
 dy = zeros(12, 1);
 
-[gx, gy, gz] = gravityzonal(y(1:3)', 'Earth', 4, 'Error');
+% [gx, gy, gz] = gravityzonal(y(1:3)', 'Earth', 4, 'Error');
 dy(1:3, 1) = y(4:6, 1);
-dy(4:6, 1) = [gx; gy; gz];
-% dy(4:6, 1) = -const.mu * y(1:3, 1) / norm(y(1:3, 1))^3;
+% dy(4:6, 1) = [gx; gy; gz];
+dy(4:6, 1) = -const.mu * y(1:3, 1) / norm(y(1:3, 1))^3;
 
-[gx, gy, gz] = gravityzonal(y(7:9)', 'Earth', 4, 'Error');
+% [gx, gy, gz] = gravityzonal(y(7:9)', 'Earth', 4, 'Error');
 dy(7:9, 1) = y(10:12, 1);
-dy(10:12, 1) = [gx; gy; gz];
-% dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
+% dy(10:12, 1) = [gx; gy; gz];
+dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
 
 end
 
