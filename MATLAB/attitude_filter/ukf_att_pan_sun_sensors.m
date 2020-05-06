@@ -41,22 +41,24 @@ const.earth_rate_ecef = [0; 0; 7.2921158553E-5]; % [rad / s] earth's inertial ro
 % filter parameters
 sv = 2.75e-4; % [rad / s^(1/2)] std of gyro noise (treated as process noise here)
 su = 1e-6;
+%remove lines 46-52 -in C++
 % su = deg2rad(0.0015); % [rad / s^(3/2)] std of gyro bias (treated as process noise here)
-P = [(deg2rad(10))^2 * eye(3), zeros(3, 3);
-    zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
-Qbar = 1e3 * (dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
-    zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
-a = 1; % scaling for generalized rodrigues parameters
-f = 2 * (a + 1); % more scaling
-lam = 1;
+% P = [(deg2rad(10))^2 * eye(3), zeros(3, 3);
+%     zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
+% Qbar = 1e3 * (dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
+%     zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
+% a = 1; % scaling for generalized rodrigues parameters
+% f = 2 * (a + 1); % more scaling
+% lam = 1;
 
 % sensor constants
-gyro_bias_init = [-0.0344; 0.0279; 0.0144]; % [rad / s]
-bias_est = [0 0 0]'; % [rad / s] initial estimate
-R_mag = (5e-7)^2 * eye(3); % [T]
-R_ss = (0.0349)^2 * eye(2); % [rad]
-R = [R_ss, zeros(2, 3);
-    zeros(3, 2), R_mag];
+%remove lines 57-61 -in C++
+% gyro_bias_init = [-0.0344; 0.0279; 0.0144]; % [rad / s]
+% bias_est = [0 0 0]'; % [rad / s] initial estimate
+% R_mag = (5e-7)^2 * eye(3); % [T]
+% R_ss = (0.0349)^2 * eye(2); % [rad]
+% R = [R_ss, zeros(2, 3);
+%     zeros(3, 2), R_mag];
 
 % initial conditions
 sma = r_earth + 350e3; % [m]
@@ -69,6 +71,8 @@ semi_p = sma * (1 - e^2); % [m]
 
 [r0, v0] = utl_orb2rv(semi_p, e, I, Omega, omega, nu, mu_earth);
 
+
+%initialize quaternion - True quaternion
 th0 = deg2rad(30);
 nhat0 = [1 0 0]';
 q0 = [sin(th0/2) * nhat0; cos(th0/2)];
@@ -76,20 +80,25 @@ q0 = [sin(th0/2) * nhat0; cos(th0/2)];
 % nhat_est = [1 0 0]';
 % q_est = [sin(th_est/2) * nhat_est; cos(th_est/2)];
 % q_est = q0; % initialize with correct attitude estimate
-
+%intialize true angular rate; should stay the same; play around with this;
+%how high a rate can we initially estimate and still be good
 IwB_B_0 = [0.01 0 0]'; % [rad / s]
 % IwB_B_0 = [0 0 0]';
 
 z0_orb = [r0; v0];
 % z0_att = [q0; IwB_B_0];
 
-% propagate true orbit dynamics
+% propagate true orbit dynamics - one call to ode45; 
+% pre-compute orbital dynamics
+% use these pre-computed states to call the filter
 opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-3, 'InitialStep', 0.1);
 [t, z] = ode45(@(t, z) ode_orb(t, z, mu_earth), tspan, z0_orb, opt);
 r = z(:, 1:3)';
 v = z(:, 4:6)';
 
 % propagate true attitude dynamics
+% switch this out in phase 2 for ode propogation
+% add torques, precession, reaction wheels
 gyro_noise = mvnrnd(zeros(1, 3), sv^2 * eye(3), N)';
 IwB_B = repmat(IwB_B_0, 1, N) + gyro_noise;
 q = zeros(4, N);
@@ -108,12 +117,15 @@ for i = 1 : N - 1
 end
 
 % initial quaternion estimate
-th_err_x_init = deg2rad(-5);
+% passed into the filter
+th_err_x_init = deg2rad(-5); %5 deg of error on EACH attitude axis
 th_err_y_init = deg2rad(5);
 th_err_z_init = deg2rad(5);
 nhat_err_x_init = [1 0 0]';
 nhat_err_y_init = [0 1 0]';
 nhat_err_z_init = [0 0 1]';
+%following are quaternion rotations
+%testing: randomly generate error, expand error bounds in 120-122
 q_err_x_init = [sin(th_err_x_init / 2) * nhat_err_x_init; cos(th_err_x_init / 2)];
 q_err_y_init = [sin(th_err_y_init / 2) * nhat_err_y_init; cos(th_err_y_init / 2)];
 q_err_z_init = [sin(th_err_z_init / 2) * nhat_err_z_init; cos(th_err_z_init / 2)];
@@ -121,13 +133,14 @@ q_est = utl_quat_cross_mult(q0, q_err_x_init);
 q_est = utl_quat_cross_mult(q_est, q_err_y_init);
 q_est = utl_quat_cross_mult(q_est, q_err_z_init);
 
-% propagate gyro bias
+% propagate gyro bias-truth
+% add in temperature bias
 bias_noise = mvnrnd(zeros(1, 3), su^2 * eye(3), N);
 gyro_bias = zeros(3, N);
 gyro_bias(:, 1) = gyro_bias_init;
 
 for i = 1 : N - 1
-
+    %euler step
     gyro_bias(:, i + 1) = gyro_bias(:, i) + dt * bias_noise(i + 1, :)';
     
 end
@@ -149,7 +162,8 @@ q_est_vec(:, 1) = q_est;
 bias_est_vec(:, 1) = bias_est;
 P_vec(:, :, 1) = P;
 
-% gyro measurement model
+%%%all the following are initializing truth for propogation later
+% gyro measurement model; TRUTH: true measurement from the gyro
 w_meas = IwB_B(:, 1) + gyro_bias(:, 1); % + mvnrnd(zeros(1, 3), sv^2 * eye(3), 1)';
 w_meas_vec(:, 1) = w_meas;
 w_est_vec(:, 1) = w_meas - bias_est;
@@ -174,159 +188,169 @@ mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
 B_body_meas = B_body + mag_noise'; % add noise
 mag_meas_vec(:, 1) = B_body_meas;
 
+% state contains info that persists across calls to the filter.
+% attitude estimate quaternion, gyro bias estimate, and state covariance estimate
+[state] = adcs_estimator_reset(q_est, T0);
+[state] = reset(q_est, T0);
+
 for i = 1 : N - 1
     
     if ~mod(tspan(i), 100)
         fprintf('Progress: %.2f / %.2f [s] \n', tspan(i), tspan(end))
     end
     
-    % initial filter state
-    xhat = [0; 0; 0; bias_est]; % initialize attitude error to zero
-    
-    % generate sigma points
-    S = chol(P + Qbar);
-    n = size(S, 2);
-    sigmas = zeros(2 * n + 1, 6);
-    sigmas(1, :) = xhat';
-    
-    for ii = 2 : n + 1
-        sigmas(ii, :) = xhat' + sqrt(n + lam) * S(:, ii - 1)';
-    end
-    for ii = n + 2 : 2 * n + 1
-        sigmas(ii, :) = xhat' - sqrt(n + lam) * S(:, ii - n - 1)';
-    end
-
-    % convert sigma points from GRPs to error quaternions
-    sigmas_q = zeros(size(sigmas, 1), 4);
-    
-    for ii = 1 : size(sigmas, 1)
-        
-        psig = sigmas(ii, 1:3);
-        qsig = utl_grp2quat(psig, a, f);
-        sigmas_q(ii, :) = qsig';
-        
-    end
-    
-    % perturb current quaternion estimate
-    q_pert = zeros(size(sigmas_q, 1), 4);
-    
-    for ii = 1 : size(sigmas_q, 1)
-        
-        q_pert(ii, :) = utl_quat_cross_mult(sigmas_q(ii, :)', q_est);
-        
-    end
-    
-    % propagate sigma points
-    q_new = zeros(size(sigmas, 1), 4);
-    
-    for ii = 1 : size(sigmas, 1)
-        
-        w_est = w_meas - sigmas(ii, 4:6)';
-        psi = sin(0.5 * norm(w_est) * dt) * w_est / norm(w_est);
-        psix = [0 -psi(3) psi(2);
-            psi(3) 0 -psi(1);
-            -psi(2) psi(1) 0];
-        O = [cos(0.5 * norm(w_est) * dt) * eye(3) - psix psi;
-            -psi' cos(0.5 * norm(w_est) * dt)];
-        q_new(ii, :) = O * q_pert(ii, :)';
-        
-    end
-    
-    % expected measurements for each sigma point
-    sat2sun_eci = env_sun_vector( tspan(i + 1) );
-    [quat_ecef_eci, rate_ecef] = env_earth_attitude( tspan(i + 1) );
-    r_ecef = utl_rotateframe( quat_ecef_eci, r(:, i + 1) )';
-    B_ecef = env_magnetic_field(tspan(i + 1), r_ecef);
-    
-    exp_meas = zeros(5, size(sigmas_q, 1)); % mag and 2-angle ss model
-    
-    for ii = 1 : size(sigmas_q, 1)
-        
-        sat2sun_body_exp = utl_rotateframe(q_new(ii, :)', sat2sun_eci')';
-        th_ss_body = atan(sat2sun_body_exp(2) / sat2sun_body_exp(1)); % [rad]
-        phi_ss_body = acos(sat2sun_body_exp(3)); % [rad]
-        ss_ang_body = [th_ss_body; phi_ss_body];
-
-        quat_body_ecef = utl_quat_cross_mult(q_new(ii, :)', quat_eci_ecef);
-        B_body_exp = utl_rotateframe(quat_body_ecef, B_ecef')';
-        exp_meas(:, ii) = [ss_ang_body; B_body_exp]; % mag and 2-angle ss
-        
-    end
-    
-    % calculate propagated error quaternions
-    dq_new = zeros(size(sigmas_q, 1), 4);
-    
-    for ii = 1 : size(sigmas_q, 1)
-        
-        dq_new(ii, :) = utl_quat_cross_mult( q_new(ii, :)', utl_quat_conj(q_new(1, :)') );
-        
-    end
-    
-    % convert back to GRPs to get the propagated sigma points
-    sigmas_new = zeros(size(sigmas, 1), 6);
-    sigmas_new(1, 4:6) = sigmas(1, 4:6);
-    
-    for ii = 2 : size(sigmas, 1)
-        
-        p_new = utl_quat2grp(dq_new(ii, :), a, f);
-        sigmas_new(ii, 1:3) = p_new';
-        sigmas_new(ii, 4:6) = sigmas(ii, 4:6); % gyro bias
-        
-    end
-
-    % calculate weights for each sigma point
-    weights = zeros(size(sigmas, 1), 1);
-    weights(1) = lam / (n + lam);
-    
-    for ii = 2 : length(weights)
-        
-        weights(ii) = 1 / (2 * (n + lam));
-        
-    end
-    
-    % compute weighted mean and mean expected measurement
-    xbar = zeros(6, 1);
-    zbar = zeros(5, 1); % mag and 2-angle ss
-
-    for ii = 1 : length(weights)
-        
-        xbar = xbar + weights(ii) * sigmas_new(ii, :)';
-        zbar = zbar + weights(ii) * exp_meas(:, ii);
-        
-    end
-    
-    % calculate weights for covariance estimate
-    weights_cov = zeros(size(sigmas, 1), 1);
-    weights_cov(1) = lam / (n + lam); % + (1 - alpha^2 + beta);
-    
-    for ii = 2 : length(weights_cov)
-        
-        weights_cov(ii) = 1 / (2 * (n + lam));
-        
-    end
-    
-    % calculate covariances
-    P_pred = zeros(6, 6); % predicted covariance
-    Pyy = zeros(5, 5); % output covariance
-    Pxy = zeros(6, 5); % cross-correlation covariance
-
-    for ii = 1 : length(weights_cov)
-        
-        sigma_diff = sigmas_new(ii, :)' - xbar;
-        meas_diff = exp_meas(:, ii) - zbar;
-        
-        P_pred = P_pred + weights_cov(ii) * (sigma_diff * sigma_diff');
-        Pyy = Pyy + weights_cov(ii) * (meas_diff * meas_diff');
-        Pxy = Pxy + weights_cov(ii) * (sigma_diff * meas_diff');
-        
-    end
-    
-    P_pred = P_pred + Qbar; % add process noise to predicted covariance
-    Pvv = Pyy + R; % innovation covariance
-    
-    % compute Kalman gain
-    K = Pxy * inv(Pvv);
-    
+%     % initial filter state
+%     xhat = [0; 0; 0; bias_est]; % initialize attitude error to zero
+%     
+%     % generate sigma points
+%     S = chol(P + Qbar);
+%     n = size(S, 2);
+%     sigmas = zeros(2 * n + 1, 6);
+%     sigmas(1, :) = xhat';
+%     
+%     for ii = 2 : n + 1
+%         sigmas(ii, :) = xhat' + sqrt(n + lam) * S(:, ii - 1)';
+%     end
+%     for ii = n + 2 : 2 * n + 1
+%         sigmas(ii, :) = xhat' - sqrt(n + lam) * S(:, ii - n - 1)';
+%     end
+% 
+%     % convert sigma points from GRPs to error quaternions
+%     sigmas_q = zeros(size(sigmas, 1), 4);
+%     
+%     for ii = 1 : size(sigmas, 1)
+%         
+%         psig = sigmas(ii, 1:3);
+%         qsig = utl_grp2quat(psig, a, f);
+%         sigmas_q(ii, :) = qsig';
+%         
+%     end
+%     
+%     % perturb current quaternion estimate
+%     q_pert = zeros(size(sigmas_q, 1), 4);
+%     
+%     for ii = 1 : size(sigmas_q, 1)
+%         
+%         q_pert(ii, :) = utl_quat_cross_mult(sigmas_q(ii, :)', q_est);
+%         
+%     end
+%     
+%     % propagate sigma points
+%     q_new = zeros(size(sigmas, 1), 4);
+%     
+%     for ii = 1 : size(sigmas, 1)
+%         
+%         w_est = w_meas - sigmas(ii, 4:6)';
+%         psi = sin(0.5 * norm(w_est) * dt) * w_est / norm(w_est);
+%         psix = [0 -psi(3) psi(2);
+%             psi(3) 0 -psi(1);
+%             -psi(2) psi(1) 0];
+%         O = [cos(0.5 * norm(w_est) * dt) * eye(3) - psix psi;
+%             -psi' cos(0.5 * norm(w_est) * dt)];
+%         q_new(ii, :) = O * q_pert(ii, :)';
+%         
+%     end
+%     
+%     % expected measurements for each sigma point
+%     sat2sun_eci = env_sun_vector( tspan(i + 1) );
+%     [quat_ecef_eci, rate_ecef] = env_earth_attitude( tspan(i + 1) );
+%     r_ecef = utl_rotateframe( quat_ecef_eci, r(:, i + 1) )';
+%     B_ecef = env_magnetic_field(tspan(i + 1), r_ecef);
+%     
+%     exp_meas = zeros(5, size(sigmas_q, 1)); % mag and 2-angle ss model
+%     
+%     for ii = 1 : size(sigmas_q, 1)
+%         
+%         sat2sun_body_exp = utl_rotateframe(q_new(ii, :)', sat2sun_eci')';
+%         th_ss_body = atan(sat2sun_body_exp(2) / sat2sun_body_exp(1)); % [rad]
+%         phi_ss_body = acos(sat2sun_body_exp(3)); % [rad]
+%         ss_ang_body = [th_ss_body; phi_ss_body];
+% 
+%         quat_body_ecef = utl_quat_cross_mult(q_new(ii, :)', quat_eci_ecef);
+%         B_body_exp = utl_rotateframe(quat_body_ecef, B_ecef')';
+%         exp_meas(:, ii) = [ss_ang_body; B_body_exp]; % mag and 2-angle ss
+%         
+%     end
+%     
+%     % calculate propagated error quaternions
+%     dq_new = zeros(size(sigmas_q, 1), 4);
+%     
+%     for ii = 1 : size(sigmas_q, 1)
+%         
+%         dq_new(ii, :) = utl_quat_cross_mult( q_new(ii, :)', utl_quat_conj(q_new(1, :)') );
+%         
+%     end
+%     
+%     % convert back to GRPs to get the propagated sigma points
+%     sigmas_new = zeros(size(sigmas, 1), 6);
+%     sigmas_new(1, 4:6) = sigmas(1, 4:6);
+%     
+%     for ii = 2 : size(sigmas, 1)
+%         
+%         p_new = utl_quat2grp(dq_new(ii, :), a, f);
+%         sigmas_new(ii, 1:3) = p_new';
+%         sigmas_new(ii, 4:6) = sigmas(ii, 4:6); % gyro bias
+%         
+%     end
+% 
+%     % calculate weights for each sigma point
+%     weights = zeros(size(sigmas, 1), 1);
+%     weights(1) = lam / (n + lam);
+%     
+%     for ii = 2 : length(weights)
+%         
+%         weights(ii) = 1 / (2 * (n + lam));
+%         
+%     end
+%     
+%     % compute weighted mean and mean expected measurement
+%     xbar = zeros(6, 1);
+%     zbar = zeros(5, 1); % mag and 2-angle ss
+% 
+%     for ii = 1 : length(weights)
+%         
+%         xbar = xbar + weights(ii) * sigmas_new(ii, :)';
+%         zbar = zbar + weights(ii) * exp_meas(:, ii);
+%         
+%     end
+%     
+%     % calculate weights for covariance estimate
+%     weights_cov = zeros(size(sigmas, 1), 1);
+%     weights_cov(1) = lam / (n + lam); % + (1 - alpha^2 + beta);
+%     
+%     for ii = 2 : length(weights_cov)
+%         
+%         weights_cov(ii) = 1 / (2 * (n + lam));
+%         
+%     end
+%     
+%     % calculate covariances
+%     P_pred = zeros(6, 6); % predicted covariance
+%     Pyy = zeros(5, 5); % output covariance
+%     Pxy = zeros(6, 5); % cross-correlation covariance
+% 
+%     for ii = 1 : length(weights_cov)
+%         
+%         sigma_diff = sigmas_new(ii, :)' - xbar;
+%         meas_diff = exp_meas(:, ii) - zbar;
+%         
+%         P_pred = P_pred + weights_cov(ii) * (sigma_diff * sigma_diff');
+%         Pyy = Pyy + weights_cov(ii) * (meas_diff * meas_diff');
+%         Pxy = Pxy + weights_cov(ii) * (sigma_diff * meas_diff');
+%         
+%     end
+%     
+%     P_pred = P_pred + Qbar; % add process noise to predicted covariance
+%     Pvv = Pyy + R; % innovation covariance
+%     
+%     % compute Kalman gain
+%     K = Pxy * inv(Pvv);
+ 
+    %%%%%everthing lines 341 and above should be a single call to the C++
+    %%%%%filter; attitude_estimator in include/gnc passes data in and out of code;
+    %%ukf_sigma_v/u/b/s; store q,x,P,t
+    %on every call to update filter recef (filter loop), mag field vector,
+    %sun vector
     % gyro measurement model
     w_meas = IwB_B(:, i + 1) + gyro_bias(:, i + 1); % + mvnrnd(zeros(1, 3), sv^2 * eye(3), 1)';
     w_meas_vec(:, i + 1) = w_meas;
@@ -343,6 +367,12 @@ for i = 1 : N - 1
     B_body = utl_rotateframe(quat_body_ecef, B_ecef')';
     mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
     B_body_meas = B_body + mag_noise';
+    
+        %populates a gnc::AttitudeEstimatorState and gnc::AttitudeEstimatorData struct to then call:
+    %        void attitude_estimator_update(AttitudeEstimatorState &state,
+    %        AttitudeEstimatorData const &data, AttitudeEstimate &estimate);
+    [state,q_est,gyro_bias_est,cov_est] = adcs_estimator_update(state, t, r_ecef, B_body_meas, ss_meas_vec, w_meas_vec);
+    [state] = update(state, t, r_ecef, b_body, s_body, w_body); 
     
     % update estimate based on measurements
     meas = [ss_ang_body; B_body_meas];
