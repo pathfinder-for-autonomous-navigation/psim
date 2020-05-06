@@ -13,6 +13,6 @@ function [state] = triad_reset(t, r_ecef, b_body, s_body)
 % TODO
 end
 
-function [state] = update(state, t, r_ecef, b_body, s_body, w_body)
+function [state, q_est, gyro_bias_est, cov_est] = update(state, t, r_ecef, b_body, s_body, w_body)
 % TODO
 end
