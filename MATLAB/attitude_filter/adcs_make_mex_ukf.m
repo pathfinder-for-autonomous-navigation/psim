@@ -5,11 +5,11 @@ ukf.triad_reset = @triad_reset;
 ukf.update = @update;
 end
 
-function [state] = reset(state, q, gyro_bias, cov)
+function [state] = reset(q, gyro_bias, cov)
 % TODO
 end
 
-function [state] = triad_reset(state, t, r_ecef, b_body, s_body)
+function [state] = triad_reset(t, r_ecef, b_body, s_body)
 % TODO
 end
 
