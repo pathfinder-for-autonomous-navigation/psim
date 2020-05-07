@@ -55,17 +55,7 @@ public:
 
         // will only contain one element
         StructArray S = f.createStructArray({1,1}, 
-            {"x_bar", "sigmas", "z_bar", "measures", "P_bar", "P_vv", "P_xy", "q", "x","P","t"});
-
-        S[0]["x_bar"] = create_from_lin_vec(f, state.x_bar);
-        S[0]["z_bar"] = create_from_lin_vec(f, state.z_bar);
-
-        S[0]["sigmas"] = create_from_lin_vec_arr(f, state.sigmas, 13);
-        S[0]["measures"] = create_from_lin_vec_arr(f, state.measures, 13);
-
-        S[0]["P_bar"] = create_from_lin_mat(f, state.P_bar);
-        S[0]["P_vv"] = create_from_lin_mat(f, state.P_vv);
-        S[0]["P_xy"] = create_from_lin_mat(f, state.P_xy);
+            {"q", "x","P","t"});
 
         S[0]["q"] = create_from_lin_vec(f, state.q);
         S[0]["x"] = create_from_lin_vec(f, state.x);

@@ -27,8 +27,8 @@ public:
         return ret;    
     }
 
-    template<lin::size_t R, lin::size_t C>
-    TypedArray<double> create_from_lin_mat(ArrayFactory& f, lin::Matrixd<R, C> lin_mat){
+    template<lin::size_t R, lin::size_t C, typename T>
+    TypedArray<double> create_from_lin_mat(ArrayFactory& f, lin::Matrix<T, R, C> lin_mat){
         TypedArray<double> ret = f.createArray<double>({R, C});
         for(int r = 0; r < R; r++){
             for(int c = 0; c < C; c++)
@@ -39,9 +39,20 @@ public:
 
     template<lin::size_t N, typename T>
     lin::Vector<T, N> typed_array_to_lin_vec(matlab::data::TypedArray<T> typed_arr){
-        lin::Vector<T, T> ret;
+        lin::Vector<T, N> ret;
         for (int i = 0; i<N; i++) {
             ret(i) = typed_arr[i];
+        }
+        return ret;
+    }
+
+    template<lin::size_t N, typename T>
+    lin::Vector<T, N> typed_array_to_lin_mat(matlab::data::TypedArray<T> typed_arr, size_t R, size_t C){
+        lin::Matrix<T, R, C> ret;
+        for( int r = 0; r<R; r++){
+            for( int c = 0; c<C; c++){
+                ret(r, c) = typed_arr[r][c];
+            }
         }
         return ret;
     }
@@ -50,7 +61,7 @@ public:
         checkArguments(outputs, inputs);
         
         // the struct
-        inputs[0];
+        StructArray matlab_state = inputs[0][0];
         
         // time
         // double t = inputs[1][0];
@@ -65,6 +76,10 @@ public:
 
         // assemble lin state
         gnc::AttitudeEstimatorState state = gnc::AttitudeEstimatorState();
+        state.q = typed_array_to_lin_vec(matlab_state["q"]);
+        state.x = typed_array_to_lin_vec(matlab_state["x"]);
+        state.P = typed_array_to_lin_mat(matlab_state["P"], 6, 6);
+        state.t = matlab_state["t"]
 
         // empty estimate
         gnc::AttitudeEstimate estimate = gnc::AttitudeEstimate();
@@ -76,17 +91,6 @@ public:
         // will only contain one element
         StructArray S = f.createStructArray({1,1}, 
             {"q", "x","P","t"});
-            // {"x_bar", "sigmas", "z_bar", "measures", "P_bar", "P_vv", "P_xy", "q", "x","P","t"});
-
-        // S[0]["x_bar"] = create_from_lin_vec(f, state.x_bar);
-        // S[0]["z_bar"] = create_from_lin_vec(f, state.z_bar);
-
-        // S[0]["sigmas"] = create_from_lin_vec_arr(f, state.sigmas, 13);
-        // S[0]["measures"] = create_from_lin_vec_arr(f, state.measures, 13);
-
-        // S[0]["P_bar"] = create_from_lin_mat(f, state.P_bar);
-        // S[0]["P_vv"] = create_from_lin_mat(f, state.P_vv);
-        // S[0]["P_xy"] = create_from_lin_mat(f, state.P_xy);
 
         S[0]["q"] = create_from_lin_vec(f, state.q);
         S[0]["x"] = create_from_lin_vec(f, state.x);
@@ -95,8 +99,12 @@ public:
         lin::Matrixd<1,1> dummy = {state.t};
         S[0]["t"] = create_from_lin_mat(f, dummy);
 
-        //outputs[0] is the struct
+        //outputs[0] is the state struct
         outputs[0] = S;
+
+        outputs[1] = create_from_lin_vec(f, estimate.q_body_eci);
+        outputs[2] = create_from_lin_vec(f, estimate.gyro_bias);
+        outputs[3] = create_from_lin_mat(f, estimate.P);
     }
 
     void checkArguments(matlab::mex::ArgumentList outputs, matlab::mex::ArgumentList inputs) {
