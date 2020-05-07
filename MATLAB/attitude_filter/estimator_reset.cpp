@@ -39,9 +39,9 @@ public:
 
     void operator()(matlab::mex::ArgumentList outputs, matlab::mex::ArgumentList inputs) {
         checkArguments(outputs, inputs);
-        matlab::data::TypedArray<double> in = std::move(inputs[1]);
-        lin::Vector3f q_body_eci;
-        for (int i = 0; i<3; i++) {
+        matlab::data::TypedArray<double> in = inputs[1];
+        lin::Vector4f q_body_eci;
+        for (int i = 0; i<4; i++) {
             q_body_eci(i) = in[i];
         }
         double time = inputs[0][0];
