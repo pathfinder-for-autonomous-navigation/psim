@@ -190,7 +190,7 @@ mag_meas_vec(:, 1) = B_body_meas;
 
 % state contains info that persists across calls to the filter.
 % attitude estimate quaternion, gyro bias estimate, and state covariance estimate
-[state] = adcs_estimator_reset(q_est, T0);
+[state] = attitude_estimator_reset(q_est, T0);
 [state] = reset(q_est, T0);
 
 for i = 1 : N - 1

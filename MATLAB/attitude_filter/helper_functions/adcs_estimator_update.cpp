@@ -11,7 +11,7 @@ public:
         double multiplier = inputs[0][0];
         matlab::data::TypedArray<double> in = std::move(inputs[1]);
         matlab::data::Struct state = std::move(inputs[0])
-        double time = inputs[1][0]
+        double time = inputs[1][0];
         arrayProduct(in, multiplier);
         outputs[0] = std::move(in);
     }

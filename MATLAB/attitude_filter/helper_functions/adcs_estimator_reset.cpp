@@ -11,21 +11,29 @@ public:
 
     template<size_t N>
     ArrayStruct<double> create_from_lin_vec(lin::Vector<double, N> lin_vec){
-        ArrayStruct<double> ret = f.createBuffer<double>({N, 1});
+        ArrayStruct<double> ret = f.createArray<double>({N, 1});
         for(int r = 0; r < N; r++){
             ret[r][1] = lin_vec(r, 1);
         }
     }
 
+    ArrayStruct<double> create_from_lin_vec_array(lin::Vector<double, N>* lin_vec, size_t L){
+        ArrayStruct<double> ret = f.createArray<double>({N, 1, L});
+        for(int i = 0; i < L; i++){
+            for(int r = 0; r < N; r++){
+                ret[r][1][i] = (lin_vec[i])(r, 1);
+            }
+        }
+    }
+
     template<size_t R, size_t C>
     ArrayStruct<double> create_from_lin_mat(lin::Matrixd<R, C> lin_mat){
-        ArrayStruct<double> ret = f.createBuffer<double>({R, C});
+        ArrayStruct<double> ret = f.createArray<double>({R, C});
         for(int r = 0; r < R; r++){
             for(int c = 0; c < C; c++)
                 ret[r][c] = lin_mat(r, c);
         }
     }
-
 
     void operator()(matlab::mex::ArgumentList outputs, matlab::mex::ArgumentList inputs) {
         checkArguments(outputs, inputs);
@@ -44,52 +52,16 @@ public:
         StructArray S = f.createStructArray({1,1}, 
             {"x_bar", "sigmas", "z_bar", "measures", "P_bar", "P_vv", "P_xy", "q", "x","P","t"});
 
-        // S[0]["x_bar"] = f.createArrayFromBuffer<double>({1,6}, &(state.x_bar(0)), MemoryLayout::ROW_MAJOR)
-        // S[0]["sigmas"] = f.createArrayFromBuffer<double>({1,6}, &(state.x_bar(0)), MemoryLayout::ROW_MAJOR)
-      	// std::for_each(data.begin(), data.end(), [&](const double& e) { *(dataPtr++) = e; });        
-        // auto data_p = factory.createBuffer<double>(nnz);
-
-        // S[0]["x_bar"] = f.createBuffer<double>({6,1});
-        // for(int r = 0; i < 6; r++){
-        //     S[0]["x_bar"][r][0] = state.x_bar(r);
-        // }
-
-        // S[0]["z_bar"] = f.createBuffer<double>({5,1});
-        // for(int r = 0; r < 5; r++){
-        //     S[0]["z_bar"][r][0] = state.z_bar(r);
-        // }
-
-        // S[0]["P_bar"] = f.createBuffer<double>({6, 6});
-        // for(int r = 0; i < 6; r++){
-        //     for(int c = 0; i < 6; c++){
-        //         S[0]["P_bar"][r][c] = state.P_bar(r, c);
-        //     }
-        // }        
-
-        // S[0]["P_vv"] = f.createBuffer<double>({5, 5});
-        // for(int r = 0; i < 5; r++){
-        //     for(int c = 0; i < 5; c++){
-        //         S[0]["P_vv"][r][c] = state.P_vv(r, c);
-        //     }
-        // }   
-
-        // S[0]["P_xy"] = f.createBuffer<double>({6, 5});
-        // for(int r = 0; i < 6; r++){
-        //     for(int c = 0; i < 5; c++){
-        //         S[0]["P_xy"][r][c] = state.P_vv(r, c);
-        //     }
-        // }
-
-        // S[0]["P"] = f.createBuffer<double>({6, 6});
-        // for(int r = 0; i < 6; r++){
-        //     for(int c = 0; i < 6; c++){
-        //         S[0]["P"][r][c] = state.P(r, c);
-        //     }
-        // }
-
         S[0]["x_bar"] = create_from_lin_vec(state.x_bar);
         S[0]["z_bar"] = create_from_lin_vec(state.z_bar);
         
+        // S[0]["sigmas"] = f.createArray<double>({6, 1, 13});
+        // for(int i = 0; i<13; i++){
+        //     S[0]["sigmas"][i] = create_from_lin_vec(state.sigmas[i]);
+        // }
+        S[0]["sigmas"] = create_from_lin_vec_arr(state.sigmas, 13);
+        S[0]["measures"] = create_from_lin_vec_arr(state.measures, 13);
+
         S[0]["P_bar"] = create_from_lin_mat(state.P_bar);
         S[0]["P_vv"] = create_from_lin_mat(state.P_vv);
         S[0]["P_xy"] = create_from_lin_mat(state.P_xy);
