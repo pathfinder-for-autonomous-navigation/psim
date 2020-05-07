@@ -5,14 +5,14 @@ ukf.triad_reset = @triad_reset;
 ukf.update = @update;
 end
 
-function [state] = reset(q, gyro_bias, cov)
+function [state] = adcs_estimator_reset(t, q)
 % TODO
 end
 
-function [state] = triad_reset(t, r_ecef, b_body, s_body)
+function [state] = adcs_estimator_triad_reset(t, r_ecef, b_body, s_body)
 % TODO
 end
 
-function [state, q_est, gyro_bias_est, cov_est] = update(state, t, r_ecef, b_body, s_body, w_body)
+function [state, q_est, gyro_bias_est, cov_est] = adcs_estimator_update(state, t, r_ecef, b_body, s_body, w_body)
 % TODO
 end
