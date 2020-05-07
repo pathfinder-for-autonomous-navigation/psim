@@ -17,7 +17,7 @@ namespace py = pybind11;
  */ 
 void init_orb_ext(py::module &m){
         py::class_<orb::Orbit>(m,"orb_Orbit")
-        .def(py::init<const uint64_t&,const lin::Vector3d&,const lin::Vector3d&>())
+        .def(py::init<const int64_t&,const lin::Vector3d&,const lin::Vector3d&>())
         .def(py::init<>())
         .def("nsgpstime", &orb::Orbit::nsgpstime)
         .def("recef", &orb::Orbit::recef)
@@ -38,10 +38,12 @@ void init_orb_ext(py::module &m){
             x.shortupdate(dt_ns,earth_rate_ecef,specificenergy,jac);
             return std::make_tuple(specificenergy, jac);
         })
-        // .def("", &orb::Orbit::)
-        // .def("", &orb::Orbit::)
+        .def("update", [](orb::Orbit& x, int64_t dt_ns, const lin::Vector3d &earth_rate_ecef){
+            double specificenergy; 
+            lin::Matrix< double, 6, 6 > jac;
+            x.shortupdate(dt_ns,earth_rate_ecef,specificenergy,jac);
+            return std::make_tuple(specificenergy, jac);
+        })
 
-
-        
         ;
 }
