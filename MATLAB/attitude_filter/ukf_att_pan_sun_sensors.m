@@ -43,8 +43,8 @@ sv = 2.75e-4; % [rad / s^(1/2)] std of gyro noise (treated as process noise here
 su = 1e-6;
 %remove lines 46-52 -in C++
 % su = deg2rad(0.0015); % [rad / s^(3/2)] std of gyro bias (treated as process noise here)
-% P = [(deg2rad(10))^2 * eye(3), zeros(3, 3);
-%     zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
+P = [(deg2rad(10))^2 * eye(3), zeros(3, 3);
+   zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
 % Qbar = 1e3 * (dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
 %     zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
 % a = 1; % scaling for generalized rodrigues parameters
@@ -53,12 +53,12 @@ su = 1e-6;
 
 % sensor constants
 %remove lines 57-61 -in C++
-% gyro_bias_init = [-0.0344; 0.0279; 0.0144]; % [rad / s]
-% bias_est = [0 0 0]'; % [rad / s] initial estimate
-% R_mag = (5e-7)^2 * eye(3); % [T]
-% R_ss = (0.0349)^2 * eye(2); % [rad]
-% R = [R_ss, zeros(2, 3);
-%     zeros(3, 2), R_mag];
+gyro_bias_init = [-0.0344; 0.0279; 0.0144]; % [rad / s]
+bias_est = [0 0 0]'; % [rad / s] initial estimate
+R_mag = (5e-7)^2 * eye(3); % [T]
+R_ss = (0.0349)^2 * eye(2); % [rad]
+R = [R_ss, zeros(2, 3);
+     zeros(3, 2), R_mag];
 
 % initial conditions
 sma = r_earth + 350e3; % [m]
@@ -190,8 +190,12 @@ mag_meas_vec(:, 1) = B_body_meas;
 
 % state contains info that persists across calls to the filter.
 % attitude estimate quaternion, gyro bias estimate, and state covariance estimate
-[state] = attitude_estimator_reset(q_est, T0);
-[state] = reset(q_est, T0);
+
+ukf = adcs_make_mex_ukf();
+
+[state] = ukf.reset(T0, q_est);
+% [state] = estimator_reset(T0, q_est);
+% [state] = reset(q_est, T0);
 
 for i = 1 : N - 1
     
