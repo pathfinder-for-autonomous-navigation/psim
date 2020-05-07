@@ -20,21 +20,24 @@ public:
         
         // assemble lin data
         gnc::AttitudeEstimatorData data_in = gnc::AttitudeEstimatorData();
+
+        
         data_in.t = inputs[1][0];
-        data_in.r_ecef = typed_array_to_lin_vec(inputs[2]);
-        data_in.b_body = typed_array_to_lin_vec(inputs[3]);
-        data_in.s_body = typed_array_to_lin_vec(inputs[4]);
-        data_in.w_body = typed_array_to_lin_vec(inputs[5]);
+        typed_array_to_lin_vec(data_in.r_ecef, inputs[2]);
+        typed_array_to_lin_vec(data_in.b_body, inputs[3]);
+        typed_array_to_lin_vec(data_in.s_body, inputs[4]);
+        typed_array_to_lin_vec(data_in.w_body, inputs[5]);
 
         // assemble lin state
         gnc::AttitudeEstimatorState state = gnc::AttitudeEstimatorState();
-        state.q = typed_array_to_lin_vec(matlab_state["q"]);
-        state.x = typed_array_to_lin_vec(matlab_state["x"]);
+
+        typed_array_to_lin_vec(state.q, matlab_state["q"]);
+        typed_array_to_lin_vec(state.x, matlab_state["x"]);
         
         // mutates state.P
         typed_array_to_lin_mat(matlab_state["P"], state.P);
         
-        state.t = matlab_state["t"]
+        state.t = matlab_state["t"][0];
 
         // empty estimate
         gnc::AttitudeEstimate estimate = gnc::AttitudeEstimate();
