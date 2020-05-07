@@ -6,18 +6,19 @@ global const
 
 % initialize constants
 config();
-M = 3.7; % Mass (kg)
+m = 3.7; % Mass (kg)
 J_min = 2e-4; % Min impulse (Ns)
-J_max = 2e-2; % Max impulse (Ns)
-% max_dv = J_max/M;
-max_dv = 1e3;
+J_max = 5 * 2e-2; % Max impulse (Ns)
+max_dv = J_max/m;
+% max_dv = 1e3;
 v_rel   = 1; % Relative velocity at deployment (m/s)
 t_drift = 60.0 * 60.0; % Drift time (s)
-p = 1.0e-3;
-d = 1.0e-4;
-h_gain = 0.001;
+p = 5.0e-3;
+d = 1.0e-2;
+energy_gain = 1.0e-4;
+h_gain = 1.0e-3;
 thrust_noise_ratio = 0;
-dt_fire_min = 10 * 60; % [s] minimum time between firings
+dt_fire_min = 5 * 60; % [s] minimum time between firings
 % opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
 
 % time
@@ -83,6 +84,10 @@ dh_vec = zeros(3, N);
 h1_vec = zeros(3, N);
 h2_vec = zeros(3, N);
 dh_angle = zeros(N, 1);
+dv_p_vec = zeros(N, 1);
+dv_d_vec = zeros(N, 1);
+dv_E_vec = zeros(N, 1);
+dv_h_vec = zeros(N, 1);
 
 % Calculate initial state
 Q_eci_hill = utl_eci2hill(r1, v1);
@@ -146,7 +151,11 @@ for i = 1 : N - 1
     end
     
     % check if follower is at a firing point
-    if (abs(E - pi / 4) < 0.01 || abs(E - 3 * pi / 4) < 0.01) && t(i) - t_fire > dt_fire_min
+    if mod(E, pi / 4) < 0.01 && t(i) - t_fire > dt_fire_min
+%     if (abs(E - pi / 4) < 0.01 ...
+%             || abs(E - pi / 2) < 0.01 ...
+%             || abs(E - 3 * pi / 4) < 0.01) ...
+%             && t(i) - t_fire > dt_fire_min
         
         % record firing time and position
         t_fire = t(i);
@@ -154,8 +163,11 @@ for i = 1 : N - 1
         
         % energy PD controller
         pterm = p * atan2(r_hill(2), r_hill(1)); %try -atan2(r_hill(2), r_hill(1)), or maybe actual phase angle of orbits
-        dterm = -d * (energy2 - energy1);
-        dv_energy = (pterm + dterm) * v2 / norm(v2);
+        dterm = -d * v_hill(2);
+        energy_term = -energy_gain * (energy2 - energy1);
+        dv_p = pterm * v2 / norm(v2);
+        dv_d = dterm * v2 / norm(v2);
+        dv_energy = energy_term * v2 / norm(v2);
 %         dv = max(min(dv, sqrt(2) / 2 * max_dv), -sqrt(2) / 2 * max_dv);
 %         u_now_hill = [0; 0; 0];
         
@@ -182,7 +194,8 @@ for i = 1 : N - 1
         J_plane = theta * Jhat_plane;
         
 %         J_plane = (1 - dot(h1hat, h2hat)) * Jhat_plane;
-        dv_plane = h_gain * J_plane / M;
+        dv_plane = h_gain * J_plane / m;
+        
 %         L = cross(r2, h2);
 %         Lhat = L / norm(L);
 %         h1projhat = h1proj / norm(h1proj);
@@ -198,7 +211,18 @@ for i = 1 : N - 1
         
 %         dv_plane = h_gain * normal_plane_correction(r1, v1, r2, v2, max_dv);
         
-        dv = dv_energy + dv_plane;
+        % only use the energy and h controllers if the spacecraft are more
+        % than 500 m apart
+%         if norm(r_hill) > 2000
+        dv = dv_p + dv_d + dv_energy + dv_plane;
+%         else
+%             dv = 0.1 * dv_p + dv_d;
+%         end
+        
+        dv_p_vec(i) = norm(dv_p);
+        dv_d_vec(i) = norm(dv_d);
+        dv_E_vec(i) = norm(dv_energy);
+        dv_h_vec(i) = norm(dv_plane);
         dv_des(i) = norm(dv);
         
         % Apply actuation
@@ -368,6 +392,16 @@ plot(t, dv_total)
 xlabel('t [s]')
 ylabel('\Delta v [m/s]')
 title('Cumulative \Delta v')
+
+figure;
+plot(t, dv_p_vec); hold on
+plot(t, dv_d_vec)
+plot(t, dv_E_vec)
+plot(t, dv_h_vec)
+xlabel('t [s]')
+ylabel('\Delta v [m/s]')
+title('commanded \Delta v for energy and momentum matching')
+legend('p','d', 'E', 'h')
 
 figure;
 plot(t, dv_des); hold on
