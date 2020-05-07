@@ -68,13 +68,25 @@ void sun_vector(double t, lin::Vector3f &s) {
   utl::rotate_frame(q_eci_perifocal_f, s);
 }
 
-void magnetic_field(double t, lin::Vector3f const &r, lin::Vector3f &b) {
+void sun_vector(double t, lin::Vector3d &s) {
+  lin::Vector3f _s;
+  sun_vector(t, _s);
+  s = _s;
+}
+
+void magnetic_field(double t, lin::Vector3d const &r, lin::Vector3f &b) {
   geomag::Vector in, out;
   in.x = r(0);
   in.y = r(1);
   in.z = r(2);
   out = geomag::GeoMag(constant::init_dec_year + t / (365.0 * 24.0 * 60.0 * 60.0),in, geomag::WMM2020);
   b = { out.x, out.y, out.z };
+}
+
+void magnetic_field(double t, lin::Vector3d const &r, lin::Vector3d &b) {
+  lin::Vector3f _b;
+  magnetic_field(t, r, _b);
+  b = _b;
 }
 }  // namespace env
 }  // namespace gnc

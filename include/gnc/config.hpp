@@ -6,6 +6,8 @@
 #ifndef GNC_CONFIG_HPP_
 #define GNC_CONFIG_HPP_
 
+#include <lin/core.hpp>
+
 #include <cmath>
 #include <limits>
 #include <type_traits>

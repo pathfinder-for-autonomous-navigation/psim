@@ -49,10 +49,10 @@ namespace orb
 
 GNC_TRACKED_CONSTANT(constexpr static int, PANGRAVORDER,40);
 GNC_TRACKED_CONSTANT(constexpr geograv::Coeff<PANGRAVORDER>, PANGRAVITYMODEL, static_cast<geograv::Coeff<PANGRAVORDER>>(GGM05S));
-
-GNC_TRACKED_CONSTANT(const double, MAXORBITRADIUS, 6378.0E3L+1000.0E3);
-
-GNC_TRACKED_CONSTANT(const double, MINORBITRADIUS, 6378.0E3L);
+GNC_TRACKED_CONSTANT(const float, MAXORBITRADIUS, 6378.0E3L+1000.0E3);
+GNC_TRACKED_CONSTANT(const float, MINORBITRADIUS, 6378.0E3L);
+GNC_TRACKED_CONSTANT(const int64_t, MAXGPSTIME_NS, (20LL*52LL+(int64_t)gnc::constant::init_gps_week_number)*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK);
+GNC_TRACKED_CONSTANT(const int64_t, MINGPSTIME_NS, (-20LL*52LL+(int64_t)gnc::constant::init_gps_week_number)*(int64_t)gnc::constant::NANOSECONDS_IN_WEEK);
 
 
 /**
@@ -60,25 +60,26 @@ GNC_TRACKED_CONSTANT(const double, MINORBITRADIUS, 6378.0E3L);
  */
 class Orbit {
   public:
+    /// \private
     /** Position of the sat (m).
      * Also stores relative position inside a higher order step while propagating.
      */
     lin::Vector3d _recef= lin::nans<lin::Vector3d>();
 
+    /// \private
     /** Velocity of the sat (m/s).
      * Also stores relative velocity inside a higher order step while propagating.
      */
     lin::Vector3d _vecef= lin::nans<lin::Vector3d>();
 
+    /// \private
     /** Time since gps epoch (ns).*/
-    uint64_t _ns_gps_time{0};
+    int64_t _ns_gps_time{0};
 
+    /// \private
     /** Validity of the orbit.
      * A valid orbit has finite and real position and velocity, is in low
-     * earth orbit, and has a reasonable time stamp (within 20 years of pan epoch).
-     * The validity check should not reject
-     * gps readings due to reasonable noise of:
-     * TODO add max expected gps error see issue #372
+     * earth orbit, and has a reasonable time stamp within MAXGPSTIME_NS, MINGPSTIME_NS.
      *
      * Low earth orbit is a Orbit that stays between MINORBITRADIUS and MAXORBITRADIUS.
      */
@@ -88,7 +89,7 @@ class Orbit {
      * The Orbit must be not propagating.
      *
      * grav calls: 0 */
-    uint64_t nsgpstime() const{
+    int64_t nsgpstime() const{
         return _ns_gps_time;
     }
 
@@ -110,10 +111,7 @@ class Orbit {
 
     /** Return true if the Orbit is valid.
      * A valid orbit has finite and real position and velocity, is in low
-     * earth orbit, and has a reasonable time stamp (within 20 years of pan epoch).
-     * The validity check should not reject
-     * gps readings due to reasonable noise of:
-     * TODO add max expected gps error see issue #372
+     * earth orbit, and has a reasonable time stamp within MAXGPSTIME_NS, MINGPSTIME_NS.
      *
      * Low earth orbit is a Orbit that stays between MINORBITRADIUS and MAXORBITRADIUS.
      *
@@ -122,18 +120,47 @@ class Orbit {
         return _valid;
     }
 
+    /// \private
     /**
      * Helper function calculate if the Orbit is valid, see valid().
      * If the orbit is invalid set the orbit to the default values.
      *
      * grav calls: 0 */
     void _check_validity(){
-        double r2= lin::fro(_recef);
-        //TODO add checks for time and velocity see issue #372
-        //note if position is NAN, these checks will be false.
-        if (r2<MAXORBITRADIUS*MAXORBITRADIUS && r2>MINORBITRADIUS*MINORBITRADIUS){
+        {
+            //time check
+            if (!(_ns_gps_time <= MAXGPSTIME_NS)) goto INVALID;
+            if (!(_ns_gps_time >= MINGPSTIME_NS)) goto INVALID;
+            //position check
+            lin::Vector3f recef_f=_recef;
+            float r2= lin::fro(recef_f);//lin::fro is Frobenius (aka Euclidean) norm squared
+            //r2 is r^2
+            //note if position is NAN, these checks will fail.
+            if (!(r2 <= MAXORBITRADIUS*MAXORBITRADIUS)) goto INVALID;
+            if (!(r2 >= MINORBITRADIUS*MINORBITRADIUS)) goto INVALID;
+            //position and velocity check
+            float w= 0.729211585530000E-4;
+            float mu= PANGRAVITYMODEL.earth_gravity_constant;
+            lin::Vector3f vecef0_f=_vecef;
+            vecef0_f= vecef0_f + lin::Vector3f({-w*recef_f(1),w*recef_f(0),0.0f});
+            //e is the specific orbital energy
+            //lin::fro is Frobenius (aka Euclidean) norm squared
+            float e= lin::fro(vecef0_f)*0.5f-mu/std::sqrt(r2);
+            //h2 is norm squared of specific orbital angular momentum
+            float h2= lin::fro(lin::cross(recef_f,vecef0_f));
+            //ep and ea are the lowest specific orbital energy if h2 is the same at max and min radius
+            float ep= h2*(0.5f/(MINORBITRADIUS*MINORBITRADIUS))-mu/MINORBITRADIUS;
+            float ea= h2*(0.5f/(MAXORBITRADIUS*MAXORBITRADIUS))-mu/MAXORBITRADIUS;
+            //note if velocity is NAN, these checks will fail.
+            if (!(e <= ea)) goto INVALID;
+            if (!(e <= ep)) goto INVALID;
+            //made it through all checks
             _valid= true;
-        } else {
+            return;
+        }
+        //failed a check
+        INVALID:
+        {
             _valid= false;
             _recef= lin::nans<lin::Vector3d>();
             _vecef= lin::nans<lin::Vector3d>();
@@ -176,7 +203,7 @@ class Orbit {
      * @param[in] r_ecef: position of the center of mass of the sat (m).
      * @param[in] v_ecef: velocity of the sat (m/s).
      */
-    Orbit(const uint64_t& ns_gps_time,const lin::Vector3d& r_ecef,const lin::Vector3d& v_ecef):
+    Orbit(const int64_t& ns_gps_time,const lin::Vector3d& r_ecef,const lin::Vector3d& v_ecef):
         _recef(r_ecef),
         _vecef(v_ecef),
         _ns_gps_time(ns_gps_time) {
@@ -247,6 +274,7 @@ class Orbit {
         A_EI(2,2)= c+(1-c)*e3*e3;
     }
 
+    /// \private
     /** Get the jacobian of a shortupdate.
      * This is partially auto code from sympy in JacobianHelpers/jacobian_autocoder.py
      *
@@ -271,6 +299,7 @@ class Orbit {
         jacobian_autocoded(x_h,y_h,z_h,w,mu,dt,jac);
     }
 
+    /// \private
     /**
      * Helper to do a short update of the orbit.
      * The orbit propigator is designed for nearly circular low earth orbit, and
@@ -396,19 +425,22 @@ class Orbit {
     /************* Multi Cycle Propagation ******************/
 
     //some attributes to handle long updates
+    /// \private
     /** Stage in a long step range 0 to 6. 0 is not inside a higher order step.*/
     int _longstep{0};
+    /// \private
     /** Number of grav calls needed to finish propagating.*/
     int _numgravcallsleft{0};
+    /// \private
     /** Final gps time to propagate to (ns).*/
-    uint64_t _targetgpstime{0};
+    int64_t _targetgpstime{0};
+    /// \private
     /** The earth's angular rate in ecef frame used for the multi cycle propagation (rad/s). */
     lin::Vector3d _earth_rate_ecef;
     /** The maximum size of a 7 grav call higher order step (ns). */
     GNC_TRACKED_CONSTANT(static const int64_t,maxlongtimestep,100'000'000'000LL);
     /** The maximum size of a 1 grav call step (ns). */
     GNC_TRACKED_CONSTANT(static const int64_t,maxshorttimestep,200'000'000LL);
-
 
     /**
      * Put the Orbit in propagating mode or change the end time of a propagating Orbit.
@@ -422,7 +454,7 @@ class Orbit {
      * @param[in] end_gps_time_ns: Time to propagate to (ns).
      * @param[in] earth_rate_ecef: The earth's angular rate in ecef frame ignored if already propagating(rad/s).
      */
-    void startpropagating(const uint64_t& end_gps_time_ns, const lin::Vector3d& earth_rate_ecef){
+    void startpropagating(const int64_t& end_gps_time_ns, const lin::Vector3d& earth_rate_ecef){
         if (!valid()){
             return;
         }
@@ -451,7 +483,7 @@ class Orbit {
 
     /**
      * Return the number of grav calls needed to finish propagating.
-     * If not propagating Return 0.
+     * If not propagating or invalid Return 0.
      *
      * grav calls: 0
      */
@@ -460,19 +492,26 @@ class Orbit {
     }
 
     //attributes for relative orbit
+    /// \private
     /** relative time (s).*/
     double _t{0};
+    /// \private
     /** higher order step total dt (s).*/
     double _currentdt{0};
+    /// \private
     /** mu/(a*a*a) where a is the semimajor axis of the referance orbit (MKS units). */
     double _mu_a3;
+    /// \private
     /** x axis of reference orbit (m).*/
     lin::Vector3d _x;
+    /// \private
     /** y axis of reference orbit (m).*/
     lin::Vector3d _y;
+    /// \private
     /** reference orbit rate (rad/s).*/
     lin::Vector3d _omega;
 
+    /// \private
     /**
      * Convert _recef and _vecef to relative position and velocity in inertial ecef0.
      * Also stores reference orbit info, _t, _mu_a3, _x, _y, _omega
@@ -501,6 +540,7 @@ class Orbit {
         _vecef= v_ecef0-lin::cross(_omega,_x);
     }
 
+    /// \private
     /**
      * Return the relative acceleration (m/s^2) in ECEF0 at relative time t(s) and relative position rel_r in ECEF0(m).
      *
@@ -522,6 +562,7 @@ class Orbit {
         return (lin::transpose(dcm_ecef_ecef0)*g_ecef + orb_r*_mu_a3).eval();
     }
 
+    /// \private
     /**
      * Convert _recef and _vecef back to ecef from relative position and velocity in inertial ecef0.
      * uses orbit info, _t, _mu_a3, _x, _y, _omega
@@ -661,4 +702,4 @@ class Orbit {
         }
     }
 };
-}
+} //namespace orb

@@ -271,21 +271,21 @@ The fraction of max wheel momentum detumbling ends at.
    * `cdgps_max_range`(positive scalar): Max range of cdgps antenna to other sat where cdgps can work (m)
    * `probability_of_ground_gps`(scalar 0-1): Propability of getting a ground gps reading over radio any control cycle the sat
 also can get regular gps.
-   * `gps_position_bias_sdiv`(positive scalar): standard diviation of bias of gps position measurements (m)
-   * `cdgps_position_bias_sdiv`(positive scalar): standard diviation of bias of cdgps relative position measurements (m)
-   * `gps_velocity_bias_sdiv`(positive scalar): standard diviation of bias of gps velocity measurements (m/s)
-   * `gps_position_noise_sdiv`(positive scalar): standard diviation of gps position measurements (m)
-   * `gps_velocity_noise_sdiv`(positive scalar): standard diviation of gps position measurements (m)
+   * `gps_position_bias_sdiv`(positive scalar): standard deviation of bias of gps position measurements (m)
+   * `cdgps_position_bias_sdiv`(positive scalar): standard deviation of bias of cdgps relative position measurements (m)
+   * `gps_velocity_bias_sdiv`(positive scalar): standard deviation of bias of gps velocity measurements (m/s)
+   * `gps_position_noise_sdiv`(positive scalar): standard deviation of gps position measurements (m)
+   * `gps_velocity_noise_sdiv`(positive scalar): standard deviation of gps position measurements (m)
    * `magnetometer_bias_readings_min`(positive int): number of readings per axis to get a 
 good magnetometer bias estimate.
    * `magnetometer_noise_sdiv`(positive scalar): 
-standard diviation of the magnetometer noise (T)
+standard deviation of the magnetometer noise (T)
    * `magnetometer_bias_sdiv`(positive scalar): 
-standard diviation of the magnetometer bias (T)
+standard deviation of the magnetometer bias (T)
    * `gyro_noise_sdiv`(positive scalar):
-standard diviation of the gyro noise (rad/s)
+standard deviation of the gyro noise (rad/s)
    * `gyro_bias_sdiv`(positive scalar):
-standard diviation of the gyro bias (rad/s)
+standard deviation of the gyro bias (rad/s)
 ### ORBIT_ESTIMATION parameters
    * `time_for_stale_cdgps`(int64 scalar): time to wait before making the target estimate stale (ns)
    * `orb_process_noise_var`(12x12 symetric matrix) Added variance for bad force models divided by timestep (mks units)
