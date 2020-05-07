@@ -16,6 +16,7 @@ public:
         for(int r = 0; r < N; r++){
             ret[r][0] = lin_vec(r);
         }
+        return ret;
     }
     
     template<size_t N>
@@ -26,6 +27,7 @@ public:
                 ret[r][0][i] = (lin_vec[i])(r);
             }
         }
+        return ret;    
     }
 
     template<size_t R, size_t C>
@@ -35,6 +37,7 @@ public:
             for(int c = 0; c < C; c++)
                 ret[r][c] = lin_mat(r, c);
         }
+        return ret;  
     }
 
     void operator()(matlab::mex::ArgumentList outputs, matlab::mex::ArgumentList inputs) {
@@ -50,17 +53,14 @@ public:
         gnc::attitude_estimator_reset(state, time, q_body_eci);
         
         ArrayFactory f;
+
         // will only contain one element
         StructArray S = f.createStructArray({1,1}, 
             {"x_bar", "sigmas", "z_bar", "measures", "P_bar", "P_vv", "P_xy", "q", "x","P","t"});
 
         S[0]["x_bar"] = create_from_lin_vec(f, state.x_bar);
         S[0]["z_bar"] = create_from_lin_vec(f, state.z_bar);
-        
-        // S[0]["sigmas"] = f.createArray<double>({6, 1, 13});
-        // for(int i = 0; i<13; i++){
-        //     S[0]["sigmas"][i] = create_from_lin_vec(state.sigmas[i]);
-        // }
+
         S[0]["sigmas"] = create_from_lin_vec_arr(f, state.sigmas, 13);
         S[0]["measures"] = create_from_lin_vec_arr(f, state.measures, 13);
 
@@ -78,12 +78,6 @@ public:
         //outputs[0] is the struct
         outputs[0] = S;
     }
-
-    // void adcs_estimator_reset(lin::Vector3f q_body_eci, double time) {
-        
-    //     gnc::attitude_estimator_reset(state, q_body_eci, time);
-
-    // }
 
     void checkArguments(matlab::mex::ArgumentList outputs, matlab::mex::ArgumentList inputs) {
         std::shared_ptr<matlab::engine::MATLABEngine> matlabPtr = getEngine();

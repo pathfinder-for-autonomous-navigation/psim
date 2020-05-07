@@ -193,7 +193,8 @@ mag_meas_vec(:, 1) = B_body_meas;
 
 ukf = adcs_make_mex_ukf();
 
-[state] = ukf.reset(T0, q_est);
+% reset takes time since epoch... so i replaced T0 with 0
+state = ukf.reset(0, q_est);
 % [state] = estimator_reset(T0, q_est);
 % [state] = reset(q_est, T0);
 
