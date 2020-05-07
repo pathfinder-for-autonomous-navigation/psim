@@ -13,9 +13,8 @@ J_max = 2e-2; % Max impulse (Ns)
 max_dv = 1e3;
 v_rel   = 1; % Relative velocity at deployment (m/s)
 t_drift = 60.0 * 60.0; % Drift time (s)
-% p = 0.1;
-p = 0;dot(h1proj, cross(r2, h2))
-d = 1.0e-6;
+p = 1.0e-3;
+d = 1.0e-4;
 h_gain = 0.001;
 thrust_noise_ratio = 0;
 dt_fire_min = 10 * 60; % [s] minimum time between firings
@@ -416,19 +415,19 @@ title('angle between h_1 and h_2')
 
 function dy = frhs(~, y)
 
-global const
+% global const
 
 dy = zeros(12, 1);
 
-% [gx, gy, gz] = gravityzonal(y(1:3)', 'Earth', 4, 'Error');
+[gx, gy, gz] = gravityzonal(y(1:3)', 'Earth', 4, 'Error');
 dy(1:3, 1) = y(4:6, 1);
-% dy(4:6, 1) = [gx; gy; gz];
-dy(4:6, 1) = -const.mu * y(1:3, 1) / norm(y(1:3, 1))^3;
+dy(4:6, 1) = [gx; gy; gz];
+% dy(4:6, 1) = -const.mu * y(1:3, 1) / norm(y(1:3, 1))^3;
 
-% [gx, gy, gz] = gravityzonal(y(7:9)', 'Earth', 4, 'Error');
+[gx, gy, gz] = gravityzonal(y(7:9)', 'Earth', 4, 'Error');
 dy(7:9, 1) = y(10:12, 1);
-% dy(10:12, 1) = [gx; gy; gz];
-dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
+dy(10:12, 1) = [gx; gy; gz];
+% dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
 
 end
 
