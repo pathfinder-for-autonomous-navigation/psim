@@ -1,6 +1,6 @@
 #gengracetest.py
 #Nathan Zimmerberg (nhz2)
-#5 MAY 2020
+#6 MAY 2020
 """ Script for generating orbit estimator test data 
 from GRACE data"""
 
