@@ -33,7 +33,7 @@ public:
         state.is_valid = (lin::all(lin::isfinite(state.q)) &&
             lin::all(lin::isfinite(state.x)) &&
             lin::all(lin::isfinite(state.P)) &&
-            lin::isfinite(state.t)) 
+            lin::isfinite(state.t));
 
         // empty estimate
         gnc::AttitudeEstimate estimate = gnc::AttitudeEstimate();
