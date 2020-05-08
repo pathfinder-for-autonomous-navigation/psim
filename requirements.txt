@@ -1,3 +1,8 @@
 argparse
 platformio
 pylint
+numpy
+matplotlib
+cppimport
+h5py
+dulwich
