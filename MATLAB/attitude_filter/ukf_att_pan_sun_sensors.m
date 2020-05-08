@@ -368,7 +368,7 @@ for i = 1 : N - 1
     ss_ang_body = [th_ss_body; phi_ss_body] + ss_noise'; % add noise
 
     % shihao added this: assuming theta in plane, phi comes down from top, idk if right
-    ss_vec_body = [cos(ss_ang_body(1))*sin(ss_ang_body(2)); sin(ss_ang_body(1))*sin(ss_ang_body(2)); cos(ss_ang_body(2))]
+    ss_vec_body = [cos(ss_ang_body(1))*sin(ss_ang_body(2)); sin(ss_ang_body(1))*sin(ss_ang_body(2)); cos(ss_ang_body(2))];
 
     % magnetometer measurement model
     quat_body_ecef = utl_quat_cross_mult(q(:, i + 1), quat_eci_ecef);
@@ -385,30 +385,32 @@ for i = 1 : N - 1
     % [state] = update(state, t, r_ecef, b_body, s_body, w_body); 
     
     % update estimate based on measurements
-    meas = [ss_ang_body; B_body_meas];
-    xhat = xbar + K * (meas - zbar);
-    P = P_pred - (K * Pvv * K');
+    %meas = [ss_ang_body; B_body_meas];
+    %xhat = state.x + K * (meas - zbar);
+    %P = P_pred - (K * Pvv * K');
     
     % convert GRP estimate to quaternion
-    dq_est = utl_grp2quat(xhat(1:3, 1), a, f);
+    %dq_est = utl_grp2quat(xhat(1:3, 1), a, f);
     
     % update quaternion estimate
-    q_est = utl_quat_cross_mult(dq_est, q_new(1, :)');
+    %q_est = utl_quat_cross_mult(dq_est, q_new(1, :)'); 
     
     % update gyro bias estimate
-    bias_est = xhat(4:6, 1);
+    bias_est = gyro_bias_est; %from filter
     
     % vectors for plotting
-    q_est_vec(:, i + 1) = q_est;
-    bias_est_vec(:, i + 1) = bias_est;
-    w_est_vec(:, i + 1) = w_meas - bias_est;
-    Knorm_vec(i + 1) = norm(norm(K));
-    P_vec(:, :, i + 1) = P;
-    inn_vec(:, i + 1) = meas - zbar;
-    xbar_vec(:, i + 1) = xbar;
-    zbar_vec(:, i + 1) = zbar;
-    mag_meas_vec(:, i + 1) = B_body_meas;
-    ss_meas_vec(:, i + 1) = ss_ang_body;
+    q_est_vec(:, i + 1) = q_est; %from filter
+    bias_est_vec(:, i + 1) = gyro_bias_est; %from filter
+    w_est_vec(:, i + 1) = w_meas - gyro_bias_est;%from filter
+    P_vec(:, :, i + 1) = cov_est; %from filter cov_est from filter
+    
+    %Knorm_vec(i + 1) = norm(norm(K));
+    %P_vec(:, :, i + 1) = P; %from filter cov_est from filter
+    %inn_vec(:, i + 1) = meas - zbar;
+    %xbar_vec(:, i + 1) = xbar;
+    %zbar_vec(:, i + 1) = zbar;
+    %mag_meas_vec(:, i + 1) = B_body_meas;
+    %ss_meas_vec(:, i + 1) = ss_ang_body;
     
 end
 
