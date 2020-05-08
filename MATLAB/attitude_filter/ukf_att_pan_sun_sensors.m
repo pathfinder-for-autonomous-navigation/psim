@@ -8,7 +8,7 @@ generate_mex_code;
 global const
 
 % time
-tmax = 1500; % [sec]
+tmax = 10000; % [sec]
 dt = 0.1; % [sec]
 tspan = 0 : dt : tmax; % [sec]
 N = length(tspan);
