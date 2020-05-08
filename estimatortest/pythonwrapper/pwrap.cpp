@@ -2,6 +2,7 @@
 <%
 setup_pybind11(cfg)
 from pathlib import Path
+import pybind11
 mypath=Path(filepath)
 psimpath= mypath.parent.parent.parent
 #flightsoftwarepath= psimpath.parent/'FlightSoftware'
@@ -19,6 +20,7 @@ cfg['sources'] += [str(p) for p in (psimpath/'src').rglob('*.cpp') if (p.is_file
 
 cfg['include_dirs'] = [str(psimpath/'include'), 
                        str(psimpath/'lib/lin/include')]
+cfg['include_dirs'] += [pybind11.get_include(), pybind11.get_include(True)]
 #cfg['include_dirs'] += [str(flightsoftwarepath/'src'), 
 #                         str(flightsoftwarepath/'lib/common/libsbp/include'),
 #                         str(flightsoftwarepath/'lib/common/ArduinoJson/src'),
