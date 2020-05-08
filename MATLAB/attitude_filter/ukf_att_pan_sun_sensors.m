@@ -516,6 +516,9 @@ grid on
 % error bounds
 p_err = zeros(3, length(tspan));
 
+a = 1; 
+f = 4; 
+
 for i = 1 : length(tspan)
     p_err(:, i) = utl_quat2grp(q_err(:, i), a, f);
 end
