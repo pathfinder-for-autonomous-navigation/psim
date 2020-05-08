@@ -8,21 +8,20 @@ global const
 config();
 m = 3.7; % Mass (kg)
 J_min = 2e-4; % Min impulse (Ns)
-J_max = 5 * 2e-2; % Max impulse (Ns)
+J_max = 2e-2; % Max impulse (Ns)
 max_dv = J_max/m;
 % max_dv = 1e3;
-v_rel   = 1; % Relative velocity at deployment (m/s)
-t_drift = 60.0 * 60.0; % Drift time (s)
+t_drift = 5 * 24 * 60.0 * 60.0; % Drift time (s)
 p = 5.0e-3;
 d = 1.0e-2;
-energy_gain = 1.0e-4;
+energy_gain = 1.0e-5;
 h_gain = 1.0e-3;
 thrust_noise_ratio = 0;
 dt_fire_min = 5 * 60; % [s] minimum time between firings
 % opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-2, 'InitialStep', 0.1);
 
 % time
-tmax = 500 * 60 * 60; % [s]
+tmax = 84 * 24 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
@@ -40,6 +39,12 @@ nu = 0*pi/180;   % True anamoly                          (rad)
 n = utl_orbrate(a);      % [rad / s] Orbital rate
 w_hill = [0.0; 0.0; n];
 
+% dispenser dynamics
+energy_max = 12.5 + 0.2 * 12.5; % [J]
+energy_min = 12.5 - 0.2 * 12.5; % [J]
+v_max = sqrt(2 * energy_max / m); % [m/s]
+v_min = sqrt(2 * energy_min / m); % [m/s]
+v_rel = v_max - v_min;
 
 % Add initial velocity difference
 r2 = r1;
