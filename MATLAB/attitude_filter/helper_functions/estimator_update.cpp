@@ -61,7 +61,7 @@ public:
 
         if (inputs.size() != 9) {
             matlabPtr->feval(u"error", 
-                0, std::vector<matlab::data::Array>({ factory.createScalar("6 inputs required") }));
+                0, std::vector<matlab::data::Array>({ factory.createScalar("9 inputs required") }));
         }
 
         // if (inputs[0].getNumberOfElements() != 1) {

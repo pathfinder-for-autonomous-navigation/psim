@@ -367,6 +367,9 @@ for i = 1 : N - 1
     ss_noise = mvnrnd(zeros(1, 2), R_ss, 1);
     ss_ang_body = [th_ss_body; phi_ss_body] + ss_noise'; % add noise
 
+    % shihao added this: assuming theta in plane, phi comes down from top, idk if right
+    ss_vec_body = [cos(ss_ang_body(1))*sin(ss_ang_body(2)); sin(ss_ang_body(1))*sin(ss_ang_body(2)); cos(ss_ang_body(2))]
+
     % magnetometer measurement model
     quat_body_ecef = utl_quat_cross_mult(q(:, i + 1), quat_eci_ecef);
     B_body = utl_rotateframe(quat_body_ecef, B_ecef')';
@@ -376,8 +379,10 @@ for i = 1 : N - 1
         %populates a gnc::AttitudeEstimatorState and gnc::AttitudeEstimatorData struct to then call:
     %        void attitude_estimator_update(AttitudeEstimatorState &state,
     %        AttitudeEstimatorData const &data, AttitudeEstimate &estimate);
-    [state,q_est,gyro_bias_est,cov_est] = ukf.update(state, t, r_ecef, B_body_meas, ss_meas_vec, w_meas_vec);
-    [state] = update(state, t, r_ecef, b_body, s_body, w_body); 
+
+    [state,q_est,gyro_bias_est,cov_est] = ukf.update(state, t, r_ecef, B_body_meas, ss_vec_body, w_meas);
+    %[state,q_est,gyro_bias_est,cov_est] = ukf.update(state, t, r_ecef, B_body_meas, ss_meas_vec, w_meas_vec);
+    % [state] = update(state, t, r_ecef, b_body, s_body, w_body); 
     
     % update estimate based on measurements
     meas = [ss_ang_body; B_body_meas];
