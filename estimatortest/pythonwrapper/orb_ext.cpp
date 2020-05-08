@@ -38,11 +38,15 @@ void init_orb_ext(py::module &m){
             x.shortupdate(dt_ns,earth_rate_ecef,specificenergy,jac);
             return std::make_tuple(specificenergy, jac);
         })
-        .def("update", [](orb::Orbit& x, int64_t dt_ns, const lin::Vector3d &earth_rate_ecef){
-            double specificenergy; 
-            lin::Matrix< double, 6, 6 > jac;
-            x.shortupdate(dt_ns,earth_rate_ecef,specificenergy,jac);
-            return std::make_tuple(specificenergy, jac);
+        .def("update", [](orb::Orbit& x, const int64_t &end_gps_time_ns, const lin::Vector3d &earth_rate_ecef){
+            x.startpropagating(end_gps_time_ns,earth_rate_ecef);
+            x.finishpropagating();
+        })
+        .def_static("calc_geograv", [](const lin::Vector3d &r_ecef){
+            double pot;
+            lin::Vector3d g_ecef;
+            orb::Orbit::calc_geograv (r_ecef, g_ecef, pot);
+            return std::make_tuple(g_ecef, pot);
         })
 
         ;

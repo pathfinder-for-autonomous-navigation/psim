@@ -12,6 +12,7 @@ cfg['dependencies'] += [str(p) for p in (psimpath/'include').rglob('*') if p.is_
 #cfg['dependencies'] += [str(p) for p in (flightsoftwarepath/'lib').rglob('*') if p.is_file()]
 
 cfg['sources'] = ['lin_ext.cpp', 'orb_ext.cpp']
+cfg['sources'] += [str(p) for p in (psimpath/'src').rglob('*.cpp') if (p.is_file() and p.parent.name!='targets')]
 #cfg['sources'] += [str(p) for p in (flightsoftwarepath/'src/fsw').rglob('*.cpp') if (p.is_file() and p.parent.name!='targets')]
 #cfg['sources'] += [str(p) for p in (flightsoftwarepath/'src/common').rglob('*.cpp') if (p.is_file() and p.parent.name!='targets')]
 
