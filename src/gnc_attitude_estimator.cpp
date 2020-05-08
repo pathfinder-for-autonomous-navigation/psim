@@ -39,6 +39,7 @@
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
+//#include <lin/substitutions/forward_substitution.hpp>
 #include <lin/substitutions/backward_substitution.hpp>
 
 namespace gnc {
@@ -101,7 +102,7 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
 
   // Propegate our quaternion forward and normalize to be safe
   q_new = O * q_old;
-  q_new = q_new / lin::norm(q_new);
+  // q_new = q_new / lin::norm(q_new);
 }
 
 /** @fn ukf
@@ -319,6 +320,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
     lin::Vector4d q;
     utl::grp_to_quat(lin::ref<3, 1>(state.x, 0, 0).eval(), a, f, q);
     utl::quat_cross_mult(q, q_new, state.q);
+    state.q = state.q / lin::norm(state.q);
 
     // Reset the attitude portion of the state to zeros
     lin::ref<3, 1>(state.x, 0, 0) = lin::zeros<UkfVector3>();
@@ -349,6 +351,12 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
       lin::qr(state.P_vv, Q, R);
       lin::backward_sub(R, Q, lin::transpose(Q).eval()); // Q = inv(P_yy)    
       K = state.P_xy * Q;
+      // UkfMatrix5x6 M, N;
+      // UkfMatrix5x5 L = state.P_vv;
+      // lin::chol(L);
+      // lin::forward_sub(L, M, lin::transpose(state.P_xy).eval());
+      // lin::backward_sub(lin::transpose(L).eval(), N, M);
+      // K = lin::transpose(N);
     }
 
     // Calculate this steps measurement
