@@ -37,17 +37,17 @@ TypedArray<double> create_from_lin_mat(ArrayFactory& f, lin::Matrix<T, R, C> lin
 }
 
 template<lin::size_t N, typename T>
-void typed_array_to_lin_vec(lin::Vector<T, N>& lin_vec, matlab::data::TypedArray<T> typed_arr){
+void typed_array_to_lin_vec(lin::Vector<T, N>& lin_vec, matlab::data::Array& arr){
     for (int i = 0; i<N; i++) {
-        lin_vec(i) = typed_arr[i];
+        lin_vec(i) = arr[i][0];
     }
 }
 
 template<typename T, lin::size_t R, lin::size_t C>
-void typed_array_to_lin_mat(lin::Matrix<T, R, C>& lin_mat, matlab::data::TypedArray<T> typed_arr){
+void typed_array_to_lin_mat(lin::Matrix<T, R, C>& lin_mat, matlab::data::Array& arr){
     for( int r = 0; r<R; r++){
         for( int c = 0; c<C; c++){
-            lin_mat(r, c) = typed_arr[r][c];
+            lin_mat(r, c) = arr[r][c];
         }
     }
 }

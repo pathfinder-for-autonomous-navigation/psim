@@ -376,7 +376,7 @@ for i = 1 : N - 1
         %populates a gnc::AttitudeEstimatorState and gnc::AttitudeEstimatorData struct to then call:
     %        void attitude_estimator_update(AttitudeEstimatorState &state,
     %        AttitudeEstimatorData const &data, AttitudeEstimate &estimate);
-    [state,q_est,gyro_bias_est,cov_est] = adcs_estimator_update(state, t, r_ecef, B_body_meas, ss_meas_vec, w_meas_vec);
+    [state,q_est,gyro_bias_est,cov_est] = ukf.update(state, t, r_ecef, B_body_meas, ss_meas_vec, w_meas_vec);
     [state] = update(state, t, r_ecef, b_body, s_body, w_body); 
     
     % update estimate based on measurements

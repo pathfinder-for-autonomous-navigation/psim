@@ -13,36 +13,38 @@ public:
         checkArguments(outputs, inputs);
         
         // the struct
-        StructArray matlab_state = inputs[0][0];
+        // StructArray matlab_state = inputs[0][0][0];
         
         // time
         // double t = inputs[1][0];
         
         // assemble lin data
         gnc::AttitudeEstimatorData data_in = gnc::AttitudeEstimatorData();
-
         
-        data_in.t = inputs[1][0];
-        typed_array_to_lin_vec(data_in.r_ecef, inputs[2]);
-        typed_array_to_lin_vec(data_in.b_body, inputs[3]);
-        typed_array_to_lin_vec(data_in.s_body, inputs[4]);
-        typed_array_to_lin_vec(data_in.w_body, inputs[5]);
+        data_in.t = inputs[4][0];
+        typed_array_to_lin_vec(data_in.r_ecef, inputs[5]);
+        // typed_array_to_lin_vec(data_in.b_body, inputs[6]);
+        // typed_array_to_lin_vec(data_in.s_body, inputs[7]);
+        // typed_array_to_lin_vec(data_in.w_body, inputs[8]);
 
         // assemble lin state
         gnc::AttitudeEstimatorState state = gnc::AttitudeEstimatorState();
 
-        typed_array_to_lin_vec(state.q, matlab_state["q"]);
-        typed_array_to_lin_vec(state.x, matlab_state["x"]);
-        
+        // typed_array_to_lin_vec(state.q, inputs[0]);
+        // // typed_array_to_lin_vec(state.q, matlab_state["q"]);
+        // typed_array_to_lin_vec(state.x, inputs[1]);
+        // typed_array_to_lin_mat(state.P, inputs[2]);
+        // state.t = inputs[3][0];
+
         // mutates state.P
-        typed_array_to_lin_mat(matlab_state["P"], state.P);
+        // typed_array_to_lin_mat(matlab_state["P"], state.P);
         
-        state.t = matlab_state["t"][0];
+        // state.t = matlab_state["t"][0];
 
         // empty estimate
         gnc::AttitudeEstimate estimate = gnc::AttitudeEstimate();
 
-        gnc::attitude_estimator_update(state, data, estimate);
+        gnc::attitude_estimator_update(state, data_in, estimate);
         
         ArrayFactory f;
 
@@ -69,7 +71,7 @@ public:
         std::shared_ptr<matlab::engine::MATLABEngine> matlabPtr = getEngine();
         matlab::data::ArrayFactory factory;
 
-        if (inputs.size() != 6) {
+        if (inputs.size() != 9) {
             matlabPtr->feval(u"error", 
                 0, std::vector<matlab::data::Array>({ factory.createScalar("6 inputs required") }));
         }
