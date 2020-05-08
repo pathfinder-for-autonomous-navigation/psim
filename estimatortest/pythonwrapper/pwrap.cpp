@@ -1,8 +1,9 @@
-/*
+/*cppimport
 <%
 setup_pybind11(cfg)
 from pathlib import Path
-psimpath= Path.cwd().parent.parent
+mypath=Path(filepath)
+psimpath= mypath.parent.parent.parent
 #flightsoftwarepath= psimpath.parent/'FlightSoftware'
 # 'dependencies' controls what get checked for changes before recompile
 cfg['dependencies'] = [str(p) for p in (psimpath/'src').rglob('*') if p.is_file()]

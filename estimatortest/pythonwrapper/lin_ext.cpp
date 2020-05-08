@@ -60,6 +60,19 @@ namespace py = pybind11;
         }) \
         .def("__call__",[](const lin::Matrix<T, R, C, MR, MC>& x, lin::size_t i, lin::size_t j){return x(i,j);}) \
         .def("__call__",[](const lin::Matrix<T, R, C, MR, MC>& x, lin::size_t i){return x(i);}) \
+        .def(py::pickle(\
+            [](const lin::Matrix<T, R, C, MR, MC>& p) { /* __getstate__ */ \
+                /* Return a tuple that fully encodes the state of the object */   \
+                return py::make_tuple(p); \
+                }, \
+            [](py::tuple t) { /* __setstate__ */ \
+                if (t.size() != 1) \
+                    throw std::runtime_error("Invalid state!"); \
+                /* Create a new C++ instance */ \
+                lin::Matrix<T, R, C, MR, MC> p=t[0].cast<lin::Matrix<T, R, C, MR, MC>>(); \
+                return p; \
+            } \
+        ))\
 
 /**
  * Wrap lin Vector.
@@ -104,6 +117,19 @@ namespace py = pybind11;
         }) \
         .def("__call__",[](const lin::Vector<T, N, MN>& x, lin::size_t i, lin::size_t j){return x(i,j);}) \
         .def("__call__",[](const lin::Vector<T, N, MN>& x, lin::size_t i){return x(i);}) \
+        .def(py::pickle(\
+            [](const lin::Vector<T, N, MN> &p) { /* __getstate__ */ \
+                /* Return a tuple that fully encodes the state of the object */   \
+                return py::make_tuple(p); \
+                }, \
+            [](py::tuple t) { /* __setstate__ */ \
+                if (t.size() != 1) \
+                    throw std::runtime_error("Invalid state!"); \
+                /* Create a new C++ instance */ \
+                lin::Vector<T, N, MN> p=t[0].cast<lin::Vector<T, N, MN>>(); \
+                return p; \
+            } \
+        ))\
 
 
 /** 

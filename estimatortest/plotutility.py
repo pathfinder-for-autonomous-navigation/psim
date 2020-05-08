@@ -25,6 +25,11 @@ def estimatorscope(estimator,truth,sensors,listofest,samplerate,traces):
                 Sample rate for ploting and saving estimator, 1 is every cycle.
             traces(list of functions traces[j](estimator,sensors[i],truth[i])-> float):
                 Things to plot."""
+    #trial run to catch errors
+    e_init=copy.deepcopy(estimator)
+    e_init.input(sensors[0])
+    for trace in traces:
+        assert(type(trace(e_init,sensors[0],truth[0]))==float)
     # create figure and axes 
     fig, axes = plt.subplots(len(traces), figsize=(10, 5))
     lines=[]

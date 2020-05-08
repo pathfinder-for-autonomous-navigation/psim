@@ -48,6 +48,19 @@ void init_orb_ext(py::module &m){
             orb::Orbit::calc_geograv (r_ecef, g_ecef, pot);
             return std::make_tuple(g_ecef, pot);
         })
+        .def(py::pickle(
+            [](const orb::Orbit &p) { // __getstate__
+                /* Return a tuple that fully encodes the state of the object */
+                return py::make_tuple(p);
+                },
+            [](py::tuple t) { // __setstate__
+                if (t.size() != 1)
+                    throw std::runtime_error("Invalid state!");
+                /* Create a new C++ instance */
+                orb::Orbit p= t[0].cast<orb::Orbit>();
+                return p;
+            }
+        ))
 
         ;
 }
