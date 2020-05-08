@@ -6,3 +6,5 @@ matplotlib
 cppimport
 h5py
 dulwich
+ipykernel
+notebook
