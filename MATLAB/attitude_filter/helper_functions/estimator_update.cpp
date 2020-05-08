@@ -12,34 +12,22 @@ public:
     void operator()(matlab::mex::ArgumentList outputs, matlab::mex::ArgumentList inputs) {
         checkArguments(outputs, inputs);
         
-        // the struct
-        // StructArray matlab_state = inputs[0][0][0];
-        
-        // time
-        // double t = inputs[1][0];
-        
         // assemble lin data
         gnc::AttitudeEstimatorData data_in = gnc::AttitudeEstimatorData();
         
         data_in.t = inputs[4][0];
         typed_array_to_lin_vec(data_in.r_ecef, inputs[5]);
-        // typed_array_to_lin_vec(data_in.b_body, inputs[6]);
-        // typed_array_to_lin_vec(data_in.s_body, inputs[7]);
-        // typed_array_to_lin_vec(data_in.w_body, inputs[8]);
+        typed_array_to_lin_vec(data_in.b_body, inputs[6]);
+        typed_array_to_lin_vec(data_in.s_body, inputs[7]);
+        typed_array_to_lin_vec(data_in.w_body, inputs[8]);
 
         // assemble lin state
         gnc::AttitudeEstimatorState state = gnc::AttitudeEstimatorState();
 
-        // typed_array_to_lin_vec(state.q, inputs[0]);
-        // // typed_array_to_lin_vec(state.q, matlab_state["q"]);
-        // typed_array_to_lin_vec(state.x, inputs[1]);
-        // typed_array_to_lin_mat(state.P, inputs[2]);
-        // state.t = inputs[3][0];
-
-        // mutates state.P
-        // typed_array_to_lin_mat(matlab_state["P"], state.P);
-        
-        // state.t = matlab_state["t"][0];
+        typed_array_to_lin_vec(state.q, inputs[0]);
+        typed_array_to_lin_vec(state.x, inputs[1]);
+        typed_array_to_lin_mat(state.P, inputs[2]);
+        state.t = inputs[3][0];
 
         // empty estimate
         gnc::AttitudeEstimate estimate = gnc::AttitudeEstimate();
