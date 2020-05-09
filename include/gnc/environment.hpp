@@ -25,6 +25,9 @@ void earth_angular_rate(double t, lin::Vector3d &w);
 void earth_angular_rate(double t, lin::Vector3f &w);
 /** @} */
 
+void earth_gravity(lin::Vector3d const &r_ecef, lin::Vector3f &g, float &pot);
+void earth_gravity(lin::Vector3d const &r_ecef, lin::Vector3d &g, double &pot);
+
 /** @fn sun_vector
  *  @param[in]  t Time in seconds since the PAN epoch.
  *  @param[out] s Normalized vector from Earth the Sun in the ECI frame.

@@ -51,6 +51,19 @@ void earth_angular_rate(double t, lin::Vector3f &w) {
   w = { 0.0, 0.0, constant::earth_rate_ecef_z };
 }
 
+void earth_gravity(lin::Vector3d const &r_ecef, lin::Vector3f &g, float &pot) {
+  g = lin::nans<float, 3, 1>();
+  pot = gnc::constant::nan_f; // TODO : Implement this
+}
+
+void earth_gravity(lin::Vector3d const &r_ecef, lin::Vector3d &g, double &pot) {
+  lin::Vector3f _g;
+  float _pot;
+  earth_gravity(r_ecef, _g, _pot);
+  pot = _pot;
+  g = g;
+}
+
 // t will never get large enough for floating point precession to be an issue
 void sun_vector(double t, lin::Vector3f &s) {
   // Calculate Earth's position in the perifocal frame
