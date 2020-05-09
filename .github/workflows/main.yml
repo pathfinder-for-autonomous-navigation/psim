@@ -26,3 +26,7 @@ jobs:
       run: |
         python -m platformio platform install native
         python -m platformio test --verbose -e github
+
+    - name: Python Wrapper tests
+      run: |
+        pytest estimatortest/
