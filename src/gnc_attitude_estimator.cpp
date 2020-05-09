@@ -348,7 +348,7 @@ static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &da
     };
 
     // Update the state vector and covariance
-    state.x = state.x_bar + K * (z_new - state.z_bar).eval();
+    state.x = state.x_bar + K * (z_new - lin::ref<3, 1>(state.z_bar, 2, 0)).eval();
     state.P = state.P_bar - K * (lin::ref<3, 3>(state.P_vv, 2, 2) * lin::transpose(K)).eval();
   });
 }
