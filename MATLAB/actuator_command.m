@@ -18,7 +18,7 @@ satellite_state.actuators.wheel_commanded_ramp=abs(actuator_commands.wheel_torqu
 if (satellite_state.sensors.gps_time_till_lock<=0 && rand()<const.probability_of_ground_gps)
     satellite_state.actuators.ground_position_ecef= actuator_commands.position_ecef;
     satellite_state.actuators.ground_velocity_ecef= actuator_commands.velocity_ecef;
-    satellite_state.actuators.ground_time= actuator_commands.time;
+    satellite_state.actuators.ground_gpstime= actuator_commands.gpstime;
 end
 end
 

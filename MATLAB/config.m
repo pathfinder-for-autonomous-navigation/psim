@@ -14,6 +14,9 @@ setup_path()
 const.INITGPS_WN= 2045;% positive int
 % initial gps week number, epoch for time.
 const.INIT_DYEAR= decyear(utl_time2datetime(0.0,const.INITGPS_WN));
+% Decimal year at INITGPS_WN epoch (year, AD)
+const.INIT_GPSNS= int64(const.INITGPS_WN)*int64(1E9)*int64(7*24*60*60);
+% INITGPS_WN in nanoseconds (ns)
 
 const.mu = 3986004.415e8;%3.986e14;% positive scalar
 % Earth's gravitational constant (m^3/s^2)
@@ -93,11 +96,11 @@ const.JBINV=inv(const.JB);% 3x3 symmetric matrix
 % inverse of dry moment of inertia of satellite in body frame
 
 %% GPS sensor constants %%
-const.GPS_LOCK_TIME=0;%1*60;% (positive scalar):
+const.GPS_LOCK_TIME=1*60;% (positive scalar):
 %Time it takes the GPS to get a lock (s)
 const.CDGPS_LOCK_TIME=15*60;% (positive scalar):
 %Time it takes the CDGPS to get a lock (s)
-const.gps_max_angle= pi;%60*pi/180;% (positive scalar):
+const.gps_max_angle= 60*pi/180;% (positive scalar):
 % Max angle of gps antenna to radia out where gps can work (rad)
 const.cdgps_max_angle= 60*pi/180;% (positive scalar):
 % Max angle of cdgps antenna to other sat where cdgps can work (rad)
