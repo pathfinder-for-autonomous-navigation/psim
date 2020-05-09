@@ -29,4 +29,5 @@ jobs:
 
     - name: Python Wrapper tests
       run: |
+        pip install pytest
         pytest estimatortest/
