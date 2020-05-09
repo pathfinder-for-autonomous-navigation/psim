@@ -24,8 +24,9 @@
 
 /** @file gnc/attitude_estimator.hpp
  *  @author Kyle Krol
- *  Defines the interface for the attitude estimator.
- * 
+ *
+ *  @brief Defines the interface for the attitude estimator.
+ *
  *  At a high level, the attitude estimator implemented here is an unscented
  *  Kalman filter estimating both attitude and gyro bias. It's based on "Unscented
  *  Filtering for Spacecraft Attitude Estimation" by John Crassidis and Landis
@@ -39,8 +40,7 @@
  *
  *  gnc::AttitudeEstimatorState state; 
  *
- *  void loop(double t, lin::Vector3d const &r_ecef,...,
- *      lin::Vector4f q_eci_body,...) {
+ *  void loop(double t, lin::Vector3d const &r_ecef, ..., lin::Vector4f q_eci_body, ...) {
  *    if (state.is_valid) {
  *      gnc::AttitudeEstimatorData data;
  *      data.t = t;
@@ -68,26 +68,65 @@
 #include <lin/core.hpp>
 
 namespace gnc {
+namespace constant {
 
-/** @struct AttitudeEstimatorState
- *  Contains the internal state of an attitude estimator.
+/** @brief Standard deviation of gyro noise.
+ *
+ *  This parameter tunes the expected amount of gyro noise within the attitude
+ *  estimator. It's defaulted to a value of `1.0e-6f` (units of radians per
+ *  second). */
+extern float ukf_sigma_v;
+
+/** @brief Standard deviation of gyro bias noise.
+ *
+ *  This parameter tunes the expected amount of gyro bias noise within the
+ *  attitude estimator. It's defaulted to a value of `2.75e-4f` (MKS units). */
+extern float ukf_sigma_u;
+
+/** @brief Standard deviation of magnetometer noise.
+ *
+ *  This parameter tunes the expected amount of magnetometer noise within the
+ *  attitude estimator. It's defaulted to a value of `5.0e-7f` (units of Tesla) */
+extern float ukf_sigma_b;
+
+/** @brief Standard deviation of sun vector noise (in terms of angle error).
+ *
+ *  This parameter tunes the expected amount of sun vector noise within the
+ *  attitude estimator. It's defaulted to a value of
+ *  `2.0f * constant::deg_to_rad_f` (units of radians). */
+extern float ukf_sigma_s;
+
+}  // namespace constant
+
+/** @brief Contains the internal state of an attitude estimator.
  *
  *  The internal state of the attitude estimator includes the previous estimates
- *  attitude quaternion, gyro bias estimate, state covariance matrix, and
- *  timestamp. After an `attitude_estimator_*` function call, the `is_valid`
- *  member variable can be read to check if all stored values are finite - i.e.
- *  not NaN or inifinity.
+ *  attitude quaternion, gyro bias estimate, state covariance matrix, timestamp,
+ *  and some other variables to act as a buffer for intermediate calculations.
+ *
+ *  After an `attitude_estimator_*` function call, the `is_valid` member variable
+ *  can be read to check if all stored values are finite - i.e. not NaN or
+ *  inifinity.
  *
  *  Prior to being used with the `attitude_estimator_update` function, the state
  *  variable must be initialized with a call to `attitude_estimator_reset`. See
  *  more documentation below. */
 struct AttitudeEstimatorState {
-  lin::Vectord<6> sigmas[13];
-  lin::Vectord<5> measures[13];
-  lin::Vector4f q_body_eci;
-  lin::Vector3f gyro_bias;
-  lin::Matrixf<6, 6> P;
+  /** Variables acting as a calculation buffer
+   *  @{ */
+  lin::Vectord<6>    x_bar, sigmas[13];
+  lin::Vectord<5>    z_bar, measures[13];
+  lin::Matrixd<6, 6> P_bar;
+  lin::Matrixd<5, 5> P_vv;
+  lin::Matrixd<6, 5> P_xy;
+  /** @} */
+  /** Persistant, state varibles
+   *  @{ */
+  lin::Vectord<4> q;
+  lin::Vectord<6> x;
+  lin::Matrixd<6, 6> P;
   double t;
+  /** @} */
   /** Default everything to NaN and sets `is_valid` to `false`. */
   AttitudeEstimatorState();
   /** Signals whether the struct specifies a valid filter state. If invalid, all
@@ -95,8 +134,7 @@ struct AttitudeEstimatorState {
   bool is_valid;
 };
 
-/** @struct AttitudeEstimatorData
- *  Stores inputs to the `attitude_estimator_update` function.
+/** @brief Stores inputs to the `attitude_estimator_update` function.
  *
  *  These inputs include the current time since the PAN epoch (in seconds),
  *  position in ECEF (in meters), magnetic field reading in the body frame (in
@@ -117,8 +155,7 @@ struct AttitudeEstimatorData {
   AttitudeEstimatorData();
 };
 
-/** @struct AttitudeEstimate
- *  Stores outputs of the `attitude_estimator_update` function.
+/** @brief Stores outputs of the `attitude_estimator_update` function.
  *
  *  These outputs are the current attitude in quaternion representation
  *  (quaternion rotating from ECI to the the body frame), gyro bias estimate in
@@ -144,8 +181,20 @@ struct AttitudeEstimate {
   bool is_valid;
 };
 
-/** @fn attitude_estimator_reset
- *  Initializes the attitude filter state using the triad method.
+/** @brief Initializes the attitude filter state.
+ *
+ *  @param[out] state      Attitude estimator state to be reset/initialized.
+ *  @param[in]  t          Time since the PAN epoch (units of seconds).
+ *  @param[in]  q_body_eci Quaternion rotating from ECI to the body frame.
+ *
+ *  Initializes the current time and attitude estimate to the passed arguments.
+ *  The gyro bias and covariance is set to default values.
+ *
+ *  The state will be valid as long as the passed arguments were finite. */
+void attitude_estimator_reset(AttitudeEstimatorState &state,
+    double t, lin::Vector4f const &q_body_eci);
+
+/** @brief Initializes the attitude filter state using the triad method.
  *
  *  @param[out] state  Attitude estimator state to be reset/initialized.
  *  @param[in]  t      Time since the PAN epoch (units of seconds).
@@ -161,29 +210,14 @@ struct AttitudeEstimate {
  *  the estimator state was succesfully reset. The reset call will fail is
  *  parameters given failed the triad algorithm - i.e the sun and magnetic field
  *  vector were nearly parallel.
- * 
+ *
  *  See the `gnc::utl::triad` documentation for more information. */
 void attitude_estimator_reset(AttitudeEstimatorState &state,
     double t, lin::Vector3d const &r_ecef, lin::Vector3f const &b_body,
     lin::Vector3f const &s_body);
 
-/** @fn attitude_estimator_reset
- *  Initializes the attitude filter state.
+/** @brief Updates the attitude estimate given a set of sensor readings.
  *
- *  @param[out] state      Attitude estimator state to be reset/initialized.
- *  @param[in]  t          Time since the PAN epoch (units of seconds).
- *  @param[in]  q_eci_body Quaternion rotating from ECI to the body frame.
- *
- *  Initializes the current time and attitude estimate to the passed arguments.
- *  The gyro bias and covariance is set to default values.
- *
- *  The state will be valid as long as the passed arguments were finite. */
-void attitude_estimator_reset(AttitudeEstimatorState &state,
-    double t, lin::Vector4f const &q_eci_body);
-
-/** @fn attitude_estimator_update
- *  Updates the attitude estimate given a set of sensor readings.
- * 
  *  @param[inout] state    Previous filter state.
  *  @param[in]    data     Sensor readings.
  *  @param[out]   estimate Updated attitude estimate.
@@ -191,8 +225,9 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
  *  Calculates an updated attitude estimate using one of two unscented Kalman
  *  filter implementations. The first runs if all required elements of the `data`
  *  struct as well an a sun vector readings are specified; it's the superior
- *  filter. The latter runs when no sun vector is specified.
- * 
+ *  filter. The latter runs when no sun vector is specified. The estimator state
+ *  and estimate will default to invalid if some expected input isn't provided.
+ *
  *  After calling, it's recommended to check the `state.is_valid` or
  *  `estiamte.is_valid` field to ensure the update step completed succesfully.
  *  Further checks on the updated covariance matrix are also suggested to check
