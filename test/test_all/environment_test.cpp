@@ -55,6 +55,29 @@ void test_environment_earth_attitude() {
   }));
 }
 
+void test_environment_gravity() {
+  double U_ecef;
+  lin::Vector3d r_ecef, g_ecef;
+  // Testing expected outputs against MATLAB
+  r_ecef = { 5.43092e6, 2.949986e6, 2.949986e6 };
+  gnc::env::gravity(r_ecef, g_ecef, U_ecef);
+  TEST_ASSERT_DOUBLE_VEC_NEAR(1e-5, g_ecef, lin::Vector3d({
+    -6.740640681994386,
+    -3.661468338734510,
+    -3.671706398469697
+  }));
+  TEST_ASSERT_DOUBLE_WITHIN(1e2, U_ecef, 5.821618371493001e7);
+  // Testing expected outputs against MATLAB
+  r_ecef = { -2.949986e6, 5.43092e6, 2.949986e6 };
+  gnc::env::gravity(r_ecef, g_ecef, U_ecef);
+  TEST_ASSERT_DOUBLE_VEC_NEAR(1e-5, g_ecef, lin::Vector3d({
+     3.661197091703317,
+    -6.740691015633035,
+    -3.671820564640941
+  }));
+  TEST_ASSERT_DOUBLE_WITHIN(1e2, U_ecef, 5.821613652050869e7);
+}
+
 void test_environment_sun_vector() {
   lin::Vector3f s;
   // Calculate and check for t=0.0 (comparing against MATLAB)
@@ -110,6 +133,7 @@ void test_environment_magnetic_field() {
 
 void environment_test() {
   RUN_TEST(test_environment_earth_attitude);
+  RUN_TEST(test_environment_gravity);
   RUN_TEST(test_environment_sun_vector);
   RUN_TEST(test_environment_magnetic_field);
 }
