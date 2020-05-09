@@ -88,7 +88,7 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
   UkfMatrix4x4 O;
   {
     ukf_float norm_w = lin::norm(w);
-    UkfVector3 psi = lin::sin(0.5f * dt * norm_w) * w / norm_w;
+    UkfVector3 psi = lin::sin(0.5f * norm_w * dt) * w / norm_w;
     UkfMatrix3x3 psi_x = {
       ukf_float(0.0),         -psi(2),          psi(1),
               psi(2),  ukf_float(0.0),         -psi(0),
@@ -236,7 +236,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       {
         UkfVector3 s, b;
         utl::rotate_frame(_q_new, s_exp, s); // s in the body frame
-        utl::rotate_frame(_q_new, b_exp, b); // b_exp in the body frame
+        utl::rotate_frame(_q_new, b_exp, b); // b in the body frame
 
         state.measures[i] = {
           lin::atan(s(1) / s(0)),
@@ -249,10 +249,11 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
 
       // Determine the propegated sigmas
       {
-        lin::Vector4d q;
+        UkfVector4 q;
         utl::quat_cross_mult(_q_new, conj_q_new, q); // q = "residual" propegated rotation
+        //utl::quat_cross_mult(conj_q_new, _q_new, q);
 
-        lin::Vector3d p;
+        UkfVector3 p;
         utl::quat_to_qrp(q, a, f, p);
         lin::ref<3, 1>(state.sigmas[i], 0, 0) = p;
       }
@@ -279,20 +280,33 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       x_bar = x_bar + weight_o * state.sigmas[i];
       z_bar = z_bar + weight_o * state.measures[i];
     }
+    // for (lin::size_t i = 1; i < 7; i++) {
+    //   x_bar = x_bar + weight_o * (state.sigmas[i] + state.sigmas[i+6]);
+    //   z_bar = z_bar + weight_o * (state.measures[i] + state.measures[i+6]);
+    // }
 
     // Plus the associated covariances
     UkfVector6 dx1 = state.sigmas[0] - x_bar;
     UkfVector5 dz1 = state.measures[0] - z_bar;
-    P_bar = P_bar + weight_c * dx1 * lin::transpose(dx1);
-    P_vv = P_vv + weight_c * dz1 * lin::transpose(dz1);
-    P_xy = P_xy + weight_c * dx1 * lin::transpose(dz1);
+    P_bar = (weight_c * dx1) * lin::transpose(dx1);
+    P_vv = (weight_c * dz1) * lin::transpose(dz1);
+    P_xy = (weight_c * dx1) * lin::transpose(dz1);
     for (lin::size_t i = 1; i < 13; i++) {
       dx1 = state.sigmas[i] - x_bar;
       dz1 = state.measures[i] - z_bar;
-      P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1));
-      P_vv = P_vv + weight_o * (dz1 * lin::transpose(dz1));
-      P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1));
+      P_bar = P_bar + (weight_o * dx1) * lin::transpose(dx1);
+      P_vv = P_vv + (weight_o * dz1) * lin::transpose(dz1);
+      P_xy = P_xy + (weight_o * dx1) * lin::transpose(dz1);
     }
+    // for (lin::size_t i = 1; i < 7; i++) {
+    //   dx1 = state.sigmas[i] - x_bar;
+    //   UkfVector6 dx2 = state.sigmas[i+6] - x_bar;
+    //   dz1 = state.measures[i] - z_bar;
+    //   UkfVector5 dz2 = state.measures[i+6] - z_bar;
+    //   P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1) + dx2 * lin::transpose(dx2));
+    //   P_vv = P_vv + weight_o * (dz1 * lin::transpose(dz1) + dz2 * lin::transpose(dz2));
+    //   P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1) + dx2 * lin::transpose(dz2));
+    // }
 
     // Sensor noise covariance
     UkfMatrix5x5 R = lin::zeros<UkfMatrix5x5>();
@@ -320,7 +334,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
     lin::Vector4d q;
     utl::grp_to_quat(lin::ref<3, 1>(state.x, 0, 0).eval(), a, f, q);
     utl::quat_cross_mult(q, q_new, state.q);
-    state.q = state.q / lin::norm(state.q);
+    //state.q = state.q / lin::norm(state.q);
 
     // Reset the attitude portion of the state to zeros
     lin::ref<3, 1>(state.x, 0, 0) = lin::zeros<UkfVector3>();
