@@ -37,7 +37,8 @@
 namespace gnc {
 
 OrbitControllerState::OrbitControllerState()
-: this_r_ecef0(lin::nans<decltype(this_r_ecef0)>()),
+: t_last_firing(gnc::constant::nan),
+  this_r_ecef0(lin::nans<decltype(this_r_ecef0)>()),
   that_r_ecef0(lin::nans<decltype(that_r_ecef0)>()),
   this_r_hat(lin::nans<decltype(this_r_hat)>()),
   this_v_ecef0(lin::nans<decltype(this_v_ecef0)>()),
@@ -71,7 +72,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
 #ifndef MEX
 void control_orbit(struct OrbitControllerState &state,
     struct OrbitControllerData const &data, struct OrbitActuation &actuation) {
-  actuation = gnc::OrbitActuation(); // TODO : Implement this
+  mex_control_orbit(state, data, actuation, 0.0, 0.0, 0.0, 0.0, 0.0); // TODO : Implement this
 }
 #endif
 

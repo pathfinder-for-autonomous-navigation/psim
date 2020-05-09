@@ -28,6 +28,8 @@
 
 /** @defgroup orbit_controller Orbit Controller
  *  @brief Defines the interface for the orbit controller.
+ * 
+ *  More details to come...
  */
 
 #ifndef GNC_ORBIT_CONTROLLER_HPP_
