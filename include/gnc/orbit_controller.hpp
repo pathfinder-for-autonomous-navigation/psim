@@ -108,7 +108,11 @@ struct OrbitActuation {
   OrbitActuation();
 };
 
-#ifndef MEX
+#ifdef MEX
+void mex_control_orbit(struct OrbitControllerState &state,
+    struct OrbitControllerData const &data, struct OrbitActuation &actuation,
+    double mass, double K_p, double K_d, double K_e, double K_h);
+#else
 /** @brief Schedules thruster firings in order to rendezvous.
  * 
  *  @param[in]  state     Calculation buffer.
@@ -128,10 +132,6 @@ struct OrbitActuation {
  */
 void control_orbit(struct OrbitControllerState &state,
     struct OrbitControllerData const &data, struct OrbitActuation &actuation);
-#else
-void mex_control_orbit(struct OrbitControllerState &state,
-    struct OrbitControllerData const &data, struct OrbitActuation &actuation,
-    double mass, double K_p, double K_d, double K_e, double K_h);
 #endif
 
 }  // namespace gnc
