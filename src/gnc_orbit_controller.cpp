@@ -10,8 +10,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -46,9 +46,9 @@ static double energy(lin::Vector3d const &r_eci, lin::Vector3d const &v_eci) {
 #ifndef MEX
 static
 #endif
-void control_orbit(struct OrbitControllerState &state, struct OrbitControllerData const &data,
-    lin::Vector<unsigned int, 4> &on_times, double mass, double K_p, double K_d,
-    double K_e, double K_h) {
+void mex_control_orbit(struct OrbitControllerState &state,
+    struct OrbitControllerData const &data, struct OrbitActuation &actuation,
+    double mass, double K_p, double K_d, double K_e, double K_h) {
 
   lin::Vector3d &this_r_ecef0 = state.this_r_ecef0, &that_r_ecef0 = state.that_r_ecef0;
   lin::Vector3d &this_r_hat = state.this_r_hat;
@@ -76,32 +76,23 @@ void control_orbit(struct OrbitControllerState &state, struct OrbitControllerDat
     this_h_hat = this_h_ecef0 / lin::norm(this_h_ecef0);
   }
 
-  // Requested delta v in ECEF0
-  lin::Vector3d dv_ecef0 = lin::zeros<lin::Vector3d>();
-
-  // Hill frame controller
-  {
-    lin::Vector3d r_hill, v_hill;
-    r_hill = DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0);
-    v_hill = DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0);
-    
-    dv_ecef0 = dv_ecef0 + ();
-  }
-  
-
-
-
-  lin::Matrix3x3d DCM_hill_ecef0;
+  // Calculate the hill frame DCM
   utl::dcm(DCM_hill_ecef0, that_r_ecef0, that_v_ecef0);
+
+  // Requested delta v gain along this_v_hat in ECEF0
+  double dv_gain_v_hat =
+      K_p * (DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0))(1) +
+      K_d * (DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0))(1) +
+      K_e * (energy(this_r_ecef0, this_v_ecef0) - energy(that_r_ecef0, that_v_ecef0));
   
-  lin::Vector3d r_hill = DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0);
-  lin::Vector3d v_hill = DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0);
+
+
+
 
   lin::Vector3d dv;
   {
     lin::Vector3d this_v_hat  = this_v_ecef0 / lin::norm(this_v_ecef0);
 
-    // TODO : Negative K_d and K_e
     dv = (K_p * r_hill(1) +
           K_d * v_hill(1) +
           K_e * (energy(this_r_ecef0, this_v_ecef0) - energy(that_r_ecef0, that_v_ecef0))
@@ -121,8 +112,8 @@ void control_orbit(struct OrbitControllerState &state, struct OrbitControllerDat
 // Spacecraft mass
 
 #ifndef MEX
-void control_orbit(struct OrbitControllerState &state, struct OrbitControllerData const &data,
-    lin::Vector<unsigned int, 4> &on_times) {
+void control_orbit(struct OrbitControllerState &state,
+    struct OrbitControllerData const &data, struct OrbitActuation &actuation) {
 
 }
 #endif

@@ -10,8 +10,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -60,11 +60,11 @@ struct OrbitActuation {
 };
 
 #ifndef MEX
-void control_orbit(struct OrbitControllerState &state,
-    struct OrbitControllerData const &data, lin::Vector<unsigned int, 4> &on_times);
+void mex_control_orbit(struct OrbitControllerState &state,
+    struct OrbitControllerData const &data, struct OrbitActuation &actuation);
 #else
 void control_orbit(struct OrbitControllerState &state,
-    struct OrbitControllerData const &data, lin::Vector<unsigned int, 4> &on_times,
+    struct OrbitControllerData const &data, struct OrbitActuation &actuation,
     double mass, double K_p, double K_d, double K_e, double K_h);
 #endif
 
