@@ -1,5 +1,3 @@
-/** @file test_all/environmental_test.cpp
- *  @author Kyle Krol */
 
 #include "test.hpp"
 #include "environment_test.hpp"
