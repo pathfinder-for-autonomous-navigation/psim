@@ -8,7 +8,7 @@ generate_mex_code;
 global const
 
 % time
-tmax = 1500; % [sec]
+tmax = 5000; % [sec]
 dt = 0.1; % [sec]
 tspan = 0 : dt : tmax; % [sec]
 N = length(tspan);
@@ -262,9 +262,9 @@ figure;
 plot(tspan, w_meas_vec(1, :), 'r'); hold on
 plot(tspan, w_meas_vec(2, :), 'r')
 plot(tspan, w_meas_vec(3, :), 'r')
-plot(tspan, IwB_B(1, :), 'b')
-plot(tspan, IwB_B(2, :), 'b')
-plot(tspan, IwB_B(3, :), 'b')
+% plot(tspan, IwB_B(1, :), 'b')
+% plot(tspan, IwB_B(2, :), 'b')
+% plot(tspan, IwB_B(3, :), 'b')
 plot(tspan, w_est_vec(1, :), 'k')
 plot(tspan, w_est_vec(2, :), 'k')
 plot(tspan, w_est_vec(3, :), 'k')
