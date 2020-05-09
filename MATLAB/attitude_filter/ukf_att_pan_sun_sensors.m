@@ -8,7 +8,7 @@ generate_mex_code;
 global const
 
 % time
-tmax = 10000; % [sec]
+tmax = 1500; % [sec]
 dt = 0.1; % [sec]
 tspan = 0 : dt : tmax; % [sec]
 N = length(tspan);
@@ -199,7 +199,7 @@ for i = 1 : N - 1
     w_meas_vec(:, i + 1) = w_meas;
     
     % sun sensor measurement model
-    sat2sun_body = utl_rotateframe(q(:, i + 1), sat2sun_eci')';
+    sat2sun_body = utl_rotateframe(q(:, i + 1), env_sun_vector(t(i))')';
     th_ss_body = atan(sat2sun_body(2) / sat2sun_body(1)); % [rad]
     phi_ss_body = acos(sat2sun_body(3)); % [rad]
     ss_noise = mvnrnd(zeros(1, 2), R_ss, 1);
@@ -207,18 +207,20 @@ for i = 1 : N - 1
 
     % shihao added this: assuming theta in plane, phi comes down from top, idk if right
     ss_vec_body = [cos(ss_ang_body(1))*sin(ss_ang_body(2)); sin(ss_ang_body(1))*sin(ss_ang_body(2)); cos(ss_ang_body(2))];
+%     ss_vec_body = sat2sun_body;
 
     % magnetometer measurement model
+    
+    % quat_eci_ecef changes....? Kyle added this:
+    [quat_ecef_eci, ~] = env_earth_attitude( t(i) );
+    quat_eci_ecef = utl_quat_conj(quat_ecef_eci);
+    %
     quat_body_ecef = utl_quat_cross_mult(q(:, i + 1), quat_eci_ecef);
     B_body = utl_rotateframe(quat_body_ecef, B_ecef')';
     mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
     B_body_meas = B_body + mag_noise';
    
-
     [state,q_est,gyro_bias_est,cov_est] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
-    
-    % update gyro bias estimate
-    bias_est = gyro_bias_est; %from filter
     
     % vectors for plotting
     q_est_vec(:, i + 1) = q_est; %from filter
