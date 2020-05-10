@@ -8,10 +8,11 @@ config()  % Initialize const
 global const
 
 dt=double(const.dt) * 1e-9;
-t_max = 1000;% Amount of time simulated (s)
+t_max = 24*60*60;% Amount of time simulated (s)
 num_steps = floor(t_max/dt);
 condition='detumbled';%'tumbling';%
-main_state= initialize_main_state(1,condition);
+seed= 1;
+main_state= initialize_main_state(seed,condition);
 [computer_state_follower,computer_state_leader]= initialize_computer_states(condition);
 
 for step= 1:num_steps
@@ -32,3 +33,12 @@ for step= 1:num_steps
     main_state.follower = actuator_command(actuator_commands_follower,main_state.follower);
     %main_state.leader = actuator_command(actuator_commands_leader,main_state.leader);
 end
+
+%% Save file
+
+[filepath,~,~] = fileparts(mfilename('fullpath'));
+filename = fullfile(filepath, "../../estimatortest/test-files/gps-from-matlab-sim.hdf5");
+sensors_docs= "GPS sensor data in ECEF and GPS time (ns, m, m/s)";
+truth_docs= "MATLAB sim orbit data in ECEF and GPS time (ns, m, m/s)";
+
+hdf5_helper(filename,sensors,sensors_docs,truth,truth_docs,string(mfilename),seed,condition);

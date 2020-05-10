@@ -28,7 +28,7 @@ const.mu_sun = 1.32712440018E20; % positive scalar
 % Sun's gravitational constant (m^3/s^2)
 const.R_EARTH= 6378137.0;
 %Equatorial Radius of Earth (m)*/
-const.dt = int64(1e8);% positive int64
+const.dt = int64(120e6);% positive int64
 % Simulation timestep            (ns)
 const.e_earth = 0.0167086;
 % Earth's eccentricity.
