@@ -61,6 +61,7 @@ Most Matlab types are compatible with python types: [Python to Matlab function i
  * `./estimator_prototypes/*` - prototypes for estimators.
  * `./orbit_propagator_prototypes/*` - prototypes for orbit propagators.
  * `./orbit_estimation/*` - orbit estimator, main initialization, run, and some helper and test functions.
+ * `./estimator_test_file_gen/*` - scripts and helper functions to generate hdf5 estimator test files from the MATLAB sim
 
 
 ## Main State Data Structure
