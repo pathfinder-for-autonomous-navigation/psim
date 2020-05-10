@@ -7,7 +7,7 @@ global const
 % initialize constants
 config();
 m = 3.7; % Mass (kg)
-J_min = 5e-5; % Min impulse (Ns) 2ms ontime
+J_min = 1.25e-4; % Min impulse (Ns) 5ms ontime
 J_max = 2.5e-2; % Max impulse (Ns) 1s ontime
 max_dv = J_max / m;
 min_dv = J_min / m;
@@ -20,7 +20,7 @@ thrust_noise_ratio = 0;
 dt_fire_min = 5 * 60; % [s] minimum time between firings
 
 % time
-tmax = 40 * 24 * 60 * 60; % [s]
+tmax = 80 * 24 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
@@ -50,7 +50,8 @@ v_rel = v_max - v_min;
 r2 = r1;
 % v2 = randn(3, 1);
 % v2 = cross(r1, v1); % in the out-of-plane direction
-v2 = v1; % in the vhat direction
+% v2 = v1; % in the vhat direction
+v2 = r1; % in the rhat direction
 v2 = v1 + v_rel * (v2 / norm(v2));
 
 % Allow spacecraft to drift apart
@@ -123,7 +124,7 @@ for i = 1 : N - 1
     if ~mod(i, 1000)
         fprintf('progress: step %d / %d\n', i, N - 1);
     end
-    
+
     % calculate follower orbital elements
     a = -const.mu / (2 * energy2);
     n = utl_orbrate(a);
@@ -146,7 +147,7 @@ for i = 1 : N - 1
     end
     
     % check if follower is at a firing point
-    if mod(E, pi / 2) < 0.01 && t(i) - t_fire > dt_fire_min
+    if mod(E, 2 * pi / 3) < 0.01 && t(i) - t_fire > dt_fire_min
         
         % record firing time and position
         t_fire = t(i);
@@ -211,7 +212,7 @@ for i = 1 : N - 1
     v1 = y(end, 4:6)';
     r2 = y(end, 7:9)';
     v2 = y(end, 10:12)';
-
+    
     % Calculate new state
     w_hill = [0.0; 0.0; n];
     Q_eci_hill = utl_eci2hill(r1, v1);
