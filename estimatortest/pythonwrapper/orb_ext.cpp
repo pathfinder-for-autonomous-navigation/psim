@@ -51,13 +51,20 @@ void init_orb_ext(py::module &m){
         .def(py::pickle(
             [](const orb::Orbit &p) { // __getstate__
                 /* Return a tuple that fully encodes the state of the object */
-                return py::make_tuple(p);
+                return py::make_tuple(p.nsgpstime(),p.recef()(0),p.recef()(1),p.recef()(2),p.vecef()(0),p.vecef()(1),p.vecef()(2));
                 },
             [](py::tuple t) { // __setstate__
-                if (t.size() != 1)
+                if (t.size() != 7)
                     throw std::runtime_error("Invalid state!");
                 /* Create a new C++ instance */
-                orb::Orbit p= t[0].cast<orb::Orbit>();
+                int64_t time= t[0].cast<int64_t>();
+                double r0 = t[1].cast<double>();
+                double r1 = t[2].cast<double>();
+                double r2 = t[3].cast<double>();
+                double v0 = t[4].cast<double>();
+                double v1 = t[5].cast<double>();
+                double v2 = t[6].cast<double>();
+                orb::Orbit p(time,{r0,r1,r2},{v0,v1,v2});
                 return p;
             }
         ))
