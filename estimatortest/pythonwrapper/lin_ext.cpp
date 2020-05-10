@@ -4,6 +4,7 @@
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
+#include <pybind11/stl.h>
 #include <string>
 #include <stdio.h>
 #include <orb/Orbit.h>
@@ -20,7 +21,7 @@ namespace py = pybind11;
             /* Request a buffer descriptor from Python */ \
             py::buffer_info info = b.request(); \
             /* Some sanity checks ... */ \
-            if (info.format != py::format_descriptor<double>::format()) \
+            if (info.format != py::format_descriptor<T>::format()) \
                 throw std::runtime_error("Incompatible format: expected a " #T " array!"); \
             if (info.ndim != 2) \
                 throw std::runtime_error("Incompatible buffer dimension!"); \
@@ -63,13 +64,15 @@ namespace py = pybind11;
         .def(py::pickle(\
             [](const lin::Matrix<T, R, C, MR, MC>& p) { /* __getstate__ */ \
                 /* Return a tuple that fully encodes the state of the object */   \
-                return py::make_tuple(p); \
+                std::array<T,MR*MC> a; \
+                lin::Matrix<T, R, C, MR, MC> c= p; \
+                memcpy(&a,&(c(0)),MR*MC*sizeof(T)); \
+                return a; \
                 }, \
-            [](py::tuple t) { /* __setstate__ */ \
-                if (t.size() != 1) \
-                    throw std::runtime_error("Invalid state!"); \
+            [](std::array<T,MR*MC> t) { /* __setstate__ */ \
                 /* Create a new C++ instance */ \
-                lin::Matrix<T, R, C, MR, MC> p=t[0].cast<lin::Matrix<T, R, C, MR, MC>>(); \
+                lin::Matrix<T, R, C, MR, MC> p; \
+                memcpy(&(p(0)),&t,MR*MC*sizeof(T)); \
                 return p; \
             } \
         ))\
@@ -82,8 +85,8 @@ namespace py = pybind11;
             /* Request a buffer descriptor from Python */ \
             py::buffer_info info = b.request(); \
             /* Some sanity checks ... */ \
-            if (info.format != py::format_descriptor<double>::format()) \
-                throw std::runtime_error("Incompatible format: expected a double array!"); \
+            if (info.format != py::format_descriptor<T>::format()) \
+                throw std::runtime_error("Incompatible format: expected a " #T " array!"); \
             if (info.ndim != 1) \
                 throw std::runtime_error("Incompatible buffer dimension!"); \
             if (info.shape[0] != (long)(x.size())) \
@@ -120,13 +123,15 @@ namespace py = pybind11;
         .def(py::pickle(\
             [](const lin::Vector<T, N, MN> &p) { /* __getstate__ */ \
                 /* Return a tuple that fully encodes the state of the object */   \
-                return py::make_tuple(p); \
+                std::array<T,MN> a; \
+                lin::Vector<T, N, MN> c= p; \
+                memcpy(&a,&(c(0)),MN*sizeof(T)); \
+                return a; \
                 }, \
-            [](py::tuple t) { /* __setstate__ */ \
-                if (t.size() != 1) \
-                    throw std::runtime_error("Invalid state!"); \
+            [](std::array<T,MN> t) { /* __setstate__ */ \
                 /* Create a new C++ instance */ \
-                lin::Vector<T, N, MN> p=t[0].cast<lin::Vector<T, N, MN>>(); \
+                lin::Vector<T, N, MN> p; \
+                memcpy(&(p(0)),&t,MN*sizeof(T)); \
                 return p; \
             } \
         ))\
