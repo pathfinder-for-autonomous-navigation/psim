@@ -7,19 +7,20 @@ global const
 % initialize constants
 config();
 m = 3.7; % Mass (kg)
-J_min = 2e-4; % Min impulse (Ns)
-J_max = 2 * 2.5e-2; % Max impulse (Ns)
-max_dv = J_max/m;
+J_min = 5e-5; % Min impulse (Ns) 2ms ontime
+J_max = 2.5e-2; % Max impulse (Ns) 1s ontime
+max_dv = J_max / m;
+min_dv = J_min / m;
 t_drift = 10 * 24 * 60.0 * 60.0; % Drift time (s)
 p = 1.0e-6;
 d = 1.0e-2;
-energy_gain = 1.0e-5;
+energy_gain = 5.0e-5;
 h_gain = 2.0e-3;
 thrust_noise_ratio = 0;
 dt_fire_min = 5 * 60; % [s] minimum time between firings
 
 % time
-tmax = 84 * 24 * 60 * 60; % [s]
+tmax = 40 * 24 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
@@ -48,7 +49,8 @@ v_rel = v_max - v_min;
 % Add initial velocity difference
 r2 = r1;
 % v2 = randn(3, 1);
-v2 = cross(r1, v1); % in the out-of-plane direction
+% v2 = cross(r1, v1); % in the out-of-plane direction
+v2 = v1; % in the vhat direction
 v2 = v1 + v_rel * (v2 / norm(v2));
 
 % Allow spacecraft to drift apart
@@ -193,6 +195,10 @@ for i = 1 : N - 1
             dv = max_dv * dv / norm(dv);
         end
         
+        if norm(dv) < min_dv
+            dv = min_dv * dv / norm(dv);
+        end
+        
         % apply dv
         v2 = v2 + dv;
         dv_vec(:, i) = dv;
@@ -205,7 +211,7 @@ for i = 1 : N - 1
     v1 = y(end, 4:6)';
     r2 = y(end, 7:9)';
     v2 = y(end, 10:12)';
-    
+
     % Calculate new state
     w_hill = [0.0; 0.0; n];
     Q_eci_hill = utl_eci2hill(r1, v1);
@@ -420,57 +426,5 @@ dy(7:9, 1) = y(10:12, 1);
 dy(10:12, 1) = utl_rotateframe(quat_eci_ecef, g_ecef);
 % dy(10:12, 1) = [gx; gy; gz];
 % dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
-
-end
-
-function dv = orbit_controller(r2, v2, r_hill, v_hill, p, d, energy_gain, h_gain, energy1, energy2, h1, h2, m)
-
-% inputs
-% r2            follower position vector in ECI
-% v2            follower velocity vector in ECI
-% r_hill        hill frame position vector
-% v_hill        hill frame velocity vector
-% p             proportional gain for hill frame PD controller
-% d             derivative gain for hill frame PD controller
-% energy_gain   gain for energy controller
-% h_gain        gain for h controller
-% energy1       leader energy
-% energy2       follower energy
-% h1            leader angular momentum vector
-% h2            follower angular momentum vector
-% m             spacecraft mass
-
-% Hill frame PD controller
-pterm = p * r_hill(2);
-dterm = -d * v_hill(2);
-dv_p = pterm * v2 / norm(v2);
-dv_d = dterm * v2 / norm(v2);
-
-% energy controller
-energy_term = -energy_gain * (energy2 - energy1);
-dv_energy = energy_term * v2 / norm(v2);
-
-% h controller
-r2hat = r2 / norm(r2);
-
-% define the direction of our impulse, always in the h2 direction
-h2hat = h2 / norm(h2);
-Jhat_plane = h2hat;
-
-% project h1 onto the plane formed by h2 and (r2 x h2)
-h1proj = h1 - dot(h1, r2hat) * r2hat;
-
-% calculate the angle between h1proj and h2 (this is what we are
-% driving to zero with this burn)
-theta = atan( dot(h1proj, cross(r2, h2)) / dot(h1proj, h2) );
-
-% scale the impulse delivered by the angle theta
-J_plane = theta * Jhat_plane;
-
-% scale dv by h_gain
-dv_plane = h_gain * J_plane / m;
-
-% total dv to be applied from all controllers
-dv = dv_p + dv_d + dv_energy + dv_plane;
 
 end
