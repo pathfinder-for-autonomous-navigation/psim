@@ -8,6 +8,7 @@ import numpy as np
 import h5py
 from utility import getgitinfo
 import sys
+import time
 
 
 def gracefile2array(gracefilename):
@@ -102,13 +103,13 @@ def main(h5file,seed,gracefilename,control_cycle_ns,gpsrbias_sdev,gpsvbias_sdev,
     with h5file as f:
         f.attrs['git info']= getgitinfo()
         f.attrs['inputs']= inputstr
-        f.attrs['generator script']= __file__
+        f.attrs['script file']= __file__
         f.attrs['command line args']= str(sys.argv)
-        f.attrs['version']= '0'
+        f.attrs['local time made']= time.asctime()
         truth= f.create_dataset('truth',data=truth,compression='gzip')
-        truth.attrs['description']='GRACE FO data (ns, m, m/s)'
+        truth.attrs['docs']='GRACE FO data in ECEF and GPS time (ns, m, m/s)'
         sensors= f.create_dataset('sensors',data=sensors,compression='gzip')
-        sensors.attrs['description']='intermitnent GRACE FO data with noise (ns, m, m/s)'
+        sensors.attrs['docs']='intermitnent GRACE FO data in ECEF and GPS time with noise (ns, m, m/s)'
 
 if __name__ == "__main__":
     main(h5py.File("Gracetest.hdf5","w"),None,'../../MATLAB/test/GNV1B_2019-10-02_D_04.txt',120_000_000,1.0,1.1,1.2,1.3)
