@@ -22,7 +22,9 @@ jobs:
         python -m pip install -r requirements.txt
         python -m platformio update
 
-    - name: CXX software tests
+    - name: C++ software tests
       run: |
         python -m platformio platform install native
         python -m platformio test --verbose -e github
+        python -m platformio platform install teensy
+        python -m platformio run --verbose -e teensy35
