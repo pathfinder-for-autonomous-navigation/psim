@@ -82,7 +82,7 @@ void earth_attitude(double t, lin::Vector4f &q_ecef_eci);
  *
  *  @ingroup environment
  */
-void earth_angular_rate(double t, lin::Vector3d &w_eci);
+void earth_angular_rate(double t, lin::Vector3d &w_ecef);
 
 /** @brief Determines Earth's angular rate.
  *
