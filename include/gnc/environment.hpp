@@ -98,7 +98,7 @@ void earth_angular_rate(double t, lin::Vector3d &w_ecef);
  *
  *  @ingroup environment
  */
-void earth_angular_rate(double t, lin::Vector3f &w_eci);
+void earth_angular_rate(double t, lin::Vector3f &w_ecef);
 
 /** @brief Models gravitational acceleration and potential due to Earth.
  * 
