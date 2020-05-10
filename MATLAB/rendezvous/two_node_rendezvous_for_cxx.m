@@ -89,10 +89,15 @@ v_hill = Q_eci_hill * (v2 - v1) - cross(w_hill, r_hill);
 X(:, 1) = [r_hill; v_hill];
 r_eci(:, 1) = [r1; r2];
 
+% ECI to ECEF conversion
+[quat_ecef_eci, ~] = env_earth_attitude(t(1));
+
 % calculate energy
-[~,potential,~]= env_gravity(0,r1);
-energy1= 0.5*dot(v1,v1)-potential;
-[~,potential,~]= env_gravity(0,r2);
+r1_ecef = utl_rotateframe(quat_ecef_eci, r1);
+r2_ecef = utl_rotateframe(quat_ecef_eci, r2);
+[~,potential,~] = env_gravity(t(1), r1_ecef);
+energy1 = 0.5 * dot(v1, v1) - potential;
+[~,potential,~] = env_gravity(t(1), r2_ecef);
 energy2= 0.5*dot(v2,v2)-potential;
 deltaenergies(1)=energy2-energy1;
 energy1_vec(1) = energy1;
@@ -144,7 +149,7 @@ for i = 1 : N - 1
         % record firing time and position
         t_fire = t(i);
         r_fire = [r_fire, [r1; r2]];
-        
+
         % Hill frame PD controller
         pterm = p * r_hill(2);
         dterm = -d * v_hill(2);
@@ -195,7 +200,7 @@ for i = 1 : N - 1
     end
 
     % simulate dynamics
-    y = utl_ode4(@frhs, [0.0, dt], [r1; v1; r2; v2]);
+    y = utl_ode4(@(t, y) frhs(t, y, quat_ecef_eci), [0.0, dt], [r1; v1; r2; v2]);
     r1 = y(end, 1:3)';
     v1 = y(end, 4:6)';
     r2 = y(end, 7:9)';
@@ -208,11 +213,14 @@ for i = 1 : N - 1
     v_hill = Q_eci_hill * (v2 - v1) - cross(w_hill, r_hill);
     X(:, i + 1) = [r_hill; v_hill];
     r_eci(:, i + 1) = [r1; r2];
+    [quat_ecef_eci, ~] = env_earth_attitude(t(i + 1));
     
     % calculate energies
-    [~,potential,~]= env_gravity(0,r1);
+    r1_ecef = utl_rotateframe(quat_ecef_eci, r1);
+    r2_ecef = utl_rotateframe(quat_ecef_eci, r2);
+    [~,potential,~]= env_gravity(t(i + 1), r1_ecef);
     energy1= 0.5*dot(v1,v1)-potential;
-    [~,potential,~]= env_gravity(0,r2);
+    [~,potential,~]= env_gravity(t(i + 1), r2_ecef);
     energy2= 0.5*dot(v2,v2)-potential;
     deltaenergies(i + 1)=energy2-energy1;
     energy1_vec(i + 1) = energy1;
@@ -387,20 +395,30 @@ xlabel('t [s]')
 ylabel('\phi [rad]')
 title('angle between h_1 and h_2')
 
-function dy = frhs(~, y)
+function dy = frhs(t, y, quat_ecef_eci)
 
 % global const
 
+quat_eci_ecef = utl_quat_conj(quat_ecef_eci);
+
 dy = zeros(12, 1);
 
-[gx, gy, gz] = gravityzonal(y(1:3)', 'Earth', 4, 'Error');
+r_ecef = utl_rotateframe(quat_ecef_eci, y(1:3, 1));
+[g_ecef, ~, ~] = env_gravity(0, r_ecef);
+
+% [gx, gy, gz] = gravityzonal(y(1:3)', 'Earth', 4, 'Error');
 dy(1:3, 1) = y(4:6, 1);
-dy(4:6, 1) = [gx; gy; gz];
+dy(4:6, 1) = utl_rotateframe(quat_eci_ecef, g_ecef);
+% dy(4:6, 1) = [gx; gy; gz];
 % dy(4:6, 1) = -const.mu * y(1:3, 1) / norm(y(1:3, 1))^3;
 
-[gx, gy, gz] = gravityzonal(y(7:9)', 'Earth', 4, 'Error');
+r_ecef = utl_rotateframe(quat_ecef_eci, y(7:9, 1));
+[g_ecef, ~, ~] = env_gravity(0, r_ecef);
+
+% [gx, gy, gz] = gravityzonal(y(7:9)', 'Earth', 4, 'Error');
 dy(7:9, 1) = y(10:12, 1);
-dy(10:12, 1) = [gx; gy; gz];
+dy(10:12, 1) = utl_rotateframe(quat_eci_ecef, g_ecef);
+% dy(10:12, 1) = [gx; gy; gz];
 % dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
 
 end
