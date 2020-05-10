@@ -71,7 +71,7 @@ void earth_attitude(double t, lin::Vector4f &q_ecef_eci);
 /** @brief Determines Earth's angular rate.
  *
  *  @param[in]  t     Time in seconds since the PAN epoch.
- *  @param[out] w_eci Earth's angular rate (units of radians per second).
+ *  @param[out] w_ecef Earth's angular rate (units of radians per second).
  *
  *  @internal
  *  Currently, the time input is extraneous as this function only looks at Earth's
