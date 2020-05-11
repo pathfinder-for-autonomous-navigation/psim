@@ -2,12 +2,12 @@
 #include <cstdint>
 #include <limits>
 #include <lin.hpp>
-#include "../custom_assertions.hpp"
 #include <orb/kalman_utl.h>
 #ifndef DESKTOP
 #include <Arduino.h>
 #endif
 #include <unity.h>
+#include "../custom_assertions.hpp"
 
 void test_matrix_hypot() {
     lin::internal::RandomsGenerator const rand(0);
