@@ -93,10 +93,10 @@ struct OrbitControllerData {
 
 /** @brief Stores outputs of the control_orbit() function.
  * 
- *  These outputs included a recommended impulse vector in Newtons seconds in ECI
- *  and the difference between the next firing nodes phase on the current orbit
- *  and the satellites current position. This allows us to predict when a firing
- *  is about five minutes out.
+ *  These outputs included a recommended impulse vector in Newtons seconds in
+ *  ECEF and the difference between the next firing nodes phase on the current
+ *  orbit and the satellites current position. This allows us to predict when a
+ *  firing is about five minutes out.
  * 
  *  @sa OrbitControllerState
  *  @sa OrbitControllerData
@@ -104,7 +104,7 @@ struct OrbitControllerData {
  *  @ingroup orbit_controller
  */
 struct OrbitActuation {
-  lin::Vector3d J_eci;        //!< Recommended impulse vector (Ns).
+  lin::Vector3d J_ecef;       //!< Recommended impulse vector (Ns).
   float phase_till_next_node; //!< Phase unil next firing (radians).
   /** @brief Defaults everything's value to NaN. */
   OrbitActuation();
