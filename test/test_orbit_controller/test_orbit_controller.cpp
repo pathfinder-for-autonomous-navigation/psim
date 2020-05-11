@@ -15,13 +15,13 @@
 static void test_state_constructor() {
   gnc::OrbitControllerState state;
 
-  TEST_ASSERT_TRUE(lin::isnan(state.t_last_firing));
+  TEST_ASSERT_FALSE(state.t_last_firing);
 }
 
 static void test_data_constructor() {
   gnc::OrbitControllerData data;
 
-  TEST_ASSERT_TRUE(lin::isnan(data.t));
+  TEST_ASSERT_FALSE(data.t);
   TEST_ASSERT_TRUE(lin::all(lin::isnan(data.r_ecef)));
   TEST_ASSERT_TRUE(lin::all(lin::isnan(data.v_ecef)));
   TEST_ASSERT_TRUE(lin::all(lin::isnan(data.dr_ecef)));

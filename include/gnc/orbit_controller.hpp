@@ -37,6 +37,8 @@
 
 #include <lin/core.hpp>
 
+#include <cstdint>
+
 namespace gnc {
 
 /** @brief Contains the internal state of an orbit controller.
@@ -54,7 +56,7 @@ namespace gnc {
  *  @ingroup orbit_controller
  */
 struct OrbitControllerState {
-  double t_last_firing; //!< Last firing's timestamp since the PAN epoch (s).
+  int64_t t_last_firing; //!< Last firing's timestamp since the PAN epoch (s).
   // The below variables serve as a calculation buffer
   lin::Vector3d this_r_ecef0, that_r_ecef0, this_r_hat;
   lin::Vector3d this_v_ecef0, that_v_ecef0, this_v_hat;
@@ -80,7 +82,7 @@ struct OrbitControllerState {
  *  @ingroup orbit_controller
  */
 struct OrbitControllerData {
-  double t;              //!< Time in seconds since the PAN epoch.
+  int64_t t;             //!< Time in seconds since the PAN epoch.
   lin::Vector3d r_ecef;  //!< Position in ECEF (m).
   lin::Vector3d v_ecef;  //!< Velocity in ECEF (m/s).
   lin::Vector3d dr_ecef; //!< Relative position of the other satellite in ECEF (m).

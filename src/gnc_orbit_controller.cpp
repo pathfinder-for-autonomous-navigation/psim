@@ -34,10 +34,12 @@
 #include <lin/core.hpp>
 #include <lin/generators/constants.hpp>
 
+#include <cstdint>
+
 namespace gnc {
 
 OrbitControllerState::OrbitControllerState()
-: t_last_firing(gnc::constant::nan),
+: t_last_firing(0),
   this_r_ecef0(lin::nans<decltype(this_r_ecef0)>()),
   that_r_ecef0(lin::nans<decltype(that_r_ecef0)>()),
   this_r_hat(lin::nans<decltype(this_r_hat)>()),
@@ -50,7 +52,7 @@ OrbitControllerState::OrbitControllerState()
   DCM_hill_ecef0(lin::nans<decltype(DCM_hill_ecef0)>()) { }
 
 OrbitControllerData::OrbitControllerData()
-: t(gnc::constant::nan),
+: t(0),
   r_ecef(lin::nans<decltype(r_ecef)>()),
   v_ecef(lin::nans<decltype(v_ecef)>()),
   dr_ecef(lin::nans<decltype(dr_ecef)>()),
