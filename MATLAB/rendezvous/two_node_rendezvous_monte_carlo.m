@@ -46,6 +46,8 @@ v_min = sqrt(2 * energy_min / m); % [m/s]
 v_rel = v_max - v_min;
 
 % Add initial velocity difference
+r_init = r1;
+v_init = v1;
 r2 = r1;
 v2 = v1 + v_rel * (v2 / norm(v2));
 
@@ -119,15 +121,17 @@ tsteps_in_docking_range = 0;
 for i = 1 : N - 1
     
     if ~mod(i, 10000)
-        fprintf('progress: step %d / %d, run %d / %d\n', i, N - 1, ii, N_runs);
+        fprintf('progress: step %d / %d, run %d / %d, drift time %d / %d\n', i, N - 1, ii, N_new, iii, length(t_days));
     end
     
     % check if we're in docking range
     if norm(X(1 : 3, i)) < 0.5 && norm(X(4:6, i)) < 1e-3
         tsteps_in_docking_range = tsteps_in_docking_range + 1;
-        if tsteps_in_docking_range > 2 * 6 * 60 % more than 2 hours in docking range
+        if tsteps_in_docking_range > 6 * 60 % more than 1 hour in docking range
             break;
         end
+    else
+        tsteps_in_docking_range = 0;
     end
 
     % calculate follower orbital elements
