@@ -30,4 +30,5 @@ jobs:
         
     - name: Teensy build
       run: |
-        python -m platformio run --verbose -e teensy35
+        python -m platformio run --verbose -e teensy35_ci
+        python -m platformio run --verbose -e teensy36_ci
