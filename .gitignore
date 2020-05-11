@@ -126,6 +126,10 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# cppimport stuff
+*.cppimporthash
+*.rendered.*.cpp
+
 .DS_Store
 .vscode
 .pioenvs
