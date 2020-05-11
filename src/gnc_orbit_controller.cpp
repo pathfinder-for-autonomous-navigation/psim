@@ -59,7 +59,7 @@ OrbitControllerData::OrbitControllerData()
   dv_ecef(lin::nans<decltype(dv_ecef)>()) { }
 
 OrbitActuation::OrbitActuation()
-: J_eci(lin::nans<decltype(J_eci)>()),
+: J_ecef(lin::nans<decltype(J_eci)>()),
   phase_till_next_node(gnc::constant::nan_f) { }
 
 #ifndef MEX
