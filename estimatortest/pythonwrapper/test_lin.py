@@ -1,9 +1,11 @@
 import cppimport
 import numpy as np
 import copy
+if __name__ != "__main__":
+    from pythonwrapper import pwrap
+    #This is because pytest is weird with setting the path
 
 def test_lin():
-    from pythonwrapper import pwrap
     testvectors()
     testmatix()
 
