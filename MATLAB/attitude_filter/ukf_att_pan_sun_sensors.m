@@ -212,11 +212,10 @@ for i = 1 : N - 1
 %     ss_vec_body = sat2sun_body;
 
     % magnetometer measurement model
-    
-    % quat_eci_ecef changes....? Kyle added this:
-    [quat_ecef_eci, ~] = env_earth_attitude( t(i) );
+    [quat_ecef_eci, rate_ecef] = env_earth_attitude( tspan(i + 1) );
     quat_eci_ecef = utl_quat_conj(quat_ecef_eci);
-    %
+    r_ecef = utl_rotateframe( quat_ecef_eci, r(:, i + 1) )';
+    B_ecef = env_magnetic_field(tspan(i + 1), r_ecef);
     quat_body_ecef = utl_quat_cross_mult(q(:, i + 1), quat_eci_ecef);
     B_body = utl_rotateframe(quat_body_ecef, B_ecef')';
     mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
