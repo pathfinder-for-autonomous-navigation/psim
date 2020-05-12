@@ -129,8 +129,6 @@ def testmatix():
     assert np.all(np.array(b)==np.array([[1,2],[3,4]],dtype='f8'))
 
 
-
-
 if __name__ == "__main__":
     pwrap= cppimport.imp("pwrap")
     testvectors()
