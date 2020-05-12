@@ -48,7 +48,7 @@ v_rel = v_max - v_min;
 % Add initial velocity difference
 r2 = r1;
 % v2 = randn(3, 1);
-v2 = cross(r1, v1); % in the out-of-plane direction
+% v2 = cross(r1, v1); % in the out-of-plane direction
 v2 = v1 + v_rel * (v2 / norm(v2));
 
 % Allow spacecraft to drift apart
@@ -235,10 +235,11 @@ end
 
 % follower ECI position
 figure;
-plot(r_eci(4, :), r_eci(5, :)); hold on
-plot(r_fire(4, :), r_fire(5, :), 'o')
+plot3(r_eci(4, :), r_eci(5, :), r_eci(6, :)); hold on
+plot3(r_fire(4, :), r_fire(5, :), r_fire(6, :), 'o')
 xlabel('x ECI [m]')
 ylabel('y ECI [m]')
+zlabel('z ECI [m]')
 title('follower ECI position')
 legend('ECI position', 'firing points')
 

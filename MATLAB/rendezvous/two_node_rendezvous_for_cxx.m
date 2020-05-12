@@ -20,7 +20,7 @@ thrust_noise_ratio = 0;
 dt_fire_min = 5 * 60; % [s] minimum time between firings
 
 % time
-tmax = 80 * 24 * 60 * 60; % [s]
+tmax = 30 * 24 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
@@ -250,12 +250,14 @@ end
 
 % follower ECI position
 figure;
-plot(r_eci(4, :), r_eci(5, :)); hold on
-plot(r_fire(4, :), r_fire(5, :), 'o')
+plot3(r_eci(4, 1:end), r_eci(5, 1:end), r_eci(6, 1:end)); hold on
+plot3(r_fire(4, 1:end), r_fire(5, 1:end), r_fire(6, 1:end), 'o')
 xlabel('x ECI [m]')
 ylabel('y ECI [m]')
+zlabel('z ECI [m]')
 title('follower ECI position')
 legend('ECI position', 'firing points')
+axis equal
 
 % relative position norm
 figure
