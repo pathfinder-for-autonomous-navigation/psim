@@ -23,7 +23,8 @@
 //
 
 /** @file gnc_attitude_estimator.cpp
- *  @author Kyle Krol */
+ *  @author Kyle Krol
+ */
 
 #include <gnc/attitude_estimator.hpp>
 #include <gnc/config.hpp>
@@ -52,11 +53,10 @@ GNC_TRACKED_CONSTANT(float, ukf_sigma_s, 2.0f * constant::deg_to_rad_f);
 
 }  // namespace constant
 
-/** Specifies the floating point type used for most internal UKF calculations. */
+// Specifies the floating point type used for most internal UKF calculations
 typedef double ukf_float;
 
-/** Useful type definitions for the filter implementation.
- *  @{ */
+// Useful type definitions for the filter implementation
 typedef lin::Vector<ukf_float, 2> UkfVector2;
 typedef lin::Vector<ukf_float, 3> UkfVector3;
 typedef lin::Vector<ukf_float, 4> UkfVector4;
@@ -66,9 +66,9 @@ typedef lin::Matrix<ukf_float, 3, 3> UkfMatrix3x3;
 typedef lin::Matrix<ukf_float, 4, 4> UkfMatrix4x4;
 typedef lin::Matrix<ukf_float, 5, 5> UkfMatrix5x5;
 typedef lin::Matrix<ukf_float, 5, 6> UkfMatrix5x6;
+typedef lin::Matrix<ukf_float, 6, 3> UkfMatrix6x3;
 typedef lin::Matrix<ukf_float, 6, 5> UkfMatrix6x5;
 typedef lin::Matrix<ukf_float, 6, 6> UkfMatrix6x6;
-/** @} */
 
 /** @fn ukf_propegate
  *  Propegates forward the attitude of a rotating rigid body.
@@ -102,7 +102,6 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
 
   // Propegate our quaternion forward and normalize to be safe
   q_new = O * q_old;
-  // q_new = q_new / lin::norm(q_new);
 }
 
 /** @fn ukf
@@ -334,7 +333,6 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
     lin::Vector4d q;
     utl::grp_to_quat(lin::ref<3, 1>(state.x, 0, 0).eval(), a, f, q);
     utl::quat_cross_mult(q, q_new, state.q);
-    //state.q = state.q / lin::norm(state.q);
 
     // Reset the attitude portion of the state to zeros
     lin::ref<3, 1>(state.x, 0, 0) = lin::zeros<UkfVector3>();
@@ -347,8 +345,26 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
  *  @param[inout] state Attitude filter state.
  *  @param[in]    data  Input sensor data. */
 static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &data) {
-  // TODO : Implement this
-  state = AttitudeEstimatorState();
+  ukf(state, data, [](AttitudeEstimatorState &state, AttitudeEstimatorData const &data) -> void {
+    // Calculate Kalman gain
+    UkfMatrix6x3 K;
+    {
+      UkfMatrix3x3 Q, R;
+      lin::qr(lin::ref<3, 3>(state.P_vv, 2, 2), Q, R);
+      lin::backward_sub(R, Q, lin::transpose(Q).eval());
+      K = lin::ref<6, 3>(state.P_xy, 0, 2) * Q;
+    }
+
+    UkfVector3 z_new {
+      data.b_body(0),
+      data.b_body(1),
+      data.b_body(2)
+    };
+
+    // Update the state vector and covariance
+    state.x = state.x_bar + K * (z_new - lin::ref<3, 1>(state.z_bar, 2, 0)).eval();
+    state.P = state.P_bar - K * (lin::ref<3, 3>(state.P_vv, 2, 2) * lin::transpose(K)).eval();
+  });
 }
 
 /** @fn ukf_ms
