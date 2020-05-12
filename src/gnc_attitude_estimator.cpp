@@ -154,7 +154,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
   UkfMatrix6x6 Q = lin::zeros<UkfMatrix6x6>();
   {
     /** Tuning factor scaling the process noise covariance matrix. */
-    GNC_TRACKED_CONSTANT(constexpr static ukf_float, Q_factor, 1.0e3);
+    GNC_TRACKED_CONSTANT(constexpr static ukf_float, Q_factor, 1.0);
 
     ukf_float factor = Q_factor * dt / 2.0f;
     ukf_float var_u = constant::ukf_sigma_u * constant::ukf_sigma_u;
