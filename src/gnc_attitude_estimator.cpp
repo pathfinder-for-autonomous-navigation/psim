@@ -40,7 +40,6 @@
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
-//#include <lin/substitutions/forward_substitution.hpp>
 #include <lin/substitutions/backward_substitution.hpp>
 
 namespace gnc {
@@ -277,10 +276,6 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       x_bar = x_bar + weight_o * state.sigmas[i];
       z_bar = z_bar + weight_o * state.measures[i];
     }
-    // for (lin::size_t i = 1; i < 7; i++) {
-    //   x_bar = x_bar + weight_o * (state.sigmas[i] + state.sigmas[i+6]);
-    //   z_bar = z_bar + weight_o * (state.measures[i] + state.measures[i+6]);
-    // }
 
     // Plus the associated covariances
     UkfVector6 dx1 = state.sigmas[0] - x_bar;
@@ -295,15 +290,6 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       P_vv = P_vv + (weight_o * dz1) * lin::transpose(dz1);
       P_xy = P_xy + (weight_o * dx1) * lin::transpose(dz1);
     }
-    // for (lin::size_t i = 1; i < 7; i++) {
-    //   dx1 = state.sigmas[i] - x_bar;
-    //   UkfVector6 dx2 = state.sigmas[i+6] - x_bar;
-    //   dz1 = state.measures[i] - z_bar;
-    //   UkfVector5 dz2 = state.measures[i+6] - z_bar;
-    //   P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1) + dx2 * lin::transpose(dx2));
-    //   P_vv = P_vv + weight_o * (dz1 * lin::transpose(dz1) + dz2 * lin::transpose(dz2));
-    //   P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1) + dx2 * lin::transpose(dz2));
-    // }
 
     // Sensor noise covariance
     UkfMatrix5x5 R = lin::zeros<UkfMatrix5x5>();
@@ -378,12 +364,6 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
       lin::qr(state.P_vv, Q, R);
       lin::backward_sub(R, Q, lin::transpose(Q).eval()); // Q = inv(P_yy)    
       K = state.P_xy * Q;
-      // UkfMatrix5x6 M, N;
-      // UkfMatrix5x5 L = state.P_vv;
-      // lin::chol(L);
-      // lin::forward_sub(L, M, lin::transpose(state.P_xy).eval());
-      // lin::backward_sub(lin::transpose(L).eval(), N, M);
-      // K = lin::transpose(N);
     }
 
     // Calculate this steps measurement
