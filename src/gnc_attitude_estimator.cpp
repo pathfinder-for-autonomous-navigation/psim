@@ -40,6 +40,7 @@
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
+//#include <lin/substitutions/forward_substitution.hpp>
 #include <lin/substitutions/backward_substitution.hpp>
 
 namespace gnc {
@@ -52,10 +53,10 @@ GNC_TRACKED_CONSTANT(float, ukf_sigma_s, 2.0f * constant::deg_to_rad_f);
 
 }  // namespace constant
 
-// Specifies the floating point type used for most internal UKF calculations.
+// Specifies the floating point type used for most internal UKF calculations
 typedef double ukf_float;
 
-// Useful type definitions for the filter implementation.
+// Useful type definitions for the filter implementation
 typedef lin::Vector<ukf_float, 2> UkfVector2;
 typedef lin::Vector<ukf_float, 3> UkfVector3;
 typedef lin::Vector<ukf_float, 4> UkfVector4;
@@ -69,7 +70,8 @@ typedef lin::Matrix<ukf_float, 6, 3> UkfMatrix6x3;
 typedef lin::Matrix<ukf_float, 6, 5> UkfMatrix6x5;
 typedef lin::Matrix<ukf_float, 6, 6> UkfMatrix6x6;
 
-/** @brief Propegates forward the attitude of a rotating rigid body.
+/** @fn ukf_propegate
+ *  Propegates forward the attitude of a rotating rigid body.
  *
  *  @param[in]  dt    Timestep (seconds).
  *  @param[in]  w     Angular rate (radians per second).
@@ -77,8 +79,7 @@ typedef lin::Matrix<ukf_float, 6, 6> UkfMatrix6x6;
  *  @param[out] q_new Final attitude.
  *
  *  This function assuming the body is rotating at a constant angular rate and
- *  therefore may only be accurate for small timesteps.
- */
+ *  therefore may only be accurate for small timesteps. */
 static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
     UkfVector4 const &q_old, UkfVector4 &q_new) {
   GNC_ASSERT_NORMALIZED(q_old);
@@ -103,7 +104,8 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
   q_new = O * q_old;
 }
 
-/** @brief Performs a single attitude estimator update step.
+/** @fn ukf
+ *  Performs a single attitude estimator update step.
  *
  *  @param[inout] state             Attitude estimator state.
  *  @param[in]    data              Input sensor measurements.
@@ -124,8 +126,7 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
  * 
  *  Once the function returns, `ukf` will update `state.t`, zero the first three
  *  components of `state.x` (zeroth sigma point has "no" attitude error), and
- *  update `state.q`.
- */
+ *  update `state.q`. */
 static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data,
     void (*ukf_kalman_update)(AttitudeEstimatorState &state, AttitudeEstimatorData const &data)) {
   /** Tuning parameter for the shape of the sigma point distribution. */
@@ -152,7 +153,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
   UkfMatrix6x6 Q = lin::zeros<UkfMatrix6x6>();
   {
     /** Tuning factor scaling the process noise covariance matrix. */
-    GNC_TRACKED_CONSTANT(constexpr static ukf_float, Q_factor, 1.0e3);
+    GNC_TRACKED_CONSTANT(constexpr static ukf_float, Q_factor, 1.0);
 
     ukf_float factor = Q_factor * dt / 2.0f;
     ukf_float var_u = constant::ukf_sigma_u * constant::ukf_sigma_u;
@@ -278,6 +279,10 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       x_bar = x_bar + weight_o * state.sigmas[i];
       z_bar = z_bar + weight_o * state.measures[i];
     }
+    // for (lin::size_t i = 1; i < 7; i++) {
+    //   x_bar = x_bar + weight_o * (state.sigmas[i] + state.sigmas[i+6]);
+    //   z_bar = z_bar + weight_o * (state.measures[i] + state.measures[i+6]);
+    // }
 
     // Plus the associated covariances
     UkfVector6 dx1 = state.sigmas[0] - x_bar;
@@ -292,6 +297,15 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       P_vv = P_vv + (weight_o * dz1) * lin::transpose(dz1);
       P_xy = P_xy + (weight_o * dx1) * lin::transpose(dz1);
     }
+    // for (lin::size_t i = 1; i < 7; i++) {
+    //   dx1 = state.sigmas[i] - x_bar;
+    //   UkfVector6 dx2 = state.sigmas[i+6] - x_bar;
+    //   dz1 = state.measures[i] - z_bar;
+    //   UkfVector5 dz2 = state.measures[i+6] - z_bar;
+    //   P_bar = P_bar + weight_o * (dx1 * lin::transpose(dx1) + dx2 * lin::transpose(dx2));
+    //   P_vv = P_vv + weight_o * (dz1 * lin::transpose(dz1) + dz2 * lin::transpose(dz2));
+    //   P_xy = P_xy + weight_o * (dx1 * lin::transpose(dz1) + dx2 * lin::transpose(dz2));
+    // }
 
     // Sensor noise covariance
     UkfMatrix5x5 R = lin::zeros<UkfMatrix5x5>();
@@ -325,11 +339,11 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
   }
 }
 
-/** @brief Update attitude estimator state given a magnetometer reading.
+/** @fn ukf_m
+ *  Update attitude estimator state given a magnetometer reading.
  * 
  *  @param[inout] state Attitude filter state.
- *  @param[in]    data  Input sensor data.
- */
+ *  @param[in]    data  Input sensor data. */
 static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &data) {
   ukf(state, data, [](AttitudeEstimatorState &state, AttitudeEstimatorData const &data) -> void {
     // Calculate Kalman gain
@@ -367,6 +381,12 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
       lin::qr(state.P_vv, Q, R);
       lin::backward_sub(R, Q, lin::transpose(Q).eval()); // Q = inv(P_yy)    
       K = state.P_xy * Q;
+      // UkfMatrix5x6 M, N;
+      // UkfMatrix5x5 L = state.P_vv;
+      // lin::chol(L);
+      // lin::forward_sub(L, M, lin::transpose(state.P_xy).eval());
+      // lin::backward_sub(lin::transpose(L).eval(), N, M);
+      // K = lin::transpose(N);
     }
 
     // Calculate this steps measurement
