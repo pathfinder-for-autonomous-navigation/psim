@@ -29,7 +29,7 @@ def test_orb():
 
     #applydeltav
     y.applydeltav(pwrap.lin_Vector3d([1, 0, 0]))
-    assert np.all(np.array(y.recef())==np.array(r0)+np.array([1, 0, 0],dtype='f8'))
+    assert np.all(np.array(y.vecef())==np.array(v0)+np.array([1, 0, 0],dtype='f8'))
 
     #specificenergy
     e= y.specificenergy(earth_rate_ecef)

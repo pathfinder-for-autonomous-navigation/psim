@@ -10,6 +10,8 @@ psimpath= mypath.parent.parent.parent
 cfg['dependencies'] = [str(p) for p in (psimpath/'src').rglob('*') if p.is_file()]
 cfg['dependencies'] += [str(p) for p in (psimpath/'lib').rglob('*') if p.is_file()]
 cfg['dependencies'] += [str(p) for p in (psimpath/'include').rglob('*') if p.is_file()]
+cfg['dependencies'] += [str(mypath.parent/'lin_ext.cpp')]
+cfg['dependencies'] += [str(mypath.parent/'orb_ext.cpp')]
 #cfg['dependencies'] += [str(p) for p in (flightsoftwarepath/'src').rglob('*') if p.is_file()]
 #cfg['dependencies'] += [str(p) for p in (flightsoftwarepath/'lib').rglob('*') if p.is_file()]
 
