@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import copy
 
-def estimatorscope(estimator,truth,sensors,listofest,samplerate,traces):
+def estimatorscope(estimator,truth,sensors,listofoutputs,samplerate,traces):
     """Return an matlplotlib animation of the estimator running
        
         Args:
@@ -18,9 +18,9 @@ def estimatorscope(estimator,truth,sensors,listofest,samplerate,traces):
                 The true state to estimate.
             sensors(numpy structured array indexed by control cycle):
                 The sensor data to input to the estimator each control cycle.
-            listofest(empty list):
-                List to fill with copies of estimator after every samplerate cycles.
-                Does not include the initial state.
+            listofoutputs(empty list):
+                fill with a list of copies of estimator after every samplerate cycles.
+                Also filled with a list of numpy arrays for each of the traces.
             samplerate(positive int):
                 Sample rate for ploting and saving estimator, 1 is every cycle.
             traces(list of functions traces[j](estimator,sensors[i],truth[i])-> float):
@@ -33,11 +33,13 @@ def estimatorscope(estimator,truth,sensors,listofest,samplerate,traces):
     # create figure and axes 
     fig, axes = plt.subplots(len(traces), figsize=(10, 5))
     lines=[]
-    
     numcycles= len(sensors)
     numdata= numcycles//samplerate
     numtraces= len(traces)
+    listofest= []
     datas=[np.full(numdata,np.nan) for i in range(numtraces)]
+    listofoutputs.append(listofest)
+    listofoutputs.append(datas)
     if numtraces==1:
         axes=[axes]
     for i in range(numtraces):
@@ -64,8 +66,8 @@ def estimatorscope(estimator,truth,sensors,listofest,samplerate,traces):
                                    interval=1, blit=True,repeat=False)
     return line_ani
 
-def estimatorsilentscope(estimator,truth,sensors,listofest,samplerate,traces):
-    """Return a list of numpy arrays of the traces of the estimator running
+def estimatorsilentscope(estimator,truth,sensors,listofoutputs,samplerate,traces):
+    """estimatorscope but with no animation and blocking.
        
         Args:
             estimator(An object with a input function that accepts a numpy structure):
@@ -74,9 +76,9 @@ def estimatorsilentscope(estimator,truth,sensors,listofest,samplerate,traces):
                 The true state to estimate.
             sensors(numpy structured array indexed by control cycle):
                 The sensor data to input to the estimator each control cycle.
-            listofest(empty list):
-                List to fill with copies of estimator after every samplerate cycles.
-                Does not include the initial state.
+            listofoutputs(empty list):
+                fill with a list of copies of estimator after every samplerate cycles.
+                Also filled with a list of numpy arrays for each of the traces.
             samplerate(positive int):
                 Sample rate for ploting and saving estimator, 1 is every cycle.
             traces(list of functions traces[j](estimator,sensors[i],truth[i])-> float):
@@ -84,7 +86,10 @@ def estimatorsilentscope(estimator,truth,sensors,listofest,samplerate,traces):
     numcycles= len(sensors)
     numdata= numcycles//samplerate
     numtraces= len(traces)
+    listofest= []
     datas=[np.full(numdata,np.nan) for i in range(numtraces)]
+    listofoutputs.append(listofest)
+    listofoutputs.append(datas)
     def update(frame_num):
         cyclenum= frame_num*samplerate
         for i in range(samplerate):
@@ -95,4 +100,4 @@ def estimatorsilentscope(estimator,truth,sensors,listofest,samplerate,traces):
             datas[i][frame_num]=traces[i](estimator,sensors[cyclenum-1],truth[cyclenum-1])
     for i in range(numdata):
         update(i)
-    return datas
+    return None
