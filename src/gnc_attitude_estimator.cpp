@@ -52,10 +52,10 @@ GNC_TRACKED_CONSTANT(float, ukf_sigma_s, 2.0f * constant::deg_to_rad_f);
 
 }  // namespace constant
 
-// Specifies the floating point type used for most internal UKF calculations.
+// Specifies the floating point type used for most internal UKF calculations
 typedef double ukf_float;
 
-// Useful type definitions for the filter implementation.
+// Useful type definitions for the filter implementation
 typedef lin::Vector<ukf_float, 2> UkfVector2;
 typedef lin::Vector<ukf_float, 3> UkfVector3;
 typedef lin::Vector<ukf_float, 4> UkfVector4;
@@ -77,8 +77,7 @@ typedef lin::Matrix<ukf_float, 6, 6> UkfMatrix6x6;
  *  @param[out] q_new Final attitude.
  *
  *  This function assuming the body is rotating at a constant angular rate and
- *  therefore may only be accurate for small timesteps.
- */
+ *  therefore may only be accurate for small timesteps. */
 static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
     UkfVector4 const &q_old, UkfVector4 &q_new) {
   GNC_ASSERT_NORMALIZED(q_old);
@@ -124,8 +123,7 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
  * 
  *  Once the function returns, `ukf` will update `state.t`, zero the first three
  *  components of `state.x` (zeroth sigma point has "no" attitude error), and
- *  update `state.q`.
- */
+ *  update `state.q`. */
 static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data,
     void (*ukf_kalman_update)(AttitudeEstimatorState &state, AttitudeEstimatorData const &data)) {
   /** Tuning parameter for the shape of the sigma point distribution. */
@@ -152,7 +150,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
   UkfMatrix6x6 Q = lin::zeros<UkfMatrix6x6>();
   {
     /** Tuning factor scaling the process noise covariance matrix. */
-    GNC_TRACKED_CONSTANT(constexpr static ukf_float, Q_factor, 1.0e3);
+    GNC_TRACKED_CONSTANT(constexpr static ukf_float, Q_factor, 1.0);
 
     ukf_float factor = Q_factor * dt / 2.0f;
     ukf_float var_u = constant::ukf_sigma_u * constant::ukf_sigma_u;
@@ -328,8 +326,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
 /** @brief Update attitude estimator state given a magnetometer reading.
  * 
  *  @param[inout] state Attitude filter state.
- *  @param[in]    data  Input sensor data.
- */
+ *  @param[in]    data  Input sensor data. */
 static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &data) {
   ukf(state, data, [](AttitudeEstimatorState &state, AttitudeEstimatorData const &data) -> void {
     // Calculate Kalman gain
@@ -353,8 +350,8 @@ static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &da
   });
 }
 
-/** @fn ukf_ms
- *  Update attitude estimator state given magnetometer and sun vector readings.
+/** @brief Update attitude estimator state given magnetometer and sun vector
+ *         readings.
  * 
  *  @param[inout] state Attitude filter state.
  *  @param[in]    data  Input sensor data. */
