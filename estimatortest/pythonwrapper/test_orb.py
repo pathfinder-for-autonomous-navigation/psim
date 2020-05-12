@@ -42,7 +42,7 @@ def test_orb():
     assert type(jac) is pwrap.lin_Matrix6x6d
 
     #update is used for longer updates
-    y.update(1000_000_000_000,earth_rate_ecef)
+    y.update(t0+1000_000_000_000,earth_rate_ecef)
     assert y.valid()
 
     #calc_geograv is a static member returns a tuple of acceleration and potential
@@ -51,7 +51,7 @@ def test_orb():
     #orb_Orbit is deepcopy able
     y= pwrap.orb_Orbit(t0,r0,v0)
     z= copy.deepcopy(y)
-    y.update(1_000_000_000, earth_rate_ecef)
+    y.update(t0+1_000_000_000, earth_rate_ecef)
     assert z.valid()
     assert z.nsgpstime()==t0
     assert np.all(np.array(z.recef())==np.array(r0))
