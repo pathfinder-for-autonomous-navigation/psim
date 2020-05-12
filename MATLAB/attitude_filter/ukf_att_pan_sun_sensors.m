@@ -3,7 +3,7 @@ addpath('../');
 addpath('../utl');
 addpath('../environmental_models');
 
-generate_mex_code;
+%generate_mex_code;
 
 global const
 
@@ -184,8 +184,8 @@ mag_meas_vec(:, 1) = B_body_meas;
 % attitude estimate quaternion, gyro bias estimate, and state covariance estimate
 % uncomment filter implementation you want to look at
 
-%ukf = adcs_make_mex_ukf(); %C++ implementation
-ukf = adcs_make_matlab_ukf(); %MATLAB implementation
+ukf = adcs_make_mex_ukf(); %C++ implementation
+%ukf = adcs_make_matlab_ukf(); %MATLAB implementation
 
 % reset takes time since epoch... so i replaced T0 with 0
 state = ukf.reset(t(1), q_est);
@@ -222,7 +222,7 @@ for i = 1 : N - 1
     mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
     B_body_meas = B_body + mag_noise';
    
-    [state] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
+    [state, q_est, gyro_bias_est, cov_est] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
     
     % vectors for plotting
     q_est_vec(:, i + 1) = q_est; %from filter
