@@ -8,7 +8,7 @@ addpath('../environmental_models');
 global const
 
 % time
-tmax = 50000; % [sec]
+tmax = 1500; % [sec]
 dt = 0.1; % [sec]
 tspan = 0 : dt : tmax; % [sec]
 N = length(tspan);
@@ -41,8 +41,14 @@ const.earth_rate_ecef = [0; 0; 7.2921158553E-5]; % [rad / s] earth's inertial ro
 % filter parameters
 sv = 2.75e-4; % [rad / s^(1/2)] std of gyro noise (treated as process noise here)
 su = 1e-6;
+% su = deg2rad(0.0015); % [rad / s^(3/2)] std of gyro bias (treated as process noise here)
 P = [(deg2rad(10))^2 * eye(3), zeros(3, 3);
-   zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
+    zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
+Qbar = 1e3 * (dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
+    zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
+a = 1; % scaling for generalized rodrigues parameters
+f = 2 * (a + 1); % more scaling
+lam = 1;
 
 % sensor constants
 gyro_bias_init = [-0.0344; 0.0279; 0.0144]; % [rad / s]
@@ -63,8 +69,6 @@ semi_p = sma * (1 - e^2); % [m]
 
 [r0, v0] = utl_orb2rv(semi_p, e, I, Omega, omega, nu, mu_earth);
 
-
-%initialize quaternion - True quaternion
 th0 = deg2rad(30);
 nhat0 = [1 0 0]';
 q0 = [sin(th0/2) * nhat0; cos(th0/2)];
@@ -72,8 +76,7 @@ q0 = [sin(th0/2) * nhat0; cos(th0/2)];
 % nhat_est = [1 0 0]';
 % q_est = [sin(th_est/2) * nhat_est; cos(th_est/2)];
 % q_est = q0; % initialize with correct attitude estimate
-%intialize true angular rate; should stay the same; play around with this;
-%how high a rate can we initially estimate and still be good
+
 IwB_B_0 = [0.01 0 0]'; % [rad / s]
 % IwB_B_0 = [0 0 0]';
 
@@ -81,16 +84,12 @@ z0_orb = [r0; v0];
 % z0_att = [q0; IwB_B_0];
 
 % propagate true orbit dynamics - one call to ode45; 
-% pre-compute orbital dynamics
-% use these pre-computed states to call the filter
 opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-3, 'InitialStep', 0.1);
 [t, z] = ode45(@(t, z) ode_orb(t, z, mu_earth), tspan, z0_orb, opt);
 r = z(:, 1:3)';
 v = z(:, 4:6)';
 
 % propagate true attitude dynamics
-% switch this out in phase 2 for ode propogation
-% add torques, precession, reaction wheels
 gyro_noise = mvnrnd(zeros(1, 3), sv^2 * eye(3), N)';
 IwB_B = repmat(IwB_B_0, 1, N) + gyro_noise;
 q = zeros(4, N);
@@ -109,15 +108,12 @@ for i = 1 : N - 1
 end
 
 % initial quaternion estimate
-% passed into the filter
 th_err_x_init = deg2rad(-5); %5 deg of error on EACH attitude axis
 th_err_y_init = deg2rad(5);
 th_err_z_init = deg2rad(5);
 nhat_err_x_init = [1 0 0]';
 nhat_err_y_init = [0 1 0]';
 nhat_err_z_init = [0 0 1]';
-%following are quaternion rotations
-%testing: randomly generate error, expand error bounds in 120-122
 q_err_x_init = [sin(th_err_x_init / 2) * nhat_err_x_init; cos(th_err_x_init / 2)];
 q_err_y_init = [sin(th_err_y_init / 2) * nhat_err_y_init; cos(th_err_y_init / 2)];
 q_err_z_init = [sin(th_err_z_init / 2) * nhat_err_z_init; cos(th_err_z_init / 2)];
@@ -126,13 +122,12 @@ q_est = utl_quat_cross_mult(q_est, q_err_y_init);
 q_est = utl_quat_cross_mult(q_est, q_err_z_init);
 
 % propagate gyro bias-truth
-% add in temperature bias
 bias_noise = mvnrnd(zeros(1, 3), su^2 * eye(3), N);
 gyro_bias = zeros(3, N);
 gyro_bias(:, 1) = gyro_bias_init;
 
 for i = 1 : N - 1
-    %euler step
+    
     gyro_bias(:, i + 1) = gyro_bias(:, i) + dt * bias_noise(i + 1, :)';
     
 end
@@ -154,7 +149,6 @@ q_est_vec(:, 1) = q_est;
 bias_est_vec(:, 1) = bias_est;
 P_vec(:, :, 1) = P;
 
-%%%all the following are initializing truth for propogation later
 % gyro measurement model; TRUTH: true measurement from the gyro
 w_meas = IwB_B(:, 1) + gyro_bias(:, 1); % + mvnrnd(zeros(1, 3), sv^2 * eye(3), 1)';
 w_meas_vec(:, 1) = w_meas;
@@ -180,15 +174,12 @@ mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
 B_body_meas = B_body + mag_noise'; % add noise
 mag_meas_vec(:, 1) = B_body_meas;
 
-% state contains info that persists across calls to the filter.
-% attitude estimate quaternion, gyro bias estimate, and state covariance estimate
-% uncomment filter implementation you want to look at
-
-ukf = adcs_make_mex_ukf(); %C++ implementation
-%ukf = adcs_make_matlab_ukf(); %MATLAB implementation
+%ukf = adcs_make_mex_ukf(); %C++ implementation
+ukf = adcs_make_matlab_ukf(); %MATLAB implementation
 
 % reset takes time since epoch... so i replaced T0 with 0
-state = ukf.reset(t(1), q_est);
+%state = ukf.reset(t(1), q_est); %C++ implementation
+state = ukf.reset(q_est_vec,bias_est_vec,P_vec); %MATLAB implementation
 
 for i = 1 : N
     
@@ -221,7 +212,11 @@ for i = 1 : N
     mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
     B_body_meas = B_body + mag_noise';
    
-    [state, q_est, gyro_bias_est, cov_est] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
+    %C++ implementation
+    %[state, q_est, gyro_bias_est, cov_est] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
+    
+    [state,q_est,gyro_bias_est,cov_est] = ukf.update(state, B_body_meas, w_meas,...
+        bias_est, P, Qbar, lam, a,f,q_est,dt,t(i), r_ecef,quat_eci_ecef,R); %MATLAB implementation
     
     % vectors for plotting
     q_est_vec(:, i) = q_est; %from filter

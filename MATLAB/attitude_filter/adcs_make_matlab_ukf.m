@@ -12,7 +12,7 @@ function state = reset(q_est_vec,bias_est_vec,P_vec)
 
 end
 
-function [state,K,meas,zbar,xbar] = update(state, B_body_meas, w_meas,...
+function [state,q_est,gyro_bias_est,cov_est] = update(state, B_body_meas, w_meas,...
         bias_est, P, Qbar, lam, a,f,q_est,dt,tspan,r,quat_eci_ecef,R)
     
     % initial filter state
@@ -179,6 +179,8 @@ function [state,K,meas,zbar,xbar] = update(state, B_body_meas, w_meas,...
     state.q = q_est; %estimate quaternion
     state.b = bias_est; %gyro bias estimate
     state.P = P; %state covariance estimate
+    cov_est = P;
+    gyro_bias_est = bias_est;
 
 end
 
