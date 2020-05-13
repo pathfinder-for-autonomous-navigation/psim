@@ -3,12 +3,12 @@ addpath('../');
 addpath('../utl');
 addpath('../environmental_models');
 
-generate_mex_code;
+% generate_mex_code;
 
 global const
 
 % time
-tmax = 5000; % [sec]
+tmax = 50000; % [sec]
 dt = 0.1; % [sec]
 tspan = 0 : dt : tmax; % [sec]
 N = length(tspan);
@@ -190,18 +190,18 @@ ukf = adcs_make_mex_ukf(); %C++ implementation
 % reset takes time since epoch... so i replaced T0 with 0
 state = ukf.reset(t(1), q_est);
 
-for i = 1 : N - 1
+for i = 1 : N
     
     if ~mod(tspan(i), 100)
         fprintf('Progress: %.2f / %.2f [s] \n', tspan(i), tspan(end))
     end
 
     % gyro measurement model
-    w_meas = IwB_B(:, i + 1) + gyro_bias(:, i + 1); % + mvnrnd(zeros(1, 3), sv^2 * eye(3), 1)';
-    w_meas_vec(:, i + 1) = w_meas;
+    w_meas = IwB_B(:, i) + gyro_bias(:, i); % + mvnrnd(zeros(1, 3), sv^2 * eye(3), 1)';
+    w_meas_vec(:, i) = w_meas;
     
     % sun sensor measurement model
-    sat2sun_body = utl_rotateframe(q(:, i + 1), env_sun_vector(t(i))')';
+    sat2sun_body = utl_rotateframe(q(:, i), env_sun_vector(t(i))')';
     th_ss_body = atan(sat2sun_body(2) / sat2sun_body(1)); % [rad]
     phi_ss_body = acos(sat2sun_body(3)); % [rad]
     ss_noise = mvnrnd(zeros(1, 2), R_ss, 1);
@@ -212,11 +212,11 @@ for i = 1 : N - 1
 %     ss_vec_body = sat2sun_body;
 
     % magnetometer measurement model
-    [quat_ecef_eci, rate_ecef] = env_earth_attitude( tspan(i + 1) );
+    [quat_ecef_eci, rate_ecef] = env_earth_attitude( tspan(i) );
     quat_eci_ecef = utl_quat_conj(quat_ecef_eci);
-    r_ecef = utl_rotateframe( quat_ecef_eci, r(:, i + 1) )';
-    B_ecef = env_magnetic_field(tspan(i + 1), r_ecef);
-    quat_body_ecef = utl_quat_cross_mult(q(:, i + 1), quat_eci_ecef);
+    r_ecef = utl_rotateframe( quat_ecef_eci, r(:, i) )';
+    B_ecef = env_magnetic_field(tspan(i), r_ecef);
+    quat_body_ecef = utl_quat_cross_mult(q(:, i), quat_eci_ecef);
     B_body = utl_rotateframe(quat_body_ecef, B_ecef')';
     mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
     B_body_meas = B_body + mag_noise';
@@ -224,10 +224,10 @@ for i = 1 : N - 1
     [state, q_est, gyro_bias_est, cov_est] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
     
     % vectors for plotting
-    q_est_vec(:, i + 1) = q_est; %from filter
-    bias_est_vec(:, i + 1) = gyro_bias_est; %from filter
-    w_est_vec(:, i + 1) = w_meas - gyro_bias_est;%from filter
-    P_vec(:, :, i + 1) = cov_est; %from filter cov_est from filter
+    q_est_vec(:, i) = q_est; %from filter
+    bias_est_vec(:, i) = gyro_bias_est; %from filter
+    w_est_vec(:, i) = w_meas - gyro_bias_est;%from filter
+    P_vec(:, :, i) = cov_est; %from filter cov_est from filter
     
 end
 
