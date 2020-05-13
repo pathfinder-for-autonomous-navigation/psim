@@ -8,7 +8,7 @@ generate_mex_code;
 global const
 
 % time
-tmax = 5000; % [sec]
+tmax = 1500; % [sec]
 dt = 0.1; % [sec]
 tspan = 0 : dt : tmax; % [sec]
 N = length(tspan);
@@ -41,8 +41,14 @@ const.earth_rate_ecef = [0; 0; 7.2921158553E-5]; % [rad / s] earth's inertial ro
 % filter parameters
 sv = 2.75e-4; % [rad / s^(1/2)] std of gyro noise (treated as process noise here)
 su = 1e-6;
+% su = deg2rad(0.0015); % [rad / s^(3/2)] std of gyro bias (treated as process noise here)
 P = [(deg2rad(10))^2 * eye(3), zeros(3, 3);
-   zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
+    zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
+Qbar = 1e3 * (dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
+    zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
+a = 1; % scaling for generalized rodrigues parameters
+f = 2 * (a + 1); % more scaling
+lam = 1;
 
 % sensor constants
 gyro_bias_init = [-0.0344; 0.0279; 0.0144]; % [rad / s]
@@ -50,8 +56,8 @@ bias_est = [0 0 0]'; % [rad / s] initial estimate
 R_mag = (5e-7)^2 * eye(3); % [T]
 R_ss = (0.0349)^2 * eye(2); % [rad]
 R = [R_ss, zeros(2, 3);
-     zeros(3, 2), R_mag];
-
+zeros(3, 2), R_mag];
+    
 % initial conditions
 sma = r_earth + 350e3; % [m]
 e = 0; % circular orbit
@@ -63,8 +69,6 @@ semi_p = sma * (1 - e^2); % [m]
 
 [r0, v0] = utl_orb2rv(semi_p, e, I, Omega, omega, nu, mu_earth);
 
-
-%initialize quaternion - True quaternion
 th0 = deg2rad(30);
 nhat0 = [1 0 0]';
 q0 = [sin(th0/2) * nhat0; cos(th0/2)];
@@ -72,25 +76,20 @@ q0 = [sin(th0/2) * nhat0; cos(th0/2)];
 % nhat_est = [1 0 0]';
 % q_est = [sin(th_est/2) * nhat_est; cos(th_est/2)];
 % q_est = q0; % initialize with correct attitude estimate
-%intialize true angular rate; should stay the same; play around with this;
-%how high a rate can we initially estimate and still be good
+
 IwB_B_0 = [0.01 0 0]'; % [rad / s]
 % IwB_B_0 = [0 0 0]';
 
 z0_orb = [r0; v0];
 % z0_att = [q0; IwB_B_0];
 
-% propagate true orbit dynamics - one call to ode45; 
-% pre-compute orbital dynamics
-% use these pre-computed states to call the filter
+% propagate true orbit dynamics
 opt = odeset('RelTol', 1e-8, 'AbsTol', 1e-3, 'InitialStep', 0.1);
 [t, z] = ode45(@(t, z) ode_orb(t, z, mu_earth), tspan, z0_orb, opt);
 r = z(:, 1:3)';
 v = z(:, 4:6)';
 
 % propagate true attitude dynamics
-% switch this out in phase 2 for ode propogation
-% add torques, precession, reaction wheels
 gyro_noise = mvnrnd(zeros(1, 3), sv^2 * eye(3), N)';
 IwB_B = repmat(IwB_B_0, 1, N) + gyro_noise;
 q = zeros(4, N);
@@ -109,15 +108,12 @@ for i = 1 : N - 1
 end
 
 % initial quaternion estimate
-% passed into the filter
-th_err_x_init = deg2rad(-5); %5 deg of error on EACH attitude axis
+th_err_x_init = deg2rad(-5);
 th_err_y_init = deg2rad(5);
 th_err_z_init = deg2rad(5);
 nhat_err_x_init = [1 0 0]';
 nhat_err_y_init = [0 1 0]';
 nhat_err_z_init = [0 0 1]';
-%following are quaternion rotations
-%testing: randomly generate error, expand error bounds in 120-122
 q_err_x_init = [sin(th_err_x_init / 2) * nhat_err_x_init; cos(th_err_x_init / 2)];
 q_err_y_init = [sin(th_err_y_init / 2) * nhat_err_y_init; cos(th_err_y_init / 2)];
 q_err_z_init = [sin(th_err_z_init / 2) * nhat_err_z_init; cos(th_err_z_init / 2)];
@@ -125,14 +121,13 @@ q_est = utl_quat_cross_mult(q0, q_err_x_init);
 q_est = utl_quat_cross_mult(q_est, q_err_y_init);
 q_est = utl_quat_cross_mult(q_est, q_err_z_init);
 
-% propagate gyro bias-truth
-% add in temperature bias
+% propagate gyro bias
 bias_noise = mvnrnd(zeros(1, 3), su^2 * eye(3), N);
 gyro_bias = zeros(3, N);
 gyro_bias(:, 1) = gyro_bias_init;
 
 for i = 1 : N - 1
-    %euler step
+
     gyro_bias(:, i + 1) = gyro_bias(:, i) + dt * bias_noise(i + 1, :)';
     
 end
@@ -154,8 +149,7 @@ q_est_vec(:, 1) = q_est;
 bias_est_vec(:, 1) = bias_est;
 P_vec(:, :, 1) = P;
 
-%%%all the following are initializing truth for propogation later
-% gyro measurement model; TRUTH: true measurement from the gyro
+% gyro measurement model
 w_meas = IwB_B(:, 1) + gyro_bias(:, 1); % + mvnrnd(zeros(1, 3), sv^2 * eye(3), 1)';
 w_meas_vec(:, 1) = w_meas;
 w_est_vec(:, 1) = w_meas - bias_est;
@@ -180,55 +174,48 @@ mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
 B_body_meas = B_body + mag_noise'; % add noise
 mag_meas_vec(:, 1) = B_body_meas;
 
-% state contains info that persists across calls to the filter.
-% attitude estimate quaternion, gyro bias estimate, and state covariance estimate
-% uncomment filter implementation you want to look at
+ukf = adcs_make_matlab_ukf(); %MATLAB implementation
 
-ukf = adcs_make_mex_ukf(); %C++ implementation
-%ukf = adcs_make_matlab_ukf(); %MATLAB implementation
-
-% reset takes time since epoch... so i replaced T0 with 0
-state = ukf.reset(t(1), q_est);
+state = ukf.reset(q_est_vec,bias_est_vec,P_vec);
 
 for i = 1 : N - 1
     
     if ~mod(tspan(i), 100)
         fprintf('Progress: %.2f / %.2f [s] \n', tspan(i), tspan(end))
     end
-
+    
     % gyro measurement model
     w_meas = IwB_B(:, i + 1) + gyro_bias(:, i + 1); % + mvnrnd(zeros(1, 3), sv^2 * eye(3), 1)';
     w_meas_vec(:, i + 1) = w_meas;
     
     % sun sensor measurement model
-    sat2sun_body = utl_rotateframe(q(:, i + 1), env_sun_vector(t(i))')';
+    sat2sun_body = utl_rotateframe(q(:, i + 1), sat2sun_eci')';
     th_ss_body = atan(sat2sun_body(2) / sat2sun_body(1)); % [rad]
     phi_ss_body = acos(sat2sun_body(3)); % [rad]
     ss_noise = mvnrnd(zeros(1, 2), R_ss, 1);
     ss_ang_body = [th_ss_body; phi_ss_body] + ss_noise'; % add noise
 
-    % shihao added this: assuming theta in plane, phi comes down from top, idk if right
-    ss_vec_body = [cos(ss_ang_body(1))*sin(ss_ang_body(2)); sin(ss_ang_body(1))*sin(ss_ang_body(2)); cos(ss_ang_body(2))];
-%     ss_vec_body = sat2sun_body;
-
     % magnetometer measurement model
-    
-    % quat_eci_ecef changes....? Kyle added this:
-    [quat_ecef_eci, ~] = env_earth_attitude( t(i) );
-    quat_eci_ecef = utl_quat_conj(quat_ecef_eci);
-    %
     quat_body_ecef = utl_quat_cross_mult(q(:, i + 1), quat_eci_ecef);
     B_body = utl_rotateframe(quat_body_ecef, B_ecef')';
     mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
     B_body_meas = B_body + mag_noise';
-   
-    [state, q_est, gyro_bias_est, cov_est] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
+    
+    
+    [state,K,meas,zbar,xbar] = ukf.update(state, B_body_meas, w_meas,...
+        bias_est, P, Qbar, lam, a,f,q_est,dt,tspan(:,i+1),r(:,i+1),quat_eci_ecef,R);
     
     % vectors for plotting
-    q_est_vec(:, i + 1) = q_est; %from filter
-    bias_est_vec(:, i + 1) = gyro_bias_est; %from filter
-    w_est_vec(:, i + 1) = w_meas - gyro_bias_est;%from filter
-    P_vec(:, :, i + 1) = cov_est; %from filter cov_est from filter
+    q_est_vec(:, i + 1) = state.q;
+    bias_est_vec(:, i + 1) = state.b;
+    w_est_vec(:, i + 1) = w_meas - state.b;
+    Knorm_vec(i + 1) = norm(norm(K));
+    P_vec(:, :, i + 1) = state.P;
+    inn_vec(:, i + 1) = meas - zbar;
+    xbar_vec(:, i + 1) = xbar;
+    zbar_vec(:, i + 1) = zbar;
+    mag_meas_vec(:, i + 1) = B_body_meas;
+    ss_meas_vec(:, i + 1) = ss_ang_body;
     
 end
 
@@ -264,9 +251,9 @@ figure;
 plot(tspan, w_meas_vec(1, :), 'r'); hold on
 plot(tspan, w_meas_vec(2, :), 'r')
 plot(tspan, w_meas_vec(3, :), 'r')
-% plot(tspan, IwB_B(1, :), 'b')
-% plot(tspan, IwB_B(2, :), 'b')
-% plot(tspan, IwB_B(3, :), 'b')
+plot(tspan, IwB_B(1, :), 'b')
+plot(tspan, IwB_B(2, :), 'b')
+plot(tspan, IwB_B(3, :), 'b')
 plot(tspan, w_est_vec(1, :), 'k')
 plot(tspan, w_est_vec(2, :), 'k')
 plot(tspan, w_est_vec(3, :), 'k')
@@ -306,6 +293,13 @@ xlabel('t [s]')
 ylabel('norm(P)')
 title('covariance norm')
 
+% kalman gain norm
+figure;
+plot(tspan, Knorm_vec)
+xlabel('t [s]')
+ylabel('norm(K)')
+title('kalman gain norm')
+
 % attitude error angle
 q_err = zeros(4, size(q, 2));
 th_err = zeros(size(q, 2), 1);
@@ -326,9 +320,6 @@ grid on
 
 % error bounds
 p_err = zeros(3, length(tspan));
-
-a = 1; 
-f = 4; 
 
 for i = 1 : length(tspan)
     p_err(:, i) = utl_quat2grp(q_err(:, i), a, f);
@@ -390,6 +381,63 @@ plot(tspan, -z_bound, 'r')
 xlabel('t [s]')
 ylabel('gyro bias x error [rad / s]')
 title('gyro bias z 3\sigma error bounds')
+
+% magnetometer measurements
+figure;
+plot(tspan, mag_meas_vec(1, :)); hold on
+plot(tspan, mag_meas_vec(2, :))
+plot(tspan, mag_meas_vec(3, :))
+xlabel('t [s]')
+ylabel('B [T]')
+title('magnetometer measurements')
+legend('b_1', 'b_2', 'b_3')
+
+% mean expected mag measurement
+figure;
+plot(tspan, zbar_vec(3, :)); hold on
+plot(tspan, zbar_vec(4, :))
+plot(tspan, zbar_vec(5, :))
+xlabel('t [s]')
+ylabel('B [T]')
+title('mean expected mag measurement')
+legend('b_1', 'b_2', 'b_3')
+
+% mag innovation
+figure;
+plot(tspan, inn_vec(3, :)); hold on
+plot(tspan, inn_vec(4, :))
+plot(tspan, inn_vec(5, :))
+xlabel('t [s]')
+ylabel('B [T]')
+title('mag innovation')
+legend('b_1', 'b_2', 'b_3')
+
+% ss measurements
+figure;
+plot(tspan, ss_meas_vec(1, :)); hold on
+plot(tspan, ss_meas_vec(2, :))
+xlabel('t [s]')
+ylabel('angle [rad]')
+title('sun sensor measurements')
+legend('\theta', '\phi')
+
+% mean expected ss measurement
+figure;
+plot(tspan, zbar_vec(1, :)); hold on
+plot(tspan, zbar_vec(2, :))
+xlabel('t [s]')
+ylabel('angle [rad]')
+title('mean expected sun sensor measurement')
+legend('\theta', '\phi')
+
+% ss innovation
+figure;
+plot(tspan, inn_vec(1, :)); hold on
+plot(tspan, inn_vec(2, :))
+xlabel('t [s]')
+ylabel('angle [rad]')
+title('sun sensor innovation')
+legend('\theta', '\phi')
 
 % rodrigues parameter estimation
 p_vec = zeros(3, N);
