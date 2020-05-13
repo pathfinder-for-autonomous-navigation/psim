@@ -12,7 +12,7 @@ def estimatorscope(estimator,truth,sensors,listofoutputs,samplerate,traces):
     """Return an matlplotlib animation of the estimator running
        
         Args:
-            estimator(An object with a input function that accepts a numpy structure):
+            estimator(An object with an update function that accepts a numpy structure):
                 The estimator object.
             truth(numpy structured array indexed by control cycle):
                 The true state to estimate.
@@ -73,7 +73,7 @@ def estimatorsilentscope(estimator,truth,sensors,listofoutputs,samplerate,traces
     """estimatorscope but with no animation and blocking.
        
         Args:
-            estimator(An object with a input function that accepts a numpy structure):
+            estimator(An object with an update function that accepts a numpy structure):
                 The estimator object.
             truth(numpy structured array indexed by control cycle):
                 The true state to estimate.
