@@ -82,3 +82,19 @@ end
 legend('r_1', 'v_1');
 title('dv for each vector')
 % axis equal
+
+%%
+
+subplot(1, 2, 1)
+for i = 1 : N_new
+    scatter(t_days, dv_total(:, i), 'k', 'filled'); hold on
+end
+xlabel('drift time [days]')
+ylabel('total \Delta v [m/s]')
+
+subplot(1, 2, 2)
+for i = 1 : N_new
+    scatter(t_days, t_rendezvous(:, i), 'k', 'filled'); hold on
+end
+xlabel('drift time [days]')
+ylabel('time to rendezvous [days]')
