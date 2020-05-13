@@ -4,22 +4,37 @@ function [ukf] = adcs_make_matlab_ukf()
     ukf.update = @update;
 end
 
-function state = reset(q_est_vec,bias_est_vec,P_vec)
+function state = reset(q_est,bias_est,P)
 
-    state.sigmas_q = q_est_vec; %estimate quaternion
-    state.b = bias_est_vec; %gyro bias estimate
-    state.P = P_vec; %state covariance estimate
+    state.q = q_est; %estimate quaternion
+    state.b = bias_est; %gyro bias estimate
+    state.P = P; %state covariance estimate
 
 end
 
-function [state,q_est,gyro_bias_est,cov_est] = update(state, B_body_meas, w_meas,...
-        bias_est, P, Qbar, lam, a,f,q_est,dt,tspan,r,quat_eci_ecef,R)
+function [state] = update(state, B_body_meas, w_meas,...
+    dt,tspan,r_ecef, quat_eci_ecef)
     
+    sv = 2.75e-4; % [rad / s^(1/2)] std of gyro noise (treated as process noise here)
+    su = 1e-6;
+
+    Qbar = 1e3 * (dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
+        zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
+    a = 1; % scaling for generalized rodrigues parameters
+    f = 2 * (a + 1); % more scaling
+    lam = 1;
+
+    % sensor constants
+    R_mag = (5e-7)^2 * eye(3); % [T]
+    R_ss = (0.0349)^2 * eye(2); % [rad]
+    R = [R_ss, zeros(2, 3);
+     zeros(3, 2), R_mag];
+ 
     % initial filter state
-    xhat = [0; 0; 0; bias_est]; % initialize attitude error to zero
+    xhat = [0; 0; 0; state.b]; % initialize attitude error to zero
     
     % generate sigma points
-    S = chol(P + Qbar);
+    S = chol(state.P + Qbar);
     n = size(S, 2);
     sigmas = zeros(2 * n + 1, 6);
     sigmas(1, :) = xhat';
@@ -47,7 +62,7 @@ function [state,q_est,gyro_bias_est,cov_est] = update(state, B_body_meas, w_meas
     
     for ii = 1 : size(sigmas_q, 1)
         
-        q_pert(ii, :) = utl_quat_cross_mult(sigmas_q(ii, :)', q_est);
+        q_pert(ii, :) = utl_quat_cross_mult(sigmas_q(ii, :)', state.q);
         
     end
     
@@ -69,8 +84,6 @@ function [state,q_est,gyro_bias_est,cov_est] = update(state, B_body_meas, w_meas
     
     % expected measurements for each sigma point
     sat2sun_eci = env_sun_vector( tspan );
-    [quat_ecef_eci, rate_ecef] = env_earth_attitude( tspan );
-    r_ecef = utl_rotateframe( quat_ecef_eci, r )';
     B_ecef = env_magnetic_field(tspan, r_ecef);
     
     exp_meas = zeros(5, size(sigmas_q, 1)); % mag and 2-angle ss model
@@ -179,31 +192,9 @@ function [state,q_est,gyro_bias_est,cov_est] = update(state, B_body_meas, w_meas
     state.q = q_est; %estimate quaternion
     state.b = bias_est; %gyro bias estimate
     state.P = P; %state covariance estimate
-    cov_est = P;
-    gyro_bias_est = bias_est;
 
 end
 
 function [state] = triad_reset(t, r_ecef, b_body, s_body)
-
 % TODO
-end
-
-% integration functions
-function dzdt = ode_orb(t, z, mu_earth)
-
-dzdt = zeros(6, 1);
-
-dzdt(1:3, 1) = z(4:6, 1);
-dzdt(4:6, 1) = (-mu_earth / norm(z(1:3, 1))^3) * z(1:3, 1);
-
-end
-
-function dzdt = ode_att(t, z)
-
-dzdt = zeros(7, 1);
-
-dzdt(1:4, 1) = utl_quat_deriv(z(1:4, 1), z(5:7, 1));
-dzdt(5:7, 1) = zeros(3, 1); % torque-free motion
-
 end

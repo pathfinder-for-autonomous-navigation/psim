@@ -3,7 +3,7 @@ addpath('../');
 addpath('../utl');
 addpath('../environmental_models');
 
-% generate_mex_code;
+%generate_mex_code;
 
 global const
 
@@ -44,19 +44,10 @@ su = 1e-6;
 % su = deg2rad(0.0015); % [rad / s^(3/2)] std of gyro bias (treated as process noise here)
 P = [(deg2rad(10))^2 * eye(3), zeros(3, 3);
     zeros(3, 3), (0.035 * 2)^2 * eye(3, 3)]; % initial covariance estimate
-Qbar = 1e3 * (dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
-    zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
-a = 1; % scaling for generalized rodrigues parameters
-f = 2 * (a + 1); % more scaling
-lam = 1;
 
 % sensor constants
 gyro_bias_init = [-0.0344; 0.0279; 0.0144]; % [rad / s]
 bias_est = [0 0 0]'; % [rad / s] initial estimate
-R_mag = (5e-7)^2 * eye(3); % [T]
-R_ss = (0.0349)^2 * eye(2); % [rad]
-R = [R_ss, zeros(2, 3);
-     zeros(3, 2), R_mag];
 
 % initial conditions
 sma = r_earth + 350e3; % [m]
@@ -179,7 +170,7 @@ ukf = adcs_make_matlab_ukf(); %MATLAB implementation
 
 % reset takes time since epoch... so i replaced T0 with 0
 %state = ukf.reset(t(1), q_est); %C++ implementation
-state = ukf.reset(q_est_vec,bias_est_vec,P_vec); %MATLAB implementation
+state = ukf.reset(q_est,bias_est,P); %MATLAB implementation
 
 for i = 1 : N
     
@@ -213,16 +204,16 @@ for i = 1 : N
     B_body_meas = B_body + mag_noise';
    
     %C++ implementation
-    %[state, q_est, gyro_bias_est, cov_est] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
+    %[state] = ukf.update(state, t(i), r_ecef, B_body_meas, ss_vec_body, w_meas);
     
-    [state,q_est,gyro_bias_est,cov_est] = ukf.update(state, B_body_meas, w_meas,...
-        bias_est, P, Qbar, lam, a,f,q_est,dt,t(i), r_ecef,quat_eci_ecef,R); %MATLAB implementation
+    [state] = ukf.update(state, B_body_meas, w_meas,...
+        dt,t(i), r_ecef,quat_eci_ecef); %MATLAB implementation
     
     % vectors for plotting
-    q_est_vec(:, i) = q_est; %from filter
-    bias_est_vec(:, i) = gyro_bias_est; %from filter
-    w_est_vec(:, i) = w_meas - gyro_bias_est;%from filter
-    P_vec(:, :, i) = cov_est; %from filter cov_est from filter
+    q_est_vec(:, i) = state.q; %from filter
+    bias_est_vec(:, i) = state.b; %from filter
+    w_est_vec(:, i) = w_meas - state.b;%from filter
+    P_vec(:, :, i) = state.P; %from filter cov_est from filter
     
 end
 
