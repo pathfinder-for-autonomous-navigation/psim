@@ -27,25 +27,28 @@ def estimatorscope(estimator,truth,sensors,listofoutputs,samplerate,traces):
                 Things to plot."""
     #trial run to catch errors
     e_init=copy.deepcopy(estimator)
-    e_init.input(sensors[0])
+    e_init.update(sensors[0])
+    numtraces= len(traces)
     for trace in traces:
         assert(type(trace(e_init,sensors[0],truth[0]))==float)
     # create figure and axes 
-    fig, axes = plt.subplots(len(traces), figsize=(10, 5))
+    fig, axes = plt.subplots(len(traces), figsize=(10, 5*numtraces))
     lines=[]
     numcycles= len(sensors)
     numdata= numcycles//samplerate
-    numtraces= len(traces)
     listofest= []
     datas=[np.full(numdata,np.nan) for i in range(numtraces)]
+    controlcycledata= np.arange(samplerate-1,numcycles,samplerate)
+    assert len(controlcycledata)== numdata
     listofoutputs.append(listofest)
     listofoutputs.append(datas)
     if numtraces==1:
         axes=[axes]
     for i in range(numtraces):
-        line, = axes[i].plot(datas[i], 'ro')
+        line, = axes[i].plot(controlcycledata,datas[i], 'ro')
         lines.append(line)
-        axes[i].axis(xmin=0,xmax=numdata)
+        axes[i].axis(xmin=0,xmax=numcycles)
+        axes[i].set_xlabel('Control Cycle')
         axes[i].set_title(str(traces[i]))
     #create animation update function
     def init():
@@ -53,7 +56,7 @@ def estimatorscope(estimator,truth,sensors,listofoutputs,samplerate,traces):
     def update(frame_num):
         cyclenum= frame_num*samplerate
         for i in range(samplerate):
-            estimator.input(sensors[cyclenum])
+            estimator.update(sensors[cyclenum])
             cyclenum+= 1
         listofest.append(copy.deepcopy(estimator))
         for i in range(numtraces):
