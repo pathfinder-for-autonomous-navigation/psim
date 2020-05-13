@@ -45,7 +45,7 @@ def estimatorscope(estimator,truth,sensors,listofoutputs,samplerate,traces):
     if numtraces==1:
         axes=[axes]
     for i in range(numtraces):
-        line, = axes[i].plot(controlcycledata,datas[i], 'ro')
+        line, = axes[i].plot(controlcycledata,datas[i], 'b-')
         lines.append(line)
         axes[i].axis(xmin=0,xmax=numcycles)
         axes[i].set_xlabel('Control Cycle')
