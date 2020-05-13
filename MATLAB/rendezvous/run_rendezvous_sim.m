@@ -94,7 +94,7 @@ ylabel('total \Deltav [m/s]')
 
 subplot(1, 2, 2)
 for i = 1 : N_new
-    scatter(t_days, t_rendezvous(:, i), 'k', 'filled'); hold on
+    scatter(t_days, t_rendezvous(:, i) / 60 / 60 / 24, 'k', 'filled'); hold on
 end
 xlabel('drift time [days]')
 ylabel('time to rendezvous [days]')
