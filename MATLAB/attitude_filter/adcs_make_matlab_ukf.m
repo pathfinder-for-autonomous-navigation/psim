@@ -13,22 +13,22 @@ function state = reset(q_est,bias_est,P)
 end
 
 function [state] = update(state, B_body_meas, w_meas,...
-    dt,tspan,r_ecef, quat_eci_ecef)
+    dt,tspan,r_ecef, quat_eci_ecef,R)
     
     sv = 2.75e-4; % [rad / s^(1/2)] std of gyro noise (treated as process noise here)
     su = 1e-6;
 
-    Qbar = 1e3 * (dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
-        zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
-    a = 1; % scaling for generalized rodrigues parameters
-    f = 2 * (a + 1); % more scaling
-    lam = 1;
-
-    % sensor constants
+    %sensor constants
     R_mag = (5e-7)^2 * eye(3); % [T]
     R_ss = (0.0349)^2 * eye(2); % [rad]
     R = [R_ss, zeros(2, 3);
      zeros(3, 2), R_mag];
+ 
+    Qbar = 1E3*(dt / 2) * [(sv^2 - (su^2 * dt^2) / 6) * eye(3), zeros(3, 3);
+        zeros(3, 3), su^2 * eye(3)]; % additive process noise matrix
+    a = 1; % scaling for generalized rodrigues parameters
+    f = 2 * (a + 1); % more scaling
+    lam = 1;
  
     % initial filter state
     xhat = [0; 0; 0; state.b]; % initialize attitude error to zero
