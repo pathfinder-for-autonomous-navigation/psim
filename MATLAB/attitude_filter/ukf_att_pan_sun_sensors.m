@@ -193,11 +193,19 @@ for i = 1 : N
     th_ss_body = atan(sat2sun_body(2) / sat2sun_body(1)); % [rad]
     phi_ss_body = acos(sat2sun_body(3)); % [rad]
     ss_noise = mvnrnd(zeros(1, 2), R_ss, 1);
-    ss_ang_body = [th_ss_body; phi_ss_body] + ss_noise'; % add noise
+    ss_ang_body = [th_ss_body; phi_ss_body] + ss_noise'; % add noise    
 
-    % shihao added this: assuming theta in plane, phi comes down from top, idk if right
-    ss_vec_body = [cos(ss_ang_body(1))*sin(ss_ang_body(2)); sin(ss_ang_body(1))*sin(ss_ang_body(2)); cos(ss_ang_body(2))];
-%     ss_vec_body = sat2sun_body;
+    %determine if the satellite is in eclipse with earth.
+    eclipse = env_eclipse(r(:, i),env_sun_vector(t(i)));
+
+    if eclipse == 1
+        ss_vec_body = [NaN;NaN;NaN];
+    else
+        % shihao added this: assuming theta in plane, phi comes down from top, idk if right
+        ss_vec_body = [cos(ss_ang_body(1))*sin(ss_ang_body(2)); sin(ss_ang_body(1))*sin(ss_ang_body(2)); cos(ss_ang_body(2))];
+        %ss_vec_body = sat2sun_body;
+    end
+
 
     % magnetometer measurement model
     [quat_ecef_eci, rate_ecef] = env_earth_attitude( tspan(i) );
