@@ -98,3 +98,79 @@ for i = 1 : N_new
 end
 xlabel('drift time [days]')
 ylabel('time to rendezvous [days]')
+
+%% test for different angles
+clearvars; clc;
+
+% case properties
+angles = [pi/6, pi/3, pi/2, 2*pi/3, 5*pi/6, pi, 7*pi/6];
+N_runs = length(angles);
+
+% fixed parameters
+t_drift = 60.0 * 60.0; % Drift time (s)
+
+dv_total = zeros(N_runs, 1);
+t_rendezvous = zeros(N_runs, 1);
+
+for ii = 1 : N_runs
+    
+    % run the sim
+    two_node_rendezvous_monte_carlo
+
+    % record dv and rendezvous time
+    dv_total(ii) = sum(dv_norm);
+    t_rendezvous(ii) = t(i);
+    
+end
+
+%%
+
+figure;
+subplot(1, 2, 1)
+scatter(rad2deg(angles), dv_total, 'k', 'filled')
+xlabel('angle [deg]')
+ylabel('total \Delta v [m/s]')
+
+subplot(1, 2, 2)
+scatter(rad2deg(angles), t_rendezvous / 60 / 60 / 24, 'k', 'filled')
+xlabel('angle [deg]')
+ylabel('time to rendezvous [days]')
+
+%% test for number of nodes
+clearvars; clc;
+
+% case properties
+nodes = 3 : 1 : 20;
+N_runs = length(nodes);
+
+% fixed parameters
+t_drift = 60.0 * 60.0; % Drift time (s)
+
+dv_total = zeros(N_runs, 1);
+t_rendezvous = zeros(N_runs, 1);
+
+for ii = 1 : length(nodes)
+    
+    node_angle = 2 * pi / nodes(ii);
+    
+    % run the sim
+    two_node_rendezvous_monte_carlo
+
+    % record dv and rendezvous time
+    dv_total(ii) = sum(dv_norm);
+    t_rendezvous(ii) = t(i);
+    
+end
+
+%%
+
+figure;
+subplot(1, 2, 1)
+scatter(nodes, dv_total, 'k', 'filled')
+xlabel('nodes')
+ylabel('total \Delta v [m/s]')
+
+subplot(1, 2, 2)
+scatter(nodes, t_rendezvous / 60 / 60 / 24, 'k', 'filled')
+xlabel('nodes')
+ylabel('time to rendezvous [days]')

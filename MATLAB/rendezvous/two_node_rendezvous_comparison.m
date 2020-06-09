@@ -9,31 +9,31 @@ config();
 m = 3.7; % Mass (kg)
 % J_min = 1.25e-4; % Min impulse (Ns) 5ms ontime
 J_min = 0;
-% J_max = 2.5e-2; % Max impulse (Ns) 1s ontime
-J_max = 2500;
+J_max = 2.5e-2; % Max impulse (Ns) 1s ontime
+% J_max = 2500;
 max_dv = J_max / m;
 min_dv = J_min / m;
 t_drift = 60.0 * 60.0; % Drift time (s)
 p = 1.0e-6;
-d = 5.0e-2;
+d = 1.0e-2;
 energy_gain = 5.0e-5;
 h_gain = 2.0e-3;
 thrust_noise_ratio = 0;
 dt_fire_min = 5 * 60; % [s] minimum time between firings
 
 % time
-tmax = 10 * 24 * 60 * 60; % [s]
+tmax = 200 * 24 * 60 * 60; % [s]
 dt = 10; % [s]
 t = 0 : dt : tmax; % [s]
 N = length(t);
 
-% initial orbital elements
-a  = 6793137.0;  % Semimajor axis                        (m)
-e  = 0.001;      % Eccentricity                          (unitless)
-I  = 45*pi/180;  % Inclination angle                     (rad)
-O  = 0.0;        % Right ascension of the ascending node (rad)
-o  = 0.0;        % Argument of perigee                   (rad)
-nu = 0*pi/180;   % True anamoly                          (rad)
+% initial orbital elements (Leader)
+a  = 6783e3;        % Semimajor axis                        (m)
+e  = 2.95e-4;       % Eccentricity                          (unitless)
+I  = 51.64*pi/180;  % Inclination angle                     (rad)
+O  = 283.73*pi/180; % Right ascension of the ascending node (rad)
+o  = 189.19*pi/180; % Argument of perigee                   (rad)
+nu = 0*pi/180;      % True anamoly                          (rad)
 [   r1,...  % Position (m)   [eci]
     v1,...  % Velocity (m/s) [eci]
 ] = utl_orb2rv(a * (1 - e*e), e, I, O, o, nu, const.mu);
@@ -41,22 +41,16 @@ nu = 0*pi/180;   % True anamoly                          (rad)
 n = utl_orbrate(a);      % [rad / s] Orbital rate
 w_hill = [0.0; 0.0; n];
 
-% dispenser dynamics
-energy_max = 12.5 + 0.2 * 12.5; % [J]
-energy_min = 12.5 - 0.2 * 12.5; % [J]
-v_max = sqrt(2 * energy_max / m); % [m/s]
-v_min = sqrt(2 * energy_min / m); % [m/s]
-v_rel = v_max - v_min;
-
-% Add initial velocity difference
-r2 = r1;
-% v2 = randn(3, 1);
-% v2 = cross(r1, v1); % in the out-of-plane direction
-v2 = r1; % in the rhat direction
-v2 = v1 + v_rel * (v2 / norm(v2));
-
-% Allow spacecraft to drift apart
-[~, r1, v1, r2, v2] = drift_phase(r1, v1, r2, v2, t_drift);
+% initial orbital elements (Follower)
+a  = 6781e3;        % Semimajor axis                        (m)
+e  = 5e-4;          % Eccentricity                          (unitless)
+I  = 51.65*pi/180;  % Inclination angle                     (rad)
+O  = 283.5*pi/180;  % Right ascension of the ascending node (rad)
+o  = 185*pi/180;    % Argument of perigee                   (rad)
+nu = 0*pi/180;      % True anamoly                          (rad)
+[   r2,...  % Position (m)   [eci]
+    v2,...  % Velocity (m/s) [eci]
+] = utl_orb2rv(a * (1 - e*e), e, I, O, o, nu, const.mu);
 
 % add measurement noise (zero for now)
 r1_measure = r1; % +0.1*randn(3,1);
@@ -148,7 +142,7 @@ for i = 1 : N - 1
     end
     
     % check if follower is at a firing point
-%     if (abs(E) < 0.01 || abs(E - 2*pi/3) < 0.01) && t(i) - t_fire > dt_fire_min
+%     if (E - pi / 4 < 0.01 || E - 5 * pi / 4 < 0.01) && t(i) - t_fire > dt_fire_min
     if mod(E, pi / 4) < 0.01 && t(i) - t_fire > dt_fire_min
         
         % record firing time and position
@@ -227,9 +221,11 @@ for i = 1 : N - 1
     % calculate energies
     r1_ecef = utl_rotateframe(quat_ecef_eci, r1);
     r2_ecef = utl_rotateframe(quat_ecef_eci, r2);
-    [~,potential,~]= env_gravity(t(i + 1), r1_ecef);
+%     [~,potential,~]= env_gravity(t(i + 1), r1_ecef);
+    potential = const.mu / norm(r1);
     energy1= 0.5*dot(v1,v1)-potential;
-    [~,potential,~]= env_gravity(t(i + 1), r2_ecef);
+%     [~,potential,~]= env_gravity(t(i + 1), r2_ecef);
+    potential = const.mu / norm(r2);
     energy2= 0.5*dot(v2,v2)-potential;
     deltaenergies(i + 1)=energy2-energy1;
     energy1_vec(i + 1) = energy1;
@@ -282,7 +278,6 @@ for i = 1 : N
 end
 
 figure;
-
 plot(t, rel_pos)
 xlabel('t [s]')
 ylabel('position [m]')
@@ -409,28 +404,28 @@ title('angle between h_1 and h_2')
 
 function dy = frhs(t, y, quat_ecef_eci)
 
-% global const
+global const
 
-quat_eci_ecef = utl_quat_conj(quat_ecef_eci);
+% quat_eci_ecef = utl_quat_conj(quat_ecef_eci);
 
 dy = zeros(12, 1);
 
-r_ecef = utl_rotateframe(quat_ecef_eci, y(1:3, 1));
-[g_ecef, ~, ~] = env_gravity(0, r_ecef);
+% r_ecef = utl_rotateframe(quat_ecef_eci, y(1:3, 1));
+% [g_ecef, ~, ~] = env_gravity(0, r_ecef);
 
 % [gx, gy, gz] = gravityzonal(y(1:3)', 'Earth', 4, 'Error');
 dy(1:3, 1) = y(4:6, 1);
-dy(4:6, 1) = utl_rotateframe(quat_eci_ecef, g_ecef);
+% dy(4:6, 1) = utl_rotateframe(quat_eci_ecef, g_ecef);
 % dy(4:6, 1) = [gx; gy; gz];
-% dy(4:6, 1) = -const.mu * y(1:3, 1) / norm(y(1:3, 1))^3;
+dy(4:6, 1) = -const.mu * y(1:3, 1) / norm(y(1:3, 1))^3;
 
-r_ecef = utl_rotateframe(quat_ecef_eci, y(7:9, 1));
-[g_ecef, ~, ~] = env_gravity(0, r_ecef);
+% r_ecef = utl_rotateframe(quat_ecef_eci, y(7:9, 1));
+% [g_ecef, ~, ~] = env_gravity(0, r_ecef);
 
 % [gx, gy, gz] = gravityzonal(y(7:9)', 'Earth', 4, 'Error');
 dy(7:9, 1) = y(10:12, 1);
-dy(10:12, 1) = utl_rotateframe(quat_eci_ecef, g_ecef);
+% dy(10:12, 1) = utl_rotateframe(quat_eci_ecef, g_ecef);
 % dy(10:12, 1) = [gx; gy; gz];
-% dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
+dy(10:12, 1) = -const.mu * y(7:9, 1) / norm(y(7:9, 1))^3;
 
 end
