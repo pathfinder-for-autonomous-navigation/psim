@@ -42,6 +42,28 @@
 
 namespace gnc {
 
+// Initialize constants
+static constexpr double mass = 3.7;             // Mass of spacecraft                    (kg)
+static constexpr double J_min = 0;              // Minimum impulse                       (N s)
+static constexpr double J_max = 2500;           // Maximum impulse                       (N s)
+static constexpr double max_dv = J_max / mass;  // Max velocity change                   (m/s)
+static constexpr double min_dv = J_min / mass;  // Min velocity change                   (m/s)
+static constexpr double t_drift = 60.0 * 60.0;  // Drift time                            (s)
+static constexpr double p = 1.0e-6;
+static constexpr double d = 5.0e-2;
+static constexpr double energy_gain = 5.0e-5;   // Energy gain                           (J)
+static constexpr double h_gain = 2.0e-3;        // Angular momentum gain                 (kg m^2/sec)
+static constexpr double thrust_noise_ratio = 0; //
+static constexpr double dt_fire_min = 5 * 60;   // Minimum time between firings          (sec)
+
+// Initial orbital elements
+static constexpr double a  = 6793137.0;         // Semimajor axis                        (m)
+static constexpr double e  = 0.001;             // Eccentricity                          (unitless) - there's an "earth's eccentricity" value in constants.hpp so idk if this needs to change
+static constexpr double I  = 45*pi/180;         // Inclination angle                     (rad)
+static constexpr double O  = 0.0;               // Right ascension of the ascending node (rad)
+static constexpr double o  = 0.0;               // Argument of perigee                   (rad)
+static constexpr double nu = 0*pi/180;          // True anamoly                          (rad)
+
 OrbitControllerState::OrbitControllerState()
 : t_last_firing(0),
   this_r_ecef0(lin::nans<decltype(this_r_ecef0)>()),
@@ -66,30 +88,52 @@ OrbitActuation::OrbitActuation()
 : J_ecef(lin::nans<decltype(J_ecef)>()),
   phase_till_next_node(gnc::constant::nan_f) { }
 
+/*
+ * Quaternion frame rotation
+ * Rotates the frame of reference for the three vector V
+ * using quaternion Q stored as a vector with 4th component real. 
+ */
+static double rotate_frame(lin::Vector3d const &v, lin::Vector4d const &q) {
+  // not familiar with lin library, so this is def gonna need to be fixed
+  return v + lin::cross(2*q[1:3], lin::cross(q[1:3], v) - q[4] * v);
+}
+
+/*
+ * Calculates orbital energy given position and velocity
+ */
 static double energy(lin::Vector3d const &r_eci, lin::Vector3d const &v_eci) {
-  // Convert position from ECI to ECEF by rotating frame. don't know how to do this...
+  // Convert position from ECI to ECEF by rotating frame. not sure how to do this yet...
   lin::Vector3d r_ecef = r_eci;
+  // lin::Vector3d v_ecef = v_eci + lin::cross(w_earth, r_eci);
 
   // Calculate gravitational potential
   double potential;
   lin::Vector3d acceleration;
   env::gravity(r_ecef, acceleration, potential);
 
-  // Return energy
+  // Return energy (E = K + U)
   return 0.5 * lin::dot(v_eci, v_eci) - potential;
+}
+
+/*
+ * Calculates the orbital rate of the satellite assuming a circular orbit
+ * with the given semimajor axis a.
+ */
+static double orbrate(double a) {
+  return std::sqrt(gnc::constant::mu_earth / (a^3));
 }
 
 #ifndef MEX
 static
 #endif
+
+/*
+ * Orbit Controller
+ * Add more info when this is done
+ */
 void mex_control_orbit(struct OrbitControllerState &state,
     struct OrbitControllerData const &data, struct OrbitActuation &actuation,
     double mass, double K_p, double K_d, double K_e, double K_h) {
-
-  // Initialize constants
-  double energy_gain = 5.0e-5;
-  double e  = 0.001; // eccentricity (unitless) - idk if this needs to change
-  double dt_fire_min = 5 * 60; // minimum time between firings in seconds. may need to change
 
   lin::Vector3d &this_r_ecef0 = state.this_r_ecef0, &that_r_ecef0 = state.that_r_ecef0;
   lin::Vector3d &this_r_hat = state.this_r_hat;
@@ -97,6 +141,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
   lin::Vector3d &this_v_hat = state.this_v_hat;
   lin::Vector3d &this_h_ecef0 = state.this_h_ecef0, &that_h_ecef0 = state.that_h_ecef0;
   lin::Vector3d &this_h_hat = state.this_h_hat;
+  lin::Vector3d &that_h_hat;
   lin::Matrix3x3d &DCM_hill_ecef0 = state.DCM_hill_ecef0;
 
   // Move to temporary ECEF0
@@ -115,10 +160,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
     this_h_ecef0 = lin::cross(this_r_ecef0, this_v_ecef0);
     that_h_ecef0 = lin::cross(that_r_ecef0, that_v_ecef0);
     this_h_hat = this_h_ecef0 / lin::norm(this_h_ecef0);
-  }
-
-  {
-    // Maybe convert position and velocity vectors from ECEF0 to ECI here???
+    that_h_hat = that_h_ecef0 / lin::norm(that_h_ecef0);
   }
 
   // Calculate the hill frame DCM
@@ -136,7 +178,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
 
   // Calculate follower orbital elements. may have to switch reference frame for energy calculation
   double a = -1 * gnc::constant::mu_earth / (2 * that_energy);
-  double n = std::sqrt(gnc::constant::mu_earth / (a^3));
+  double n = orbrate(a);
   double M = n * data.t;
   M = M % (2 * gnc::constant::pi);
 
@@ -148,13 +190,13 @@ void mex_control_orbit(struct OrbitControllerState &state,
   if (E % (gnc::constant::pi / 4) < 0.01 && data.t - state.t_last_firing > dt_fire_min) {
     // Record firing time and position
     state.t_last_firing = data.t;
-    // r_fire = [r_fire, [r1; r2]];
+    // r_fire = [r_fire, [r1; r2]]; instead of r_fire, i guess it would be state.this_r_ecef0???
 
     // Hill frame PD controller
-    // pterm = p * r_hill(2);
-    // dterm = -d * v_hill(2);
-    // dv_p = pterm * v2 / norm(v2);
-    // dv_d = dterm * v2 / norm(v2);
+    double pterm = K_p * r_hill[2];
+    double dterm = -1 * K_d * v_hill[2];
+    double dv_p = pterm * that_v_ecef0 / lin::norm(that_v_ecef0);
+    double dv_d = dterm * that_v_ecef0 / lin::norm(that_v_ecef0);
 
     // Energy controller
     double energy_term = -1 * energy_gain * (that_energy - this_energy);
@@ -167,6 +209,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
     Jhat_plane = that_h_hat;
 
     // Project h1 onto the plane formed by h2 and (r2 x h2)
+    h1proj = h1 - lin::dot(h1, that_r_hat) * r2hat;
 
     // Calculate the angle between h1proj and h2 (this is what we are driving to zero with this burn)
 
@@ -181,22 +224,23 @@ void mex_control_orbit(struct OrbitControllerState &state,
     // Apply dv
   }
 
+  // A few of the lines here are repeated calculations
   lin::Vector3d dv;
   {
-    lin::Vector3d this_v_hat  = this_v_ecef0 / lin::norm(this_v_ecef0);
+    lin::Vector3d this_v_hat = this_v_ecef0 / lin::norm(this_v_ecef0); // why is this calculated twice?
 
     dv = (K_p * r_hill(1) +
           K_d * v_hill(1) +
           K_e * (energy(this_r_ecef0, this_v_ecef0) - energy(that_r_ecef0, that_v_ecef0))
-        ) * this_v_hat;
+        ) * this_v_hat; // very similar to calculation for dv_gain_v_hat. what's the difference?
 
-    lin::Vector3d this_r_hat = this_r_ecef0 / lin::norm(this_r_ecef0);
-    lin::Vector3d this_h_hat = lin::cross(this_r_hat, this_v_hat);
+    lin::Vector3d this_r_hat = this_r_ecef0 / lin::norm(this_r_ecef0); // why is this calculated twice?
+    lin::Vector3d this_h_hat = lin::cross(this_r_hat, this_v_hat); // how is this different from: this_h_hat = this_h_ecef0 / lin::norm(this_h_ecef0); ?
 
     lin::Vector3d that_h_proj = lin::cross(that_r_ecef0, that_v_ecef0);
     that_h_proj = that_h_proj - lin::dot(that_h_proj, this_r_hat) * this_r_hat;
 
-    double theta = lin::atan(lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h)) / );
+    double theta = lin::atan(lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h)) / ); // what does theta represent? why is this line incomplete?
   }
 
 }
