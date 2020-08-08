@@ -193,31 +193,35 @@ void mex_control_orbit(struct OrbitControllerState &state,
     // r_fire = [r_fire, [r1; r2]]; instead of r_fire, i guess it would be state.this_r_ecef0???
 
     // Hill frame PD controller
-    double pterm = K_p * r_hill[2];
-    double dterm = -1 * K_d * v_hill[2];
+    double pterm = K_p * r_hill(2);
+    double dterm = -1 * K_d * v_hill(2);
     double dv_p = pterm * that_v_ecef0 / lin::norm(that_v_ecef0);
     double dv_d = dterm * that_v_ecef0 / lin::norm(that_v_ecef0);
 
     // Energy controller
-    double energy_term = -1 * energy_gain * (that_energy - this_energy);
-    double dv_energy = energy_term * v2 / lin::norm(that_v_ecef0); //v2 is meant to be in eci
+    double energy_term = -1 * K_e * (that_energy - this_energy);
+    double dv_energy = energy_term * v2 / lin::norm(that_v_ecef0);
 
     // H controller
     that_r_hat = that_r_ecef0 / lin::norm(that_r_ecef0);
 
     // Define the direction of our impulse, always in the h2 direction
-    Jhat_plane = that_h_hat;
+    lin::Vector3d Jhat_plane = that_h_hat;
 
     // Project h1 onto the plane formed by h2 and (r2 x h2)
-    h1proj = h1 - lin::dot(h1, that_r_hat) * r2hat;
+    lin::Vector3d this_h_proj = this_h_ecef0 - lin::dot(this_h_ecef0, that_r_hat) * that_r_hat;
 
     // Calculate the angle between h1proj and h2 (this is what we are driving to zero with this burn)
+    double theta = lin::atan( lin::dot(this_h_proj, lin::cross(that_r_ecef0, that_h_ecef0)) / lin::dot(this_h_proj, that_h_ecef0) );
 
     // Scale the impulse delivered by the angle theta
+    lin::Vector3d J_plane = theta * Jhat_plane;
 
     // Scale dv by h_gain
+    dv_plane = h_gain * J_plane / mass;
 
     // Total dv to be applied from all controllers
+    dv = dv_p + dv_d + dv_energy + dv_plane;
 
     // Thruster saturation
 
@@ -237,7 +241,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
     lin::Vector3d this_r_hat = this_r_ecef0 / lin::norm(this_r_ecef0); // why is this calculated twice?
     lin::Vector3d this_h_hat = lin::cross(this_r_hat, this_v_hat); // how is this different from: this_h_hat = this_h_ecef0 / lin::norm(this_h_ecef0); ?
 
-    lin::Vector3d that_h_proj = lin::cross(that_r_ecef0, that_v_ecef0);
+    lin::Vector3d that_h_proj = lin::cross(that_r_ecef0, that_v_ecef0); // repeated calculation of that_h_ecef0
     that_h_proj = that_h_proj - lin::dot(that_h_proj, this_r_hat) * this_r_hat;
 
     double theta = lin::atan(lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h)) / ); // what does theta represent? why is this line incomplete?
