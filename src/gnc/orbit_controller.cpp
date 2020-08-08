@@ -89,16 +89,6 @@ OrbitActuation::OrbitActuation()
   phase_till_next_node(gnc::constant::nan_f) { }
 
 /*
- * Quaternion frame rotation
- * Rotates the frame of reference for the three vector V
- * using quaternion Q stored as a vector with 4th component real. 
- */
-static double rotate_frame(lin::Vector3d const &v, lin::Vector4d const &q) {
-  // not familiar with lin library, so this is def gonna need to be fixed
-  return v + lin::cross(2*q[1:3], lin::cross(q[1:3], v) - q[4] * v);
-}
-
-/*
  * Calculates orbital energy given position and velocity
  */
 static double energy(lin::Vector3d const &r_eci, lin::Vector3d const &v_eci) {
@@ -141,7 +131,6 @@ void mex_control_orbit(struct OrbitControllerState &state,
   lin::Vector3d &this_v_hat = state.this_v_hat;
   lin::Vector3d &this_h_ecef0 = state.this_h_ecef0, &that_h_ecef0 = state.that_h_ecef0;
   lin::Vector3d &this_h_hat = state.this_h_hat;
-  lin::Vector3d &that_h_hat;
   lin::Matrix3x3d &DCM_hill_ecef0 = state.DCM_hill_ecef0;
 
   // Move to temporary ECEF0
@@ -160,7 +149,6 @@ void mex_control_orbit(struct OrbitControllerState &state,
     this_h_ecef0 = lin::cross(this_r_ecef0, this_v_ecef0);
     that_h_ecef0 = lin::cross(that_r_ecef0, that_v_ecef0);
     this_h_hat = this_h_ecef0 / lin::norm(this_h_ecef0);
-    that_h_hat = that_h_ecef0 / lin::norm(that_h_ecef0);
   }
 
   // Calculate the hill frame DCM
@@ -170,13 +158,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
   double this_energy = energy(this_r_ecef0, this_v_ecef0);
   double that_energy = energy(that_r_ecef0, that_v_ecef0);
 
-  // Requested delta v gain along this_v_hat in ECEF0
-  double dv_gain_v_hat =
-      K_p * (DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0))(1) +
-      K_d * (DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0))(1) +
-      K_e * this_energy - that_energy;
-
-  // Calculate follower orbital elements. may have to switch reference frame for energy calculation
+  // Calculate follower orbital elements.
   double a = -1 * gnc::constant::mu_earth / (2 * that_energy);
   double n = orbrate(a);
   double M = n * data.t;
@@ -188,31 +170,27 @@ void mex_control_orbit(struct OrbitControllerState &state,
 
   // Check if follower is at a firing point
   if (E % (gnc::constant::pi / 4) < 0.01 && data.t - state.t_last_firing > dt_fire_min) {
-    // Record firing time and position
+    // Record firing time
     state.t_last_firing = data.t;
-    // r_fire = [r_fire, [r1; r2]]; instead of r_fire, i guess it would be state.this_r_ecef0???
 
     // Hill frame PD controller
-    double pterm = K_p * r_hill(2);
-    double dterm = -1 * K_d * v_hill(2);
-    double dv_p = pterm * that_v_ecef0 / lin::norm(that_v_ecef0);
-    double dv_d = dterm * that_v_ecef0 / lin::norm(that_v_ecef0);
-
+    double p_term = K_p * (DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0))(1); 
+    double d_term = K_d * (DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0))(1); 
+    lin::Vector3d dv_p = p_term * this_v_hat;
+    lin::Vector3d dv_d = d_term * this_v_hat;
+    
     // Energy controller
-    double energy_term = -1 * K_e * (that_energy - this_energy);
-    double dv_energy = energy_term * v2 / lin::norm(that_v_ecef0);
-
-    // H controller
-    that_r_hat = that_r_ecef0 / lin::norm(that_r_ecef0);
+    double e_term = K_e * (this_energy - that_energy);
+    lin::Vector3d dv_e = e_term * this_v_hat;
 
     // Define the direction of our impulse, always in the h2 direction
-    lin::Vector3d Jhat_plane = that_h_hat;
+    lin::Vector3d Jhat_plane = this_h_hat;
 
     // Project h1 onto the plane formed by h2 and (r2 x h2)
-    lin::Vector3d this_h_proj = this_h_ecef0 - lin::dot(this_h_ecef0, that_r_hat) * that_r_hat;
+    lin::Vector3d that_h_proj = that_h_ecef0 - lin::dot(that_h_ecef0, this_r_hat) * this_r_hat;
 
     // Calculate the angle between h1proj and h2 (this is what we are driving to zero with this burn)
-    double theta = lin::atan( lin::dot(this_h_proj, lin::cross(that_r_ecef0, that_h_ecef0)) / lin::dot(this_h_proj, that_h_ecef0) );
+    double theta = lin::atan( lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h_ecef0)), lin::dot(that_h_proj, this_h_ecef0) );
 
     // Scale the impulse delivered by the angle theta
     lin::Vector3d J_plane = theta * Jhat_plane;
@@ -224,28 +202,35 @@ void mex_control_orbit(struct OrbitControllerState &state,
     dv = dv_p + dv_d + dv_energy + dv_plane;
 
     // Thruster saturation
+    if (lin::norm(dv) > max_dv) {
+      dv = max_dv * (dv / lin::norm(dv));
+    }
+    if (lin::norm(dv) < min_dv) {
+      dv = min_dv * (dv / lin::norm(dv));
+    }
 
     // Apply dv
+    this_v_ecef0 = this_v_ecef0 + dv;
   }
 
-  // A few of the lines here are repeated calculations
-  lin::Vector3d dv;
-  {
-    lin::Vector3d this_v_hat = this_v_ecef0 / lin::norm(this_v_ecef0); // why is this calculated twice?
+  // I can mainly ignore this
+  // lin::Vector3d dv;
+  // {
+  //   lin::Vector3d this_v_hat = this_v_ecef0 / lin::norm(this_v_ecef0);
 
-    dv = (K_p * r_hill(1) +
-          K_d * v_hill(1) +
-          K_e * (energy(this_r_ecef0, this_v_ecef0) - energy(that_r_ecef0, that_v_ecef0))
-        ) * this_v_hat; // very similar to calculation for dv_gain_v_hat. what's the difference?
+  //   dv = (K_p * r_hill(1) +
+  //         K_d * v_hill(1) +
+  //         K_e * (energy(this_r_ecef0, this_v_ecef0) - energy(that_r_ecef0, that_v_ecef0))
+  //       ) * this_v_hat;
 
-    lin::Vector3d this_r_hat = this_r_ecef0 / lin::norm(this_r_ecef0); // why is this calculated twice?
-    lin::Vector3d this_h_hat = lin::cross(this_r_hat, this_v_hat); // how is this different from: this_h_hat = this_h_ecef0 / lin::norm(this_h_ecef0); ?
+  //   lin::Vector3d this_r_hat = this_r_ecef0 / lin::norm(this_r_ecef0);
+  //   lin::Vector3d this_h_hat = lin::cross(this_r_hat, this_v_hat);
 
-    lin::Vector3d that_h_proj = lin::cross(that_r_ecef0, that_v_ecef0); // repeated calculation of that_h_ecef0
-    that_h_proj = that_h_proj - lin::dot(that_h_proj, this_r_hat) * this_r_hat;
+  //   lin::Vector3d that_h_proj = lin::cross(that_r_ecef0, that_v_ecef0);
+  //   that_h_proj = that_h_proj - lin::dot(that_h_proj, this_r_hat) * this_r_hat;
 
-    double theta = lin::atan(lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h)) / ); // what does theta represent? why is this line incomplete?
-  }
+  //   double theta = lin::atan(lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h)) / );
+  // }
 
 }
 
