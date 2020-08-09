@@ -39,6 +39,8 @@
 #include <lin/queries.hpp>
 
 #include <cstdint>
+#include <cmath>
+#include <math.h>
 
 namespace gnc {
 
@@ -57,8 +59,9 @@ static constexpr double thrust_noise_ratio = 0; //
 static constexpr double dt_fire_min = 5 * 60;   // Minimum time between firings          (sec)
 
 // Initial orbital elements
+static constexpr double pi = gnc::constant::pi;
 static constexpr double a  = 6793137.0;         // Semimajor axis                        (m)
-static constexpr double e  = 0.001;             // Eccentricity                          (unitless) - there's an "earth's eccentricity" value in constants.hpp so idk if this needs to change
+static constexpr double e  = 0.001;             // Eccentricity                          (unitless)
 static constexpr double I  = 45*pi/180;         // Inclination angle                     (rad)
 static constexpr double O  = 0.0;               // Right ascension of the ascending node (rad)
 static constexpr double o  = 0.0;               // Argument of perigee                   (rad)
@@ -91,10 +94,10 @@ OrbitActuation::OrbitActuation()
 /*
  * Calculates orbital energy given position and velocity
  */
-static double energy(lin::Vector3d const &r_eci, lin::Vector3d const &v_eci) {
-  // Convert position from ECI to ECEF by rotating frame. not sure how to do this yet...
-  lin::Vector3d r_ecef = r_eci;
-  // lin::Vector3d v_ecef = v_eci + lin::cross(w_earth, r_eci);
+static double energy(lin::Vector3d const &r_ecef0, lin::Vector3d const &v_ecef0) {
+  // Convert position from ECEF0 to ECEF by rotating frame. not sure if i did this right...
+  lin::Vector3d r_ecef = r_ecef0;
+  // lin::Vector3d v_ecef = v_ecef0 + lin::cross(w_earth, r_ecef0);
 
   // Calculate gravitational potential
   double potential;
@@ -110,7 +113,7 @@ static double energy(lin::Vector3d const &r_eci, lin::Vector3d const &v_eci) {
  * with the given semimajor axis a.
  */
 static double orbrate(double a) {
-  return std::sqrt(gnc::constant::mu_earth / (a^3));
+  return std::sqrt(gnc::constant::mu_earth / std::pow(a,3));
 }
 
 #ifndef MEX
@@ -159,17 +162,27 @@ void mex_control_orbit(struct OrbitControllerState &state,
   double that_energy = energy(that_r_ecef0, that_v_ecef0);
 
   // Calculate follower orbital elements.
-  double a = -1 * gnc::constant::mu_earth / (2 * that_energy);
+  double a = -1 * gnc::constant::mu_earth / (2 * this_energy);
   double n = orbrate(a);
   double M = n * data.t;
-  M = M % (2 * gnc::constant::pi);
+  M = M % (2 * pi);
 
   // Calculate eccentric anomaly
   double del = 1;
   double E = M / (1 - e);
 
+  if ( E > std::sqrt(6 * (1 - e) / e) ) {
+    E = std::pow((6 * M / e), (1/3));
+  }
+
+  double eps = std::nextafter(2 * pi, 3 * pi) - (2 * pi); // closest c++ equivalent of eps i could find
+  while (del > eps) {
+    E = E - (M - E + e * sin(E)) / (e * cos(E) - 1);
+    del = std::abs( M - (E - e * sin(E)) );
+  }
+
   // Check if follower is at a firing point
-  if (E % (gnc::constant::pi / 4) < 0.01 && data.t - state.t_last_firing > dt_fire_min) {
+  if (E % (pi / 4) < 0.01 && data.t - state.t_last_firing > dt_fire_min) {
     // Record firing time
     state.t_last_firing = data.t;
 
@@ -182,6 +195,8 @@ void mex_control_orbit(struct OrbitControllerState &state,
     // Energy controller
     double e_term = K_e * (this_energy - that_energy);
     lin::Vector3d dv_e = e_term * this_v_hat;
+
+    // H Controller
 
     // Define the direction of our impulse, always in the h2 direction
     lin::Vector3d Jhat_plane = this_h_hat;
@@ -196,7 +211,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
     lin::Vector3d J_plane = theta * Jhat_plane;
 
     // Scale dv by h_gain
-    dv_plane = h_gain * J_plane / mass;
+    dv_plane = K_h * J_plane / mass;
 
     // Total dv to be applied from all controllers
     dv = dv_p + dv_d + dv_energy + dv_plane;
@@ -210,36 +225,27 @@ void mex_control_orbit(struct OrbitControllerState &state,
     }
 
     // Apply dv
-    this_v_ecef0 = this_v_ecef0 + dv;
+    actuation.J_ecef = mass * dv;
+    // How do I update actuate.phase_until_next_node?
   }
 
-  // I can mainly ignore this
-  // lin::Vector3d dv;
-  // {
-  //   lin::Vector3d this_v_hat = this_v_ecef0 / lin::norm(this_v_ecef0);
+  /** I guess the idea here is to update OrbitState? */
 
-  //   dv = (K_p * r_hill(1) +
-  //         K_d * v_hill(1) +
-  //         K_e * (energy(this_r_ecef0, this_v_ecef0) - energy(that_r_ecef0, that_v_ecef0))
-  //       ) * this_v_hat;
+  // Simulate dynamics
+  // Can't find c++ equivalent of utl_ode4
 
-  //   lin::Vector3d this_r_hat = this_r_ecef0 / lin::norm(this_r_ecef0);
-  //   lin::Vector3d this_h_hat = lin::cross(this_r_hat, this_v_hat);
+  // Calculate new state
 
-  //   lin::Vector3d that_h_proj = lin::cross(that_r_ecef0, that_v_ecef0);
-  //   that_h_proj = that_h_proj - lin::dot(that_h_proj, this_r_hat) * this_r_hat;
+  // Calculate energies
 
-  //   double theta = lin::atan(lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h)) / );
-  // }
+  // Calculate orbital angular momentum
 
 }
-
-// Spacecraft mass
 
 #ifndef MEX
 void control_orbit(struct OrbitControllerState &state,
     struct OrbitControllerData const &data, struct OrbitActuation &actuation) {
-
+  mex_control_orbit(state, data, actuation, mass, p, d, energy_gain, h_gain);
 }
 #endif
 
