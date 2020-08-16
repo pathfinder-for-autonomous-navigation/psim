@@ -229,17 +229,6 @@ void mex_control_orbit(struct OrbitControllerState &state,
     // How do I update actuate.phase_until_next_node?
   }
 
-  /** I guess the idea here is to update OrbitState? */
-
-  // Simulate dynamics
-  // Can't find c++ equivalent of utl_ode4
-
-  // Calculate new state
-
-  // Calculate energies
-
-  // Calculate orbital angular momentum
-
 }
 
 #ifndef MEX
