@@ -175,7 +175,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
     E = std::pow((6 * M / e), (1/3));
   }
 
-  double eps = std::nextafter(2 * pi, 3 * pi) - (2 * pi); // closest c++ equivalent of eps i could find
+  double eps = std::nextafter(2 * pi, 3 * pi) - (2 * pi);
   while (del > eps) {
     E = E - (M - E + e * sin(E)) / (e * cos(E) - 1);
     del = std::abs( M - (E - e * sin(E)) );
