@@ -7,8 +7,9 @@
 
 #include "config.hpp"
 
-#include <lin/core/matrix/matrix.hpp>
-#include <lin/core/vector/vector.hpp>
+#include <lin/core.hpp>
+
+#include <cstdint>
 
 #include <limits>
 
@@ -74,6 +75,8 @@ extern float pointer_Kd;
 GNC_TRACKED_CONSTANT(constexpr static float, J_wheel, 135.0e-7f);
 
 GNC_TRACKED_CONSTANT(constexpr static float, w_wheel_max, 677.0f);
+
+GNC_TRACKED_CONSTANT(constexpr static int64_t, NANOSECONDS_IN_WEEK, 7ULL*24ULL*60ULL*60ULL*1'000'000'000ULL);
 
 }  // namespace constant
 }  // namespace gnc

@@ -47,6 +47,27 @@ template <typename T>
 constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1,
         lin::Vector<T, 4> const &q2, lin::Vector<T, 4> &res);
 
+/** @fn quat_to_grp
+ *  @param[in]  q Input quaternion.
+ *  @param[in]  a 
+ *  @param[in]  f
+ *  @param[out] p Generalized Rodrigues parameter representation.
+ *  Converts a quaternion attitude representation to generalized Rodrigues
+ *  parameters. There is no explicit handling of NaNs built into this function;
+ *  however, a finite input will always yield a finite result.
+ *  Source: "Unscented Filtering for Spacecraft Attitude Estimation"
+ *          by Markley and Crasidis */
+template <typename T>
+constexpr void quat_to_qrp(lin::Vector<T, 4> const &q, T a, T f, lin::Vector<T, 3> &p);
+
+/** @fn grp_to_quat
+ *  @param[in]  p Input Rodrigues parameters.
+ *  @param[in]  a
+ *  @param[in]  f
+ *  @param[out] q Quaternion representation. */
+template <typename T>
+constexpr void grp_to_quat(lin::Vector<T, 3> const &p, T a, T f, lin::Vector<T, 4> &q);
+
 /** @fn rotate_frame
  *  @param[in]  q   Quaternion specifying the frame rotation.
  *  @param[in]  v   Vector to be transformed.
@@ -67,15 +88,33 @@ constexpr void rotate_frame(lin::Vector<T, 4> const &q,
 template <typename T>
 constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> &v);
 
+/** @fn dcm
+ *  @param[out] DCM Direction cosine matrix.oth x and y must not be the zero vector.
+ *  @param[in]  x
+ *  @param[in]  y
+ *  Generates a DCM from two reference vector in a particular frame. The DCM
+ *  will convert from the frame x and y are specified in to the new frame.
+ *  The x input vector is normalized to give the first basis vector of the new
+ *  frame. The y vector's projection along x is removed resulting in the second
+ *  basis vector for the new frame. The third is generated assuming a right hand
+ *  coordinate system.
+ *  Both x and y must not be the zero vector.
+ *  If the vector x and y are very near to being parallel/anti-parallel (
+ *  abs(dot(x_hat, y_hat)) > 0.999), DCM is set to NaNs. */
+template <typename T>
+constexpr void dcm(lin::Matrix<T, 3, 3> &DCM, lin::Vector<T, 3> const &x,
+    lin::Vector<T, 3> const &y);
+
 /** @fn dcm_to_quat
- *  @param[in]  M Direction cosine matrix.
- *  @param[out] q Output quaternion.
+ *  @param[in]  DCM Direction cosine matrix.
+ *  @param[out] q   Output quaternion.
  *  Determines the quaternion corresponding to the provided direction cosine
  *  matrix. The input direction cosine matrix needs to be orthonormal. There is
  *  no explicit handling of NaNs built into this function; however, a finite
  *  input will always yield a finite result. */ 
 template <typename T>
-inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q);
+constexpr void dcm_to_quat(lin::Matrix<T, 3, 3> const &DCM,
+    lin::Vector<T, 4> &q);
 
 /** @fn triad
  *  @param[in]  R1 First reference vector in a known frame.
@@ -96,7 +135,7 @@ inline void dcm_to_quat(lin::Matrix<T, 3, 3> const &M, lin::Vector<T, 4> &q);
  *  NaNs. Otherwise, a finite input will always yield a finite result.
  *  REQUIRES: R1, R2, r1, and r2 to be unit vectors. */
 template <typename T>
-inline void triad(lin::Vector<T, 3> const &R1, lin::Vector<T, 3> const &R2,
+constexpr void triad(lin::Vector<T, 3> const &R1, lin::Vector<T, 3> const &R2,
     lin::Vector<T, 3> const &r1, lin::Vector<T, 3> const &r2,
     lin::Vector<T, 4> &q);
 
@@ -111,7 +150,7 @@ inline void triad(lin::Vector<T, 3> const &R1, lin::Vector<T, 3> const &R2,
  *  finite result.
  *  REQUIRES: Vectors u and v must both be unit vectors. */
 template <typename T>
-inline void vec_rot_to_quat(lin::Vector<T, 3> const &u,
+constexpr void vec_rot_to_quat(lin::Vector<T, 3> const &u,
     lin::Vector<T, 3> const &v, lin::Vector<T, 4> &q);
 
 }  // namespace utl

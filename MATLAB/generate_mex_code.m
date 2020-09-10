@@ -5,5 +5,5 @@ geograv_incl = strcat('-I', fullfile(filepath, "../geograv/include"));
 geomag_file = fullfile(filepath, "environmental_models/helper_functions/geomag_wrapper.cpp");
 geograv_file = fullfile(filepath, "environmental_models/helper_functions/geograv_wrapper.cpp");
 
-mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geomag_file, geomag_incl);
-mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geograv_file, geograv_incl);
+try mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geomag_file, geomag_incl); catch; end
+try mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geograv_file, geograv_incl); catch; end

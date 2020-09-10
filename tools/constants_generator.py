@@ -13,8 +13,9 @@ HPP_HEADER='''\
 
 #include "config.hpp"
 
-#include <lin/core/matrix/matrix.hpp>
-#include <lin/core/vector/vector.hpp>
+#include <lin/core.hpp>
+
+#include <cstdint>
 
 #include <limits>
 

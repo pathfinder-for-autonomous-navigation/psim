@@ -42,16 +42,16 @@ eclipse = env_eclipse(true_state.position_eci,sat2sun_eci);
 sensor_readings.wheel_momentum_body= true_state.wheel_rate_body*const.JWHEEL;
 
 %% GPS
-sensor_readings.time= 0;
+sensor_readings.gpstime= int64(0);
 sensor_readings.position_ecef= nan(3,1);
 sensor_readings.velocity_ecef= nan(3,1);
 sensor_readings.self2target_position_ecef= nan(3,1);
 sensor_readings.target_velocity_ecef= nan(3,1);
 sensor_readings.target_position_ecef= nan(3,1);
-sensor_readings.target_time= 0;
+sensor_readings.target_gpstime= int64(0);
 
 if (my_satellite_state.sensors.gps_time_till_lock<=0)
-    sensor_readings.time= true_state.time;
+    sensor_readings.gpstime= true_state.time_ns+const.INIT_GPSNS;
     sensor_readings.position_ecef= position_ecef + randn(3,1)*const.gps_position_noise_sdiv+my_satellite_state.sensors.gps_position_bias_ecef;
     velocity_ecef= utl_rotateframe(quat_ecef_eci, true_state.velocity_eci)-cross(rate_ecef,position_ecef);
     sensor_readings.velocity_ecef= velocity_ecef + randn(3,1)*const.gps_velocity_noise_sdiv++my_satellite_state.sensors.gps_velocity_bias_ecef;
@@ -66,7 +66,7 @@ if (my_satellite_state.sensors.gps_time_till_lock<=0)
     if (rand()<const.probability_of_ground_gps)
         sensor_readings.target_position_ecef= other_satellite_state.actuators.ground_position_ecef;
         sensor_readings.target_velocity_ecef= other_satellite_state.actuators.ground_velocity_ecef;
-        sensor_readings.target_time= other_satellite_state.actuators.ground_time;
+        sensor_readings.target_gpstime= other_satellite_state.actuators.ground_gpstime;
     end
 end
 end

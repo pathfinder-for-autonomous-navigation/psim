@@ -21,8 +21,19 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -r requirements.txt
         python -m platformio update
-
-    - name: CXX software tests
-      run: |
         python -m platformio platform install native
+        python -m platformio platform install teensy
+
+    - name: Desktop software tests
+      run: |
         python -m platformio test --verbose -e github
+        
+    - name: Teensy build
+      run: |
+        python -m platformio run --verbose -e teensy35_ci
+        python -m platformio run --verbose -e teensy36_ci
+
+    - name: Python Wrapper tests
+      run: |
+        pip install pytest
+        pytest estimatortest/

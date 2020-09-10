@@ -14,6 +14,9 @@ setup_path()
 const.INITGPS_WN= 2045;% positive int
 % initial gps week number, epoch for time.
 const.INIT_DYEAR= decyear(utl_time2datetime(0.0,const.INITGPS_WN));
+% Decimal year at INITGPS_WN epoch (year, AD)
+const.INIT_GPSNS= int64(const.INITGPS_WN)*int64(1E9)*int64(7*24*60*60);
+% INITGPS_WN in nanoseconds (ns)
 
 const.mu = 3986004.415e8;%3.986e14;% positive scalar
 % Earth's gravitational constant (m^3/s^2)
@@ -25,7 +28,7 @@ const.mu_sun = 1.32712440018E20; % positive scalar
 % Sun's gravitational constant (m^3/s^2)
 const.R_EARTH= 6378137.0;
 %Equatorial Radius of Earth (m)*/
-const.dt = int64(1e8);% positive int64
+const.dt = int64(120e6);% positive int64
 % Simulation timestep            (ns)
 const.e_earth = 0.0167086;
 % Earth's eccentricity.
@@ -93,11 +96,11 @@ const.JBINV=inv(const.JB);% 3x3 symmetric matrix
 % inverse of dry moment of inertia of satellite in body frame
 
 %% GPS sensor constants %%
-const.GPS_LOCK_TIME=0;%1*60;% (positive scalar):
+const.GPS_LOCK_TIME=1*60;% (positive scalar):
 %Time it takes the GPS to get a lock (s)
 const.CDGPS_LOCK_TIME=15*60;% (positive scalar):
 %Time it takes the CDGPS to get a lock (s)
-const.gps_max_angle= pi;%60*pi/180;% (positive scalar):
+const.gps_max_angle= 60*pi/180;% (positive scalar):
 % Max angle of gps antenna to radia out where gps can work (rad)
 const.cdgps_max_angle= 60*pi/180;% (positive scalar):
 % Max angle of cdgps antenna to other sat where cdgps can work (rad)
@@ -107,27 +110,27 @@ const.probability_of_ground_gps= 1E-4;% (scalar 0-1):
 %Propability of getting a ground gps reading over radio any control cycle the sat
 %also can get regular gps.
 const.gps_position_bias_sdiv= 1;% (positive scalar):
-% standard diviation of bias of gps position measurements (m)
+% standard deviation of bias of gps position measurements (m)
 const.cdgps_position_bias_sdiv= 0.05;% (positive scalar):
-% standard diviation of bias of cdgps relative position measurements (m)
+% standard deviation of bias of cdgps relative position measurements (m)
 const.gps_velocity_bias_sdiv= 0.1;% (positive scalar):
-% standard diviation of bias of gps velocity measurements (m/s)
+% standard deviation of bias of gps velocity measurements (m/s)
 const.gps_position_noise_sdiv= 6;% (positive scalar):
-% standard diviation of gps position measurements (m)
+% standard deviation of gps position measurements (m)
 const.gps_velocity_noise_sdiv= 1;% (positive scalar):
-% standard diviation of gps position measurements (m)
+% standard deviation of gps position measurements (m)
 %% Magnetometer sensor constants
 const.magnetometer_bias_readings_min=50;% (positive int):
 %number of readings per axis to get a good magnetometer bias estimate.
 const.magnetometer_noise_sdiv= 2E-6;% (positive scalar):
-%standard diviation of the magnetometer noise (T)
+%standard deviation of the magnetometer noise (T)
 const.magnetometer_bias_sdiv= 50E-6;% (positive scalar):
-%standard diviation of the magnetometer bias (T)
+%standard deviation of the magnetometer bias (T)
 %% Gyro sensor constants
 const.gyro_noise_sdiv= 0.1*pi/180;% (positive scalar):
-%standard diviation of the gyro noise (rad/s)
+%standard deviation of the gyro noise (rad/s)
 const.gyro_bias_sdiv= 1*pi/180;% (positive scalar):
-%standard diviation of the gyro bias (rad/s)
+%standard deviation of the gyro bias (rad/s)
 %% ORBIT_ESTIMATION parameters %%
 const.time_for_stale_cdgps= int64(1E9)*int64(2*60*60);% (int64 scalar):
 % time to wait before making the target estimate stale (ns)
