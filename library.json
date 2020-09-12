@@ -1,0 +1,13 @@
+{
+  "name": "gnc",
+  "version": "0.0.1",
+  "license": "MIT",
+  "build": {
+      "includeDir": "include",
+      "srcDir": "src/gnc"
+  },
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/pathfinder-for-autonomous-navigation/psim"
+  }
+}

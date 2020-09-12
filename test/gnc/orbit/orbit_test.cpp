@@ -18,10 +18,6 @@
 #define notcompiletime (millis()%2)
 #endif
 
-
-
-
-
 /**
  * Recursive Lin Tensor determinant function.
  * */
@@ -283,7 +279,7 @@ void test_shortupdate_b(){
  * Test jacobians with finite difference and test jacobian has determinant 1
  */
 void test_shortupdate_c(){
-    lin::internal::RandomsGenerator const rand(0);
+    lin::internal::RandomsGenerator rand(0);
     int timesteps[4] = {100'000'000,200'000'000,-100'000'000,-200'000'000};
     for(int j=0; j<4; j++){
         orb::Orbit y= gracestart;
@@ -298,7 +294,7 @@ void test_shortupdate_c(){
         //TEST_MESSAGE("Jacobian");
         //printtensor(jac);
         for(int i=0; i<10;i++){
-            lin::Vectord<6> initialdelta= lin::rands<lin::Vectord<6>>(6, 1, rand);
+            lin::Vectord<6> initialdelta= lin::rands<lin::Vectord<6>>(rand, 6, 1);
             initialdelta= initialdelta-lin::consts<lin::Vectord<6>>(0.5,6,1);
             initialdelta= initialdelta*0.2;
             //initialdelta is now a uniform random vector +-0.1

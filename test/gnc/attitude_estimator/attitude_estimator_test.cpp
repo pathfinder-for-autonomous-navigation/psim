@@ -49,7 +49,7 @@ static void test_estimate_constructor() {
 static void test_simple_reset() {
   lin::internal::RandomsGenerator randoms;
   double t = randoms.next();
-  lin::Vector4d q = lin::rands<lin::Vector4d>(4, 1, randoms);
+  lin::Vector4d q = lin::rands<lin::Vector4d>(randoms, 4, 1);
   q = q / lin::norm(q);
 
   gnc::AttitudeEstimatorState state;

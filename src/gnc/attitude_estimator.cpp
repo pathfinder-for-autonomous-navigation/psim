@@ -92,7 +92,7 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
               psi(2),  ukf_float(0.0),         -psi(0),
              -psi(1),          psi(0),  ukf_float(0.0)
     };
-    O = lin::cos(0.5f * norm_w * dt) * lin::identity<ukf_float, 4>();
+    O = lin::cos(0.5f * norm_w * dt) * lin::identity<ukf_float, 4, 4>();
     lin::ref<3, 3>(O, 0, 0) = lin::ref<3, 3>(O, 0, 0) - psi_x;
     lin::ref<3, 1>(O, 0, 3) = psi;
     lin::ref<1, 3>(O, 3, 0) = -lin::transpose(psi);

@@ -18,4 +18,4 @@ jobs:
 
     - name: Build and Test with Bazel
       run: |
-        bazel build :psim
+        bazel build //:gnc

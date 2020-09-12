@@ -10,12 +10,12 @@
 #include "../custom_assertions.hpp"
 
 void test_matrix_hypot() {
-    lin::internal::RandomsGenerator const rand(0);
+    lin::internal::RandomsGenerator rand(0);
     {
     lin::Matrixf<8, 8> A, B, C;
     for (int i = 0; i < 25; i++) {
-        A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
-        B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        A= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
+        B= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
         orb::matrix_hypot(A,B,C);
         TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
     }
@@ -23,8 +23,8 @@ void test_matrix_hypot() {
     {
     lin::Matrixd<8, 8> A, B, C;
     for (int i = 0; i < 25; i++) {
-        A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
-        B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        A= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
+        B= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
         orb::matrix_hypot(A,B,C);
         TEST_ASSERT_FLOAT_WITHIN(1E-12, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
     }
@@ -32,8 +32,8 @@ void test_matrix_hypot() {
     {
     lin::Matrixf<6, 6> A, B, C;
     for (int i = 0; i < 25; i++) {
-        A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
-        B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        A= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
+        B= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
         orb::matrix_hypot(A,B,C);
         TEST_ASSERT_FLOAT_WITHIN(1E-10, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
     }
@@ -41,8 +41,8 @@ void test_matrix_hypot() {
     {
     lin::Matrixd<6, 6> A, B, C;
     for (int i = 0; i < 25; i++) {
-        A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
-        B= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
+        A= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
+        B= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
         orb::matrix_hypot(A,B,C);
         TEST_ASSERT_FLOAT_WITHIN(1E-12, 0.0,lin::fro(lin::transpose(C)*C-lin::transpose(A)*A-lin::transpose(B)*B));
     }
@@ -58,7 +58,7 @@ void test_potter_measurement_update(){
     // P= (eye(length(x))-K*H)*P*(eye(length(x))-K*H)'+K*R*K';
     // x= x + K*(y-H*x);
     // end
-    lin::internal::RandomsGenerator const rand(0);
+    lin::internal::RandomsGenerator rand(0);
     {
         typedef float realtype;
         constexpr static int N=6;
@@ -70,19 +70,19 @@ void test_potter_measurement_update(){
         realtype invstddev;
         realtype z;
         for (int i = 0; i < 25; i++) {
-            S= lin::rands<decltype(S)>(S.rows(), S.cols(), rand);
+            S= lin::rands<decltype(S)>(rand, S.rows(), S.cols());
             P= S*lin::transpose(S);
-            A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
-            x= lin::rands<decltype(x)>(x.rows(), x.cols(), rand);
+            A= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
+            x= lin::rands<decltype(x)>(rand, x.rows(), x.cols());
             x_test=x;
-            lin::Vectorf<2> B= lin::rands<lin::Vectorf<2>>(2, 1, rand);
+            lin::Vectorf<2> B= lin::rands<lin::Vectorf<2>>(rand, 2, 1);
             invstddev= std::abs(B(0));
             z= B(1);
             orb::potter_measurement_update(x_test,S,z,A,invstddev);
             // now use regular kalman update
             realtype R= (1/invstddev)*(1/invstddev);
             lin::Vector<realtype,N> K= P*lin::transpose(A)/(lin::dot(A*P,lin::transpose(A))+R);
-            P= ((lin::identity<realtype,N>()-K*A)*P*lin::transpose(lin::identity<realtype,N>()-K*A)+K*R*lin::transpose(K)).eval();
+            P= ((lin::identity<realtype,N,N>()-K*A)*P*lin::transpose(lin::identity<realtype,N,N>()-K*A)+K*R*lin::transpose(K)).eval();
             x= (x + K*(z-lin::dot(A,x))).eval();
             TEST_ASSERT_FLOAT_WITHIN(1E-11, 0.0,lin::fro(x_test-x));
             TEST_ASSERT_FLOAT_WITHIN(1E-11, 0.0,lin::fro(P-S*lin::transpose(S)));
@@ -99,19 +99,19 @@ void test_potter_measurement_update(){
         realtype invstddev;
         realtype z;
         for (int i = 0; i < 25; i++) {
-            S= lin::rands<decltype(S)>(S.rows(), S.cols(), rand);
+            S= lin::rands<decltype(S)>(rand, S.rows(), S.cols());
             P= S*lin::transpose(S);
-            A= lin::rands<decltype(A)>(A.rows(), A.cols(), rand);
-            x= lin::rands<decltype(x)>(x.rows(), x.cols(), rand);
+            A= lin::rands<decltype(A)>(rand, A.rows(), A.cols());
+            x= lin::rands<decltype(x)>(rand, x.rows(), x.cols());
             x_test=x;
-            lin::Vectorf<2> B= lin::rands<lin::Vectorf<2>>(2, 1, rand);
+            lin::Vectorf<2> B= lin::rands<lin::Vectorf<2>>(rand, 2, 1);
             invstddev= std::abs(B(0));
             z= B(1);
             orb::potter_measurement_update(x_test,S,z,A,invstddev);
             // now use regular kalman update
             realtype R= (1/invstddev)*(1/invstddev);
             lin::Vector<realtype,N> K= P*lin::transpose(A)/(lin::dot(A*P,lin::transpose(A))+R);
-            P= ((lin::identity<realtype,N>()-K*A)*P*lin::transpose(lin::identity<realtype,N>()-K*A)+K*R*lin::transpose(K)).eval();
+            P= ((lin::identity<realtype,N,N>()-K*A)*P*lin::transpose(lin::identity<realtype,N,N>()-K*A)+K*R*lin::transpose(K)).eval();
             x= (x + K*(z-lin::dot(A,x))).eval();
             TEST_ASSERT_FLOAT_WITHIN(1E-11, 0.0,lin::fro(x_test-x));
             TEST_ASSERT_FLOAT_WITHIN(1E-11, 0.0,lin::fro(P-S*lin::transpose(S)));
