@@ -1,0 +1,23 @@
+# Simple configuration file for testing the configration parser.
+#
+# Comment lines should match `^#` and blank lines are ignored.
+#
+
+# Values are declared in the follwing form:
+#   <name> <value> ...
+#
+# You may match a name to an Integer, Real, Vector2, Vector3, or Vector4. If one
+# value is specified, the precense of a `.` indicates the value is a Real
+# instead of an Integer.
+#
+
+test.integer  1
+test.i       -2
+
+test.real -1.0
+
+test.vector2 1.0 2.0
+
+test.vector3 1.0 -2.0 3.0
+
+test.vector4 1.0 2.0 3.0 4.0

@@ -57,18 +57,19 @@ cc_library(
 # Build all PSim models as a library
 #
 # This will be linked with executables later on.
-# cc_library(
-#     name = "psim",
-#     srcs = glob([
-#         "src/psim/**/*.hpp", "src/psim/**/*.inl", "src/psim/**/*.cpp",
-#     ]),
-#     hdrs = glob(
-#         ["include/psim/**/*.hpp", "include/psim/**/*.inl"],
-#         exclude = ["include/psim/**/*.yml.hpp"],
-#     ),
-#     includes = ["include"],
-#     copts = ["-Isrc"],
-#     linkstatic = True,
-#     visibility = ["//visibility:public"],
-#     deps = ["@lin//:lin", "//:gnc", "//:autocode"],
-# )
+cc_library(
+    name = "psim",
+    srcs = glob([
+        "src/psim/**/*.hpp", "src/psim/**/*.inl", "src/psim/**/*.cpp",
+        "include/psim/**/*.inl", # "include/psim/**/*.yml.hpp",
+    ]),
+    hdrs = glob(
+        ["include/psim/**/*.hpp"],
+        #exclude = ["include/psim/**/*.yml.hpp"],
+    ),
+    includes = ["include"],
+    copts = ["-Isrc"],
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = ["@lin//:lin", "//:gnc"],# "//:autocode"],
+)
