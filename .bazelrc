@@ -1,1 +1,2 @@
 build --cxxopt=-std=c++14
+build --python_top=//:venv --incompatible_use_python_toolchains=false

@@ -1,11 +1,11 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-# load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
+load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
-# git_repository(
-#     name = "rules_python",
-#     remote = "https://github.com/bazelbuild/rules_python.git",
-#     commit = "3baa2660569a76898d0f520c73b299ea39b6374d",  # (9-8-2020)
-# )
+git_repository(
+    name = "rules_python",
+    remote = "https://github.com/bazelbuild/rules_python.git",
+    commit = "3baa2660569a76898d0f520c73b299ea39b6374d",  # (9-8-2020)
+)
 
 http_archive(
     name = "gtest",

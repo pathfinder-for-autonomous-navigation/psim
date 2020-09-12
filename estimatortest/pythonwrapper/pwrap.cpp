@@ -7,16 +7,17 @@ mypath=Path(filepath)
 psimpath= mypath.parent.parent.parent
 #flightsoftwarepath= psimpath.parent/'FlightSoftware'
 # 'dependencies' controls what get checked for changes before recompile
-cfg['dependencies'] = [str(p) for p in (psimpath/'src').rglob('*') if p.is_file()]
+cfg['dependencies'] = [str(p) for p in (psimpath/'src/gnc').rglob('*') if p.is_file()]
 cfg['dependencies'] += [str(p) for p in (psimpath/'lib').rglob('*') if p.is_file()]
-cfg['dependencies'] += [str(p) for p in (psimpath/'include').rglob('*') if p.is_file()]
+cfg['dependencies'] += [str(p) for p in (psimpath/'include/gnc').rglob('*') if p.is_file()]
+cfg['dependencies'] += [str(p) for p in (psimpath/'include/orb').rglob('*') if p.is_file()]
 cfg['dependencies'] += [str(mypath.parent/'lin_ext.cpp')]
 cfg['dependencies'] += [str(mypath.parent/'orb_ext.cpp')]
 #cfg['dependencies'] += [str(p) for p in (flightsoftwarepath/'src').rglob('*') if p.is_file()]
 #cfg['dependencies'] += [str(p) for p in (flightsoftwarepath/'lib').rglob('*') if p.is_file()]
 
 cfg['sources'] = ['lin_ext.cpp', 'orb_ext.cpp']
-cfg['sources'] += [str(p) for p in (psimpath/'src').rglob('*.cpp') if (p.is_file() and p.parent.name!='targets')]
+cfg['sources'] += [str(p) for p in (psimpath/'src/gnc').rglob('*.cpp') if (p.is_file() and p.parent.name!='targets')]
 #cfg['sources'] += [str(p) for p in (flightsoftwarepath/'src/fsw').rglob('*.cpp') if (p.is_file() and p.parent.name!='targets')]
 #cfg['sources'] += [str(p) for p in (flightsoftwarepath/'src/common').rglob('*.cpp') if (p.is_file() and p.parent.name!='targets')]
 

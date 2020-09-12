@@ -1,4 +1,4 @@
-name: PSim Regression Tests
+name: GNC Regression Tests
 
 on:
   pull_request:
@@ -11,6 +11,7 @@ jobs:
     - uses: actions/checkout@v2
       with:
         submodules: 'recursive'
+
     - uses: actions/setup-python@v1
       with:
         python-version: '3.7'
