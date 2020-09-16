@@ -15,12 +15,14 @@ public:
         // assemble lin data
         gnc::AttitudeEstimatorData data_in = gnc::AttitudeEstimatorData();
         
-        data_in.t = inputs[4][0];
-        typed_array_to_lin_vec(data_in.r_ecef, inputs[5]);
-        typed_array_to_lin_vec(data_in.b_body, inputs[6]);
-        typed_array_to_lin_vec(data_in.s_body, inputs[7]);
-        typed_array_to_lin_vec(data_in.w_body, inputs[8]);
+        // data_in.t = inputs[4][0];
+        // typed_array_to_lin_vec(data_in.r_ecef, inputs[5]);
+        // typed_array_to_lin_vec(data_in.b_body, inputs[6]);
+        // typed_array_to_lin_vec(data_in.s_body, inputs[7]);
+        // typed_array_to_lin_vec(data_in.w_body, inputs[8]);
 
+        double time = inputs[0][0];
+        lin::Vector3f r_ecef
         // assemble lin state
         gnc::AttitudeEstimatorState state = gnc::AttitudeEstimatorState();
 
@@ -35,10 +37,11 @@ public:
             lin::isfinite(state.t));
 
         // empty estimate
-        gnc::AttitudeEstimate estimate = gnc::AttitudeEstimate();
+        // gnc::AttitudeEstimate estimate = gnc::AttitudeEstimate();
 
-        gnc::attitude_estimator_update(state, data_in, estimate);
-        
+        // gnc::attitude_estimator_update(state, data_in, estimate);
+        gnc::attitude_estimator_reset(state, t, r_ecef, b_body);
+
         ArrayFactory f;
 
         // will only contain one element

@@ -464,7 +464,35 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
 
   // TODO : Implement this
   // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/187
+  
   lin::Vector4f q_body_eci = lin::nans<float, 4, 1>();
+  
+  lin::Vector3f b_eci{};
+  lin::Vector4f q{};
+  env::magnetic_field(t, lin::Vector3f(r_ecef), b_eci);  // b_eci = b_ecef
+  env::earth_attitude(t, q);                             // q = q_ecef_eci
+  utl::quat_conj(q);                                     // q = q_eci_ecef
+  utl::rotate_frame(q, b_eci);                           // b_eci = b_eci  
+  env::magnetic_field(t, lin::Vector3f(r_ecef), b_eci);
+  
+  // Ensure the measured and expected magnetic field are large enough
+  float thresh = constant::b_noise_floor * constant::b_noise_floor;
+  if ((lin::fro(b_eci) < thresh) || (lin::fro(b_body) < thresh))
+    return;
+
+  // Determine the expected sun vector
+  lin::Vector3f s_eci{};
+  env::sun_vector(t, s_eci);
+
+  // Ensure the sun vectors are unit vectors
+  GNC_ASSERT_NORMALIZED(s_body);
+  GNC_ASSERT_NORMALIZED(s_eci);
+
+  // Perform triad
+  // Remember the value of q_body_eci will be set to NaNs if triad fails
+  utl::triad(s_eci, (b_eci / lin::norm(b_eci)).eval(), s_body,
+      (b_body / lin::norm(b_body)).eval(), q_body_eci);
+
   attitude_estimator_reset(state, t, q_body_eci);
 }
 
