@@ -156,6 +156,7 @@ sat2sun_eci = env_sun_vector(tspan(1));
 sat2sun_body = utl_rotateframe(q0, sat2sun_eci')';
 th_ss_body = atan(sat2sun_body(2) / sat2sun_body(1)); % [rad]
 phi_ss_body = acos(sat2sun_body(3)); % [rad]
+ss_ang_body_t0 = sat2sun_body; % save t0 for triad analysis
 ss_noise = mvnrnd(zeros(1, 2), R_ss, 1);
 ss_ang_body = [th_ss_body; phi_ss_body] + ss_noise'; % add noise
 ss_meas_vec(:, 1) = ss_ang_body;
@@ -167,9 +168,11 @@ quat_body_ecef = utl_quat_cross_mult(q0, quat_eci_ecef);
 r_ecef = utl_rotateframe( quat_ecef_eci, r0 )';
 B_ecef = env_magnetic_field(tspan(1), r_ecef);
 B_body = utl_rotateframe(quat_body_ecef, B_ecef')';
+B_body_t0 = B_body; % save t0 initial for triad analysis
 mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
 B_body_meas = B_body + mag_noise'; % add noise
 mag_meas_vec(:, 1) = B_body_meas;
+
 
 ukf = adcs_make_mex_ukf(); %C++ implementation
 %ukf = adcs_make_matlab_ukf(); %MATLAB implementation
@@ -177,6 +180,17 @@ ukf = adcs_make_mex_ukf(); %C++ implementation
 % reset takes time since epoch... so i replaced T0 with 0
 state = ukf.reset(t(1), q_est); %C++ implementation
 %state = ukf.reset(q_est,bias_est,P); %MATLAB implementation
+
+% shihao is testing if triad reset works
+% pos unknown
+%triad_pos_ecef = [4255924.361551; -4329416.99673402; 2900186.80476730];
+triad_pos_ecef = r0;
+% sun vec
+triad_sun_vec = ss_ang_body_t0;
+%triad_sun_vec = [0.9973; -0.0668; -0.0290]
+triad_mag_vec = B_body_t0;
+
+triad_state_out = ukf.triad_reset(t(1), triad_pos_ecef, triad_mag_vec, triad_sun_vec);
 
 for i = 1 : N
     

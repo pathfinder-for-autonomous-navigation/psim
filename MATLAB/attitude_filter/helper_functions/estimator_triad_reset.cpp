@@ -22,7 +22,9 @@ public:
         // typed_array_to_lin_vec(data_in.w_body, inputs[8]);
 
         double time = inputs[0][0];
-        lin::Vector3f r_ecef
+        lin::Vector3f r_ecef = inputs[1];
+        lin::Vector3f b_body = inputs[2];
+        lin::Vector3f s_body = inputs[3];
         // assemble lin state
         gnc::AttitudeEstimatorState state = gnc::AttitudeEstimatorState();
 
