@@ -1,0 +1,30 @@
+load("@rules_python//python:defs.bzl", "py_test")
+
+load("//bazel:psim_build.bzl", "psim_cc_test")
+
+test_suite(name = "cc", tags = ["cc"])  # cc tests only
+test_suite(name = "ci", tags = ["ci"])  # tests for ci only
+test_suite(name = "py", tags = ["py"])  # Python tests only
+
+psim_cc_test(
+    name = "core",
+    deps = ["//:psim_core"],
+    tags = ["cc", "ci"],
+)
+
+psim_cc_test(
+    name = "truth",
+    deps = ["//:psim_core", "//:psim_truth"],
+    tags = ["cc", "ci"],
+)
+
+py_test(
+  name = "psim_test",
+  main = "python/configuration_test.py",
+  srcs = ["python/configuration_test.py"],
+  data = glob(["python/**/*.txt"]),
+  imports = ["."],
+  deps = ["//:psim"],
+  visibility = ["//visibility:public"],
+  tags = ["ci", "py"],
+)

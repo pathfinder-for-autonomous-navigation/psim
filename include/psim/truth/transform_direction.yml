@@ -1,0 +1,41 @@
+
+name: TransformDirection
+type: Model
+comment: >
+    Reference frame independent interface for providing lazy transformations of
+    a vector in an implementation dependant frame to a vector in the body, ECEF,
+    and ECI frame. This is identical to the position transformer except it
+    includes the body frame as well. This is primarily intended for transforming
+    'directional' vectors into the body frame to act as sensor measurements.
+
+args:
+    - prefix
+    - satellite
+    - vector
+
+adds:
+    - name: "{prefix}.{satellite}.{vector}.body"
+      type: Lazy Vector3
+      comment: >
+          Input vector represented in the body frame.
+    - name: "{prefix}.{satellite}.{vector}.ecef"
+      type: Lazy Vector3
+      comment: >
+          Input vector represented in the ECEF frame.
+    - name: "{prefix}.{satellite}.{vector}.eci"
+      type: Lazy Vector3
+      comment: >
+          Input vector represented in the ECI frame.
+
+gets:
+    - name: "{prefix}.{satellite}.{vector}"
+      type: Vector3
+      comment: >
+          Input vector. The frame of this vector is specified by the
+          implementation.
+    - name: "{prefix}.earth.q.eci_ecef"
+      type: Vector4
+    - name: "{prefix}.earth.q.ecef_eci"
+      type: Vector4
+    - name: "{prefix}.{satellite}.attitude.q.body_eci"
+      type: Vector4
