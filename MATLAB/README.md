@@ -61,6 +61,8 @@ Most Matlab types are compatible with python types: [Python to Matlab function i
  * `./estimator_prototypes/*` - prototypes for estimators.
  * `./orbit_propagator_prototypes/*` - prototypes for orbit propagators.
  * `./orbit_estimation/*` - orbit estimator, main initialization, run, and some helper and test functions.
+ * `./estimator_test_file_gen/*` - scripts and helper functions to generate hdf5 estimator test files from the MATLAB sim
+
 
 ## Main State Data Structure
 
@@ -87,7 +89,7 @@ Each satellites state has the following members and submembers:
    * `magrod_hysteresis_body`(3x1 matrix): Real magnetorquer hysteresis moment (Am^2)
    * `ground_position_ecef`(3x1 matrix): ground known estimated position of the satellite (m)
    * `ground_velocity_ecef`(3x1 matrix): ground known estimated velocity of the gps reciever of the satellite (m/s)
-   * `ground_time`(scalar): ground known estimated time since initial GPS week (s)
+   * `ground_gpstime`(scalar int64): ground known estimated time since GPS epoch (ns)
  * `sensors`
    * `gyro_bias`: (rad/s)
    * `magnetometer_bias`: (T)
@@ -135,11 +137,12 @@ sensor readings is a struct with elements:
  * `sat2sun_body`, unit vector from satellite to sun (unitless)
  * `sun_sensor_true`, true if sun vector reading is good, else false.
  * `wheel_momentum_body`, wheel angular momentum reading (Nms)
- * `time`, time since initial GPS week (s)
+ * `gpstime`(scalar int64): time since GPS epoch (ns)
  * `position_ecef`, position of the gps reciever of the satellite (m)
  * `velocity_ecef`, velocity of the gps reciever of the satellite (m/s)
- * `target_position_ecef`, position of the target gps reciever of the satellite, from ground (m)
- * `target_velocity_ecef`, velocity of the target gps reciever of the satellite, from ground (m/s)
+ * `target_position_ecef`, position of the target satellite, from ground (m)
+ * `target_velocity_ecef`, velocity of the target satellite, from ground (m/s)
+ * `target_gpstime`(scalar int64): time since GPS epoch, from ground (ns)
  * `relative_position_ecef`, position vector from self to target, from cdgps (m)
 
 actuator commands is a struct with elements:
@@ -151,7 +154,7 @@ actuator commands is a struct with elements:
  * `magrod_moment`, commanded x,y,z magnetorquer moments (Am^2)
  * `position_ecef`(3x1 matrix): estimated position of the satellite to send to ground (m)
  * `velocity_ecef`(3x1 matrix): estimated velocity of the satellite to send to ground (m/s)
- * `time`(scalar): time since initial GPS week, time of the orbit estimate to send to ground (s)
+ * `gpstime`(scalar int64): time since GPS epoch, time of the orbit estimate to send to ground (ns)
 
 ## Functions
 
@@ -242,6 +245,8 @@ Constants are stored in the `const` global struct.
    * `mu`(positive scalar), Earth's gravitational constant (m^3/s^2)
    * `dt`(positive int64), Simulation timestep (ns)
    * `INITGPS_WN`(positive int), Initial gps week number, epoch for time (weeks)
+   * `INIT_DYEAR`(double): Decimal year at INITGPS_WN epoch (year, AD)
+   * `INIT_GPSNS`(int64): INITGPS_WN in nanoseconds (ns)
    * `R_EARTH`(positive scalar), Equatorial Radius of Earth (m)
    * `e_earth`(positive scalar), Earth's eccentricity
    * `tp_earth`(scalar), Time when earth was at perihelion (s)

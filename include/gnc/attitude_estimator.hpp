@@ -24,9 +24,11 @@
 
 /** @file gnc/attitude_estimator.hpp
  *  @author Kyle Krol
- *
+ */
+
+/** @defgroup attitude_estimation Attiude Estimation
  *  @brief Defines the interface for the attitude estimator.
- *
+ * 
  *  At a high level, the attitude estimator implemented here is an unscented
  *  Kalman filter estimating both attitude and gyro bias. It's based on "Unscented
  *  Filtering for Spacecraft Attitude Estimation" by John Crassidis and Landis
@@ -60,7 +62,8 @@
  *      attitude_estimator_reset(state,...);
  *    }
  *  }
- *  ~~~ */
+ *  ~~~ 
+ */
 
 #ifndef GNC_ATTITUDE_ESTIMATOR_HPP_
 #define GNC_ATTITUDE_ESTIMATOR_HPP_
@@ -74,13 +77,19 @@ namespace constant {
  *
  *  This parameter tunes the expected amount of gyro noise within the attitude
  *  estimator. It's defaulted to a value of `1.0e-6f` (units of radians per
- *  second). */
+ *  second).
+ * 
+ *  @ingroup attitude_estimator
+ */
 extern float ukf_sigma_v;
 
 /** @brief Standard deviation of gyro bias noise.
  *
  *  This parameter tunes the expected amount of gyro bias noise within the
- *  attitude estimator. It's defaulted to a value of `2.75e-4f` (MKS units). */
+ *  attitude estimator. It's defaulted to a value of `2.75e-4f` (MKS units).
+ * 
+ *  @ingroup attitude_estimator
+ */
 extern float ukf_sigma_u;
 
 /** @brief Standard deviation of magnetometer noise.
@@ -93,7 +102,10 @@ extern float ukf_sigma_b;
  *
  *  This parameter tunes the expected amount of sun vector noise within the
  *  attitude estimator. It's defaulted to a value of
- *  `2.0f * constant::deg_to_rad_f` (units of radians). */
+ *  `2.0f * constant::deg_to_rad_f` (units of radians).
+ * 
+ *  @ingroup attitude_estimator
+ */
 extern float ukf_sigma_s;
 
 }  // namespace constant
@@ -110,7 +122,10 @@ extern float ukf_sigma_s;
  *
  *  Prior to being used with the `attitude_estimator_update` function, the state
  *  variable must be initialized with a call to `attitude_estimator_reset`. See
- *  more documentation below. */
+ *  more documentation below.
+ *
+ *  @ingroup attitude_estimator
+ */
 struct AttitudeEstimatorState {
   /** Variables acting as a calculation buffer
    *  @{ */
@@ -144,7 +159,10 @@ struct AttitudeEstimatorState {
  *
  *  In order for a succesfull filter update to be performed, all fields are
  *  required except for the sun vector reading. If no sun vector can be specified,
- *  simply leave it's elements set to NaN. */
+ *  simply leave it's elements set to NaN.
+ *
+ *  @ingroup attitude_estimator
+ */
 struct AttitudeEstimatorData {
   lin::Vector3d r_ecef; //!< Position in ECEF (m).
   lin::Vector3f b_body; //!< Magnetic field reading in the body frame (T).
@@ -169,7 +187,10 @@ struct AttitudeEstimatorData {
  *
  *  The state covariance matrix gives the uncertainty in a GRP attitude
  *  representation localized around the current attitude estimate and the gyro
- *  bias. See the filter implementation itself for more information. */
+ *  bias. See the filter implementation itself for more information.
+ * 
+ *  @ingroup attitude_estimator
+ */
 struct AttitudeEstimate {
   lin::Vector4f q_body_eci; //<! Quaternion rotating from ECI to the body frame.
   lin::Vector3f gyro_bias;  //<! Gyro bias (rad/s).
@@ -190,7 +211,10 @@ struct AttitudeEstimate {
  *  Initializes the current time and attitude estimate to the passed arguments.
  *  The gyro bias and covariance is set to default values.
  *
- *  The state will be valid as long as the passed arguments were finite. */
+ *  The state will be valid as long as the passed arguments were finite.
+ * 
+ *  @ingroup attitude_estimator
+ */
 void attitude_estimator_reset(AttitudeEstimatorState &state,
     double t, lin::Vector4f const &q_body_eci);
 
@@ -211,7 +235,10 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
  *  parameters given failed the triad algorithm - i.e the sun and magnetic field
  *  vector were nearly parallel.
  *
- *  See the `gnc::utl::triad` documentation for more information. */
+ *  See the `gnc::utl::triad` documentation for more information.
+ * 
+ *  @ingroup attitude_estimator
+ */
 void attitude_estimator_reset(AttitudeEstimatorState &state,
     double t, lin::Vector3d const &r_ecef, lin::Vector3f const &b_body,
     lin::Vector3f const &s_body);
@@ -233,7 +260,10 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
  *  Further checks on the updated covariance matrix are also suggested to check
  *  for runaway uncertainties.
  *
- *  An "invalid" input will result in invalid outputs. */
+ *  An "invalid" input will result in invalid outputs.
+ *
+ *  @ingroup attitude_estimator
+ */
 void attitude_estimator_update(AttitudeEstimatorState &state,
     AttitudeEstimatorData const &data, AttitudeEstimate &estimate);
 

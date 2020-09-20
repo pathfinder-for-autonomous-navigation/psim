@@ -28,13 +28,13 @@
            } while(0) 
 
 //grace orbit initial
-const orb::Orbit gracestart(uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK,{-6522019.833240811L, 2067829.846415895L, 776905.9724453629L},{941.0211143841228L, 85.66662333729801L, 7552.870253470936L});
+const orb::Orbit gracestart(int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK,{-6522019.833240811L, 2067829.846415895L, 776905.9724453629L},{941.0211143841228L, 85.66662333729801L, 7552.870253470936L});
 
 //grace orbit 100 seconds later
-const orb::Orbit grace100s(uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK+100'000'000'000ULL,{-6388456.55330517L, 2062929.296577276L, 1525892.564091281L},{1726.923087560988L, -185.5049475128178L, 7411.544615026139L});
+const orb::Orbit grace100s(int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK+100'000'000'000ULL,{-6388456.55330517L, 2062929.296577276L, 1525892.564091281L},{1726.923087560988L, -185.5049475128178L, 7411.544615026139L});
 
 //grace orbit 13700 seconds later
-const orb::Orbit grace13700s(uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK+13700'000'000'000ULL,{1579190.147083268L, -6066459.613667888L, 2785708.976728437L},{480.8261476296949L, -3083.977113497177L, -6969.470748202005L});
+const orb::Orbit grace13700s(int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK+13700'000'000'000ULL,{1579190.147083268L, -6066459.613667888L, 2785708.976728437L},{480.8261476296949L, -3083.977113497177L, -6969.470748202005L});
 
 //earth rate in ecef (rad/s)
 lin::Vector3d earth_rate_ecef= {0.000000707063506E-4,-0.000001060595259E-4,0.729211585530000E-4};
@@ -645,7 +645,7 @@ void test_four_inputs_h() {
     est.input(x0,gracestart.nsgpstime(),earth_rate_ecef);
     est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
     est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
-    uint64_t t= gracestart.nsgpstime()-3200'000'000'000LL;
+    int64_t t= gracestart.nsgpstime()-3200'000'000'000LL;
     est.input(x3,t,earth_rate_ecef);
     CHECKINVARIANT(est);
     TEST_ASSERT(est.current.valid());
@@ -675,7 +675,7 @@ void test_four_inputs_i() {
     est.input(x0,gracestart.nsgpstime(),earth_rate_ecef);
     est.input(x1,gracestart.nsgpstime(),earth_rate_ecef);
     est.input(x2,gracestart.nsgpstime(),earth_rate_ecef);
-    uint64_t t= gracestart.nsgpstime()-2200'000'000'000LL;
+    int64_t t= gracestart.nsgpstime()-2200'000'000'000LL;
     est.input(x3,t,earth_rate_ecef);
     CHECKINVARIANT(est);
     TEST_ASSERT(est.current.valid());
@@ -694,7 +694,7 @@ void test_four_inputs_i() {
 void test_one_orbit_prop() {
     orb::GroundPropagator est;
     orb::Orbit x0= gracestart;
-    uint64_t t0= gracestart.nsgpstime();
+    int64_t t0= gracestart.nsgpstime();
     est.input(x0,t0,earth_rate_ecef);
     auto est_copy= est;
     TEST_ASSERT_FALSE(est.total_num_grav_calls_left());
@@ -721,7 +721,7 @@ void test_one_orbit_prop() {
 /** Test that propagator can't be overloaded.*/
 void test_overloading() {
     orb::GroundPropagator est;
-    uint64_t t0= gracestart.nsgpstime();
+    int64_t t0= gracestart.nsgpstime();
     lin::Vector3d v0= gracestart.vecef();
     lin::Vector3d r0= gracestart.recef();
     orb::Orbit x0(t0,r0,v0);
@@ -797,9 +797,9 @@ orb::Orbit real_fake_ground_data(int controlcycle){
 
 void test_normal_use() {
     orb::GroundPropagator est;
-    uint64_t gpsns= uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
+    int64_t gpsns= int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
     gpsns+= 1000'000'000'000ULL;
-    uint64_t dtgpsns= 120'000'000ULL;
+    int64_t dtgpsns= 120'000'000ULL;
     //start est with an up to date current estimate.
     est.input(orb::Orbit(gpsns,gracestart.recef(),gracestart.vecef()),gpsns,earth_rate_ecef);
     orb::Orbit best= est.best_estimate();
@@ -831,7 +831,7 @@ void test_normal_use() {
 
 void test_time_going_backwards() {
     orb::GroundPropagator est;
-    uint64_t gpsns= uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
+    int64_t gpsns= int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
     gpsns+= 1000'000'000'000ULL;
     //Time is going backwards for some reason???
     int64_t dtgpsns= -120'000'000LL;
@@ -866,7 +866,7 @@ void test_time_going_backwards() {
 
 void test_lots_of_ground_data() {
     orb::GroundPropagator est;
-    uint64_t gpsns= uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
+    int64_t gpsns= int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
     gpsns+= 1000'000'000'000ULL;
     int64_t dtgpsns= 120'000'000LL;
     //start est with an up to date current estimate.
@@ -894,7 +894,7 @@ void test_lots_of_ground_data() {
 
 void test_lots_of_ground_data_catchingup() {
     orb::GroundPropagator est;
-    uint64_t gpsns= uint64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
+    int64_t gpsns= int64_t(gnc::constant::init_gps_week_number)*gnc::constant::NANOSECONDS_IN_WEEK;
     gpsns+= 1000'000'000'000ULL;
     int64_t dtgpsns= 120'000'000LL;
     //start est with an up to date current estimate.

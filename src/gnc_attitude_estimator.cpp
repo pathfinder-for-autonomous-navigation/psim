@@ -70,8 +70,7 @@ typedef lin::Matrix<ukf_float, 6, 3> UkfMatrix6x3;
 typedef lin::Matrix<ukf_float, 6, 5> UkfMatrix6x5;
 typedef lin::Matrix<ukf_float, 6, 6> UkfMatrix6x6;
 
-/** @fn ukf_propegate
- *  Propegates forward the attitude of a rotating rigid body.
+/** @brief Propegates forward the attitude of a rotating rigid body.
  *
  *  @param[in]  dt    Timestep (seconds).
  *  @param[in]  w     Angular rate (radians per second).
@@ -104,8 +103,7 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
   q_new = O * q_old;
 }
 
-/** @fn ukf
- *  Performs a single attitude estimator update step.
+/** @brief Performs a single attitude estimator update step.
  *
  *  @param[inout] state             Attitude estimator state.
  *  @param[in]    data              Input sensor measurements.
@@ -339,8 +337,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
   }
 }
 
-/** @fn ukf_m
- *  Update attitude estimator state given a magnetometer reading.
+/** @brief Update attitude estimator state given a magnetometer reading.
  * 
  *  @param[inout] state Attitude filter state.
  *  @param[in]    data  Input sensor data. */
@@ -367,8 +364,8 @@ static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &da
   });
 }
 
-/** @fn ukf_ms
- *  Update attitude estimator state given magnetometer and sun vector readings.
+/** @brief Update attitude estimator state given magnetometer and sun vector
+ *         readings.
  * 
  *  @param[inout] state Attitude filter state.
  *  @param[in]    data  Input sensor data. */
