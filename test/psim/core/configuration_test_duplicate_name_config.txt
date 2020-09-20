@@ -1,0 +1,5 @@
+# Simple test to be sure the configuration parser catches duplicate names.
+#
+
+test.duplicate_name 0
+test.duplicate_name 0

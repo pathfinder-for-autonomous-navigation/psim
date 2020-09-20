@@ -146,3 +146,13 @@ geograv/build/*
 MATLAB/psim.html
 tmp/
 .idea/
+
+# Bazel
+bazel-bin
+bazel-out
+bazel-psim
+bazel-testlogs
+bazel-genfiles
+
+# Compiler commands from Bazel
+compile_commands.json

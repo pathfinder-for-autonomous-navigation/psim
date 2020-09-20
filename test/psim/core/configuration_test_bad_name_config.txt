@@ -1,0 +1,5 @@
+# Simple test to be sure the configuration parser catches an invalid parameter
+# name.
+#
+
+test.bad-name 0
