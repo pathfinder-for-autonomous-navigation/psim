@@ -69,26 +69,5 @@ public:
                 0, std::vector<matlab::data::Array>({ factory.createScalar("9 inputs required") }));
         }
 
-        // if (inputs[5].getNumberOfElements() != 1) {
-        //     matlabPtr->feval(u"error", 
-        //         0, std::vector<matlab::data::Array>({ factory.createScalar("Time must be a scalar") }));
-        // }
-        
-        // if (inputs[5].getType() != matlab::data::ArrayType::DOUBLE ||
-        //     inputs[5].getType() == matlab::data::ArrayType::COMPLEX_DOUBLE) {
-        //     matlabPtr->feval(u"error", 
-        //         0, std::vector<matlab::data::Array>({ factory.createScalar("Time multiplier must be a noncomplex scalar double") }));
-        // }
-
-        // if (inputs[6].getType() != matlab::data::ArrayType::DOUBLE ||
-        //     inputs[6].getType() == matlab::data::ArrayType::COMPLEX_DOUBLE) {
-        //     matlabPtr->feval(u"error", 
-        //         0, std::vector<matlab::data::Array>({ factory.createScalar("Input matrix must be type double") }));
-        // }
-
-        // if (inputs[6].getDimensions().size() != 2) {
-        //     matlabPtr->feval(u"error", 
-        //         0, std::vector<matlab::data::Array>({ factory.createScalar("Input must be m-by-n dimension") }));
-        // }
     }
 };
