@@ -461,9 +461,6 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
     double t, lin::Vector3d const &r_ecef, lin::Vector3f const &b_body,
     lin::Vector3f const &s_body) {
   GNC_ASSERT_NORMALIZED(s_body);
-
-  // TODO : Implement this
-  // https://github.com/pathfinder-for-autonomous-navigation/psim/issues/187
   
   lin::Vector4f q_body_eci = lin::nans<float, 4, 1>();
   

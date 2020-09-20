@@ -22,7 +22,7 @@ try mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geomag_file, geomag_incl); c
 try mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geograv_file, geograv_incl); catch; end
 
 try mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14 -D GNC_NO_CASSERT", estimator_reset_file, gnc_attitude_estimator_file, gnc_env_file, gnc_constants_file, conversion_incl, gnc_incl, lin_incl); catch; end
-mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14 -D GNC_NO_CASSERT", estimator_triad_reset_file, gnc_attitude_estimator_file, gnc_env_file, gnc_constants_file, conversion_incl, gnc_incl, lin_incl);
+try mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14 -D GNC_NO_CASSERT", estimator_triad_reset_file, gnc_attitude_estimator_file, gnc_env_file, gnc_constants_file, conversion_incl, gnc_incl, lin_incl); catch; end
 try mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14 -D GNC_NO_CASSERT", estimator_update_file, gnc_attitude_estimator_file, gnc_env_file, gnc_constants_file, conversion_incl, gnc_incl, lin_incl); catch; end
 
 % try mex("-R2018a", "CXXFLAGS=$CXXFLAGS -std=c++14", geograv_file, geograv_incl); catch; end
