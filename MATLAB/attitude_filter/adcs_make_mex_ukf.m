@@ -4,10 +4,10 @@ ukf.triad_reset = @triad_reset;
 ukf.update = @update;
 end
 
-function [state] = reset(t, q)
+function [out_state] = reset(t, q)
     assert(isequal(size(t), [1,1]), "t must be a scalar")
     assert(isequal(size(q), [4,1]), "q must be a 4x1 quaternion")
-    state = estimator_reset(t, q);
+    out_state = estimator_reset(t, q);
 end
 
 function [out_state] = triad_reset(t, r_ecef, b_body, s_body)
