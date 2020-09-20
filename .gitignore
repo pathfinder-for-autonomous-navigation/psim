@@ -153,3 +153,6 @@ bazel-out
 bazel-psim
 bazel-testlogs
 bazel-genfiles
+
+# Compiler commands from Bazel
+compile_commands.json
