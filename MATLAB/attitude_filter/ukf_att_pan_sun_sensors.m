@@ -9,7 +9,7 @@ global const
 
 % time
 tmax = 2000; % [sec]
-dt = 0.1; % [sec]
+dt = 0.1; % [sec ]
 tspan = 0 : dt : tmax; % [sec]
 N = length(tspan);
 
@@ -173,16 +173,7 @@ mag_noise = mvnrnd(zeros(1, 3), R_mag, 1);
 B_body_meas = B_body + mag_noise'; % add noise
 mag_meas_vec(:, 1) = B_body_meas;
 
-
-ukf = adcs_make_mex_ukf(); %C++ implementation
-%ukf = adcs_make_matlab_ukf(); %MATLAB implementation
-
-% reset takes time since epoch... so i replaced T0 with 0
-state = ukf.reset(t(1), q_est); %C++ implementation
-%state = ukf.reset(q_est,bias_est,P); %MATLAB implementation
-
-% shihao is testing if triad reset works
-% pos unknown
+% triad setup if needed
 %triad_pos_ecef = [4255924.361551; -4329416.99673402; 2900186.80476730];
 triad_pos_ecef = r0;
 % sun vec
@@ -190,7 +181,17 @@ triad_sun_vec = ss_ang_body_t0;
 %triad_sun_vec = [0.9973; -0.0668; -0.0290]
 triad_mag_vec = B_body_t0;
 
-triad_state_out = ukf.triad_reset(t(1), triad_pos_ecef, triad_mag_vec, triad_sun_vec);
+ukf = adcs_make_mex_ukf(); %C++ implementation
+%ukf = adcs_make_matlab_ukf(); %MATLAB implementation
+
+% reset takes time since epoch... so i replaced T0 with 0
+% state = ukf.reset(t(1), q_est); %C++ implementation
+
+% C++ triad reset
+state = ukf.triad_reset(t(1), triad_pos_ecef, triad_mag_vec, triad_sun_vec);
+
+%state = ukf.reset(q_est,bias_est,P); %MATLAB implementation
+
 
 for i = 1 : N
     
