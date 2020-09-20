@@ -45,7 +45,7 @@ class StateFieldValued : public StateFieldWritable<T> {
  private:
   /** @brief Underlying value.
    */
-  T mutable _value;
+  T _value;
 
  public:
   using StateFieldWritable<T>::operator=;
