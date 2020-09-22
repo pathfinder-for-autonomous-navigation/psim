@@ -97,7 +97,7 @@ OrbitActuation::OrbitActuation()
 static double energy(lin::Vector3d const &r_ecef0, lin::Vector3d const &v_ecef0) {
   // Convert position from ECEF0 to ECEF by rotating frame. not sure if i did this right...
   lin::Vector3d r_ecef = r_ecef0;
-  // lin::Vector3d v_ecef = v_ecef0 + lin::cross(w_earth, r_ecef0);
+  //lin::Vector3d v_ecef = v_ecef0 + lin::cross(w_earth, r_ecef0);
 
   // Calculate gravitational potential
   double potential;
@@ -105,7 +105,7 @@ static double energy(lin::Vector3d const &r_ecef0, lin::Vector3d const &v_ecef0)
   env::gravity(r_ecef, acceleration, potential);
 
   // Return energy (E = K + U)
-  return 0.5 * lin::dot(v_eci, v_eci) - potential;
+  return 0.5 * lin::dot(v_ecef0, v_ecef0) - potential;
 }
 
 /*
@@ -165,7 +165,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
   double a = -1 * gnc::constant::mu_earth / (2 * this_energy);
   double n = orbrate(a);
   double M = n * data.t;
-  M = M % (2 * pi);
+  M = (int)M % (int)(2 * pi);
 
   // Calculate eccentric anomaly
   double del = 1;
@@ -182,7 +182,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
   }
 
   // Check if follower is at a firing point
-  if (E % (pi / 4) < 0.01 && data.t - state.t_last_firing > dt_fire_min) {
+  if ((int)E % (int)(pi / 4) < 0.01 && data.t - state.t_last_firing > dt_fire_min) {
     // Record firing time
     state.t_last_firing = data.t;
 
@@ -211,10 +211,10 @@ void mex_control_orbit(struct OrbitControllerState &state,
     lin::Vector3d J_plane = theta * Jhat_plane;
 
     // Scale dv by h_gain
-    dv_plane = K_h * J_plane / mass;
+    lin::Vector3d dv_plane = K_h * J_plane / mass;
 
     // Total dv to be applied from all controllers
-    dv = dv_p + dv_d + dv_energy + dv_plane;
+    lin::Vector3d dv = dv_p + dv_d + dv_e + dv_plane;
 
     // Thruster saturation
     if (lin::norm(dv) > max_dv) {
