@@ -226,6 +226,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
 
     // Apply dv
     actuation.J_ecef = mass * dv;
+    this_v_ecef0 = this_v_ecef0 + dv;
     // How do I update actuate.phase_until_next_node?
   }
 
