@@ -4,8 +4,7 @@ type: Model
 comment: >
     Reference frame independent interface for providing lazy transformations of
     a velocity vector in an implementation dependant frame to velocity vectors
-    in the ECI and ECEF frames. This model is intended to operate on a per
-    satellite basis.
+    in the ECI and ECEF frames.
 
 args:
     - prefix
@@ -14,17 +13,17 @@ args:
     - frame
 
 adds:
-    - name: "{prefix}.{satellite}.{vector}.ecef"
+    - name: "{vector}.ecef"
       type: Lazy Vector3
       comment: >
           Input velocity vector represented in the ECEF frame.
-    - name: "{prefix}.{satellite}.{vector}.eci"
+    - name: "{vector}.eci"
       type: Lazy Vector3
       comment: >
           Input velocity vector represented in the ECI frame.
 
 gets:
-    - name: "{prefix}.{satellite}.{vector}"
+    - name: "{vector}"
       type: Vector3
       comment: >
           Input velocity vector. The frame of this vector is specified by the

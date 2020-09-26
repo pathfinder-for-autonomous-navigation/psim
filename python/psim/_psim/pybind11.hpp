@@ -22,13 +22,14 @@
 // SOFTWARE.
 //
 
-/** @file psim/python/variant.hpp
+/** @file psim/_psim/pybind11.hpp
  *  @author Kyle Krol
  */
 
 #ifndef PSIM_PYTHON_VARIANT_HPP_
 #define PSIM_PYTHON_VARIANT_HPP_
 
+#include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include <mapbox/variant.hpp>

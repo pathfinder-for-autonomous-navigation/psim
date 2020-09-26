@@ -26,8 +26,8 @@ py_binary(
     visibility = ["//visibility:private"],
 )
 
-# Builds the the GNC module as a pybind11 library. This will later be linked in
-# with psim targets.
+# Builds the GNC flight software implementations to be linked in as a dependancy
+# of PSim.
 cc_library(
     name = "gnc",
     srcs = glob([
@@ -44,30 +44,23 @@ cc_library(
     deps = ["@lin//:lin"],
 )
 
-# PSim core library
+# Builds the core PSim infrastructure.
 psim_cc_library(
     name = "core",
     deps = ["@lin//:lin"],
     visibility = ["//visibility:public"],
 )
 
-# PSim truth library
+# Builds the PSim truth models
 psim_autocoded_cc_library(
     name = "truth",
     deps = ["@lin//:lin", "//:gnc", "//:psim_core"],
     visibility = ["//visibility:public"],
 )
 
-# PSim in Python
-psim_py_extension(
-    name = "psim",
-    srcs = glob([
-        "src/psim/python/**/*.hpp", "src/psim/python/**/*.inl",
-        "src/psim/python/**/*.cpp",
-    ]),
-    deps = [
-        "@lin//:lin", "@variant//:variant", "//:gnc", "//:psim_core",
-        "//:psim_truth",
-    ],
+# Builds all PSim models deemed "simulation" worthy.
+psim_cc_library(
+    name = "simulations",
+    deps = ["//:psim_core", "//:psim_truth"],
     visibility = ["//visibility:public"],
 )

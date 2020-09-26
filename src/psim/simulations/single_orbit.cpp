@@ -10,8 +10,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,14 +22,30 @@
 // SOFTWARE.
 //
 
-#include <psim/core/simulation.hpp>
-#include <psim/core/types.hpp>
+/** @file psim/simulation/single_orbit.cpp
+ *  @author Kyle Krol
+ */
 
-#include <lin/core.hpp>
+#include <psim/simulations/single_orbit.hpp>
 
-#include <pybind11/pybind11.h>
-namespace py = pybind11;
+#include <psim/truth/earth.hpp>
+#include <psim/truth/environment.hpp>
+#include <psim/truth/orbit.hpp>
+#include <psim/truth/time.hpp>
+#include <psim/truth/transform_position.hpp>
+#include <psim/truth/transform_velocity.hpp>
 
-void py_simulation(py::module &m) {
+namespace psim {
 
+SingleOrbitGnc::SingleOrbitGnc(Configuration const &config) {
+  // Time and Earth ephemeris
+  add<Time>(config, "truth");
+  add<EarthGnc>(config, "truth");
+  // Orbital dynamics and lazy transformations
+  add<OrbitGncEci>(config, "truth", "leader");
+  add<TransformPositionEci>(config, "truth", "truth.leader.orbit.r");
+  add<TransformVelocityEci>(config, "truth", "leader", "truth.leader.orbit.v");
+  // Environmental variables with body frame independent lazy transformations
+  add<EnvironmentGnc>(config, "truth", "leader");
 }
+}  // namespace psim

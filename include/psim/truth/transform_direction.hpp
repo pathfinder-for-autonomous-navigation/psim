@@ -45,9 +45,9 @@ class TransformDirectionBody : public TransformDirection<TransformDirectionBody>
   TransformDirectionBody() = delete;
   virtual ~TransformDirectionBody() = default;
 
-  Vector3 prefix_satellite_vector_body() const;
-  Vector3 prefix_satellite_vector_ecef() const;
-  Vector3 prefix_satellite_vector_eci() const;
+  Vector3 vector_body() const;
+  Vector3 vector_ecef() const;
+  Vector3 vector_eci() const;
 };
 
 /** @brief Direction transformer taking input in ECEF.
@@ -62,9 +62,9 @@ class TransformDirectionEcef : public TransformDirection<TransformDirectionEcef>
   TransformDirectionEcef() = delete;
   virtual ~TransformDirectionEcef() = default;
 
-  Vector3 prefix_satellite_vector_body() const;
-  Vector3 prefix_satellite_vector_ecef() const;
-  Vector3 prefix_satellite_vector_eci() const;
+  Vector3 vector_body() const;
+  Vector3 vector_ecef() const;
+  Vector3 vector_eci() const;
 };
 
 /** @brief Direction transformer taking input in ECI.
@@ -79,9 +79,9 @@ class TransformDirectionEci : public TransformDirection<TransformDirectionEci> {
   TransformDirectionEci() = delete;
   virtual ~TransformDirectionEci() = default;
 
-  Vector3 prefix_satellite_vector_body() const;
-  Vector3 prefix_satellite_vector_ecef() const;
-  Vector3 prefix_satellite_vector_eci() const;
+  Vector3 vector_body() const;
+  Vector3 vector_ecef() const;
+  Vector3 vector_eci() const;
 };
 }  // namespace psim
 

@@ -28,12 +28,12 @@
 
 namespace psim {
 
-Vector3 TransformPositionEcef::prefix_satellite_vector_ecef() const {
-  return prefix_satellite_vector->get();
+Vector3 TransformPositionEcef::vector_ecef() const {
+  return vector->get();
 }
 
-Vector3 TransformPositionEcef::prefix_satellite_vector_eci() const {
-  auto const &r_ecef = prefix_satellite_vector->get();
+Vector3 TransformPositionEcef::vector_eci() const {
+  auto const &r_ecef = vector->get();
   auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
 
   Vector3 r_eci;
@@ -41,8 +41,8 @@ Vector3 TransformPositionEcef::prefix_satellite_vector_eci() const {
   return r_eci;
 }
 
-Vector3 TransformPositionEci::prefix_satellite_vector_ecef() const {
-  auto const &r_eci= prefix_satellite_vector->get();
+Vector3 TransformPositionEci::vector_ecef() const {
+  auto const &r_eci= vector->get();
   auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
 
   Vector3 r_ecef;
@@ -50,7 +50,7 @@ Vector3 TransformPositionEci::prefix_satellite_vector_ecef() const {
   return r_ecef;
 }
 
-Vector3 TransformPositionEci::prefix_satellite_vector_eci() const {
-  return prefix_satellite_vector->get();
+Vector3 TransformPositionEci::vector_eci() const {
+  return vector->get();
 }
 }  // namespace psim

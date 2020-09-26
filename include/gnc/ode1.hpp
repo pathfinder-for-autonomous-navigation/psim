@@ -22,48 +22,55 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/transform_position.hpp
+/** @file gnc/ode1.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_TRANSFORM_POSITION_HPP_
-#define PSIM_TRUTH_TRANSFORM_POSITION_HPP_
+#ifndef GNC_ODE1_HPP_
+#define GNC_ODE1_HPP_
 
-#include <psim/truth/transform_position.yml.hpp>
+#include <lin/core.hpp>
 
-namespace psim {
+namespace gnc {
 
-/** @brief Position transformer taking a position in ECEF as input.
+/** @brief First order fixed step size integrator.
+ *
+ *  @tparam T Fundamental data type.
+ *  @tparam N Number of state parameters.
  */
-class TransformPositionEcef : public TransformPosition<TransformPositionEcef> {
+template <typename T, lin::size_t N>
+class Ode1 {
  private:
-  typedef TransformPosition<TransformPositionEcef> Super;
+  lin::Vector<T, N> _k[1];
 
  public:
-  using Super::TransformPosition;
+  /** @brief Step a differential equation forward in time by a single timestep.
+   *
+   *  @param[in] ti  Initial time.
+   *  @param[in] dt  Integrator timestep.
+   *  @param[in] xi  Initial state.
+   *  @param[in] ptr Pointer to arbitrary data accesible in the update function.
+   *  @param[in] dx  Differential update function.
+   *
+   *  Used for fixed timestep numerical integration. Implements the first order
+   *  integration scheme known as Euler's method.
+   *
+   *  Reference(s):
+   *   - https://en.wikipedia.org/wiki/Euler_method
+   */
+  lin::Vector<T, N> operator()(
+      T ti, T dt,
+      lin::Vector<T, N> const &xi, void *ptr,
+      lin::Vector<T, N> (*dx)(T t, lin::Vector<T, N> const &x, void *ptr)) {
+    // Scratch buffers
+    auto &k1 = _k[0];
 
-  TransformPositionEcef() = delete;
-  virtual ~TransformPositionEcef() = default;
+    k1 = dx(ti, xi, ptr);
 
-  Vector3 vector_ecef() const;
-  Vector3 vector_eci() const;
+    // Step forwad in time
+    return (xi + dt * k1).eval();
+  }
 };
-
-/** @brief Position transformer taking a position in ECI as input.
- */
-class TransformPositionEci : public TransformPosition<TransformPositionEci> {
- private:
-  typedef TransformPosition<TransformPositionEci> Super;
-
- public:
-  using Super::TransformPosition;
-
-  TransformPositionEci() = delete;
-  virtual ~TransformPositionEci() = default;
-
-  Vector3 vector_ecef() const;
-  Vector3 vector_eci() const;
-};
-}  // namespace psim
+}  // namespace gnc
 
 #endif

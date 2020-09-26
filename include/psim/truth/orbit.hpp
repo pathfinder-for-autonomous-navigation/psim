@@ -35,17 +35,20 @@
 
 namespace psim {
 
-class OrbitKeplarianEci : public OrbitInterface<OrbitKeplarianEci> {
+/** @brief Orbit propegator in ECI implemented using the GNC gravity model.
+ */
+class OrbitGncEci : public Orbit<OrbitGncEci> {
  private:
-  typedef OrbitInterface<OrbitKeplarianEci> Super;
-  gnc::Ode4<Real, 6> ode4;
+  typedef Orbit<OrbitGncEci> Super;
+  gnc::Ode4<Real, 6> ode;
 
  public:
-  OrbitKeplarianEci() = delete;
-  virtual ~OrbitKeplarianEci() = default;
+  OrbitGncEci() = delete;
+  virtual ~OrbitGncEci() = default;
 
-  /** We request the impulse state field to be in ECI. */
-  OrbitKeplarianEci(Configuration const &config, std::string const &prefix,
+  /** @brief Set the frame argument to ECI.
+   */
+  OrbitGncEci(Configuration const &config, std::string const &prefix,
       std::string const &satellite);
 
   virtual void step() override;

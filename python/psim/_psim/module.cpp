@@ -10,8 +10,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,31 +22,20 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/attitude.hpp
+/** @file python/psim/_psim/module.cpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_ATTITUDE_HPP_
-#define PSIM_TRUTH_ATTITUDE_HPP_
+#include "pybind11.hpp"
 
-#include <psim/truth/attitude.yml.hpp>
+#include <psim/core/simulation.hpp>
 
-namespace psim {
+namespace py = pybind11;
 
-/** @brief Attitude dynamics without fuel slosh simulation.
- */
-class AttitudeNoFuel : public Attitude<AttitudeNoFuel> {
- private:
-  typedef Attitude<AttitudeNoFuel> Super;
+void py_configuration(py::module &m);
+void py_simulation(py::module &m);
 
- public:
-  using Super::Attitude;
-
-  AttitudeNoFuel() = delete;
-  virtual ~AttitudeNoFuel() = default;
-
-  virtual void step() override;
-};
-}  // namespace psim
-
-#endif
+PYBIND11_MODULE(_psim, m) {
+  py_configuration(m);
+  py_simulation(m);
+}

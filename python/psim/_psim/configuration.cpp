@@ -22,16 +22,16 @@
 // SOFTWARE.
 //
 
-/** @file psim/python/configuration.hpp
+/** @file python/psim/_psim/configuration.hpp
  *  @author Kyle Krol
  */
+
+#include "pybind11.hpp"
 
 #include <psim/core/configuration.hpp>
 #include <psim/core/parameter.hpp>
 #include <psim/core/types.hpp>
-#include <psim/python/variant.hpp>
 
-#include <pybind11/pybind11.h>
 namespace py = pybind11;
 
 #include <string>

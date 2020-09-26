@@ -34,13 +34,13 @@ TransformVelocityEcef::TransformVelocityEcef(Configuration const &config,
     std::string const &vector)
   : Super(config, prefix, satellite, vector, "ecef") { }
 
-Vector3 TransformVelocityEcef::prefix_satellite_vector_ecef() const {
-  return prefix_satellite_vector->get();
+Vector3 TransformVelocityEcef::vector_ecef() const {
+  return vector->get();
 }
 
-Vector3 TransformVelocityEcef::prefix_satellite_vector_eci() const {
+Vector3 TransformVelocityEcef::vector_eci() const {
   auto const &r_ecef = prefix_satellite_orbit_r_frame->get();
-  auto const &v_ecef = prefix_satellite_vector->get();
+  auto const &v_ecef = vector->get();
   auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
   auto const &w_earth = prefix_earth_w->get();
 
@@ -54,9 +54,9 @@ TransformVelocityEci::TransformVelocityEci(Configuration const &config,
     std::string const &vector)
   : Super(config, prefix, satellite, vector, "eci") { }
 
-Vector3 TransformVelocityEci::prefix_satellite_vector_ecef() const {
+Vector3 TransformVelocityEci::vector_ecef() const {
   auto const &r_eci = prefix_satellite_orbit_r_frame->get();
-  auto const &v_eci = prefix_satellite_vector->get();
+  auto const &v_eci = vector->get();
   auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
   auto const &w_earth = prefix_earth_w->get();
 
@@ -65,7 +65,7 @@ Vector3 TransformVelocityEci::prefix_satellite_vector_ecef() const {
   return v_ecef;
 }
 
-Vector3 TransformVelocityEci::prefix_satellite_vector_eci() const {
-  return prefix_satellite_vector->get();
+Vector3 TransformVelocityEci::vector_eci() const {
+  return vector->get();
 }
 }  // namespace psim

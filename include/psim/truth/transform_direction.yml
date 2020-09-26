@@ -14,21 +14,21 @@ args:
     - vector
 
 adds:
-    - name: "{prefix}.{satellite}.{vector}.body"
+    - name: "{vector}.body"
       type: Lazy Vector3
       comment: >
           Input vector represented in the body frame.
-    - name: "{prefix}.{satellite}.{vector}.ecef"
+    - name: "{vector}.ecef"
       type: Lazy Vector3
       comment: >
           Input vector represented in the ECEF frame.
-    - name: "{prefix}.{satellite}.{vector}.eci"
+    - name: "{vector}.eci"
       type: Lazy Vector3
       comment: >
           Input vector represented in the ECI frame.
 
 gets:
-    - name: "{prefix}.{satellite}.{vector}"
+    - name: "{vector}"
       type: Vector3
       comment: >
           Input vector. The frame of this vector is specified by the
@@ -38,4 +38,6 @@ gets:
     - name: "{prefix}.earth.q.ecef_eci"
       type: Vector4
     - name: "{prefix}.{satellite}.attitude.q.body_eci"
+      type: Vector4
+    - name: "{prefix}.{satellite}.attitude.q.eci_body"
       type: Vector4

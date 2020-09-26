@@ -33,6 +33,22 @@
 
 namespace psim {
 
+class EnvironmentGnc : public Environment<EnvironmentGnc> {
+ private:
+  typedef Environment<EnvironmentGnc> Super;
+
+ public:
+  EnvironmentGnc() = delete;
+  virtual ~EnvironmentGnc() = default;
+
+  /** @brief Set the frame argument to ECEF.
+   */
+  EnvironmentGnc(Configuration const &config, std::string const &prefix,
+      std::string const &satellite);
+
+  Vector3 prefix_satellite_environment_b() const;  // Reported in ECEF
+  Vector3 prefix_satellite_environment_s() const;  // Reported in ECI
+};
 }  // namespace psim
 
 #endif

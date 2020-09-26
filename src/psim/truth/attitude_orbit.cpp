@@ -22,35 +22,12 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/environment.cpp
+/** @file psim/truth/orbit.cpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/environment.hpp>
-
-#include <gnc/environment.hpp>
+#include <psim/truth/attitude_orbit.hpp>
 
 namespace psim {
 
-EnvironmentGnc::EnvironmentGnc(Configuration const &config,
-    std::string const &prefix, std::string const &satellite)
-  : Super(config, prefix, satellite, "ecef") { }
-
-
-Vector3 EnvironmentGnc::prefix_satellite_environment_b() const {
-  auto const &r_ecef = prefix_satellite_orbit_r_frame->get();
-  auto const &t = prefix_t_s->get();
-
-  Vector3 b_ecef;
-  gnc::env::magnetic_field(t, r_ecef, b_ecef);
-  return b_ecef;
-}
-
-Vector3 EnvironmentGnc::prefix_satellite_environment_s() const {
-  auto const &t = prefix_t_s->get();
-
-  Vector3 s_eci;
-  gnc::env::sun_vector(t, s_eci);
-  return s_eci;
-}
 }  // namespace psim

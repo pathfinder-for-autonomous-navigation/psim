@@ -28,7 +28,8 @@
 
 #include <psim/truth/orbit.hpp>
 
-#include <gnc/constants.hpp>
+#include <gnc/environment.hpp>
+#include <gnc/utilities.hpp>
 
 #include <lin/core.hpp>
 #include <lin/generators/constants.hpp>
@@ -37,11 +38,11 @@
 
 namespace psim {
 
-OrbitKeplarianEci::OrbitKeplarianEci(Configuration const &config,
+OrbitGncEci::OrbitGncEci(Configuration const &config,
     std::string const &prefix, std::string const &satellite)
   : Super(config, prefix, satellite, "eci") { }
 
-void OrbitKeplarianEci::step() {
+void OrbitGncEci::step() {
   this->Super::step();
 
   // References to the current time and timestep
@@ -52,23 +53,35 @@ void OrbitKeplarianEci::step() {
   auto &r = prefix_satellite_orbit_r.get();
   auto &v = prefix_satellite_orbit_v.get();
 
-  // Apply and impulse if provided
+  // Treat our thruster firings as purely impulses
   v = v + prefix_satellite_orbit_J_frame.get() / prefix_satellite_m.get();
   prefix_satellite_orbit_J_frame.get() = lin::zeros<Vector3>();
 
   // Simulate our dynamics
-  auto const xf = ode4(t, dt, {r(0), r(1), r(2), v(0), v(1), v(2)}, nullptr,
+  auto const xf = ode(t, dt, {r(0), r(1), r(2), v(0), v(1), v(2)}, nullptr,
       [](Real t, lin::Vector<Real, 6> const &x, void *) -> lin::Vector<Real, 6> {
-    // References to our position and velocity
+    // References to our position and velocity in ECI
     auto const r = lin::ref<3, 1>(x, 0, 0);
     auto const v = lin::ref<3, 1>(x, 3, 0);
 
-    // Acceleration calculation
-    auto const fro_r = lin::fro(r);
-    auto const mag_r = lin::sqrt(fro_r);
-    auto const a = ((gnc::constant::mu_earth / (fro_r * mag_r)) * -r).eval();
+    // Calculate the Earth's current attitude
+    Vector4 q;
+    gnc::env::earth_attitude(t, q);  // q = q_ecef_eci
 
-    return {v(0), v(1), v(2), a(0), a(1), a(2)};
+    // Determine our gravitation acceleration in ECI
+    Vector3 g;
+    {
+      Vector3 r_ecef;
+      gnc::utl::rotate_frame(q, r.eval(), r_ecef);
+
+      Real _;
+      gnc::env::gravity(r_ecef, g, _);  // g = g_ecef
+      gnc::utl::quat_conj(q);           // q = q_eci_ecef
+      gnc::utl::rotate_frame(q, g);     // g = g_eci
+      gnc::utl::quat_conj(q);           // q = q_ecef_eci
+    }
+
+    return {v(0), v(1), v(2), g(0), g(1), g(2)};
   });
 
   // Write back to our state fields

@@ -22,24 +22,24 @@
 // SOFTWARE.
 //
 
-/** @file gnc/ode4.hpp
+/** @file gnc/ode3.hpp
  *  @author Kyle Krol
  */
 
-#ifndef GNC_ODE4_HPP_
-#define GNC_ODE4_HPP_
+#ifndef GNC_ODE3_HPP_
+#define GNC_ODE3_HPP_
 
 #include <lin/core.hpp>
 
 namespace gnc {
 
-/** @brief Fourth order fixed step size integrator.
+/** @brief Third order fixed step size integrator.
  *
  *  @tparam T Fundamental data type.
  *  @tparam N Number of state parameters.
  */
 template <typename T, lin::size_t N>
-class Ode4 {
+class Ode3 {
  private:
   lin::Vector<T, N> _k[5];
 
@@ -52,40 +52,36 @@ class Ode4 {
    *  @param[in] ptr Pointer to arbitrary data accesible in the update function.
    *  @param[in] dx  Differential update function.
    *
-   *  Used for fixed timestep numerical integration. Implements the classic
-   *  fourth order Runge Kutta method.
+   *  Used for fixed timestep numerical integration. Implements the third order
+   *  integration scheme known as Ralston's method.
    *
    *  Reference(s):
-   *   - https://en.wikipedia.org/wiki/List_of_Runge–Kutta_methods#Classic_fourth-order_method
+   *   - https://en.wikipedia.org/wiki/List_of_Runge–Kutta_methods#Ralston's_method
    */
   lin::Vector<T, N> operator()(
       T ti, T dt,
       lin::Vector<T, N> const &xi, void *ptr,
       lin::Vector<T, N> (*dx)(T t, lin::Vector<T, N> const &x, void *ptr)) {
-    // Table of integration constants
-    static constexpr T
+    // Table of values
+    constexpr static T
         c2 = 1.0 / 2.0, a21 = 1.0 / 2.0,
-        c3 = 1.0 / 2.0,                  a32 = 1.0 / 2.0,
-
-                        b1  = 1.0 / 6.0, b2  = 1.0 / 3.0, b3 = 1.0 / 3.0, b4 = 1.0 / 6.0;
+        c3 = 3.0 / 4.0,                  a22 = 3.0 / 4.0,
+                        b1  = 2.0 / 9.0, b2  = 1.0 / 3.0, b3 = 4.0 / 9.0;
 
     // Scratch buffers
     auto &ks = _k[0];
     auto &k1 = _k[1];
     auto &k2 = _k[2];
     auto &k3 = _k[3];
-    auto &k4 = _k[4];
 
     k1 = dx(ti, xi, ptr);
     ks = xi + a21 * dt * k1;
     k2 = dx(ti + c2 * dt, ks, ptr);
-    ks = xi + a32 * dt * k2;
+    ks = xi + a22 * dt * k2;
     k3 = dx(ti + c3 * dt, ks, ptr);
-    ks = xi + dt * k3;
-    k4 = dx(ti + dt, ks, ptr);
 
     // Step forward in time
-    return (xi + dt * (b1 * k1 + b2 * k2 + b3 * k3 + b4 * k4)).eval();
+    return (xi + dt * (b1 * k1 + b2 * k2 + b3 * k3)).eval();
   }
 };
 }  // namespace gnc

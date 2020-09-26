@@ -1,9 +1,10 @@
 
-name: OrbitInterface
+name: Orbit
 type: Model
 comment: >
-    Generic interface for a point mass orbit propagator. The coordinates system
-    the model operates in is implementation dependant.
+    Generic interface for a point mass orbit propagator. The coordinate system
+    the model operates in is implementation  dependant. This model should be
+    used for simulations that don't rely on attitude dynamics.
 
 args:
     - prefix

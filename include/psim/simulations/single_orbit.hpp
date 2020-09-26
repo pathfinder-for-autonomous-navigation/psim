@@ -22,17 +22,28 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/attitude.cpp
+/** @file psim/simulation/single_orbit.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/attitude.hpp>
+#ifndef PSIM_SIMULATIONS_SINGLE_ORBIT_HPP_
+#define PSIM_SIMULATIONS_SINGLE_ORBIT_HPP_
+
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-void AttitudeNoFuel::step() {
-  this->Super::step();
+/** @brief Models a single satellite's orbital dynamics. All models are backed
+ *         by flight software's GNC implementations if possible.
+ */
+class SingleOrbitGnc : public ModelList {
+ public:
+  SingleOrbitGnc() = delete;
+  virtual ~SingleOrbitGnc() = default;
 
-  // TODO
-}
+  SingleOrbitGnc(Configuration const &config);
+};
 }  // namespace psim
+
+#endif

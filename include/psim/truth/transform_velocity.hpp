@@ -26,8 +26,8 @@
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_TRANSFORM_POSITION_HPP_
-#define PSIM_TRUTH_TRANSFORM_POSITION_HPP_
+#ifndef PSIM_TRUTH_TRANSFORM_VELOCITY_HPP_
+#define PSIM_TRUTH_TRANSFORM_VELOCITY_HPP_
 
 #include <psim/truth/transform_velocity.yml.hpp>
 
@@ -43,11 +43,13 @@ class TransformVelocityEcef : public TransformVelocity<TransformVelocityEcef> {
   TransformVelocityEcef() = delete;
   virtual ~TransformVelocityEcef() = default;
 
+  /** @brief Sets the frame arguments to ECEF.
+   */
   TransformVelocityEcef(Configuration const &config, std::string const &prefix,
       std::string const &satellite, std::string const &vector);
 
-  Vector3 prefix_satellite_vector_ecef() const;
-  Vector3 prefix_satellite_vector_eci() const;
+  Vector3 vector_ecef() const;
+  Vector3 vector_eci() const;
 };
 
 /** @brief Velocity transformer taking a velocity in ECI as input.
@@ -60,11 +62,13 @@ class TransformVelocityEci : public TransformVelocity<TransformVelocityEci> {
   TransformVelocityEci() = delete;
   virtual ~TransformVelocityEci() = default;
 
+  /** @brief Sets the frame arguments to ECI.
+   */
   TransformVelocityEci(Configuration const &config, std::string const &prefix,
       std::string const &satellite, std::string const &vector);
 
-  Vector3 prefix_satellite_vector_ecef() const;
-  Vector3 prefix_satellite_vector_eci() const;
+  Vector3 vector_ecef() const;
+  Vector3 vector_eci() const;
 };
 }  // namespace psim
 
