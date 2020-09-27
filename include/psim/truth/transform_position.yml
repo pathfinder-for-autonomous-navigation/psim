@@ -1,0 +1,32 @@
+
+name: TransformPosition
+type: Model
+comment: >
+    Reference frame independent interface for providing lazy transformations of
+    a position vector in an implementation dependant frame to position vectors
+    in the ECI and ECEF frames.
+
+args:
+    - prefix
+    - vector
+
+adds:
+    - name: "{vector}.ecef"
+      type: Lazy Vector3
+      comment: >
+          Input position vector represented in the ECEF frame.
+    - name: "{vector}.eci"
+      type: Lazy Vector3
+      comment: >
+          Input position vector represented in the ECI frame.
+
+gets:
+    - name: "{vector}"
+      type: Vector3
+      comment: >
+          Input position vector. The frame of this vector is specified by the
+          implementation.
+    - name: "{prefix}.earth.q.eci_ecef"
+      type: Vector4
+    - name: "{prefix}.earth.q.ecef_eci"
+      type: Vector4
