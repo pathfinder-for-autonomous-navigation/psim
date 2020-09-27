@@ -106,10 +106,12 @@ class Parameter : public ParameterBase {
    */
   Parameter<T> &operator=(T const &value) {
     _value = value;
+    return *this;
   }
 
   Parameter<T> &operator=(T &&value) {
     _value = std::move(value);
+    return *this;
   }
   /** @}
    */
@@ -125,10 +127,12 @@ class Parameter : public ParameterBase {
    */
   Parameter<T> &operator=(ParameterBase const &param) {
     _value = param.get<T>();
+    return *this;
   }
 
   Parameter<T> &operator=(ParameterBase &&param) {
     _value = std::move(param.get<T>());
+    return *this;
   }
   /** @}
    */

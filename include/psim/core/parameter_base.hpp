@@ -64,7 +64,7 @@ class ParameterBase {
     auto const *param_ptr = dynamic_cast<Parameter<T> const *>(this);
     if (!param_ptr)
       throw std::runtime_error("Invalid parameter type in call to 'get'.");
-    
+
     return (T const &) *param_ptr;
   }
 

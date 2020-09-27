@@ -85,7 +85,7 @@ class Model {
    *  error will be thrown.
    */
   template <typename T>
-  StateFieldWritable<T> *get_field(State &state, std::string const &name) {
+  StateFieldWritable<T> *get_writable_field(State &state, std::string const &name) {
     auto *field_ptr = dynamic_cast<StateFieldWritable<T> *>(state.get_writable(name));
     if (!field_ptr)
       throw std::runtime_error("Invalid cast while getting a writable field: " + name);
