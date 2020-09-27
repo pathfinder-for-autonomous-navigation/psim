@@ -1,7 +1,8 @@
 clearvars; clc;
 
 addpath('../');
-addpath('../rendezvous');
+addpath('../utl');
+addpath('../environmental_models');
 
 global const
 
@@ -127,10 +128,8 @@ for i = 1 : N - 1
         fprintf('progress: step %d / %d\n', i, N - 1);
     end
 
-    [out_state, J_ecef, phase_till_next_node] = orbit_controller.control(state, t(i), r2, v2, r1, v1);
+    [out_state, J_ecef, phase_till_next_node] = make_mex_orbit_controller(t_fire, t(i), r2, v2, r1, v1);
     
-    
-
     % simulate dynamics
     y = utl_ode4(@(t, y) frhs(t, y, quat_ecef_eci), [0.0, dt], [r1; v1; r2; v2]);
     r1 = y(end, 1:3)';
