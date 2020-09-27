@@ -47,7 +47,8 @@ module.
 
 Generally the Python development headers and `distutils` can be installed via a
 package manager. Note that Bazel will explicitly let you know if it can't find
-either of these.
+either of these so it may be worth just giving it a go before you hut down the
+dependencies.
 
 As far as Bazel is concerned, you should be able to install it through your
 package manager of choice as well.
