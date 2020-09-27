@@ -1,0 +1,29 @@
+
+name: Environment
+type: Model
+comment: >
+    Calculates environmental measurements seen by each spacecraft like the
+    magnetic field reading and sun vector.
+
+args:
+    - prefix
+    - satellite
+    - frame
+
+adds:
+    - name: "{prefix}.{satellite}.environment.b"
+      type: Lazy Vector3
+      comment: >
+        The magnetic field at the point of the spacecraft. The frame this is
+        reported in is left up to the implementation.
+    - name: "{prefix}.{satellite}.environment.s"
+      type: Lazy Vector3
+      comment: >
+          The unit vector point from the spacecraft to the sun. The frame this
+          is reported in is left up to the implementation.
+
+gets:
+    - name: "{prefix}.t.s"
+      type: Real
+    - name: "{prefix}.{satellite}.orbit.r.{frame}"
+      type: Vector3
