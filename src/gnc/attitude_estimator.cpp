@@ -23,7 +23,7 @@
 //
 
 /** @file gnc_attitude_estimator.cpp
- *  @author Kyle Krol
+ *  @author Kyle Krol, Shihao Cao
  */
 
 #include <gnc/attitude_estimator.hpp>
@@ -40,7 +40,6 @@
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
-//#include <lin/substitutions/forward_substitution.hpp>
 #include <lin/substitutions/backward_substitution.hpp>
 
 namespace gnc {
@@ -451,9 +450,11 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   env::magnetic_field(t, lin::Vector3f(r_ecef), b_eci);
   
   // Ensure the measured and expected magnetic field are large enough
-  float thresh = constant::b_noise_floor * constant::b_noise_floor;
-  if ((lin::fro(b_eci) < thresh) || (lin::fro(b_body) < thresh))
-    return;
+  {
+    float thresh = constant::b_noise_floor * constant::b_noise_floor;
+    if ((lin::fro(b_eci) < thresh) || (lin::fro(b_body) < thresh))
+      return;
+  }
 
   // Determine the expected sun vector
   lin::Vector3f s_eci{};

@@ -16,7 +16,7 @@ function [out_state] = triad_reset(t, r_ecef, b_body, s_body)
     assert(isequal(size(b_body),[3,1]), "b_body must be a 3x1 vector")
     assert(isequal(size(s_body),[3,1]), "s_body must be a 3x1 vector")
 
-    [out_state] = estimator_triad_reset(t, r_ecef, b_body, s_body)
+    [out_state] = estimator_triad_reset(t, r_ecef, b_body, s_body);
 % TODO
 end
 
