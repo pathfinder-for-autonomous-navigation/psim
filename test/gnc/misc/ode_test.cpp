@@ -5,19 +5,12 @@
 #include "ode_test.hpp"
 
 #include <gnc/ode.hpp>
-#include <cmath>
+#include <gnc/ode1.hpp>
+#include <gnc/ode2.hpp>
+#include <gnc/ode3.hpp>
+#include <gnc/ode4.hpp>
 
-#define PAN_GNC_ODEX_TEST_VARS(n) \
-    unsigned int const nt = 4; \
-    unsigned int const ne = 2; \
-    double const t[nt] = { 0.0L, 0.1L, 0.2L, 0.3L }; \
-    double bf[n * ne]; \
-    double _y[nt * ne]; \
-    double *y[nt]; \
-    for (unsigned int i = 0; i < nt; i++) \
-      y[i] = _y + ne * i; \
-    y[0][0] = 1.0L; \
-    y[0][1] = 0.0L;
+#include <cmath>
 
 #define PAN_GNC_ODEXX_TEST_VARS(n) \
     unsigned int const ne = 2; \
@@ -32,51 +25,75 @@ static void fsho(double t, double const *y, double *dy) {
 }
 
 void test_ode_ode1_sho() {
-  PAN_GNC_ODEX_TEST_VARS(1)
-  gnc::ode1(t, nt, y, ne, bf, fsho);
-  // Check against MATLAB output
-  TEST_ASSERT_EQUAL_DOUBLE( 1.000000000000000, y[1][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.100000000000000, y[1][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.990000000000000, y[2][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.200000000000000, y[2][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.970000000000000, y[3][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.299000000000000, y[3][1]);
+  // Values were comapred to MATLAB's ode2 implementation
+  auto const dx = [](double t, lin::Vector2d const &x, void *) -> lin::Vector2d {
+    return {x(1), -x(0)};
+  };
+  gnc::Ode1<double, 2> ode;
+  lin::Vector2d x = {1.0, 0.0};
+  x = ode(0.0, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 1.000000000000000, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.100000000000000, x(1));
+  x = ode(0.1, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.990000000000000, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.200000000000000, x(1));
+  x = ode(0.2, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.970000000000000, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.299000000000000, x(1));
 }
 
 void test_ode_ode2_sho() {
-  PAN_GNC_ODEX_TEST_VARS(3)
-  gnc::ode2(t, nt, y, ne, bf, fsho);
-  // Check against MATLAB output
-  TEST_ASSERT_EQUAL_DOUBLE( 0.995000000000000, y[1][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.100000000000000, y[1][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.980025000000000, y[2][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.199000000000000, y[2][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.955224875000000, y[3][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.296007500000000, y[3][1]);
+  // Values were comapred to MATLAB's ode2 implementation
+  auto const dx = [](double t, lin::Vector2d const &x, void *) -> lin::Vector2d {
+    return {x(1), -x(0)};
+  };
+  gnc::Ode2<double, 2> ode;
+  lin::Vector2d x = {1.0, 0.0};
+  x = ode(0.0, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.995000000000000, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.100000000000000, x(1));
+  x = ode(0.1, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.980025000000000, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.199000000000000, x(1));
+  x = ode(0.2, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.955224875000000, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.296007500000000, x(1));
 }
 
 void test_ode_ode3_sho() {
-  PAN_GNC_ODEX_TEST_VARS(4)
-  gnc::ode3(t, nt, y, ne, bf, fsho);
-  // Check against MATLAB output
-  TEST_ASSERT_EQUAL_DOUBLE( 0.995000000000000, y[1][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.099833333333333, y[1][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.980058305555556, y[2][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.198668333333333, y[2][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.955324292083333, y[3][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.295517479171296, y[3][1]);
+  // Values were comapred to MATLAB's ode2 implementation
+  auto const dx = [](double t, lin::Vector2d const &x, void *) -> lin::Vector2d {
+    return {x(1), -x(0)};
+  };
+  gnc::Ode3<double, 2> ode;
+  lin::Vector2d x = {1.0, 0.0};
+  x = ode(0.0, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.995000000000000, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.099833333333333, x(1));
+  x = ode(0.1, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.980058305555556, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.198668333333333, x(1));
+  x = ode(0.2, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.955324292083333, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.295517479171296, x(1));
 }
 
 void test_ode_ode4_sho() {
-  PAN_GNC_ODEX_TEST_VARS(5)
-  gnc::ode4(t, nt, y, ne, bf, fsho);
-  // Check against MATLAB output
-  TEST_ASSERT_EQUAL_DOUBLE( 0.995004166666667, y[1][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.099833333333333, y[1][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.980066597239583, y[2][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.198669165277778, y[2][1]);
-  TEST_ASSERT_EQUAL_DOUBLE( 0.955336542863976, y[3][0]);
-  TEST_ASSERT_EQUAL_DOUBLE(-0.295519962530663, y[3][1]);
+  // Values were comapred to MATLAB's ode2 implementation
+  auto const dx = [](double t, lin::Vector2d const &x, void *) -> lin::Vector2d {
+    return {x(1), -x(0)};
+  };
+  gnc::Ode4<double, 2> ode;
+  lin::Vector2d x = {1.0, 0.0};
+  x = ode(0.0, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.995004166666667, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.099833333333333, x(1));
+  x = ode(0.1, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.980066597239583, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.198669165277778, x(1));
+  x = ode(0.2, 0.1, x, nullptr, dx);
+  TEST_ASSERT_EQUAL_DOUBLE( 0.955336542863976, x(0));
+  TEST_ASSERT_EQUAL_DOUBLE(-0.295519962530663, x(1));
 }
 
 void test_ode_ode23_sho() {
