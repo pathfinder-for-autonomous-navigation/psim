@@ -1,0 +1,12 @@
+
+filegroup(
+  name = "parameters",
+  data = glob(["parameters/**/*.txt"]),
+  visibility = ["//visibility:public"],
+)
+
+filegroup(
+  name = "plots",
+  data = glob(["plots/**/*.txt"]),
+  visibility = ["//visibility:public"],
+)
