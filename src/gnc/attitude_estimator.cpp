@@ -441,13 +441,14 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   
   lin::Vector4f q_body_eci = lin::nans<float, 4, 1>();
   
-  lin::Vector3f b_eci{};
+  lin::Vector3f b_ecef{};
   lin::Vector4f q{};
-  env::magnetic_field(t, lin::Vector3f(r_ecef), b_eci);  // b_eci = b_ecef
+  env::magnetic_field(t, lin::Vector3f(r_ecef), b_ecef);
   env::earth_attitude(t, q);                             // q = q_ecef_eci
   utl::quat_conj(q);                                     // q = q_eci_ecef
-  utl::rotate_frame(q, b_eci);                           // b_eci = b_eci  
-  env::magnetic_field(t, lin::Vector3f(r_ecef), b_eci);
+
+  lin::Vector3f b_eci{};
+  utl::rotate_frame(q, b_ecef, b_eci);                           // b_eci = b_ecef but rotated
   
   // Ensure the measured and expected magnetic field are large enough
   {
