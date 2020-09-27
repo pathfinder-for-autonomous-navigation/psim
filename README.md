@@ -11,7 +11,7 @@ two main modules:
 MATLAB code listed in `MATLAB/**` is deprecated and will be phased out by the
 new C++ implementation of PSim.
 
-## Getting Setup
+## Getting Started
 
 For GNC development, it's only necessary to setup the PlatformIO development
 environment. This requires setting up a local virtual environment as shown
@@ -36,8 +36,21 @@ for the GNC code with:
 development!_**
 
 For PSim development, we need to have the virtual environment setup as shown
-above _and_ setup Bazel. You should be able to install Bazel through your
-system's package manager.
+above, a couple extra Python bells and whistles you most likely already have,
+and then Bazel.
+
+Besides your system install of Python and the virtual environment that will be
+used to work with the PSim repository, you need to install the Python
+development headers and `distutils` for the version of Python you'll be using.
+The Bazel build system will require both of these to compile PSim into a Python
+module.
+
+Generally the Python development headers and `distutils` can be installed via a
+package manager. Note that Bazel will explicitly let you know if it can't find
+either of these.
+
+As far as Bazel is concerned, you should be able to install it through your
+package manager of choice as well.
 
 It's also recommended to install the Bazel build tools along with the VSCode
 extensions 'Bazel' by the 'Bazel Build Team'. With this extension plus
@@ -46,7 +59,8 @@ configuring C/C++ intellisense according to
 fairly well  with VSCode.
 
 To ensure everything is working as expected, you should be able to run the
-following successfully:
+following successfully (make sure you're in your virtual environment when
+working with Bazel as well):
 
     bazel test //test/psim:all
 
