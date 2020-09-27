@@ -1,7 +1,7 @@
 #include "mex.hpp"
 #include "mexAdapter.hpp"
 
-#include <gnc/attitude_estimator.hpp>
+#include <gnc/orbit_controller.hpp>
 #include <lin.hpp>
 
 using namespace matlab::data;

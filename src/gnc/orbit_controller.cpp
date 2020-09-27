@@ -50,22 +50,15 @@ static constexpr double J_min = 0;              // Minimum impulse              
 static constexpr double J_max = 2500;           // Maximum impulse                       (N s)
 static constexpr double max_dv = J_max / mass;  // Max velocity change                   (m/s)
 static constexpr double min_dv = J_min / mass;  // Min velocity change                   (m/s)
-//static constexpr double t_drift = 60.0 * 60.0;  // Drift time                            (s)
 static constexpr double p = 1.0e-6;
 static constexpr double d = 5.0e-2;
 static constexpr double energy_gain = 5.0e-5;   // Energy gain                           (J)
 static constexpr double h_gain = 2.0e-3;        // Angular momentum gain                 (kg m^2/sec)
-//static constexpr double thrust_noise_ratio = 0; //
 static constexpr double dt_fire_min = 5 * 60;   // Minimum time between firings          (sec)
 
 // Initial orbital elements
 static constexpr double pi = gnc::constant::pi;
-//static constexpr double a  = 6793137.0;         // Semimajor axis                        (m)
 static constexpr double e  = 0.001;             // Eccentricity                          (unitless)
-//static constexpr double I  = 45*pi/180;         // Inclination angle                     (rad)
-//static constexpr double O  = 0.0;               // Right ascension of the ascending node (rad)
-//static constexpr double o  = 0.0;               // Argument of perigee                   (rad)
-//static constexpr double nu = 0*pi/180;          // True anamoly                          (rad)
 
 OrbitControllerState::OrbitControllerState()
 : t_last_firing(0),

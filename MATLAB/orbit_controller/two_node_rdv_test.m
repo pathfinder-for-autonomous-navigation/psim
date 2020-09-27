@@ -129,6 +129,7 @@ for i = 1 : N - 1
     end
 
     [out_state, J_ecef, phase_till_next_node] = make_mex_orbit_controller(t_fire, t(i), r2, v2, r1, v1);
+    t_fire = out_state(1,0);
     
     % simulate dynamics
     y = utl_ode4(@(t, y) frhs(t, y, quat_ecef_eci), [0.0, dt], [r1; v1; r2; v2]);
