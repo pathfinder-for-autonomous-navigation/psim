@@ -40,18 +40,64 @@ bool State::has_writable(std::string const &name) const {
   return _writable_fields.count(name);
 }
 
-void State::add_writable(std::string const &name, StateFieldWritableBase *field) {
-  if (has(name))
-    throw std::runtime_error("Registered two or more state fields under the name: " + name);
+void State::add_writable(StateFieldWritableBase *field) {
+  {
+    // Check if we have a name collision with existing readable fields
+    auto const iter = _readable_fields.find(field->name());
+    if (iter != _readable_fields.end()) {
+      auto const *_field = iter->second;
+      throw std::runtime_error(
+          "'" + _field->name() + ":" + _field->type() + "' already registered " +
+          "as a readable field. Cannot add '" + field->name() + ":" +
+          field->type() + "' as a writable field"
+        );
+    }
+  }
+  {
+    // Check if we have a name collision with existing writable fields
+    auto const iter = _writable_fields.find(field->name());
+    if (iter != _writable_fields.end()) {
+      auto *_field = iter->second;
+      throw std::runtime_error(
+          "'" + _field->name() + ":" + _field->type() + "' already registered " +
+          "as a writable field. Cannot add '" + field->name() + ":" +
+          field->type() + "' as a writable field"
+        );
+    }
+  }
 
-  _writable_fields[name] = field;
+  // Add the field
+  _writable_fields[field->name()] = field;
 }
 
-void State::add(std::string const &name, StateFieldBase const *field) {
-  if (has(name))
-    throw std::runtime_error("Registered two or more state fields under the name: " + name);
+void State::add(StateFieldBase const *field) {
+  {
+    // Check if we have a name collision with existing readable fields
+    auto const iter = _readable_fields.find(field->name());
+    if (iter != _readable_fields.end()) {
+      auto const *_field = iter->second;
+      throw std::runtime_error(
+          "'" + _field->name() + ":" + _field->type() + "' already registered " +
+          "as a readable field. Cannot add '" + field->name() + ":" +
+          field->type() + "' as a readable field"
+        );
+    }
+  }
+  {
+    // Check if we have a name collision with existing writable fields
+    auto const iter = _writable_fields.find(field->name());
+    if (iter != _writable_fields.end()) {
+      auto *_field = iter->second;
+      throw std::runtime_error(
+          "'" + _field->name() + ":" + _field->type() + "' already registered " +
+          "as a writable field. Cannot add '" + field->name() + ":" +
+          field->type() + "' as a readable field"
+        );
+    }
+  }
 
-  _readable_fields[name] = field;
+  // Add the field
+  _readable_fields[field->name()] = field;
 }
 
 StateFieldWritableBase *State::get_writable(std::string const &name) {
@@ -65,7 +111,6 @@ StateFieldBase const *State::get(std::string const &name) const {
     if (iter != _readable_fields.end())
       return  iter->second;
   }
-
   {
     auto const iter = _writable_fields.find(name);
     if (iter != _writable_fields.end())

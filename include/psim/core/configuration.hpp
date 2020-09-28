@@ -29,10 +29,12 @@
 #ifndef PSIM_CORE_CONFIGURATION_HPP_
 #define PSIM_CORE_CONFIGURATION_HPP_
 
-#include "parameter.hpp"
-#include "parameter_base.hpp"
+#include <psim/core/parameter.hpp>
+#include <psim/core/types.hpp>
+
 #include "types.hpp"
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 
@@ -47,8 +49,11 @@ namespace psim {
 class Configuration {
  private:
   /** @brief Map containing the parameter pointers.
+   *
+   *  https://stackoverflow.com/questions/9139748/using-stdreference-wrapper-as-the-key-in-a-stdmap
    */
-  std::unordered_map<std::string, ParameterBase const *> _parameters;
+  std::unordered_map<std::reference_wrapper<std::string const>, ParameterBase const *,
+      std::hash<std::string>, std::equal_to<std::string>> _parameters;
 
   Configuration() = default;
 

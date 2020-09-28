@@ -29,9 +29,10 @@
 #ifndef PSIM_CORE_STATE_FIELD_VALUED_HPP_
 #define PSIM_CORE_STATE_FIELD_VALUED_HPP_
 
-#include "state_field.hpp"
-#include "state_field_writable.hpp"
+#include <psim/core/nameable.hpp>
+#include <psim/core/state_field.hpp>
 
+#include <string>
 #include <utility>
 
 namespace psim {
@@ -47,55 +48,67 @@ class StateFieldValued : public StateFieldWritable<T> {
    */
   T _value;
 
+  virtual T const &_get() const override {
+    return _value;
+  }
+
+  virtual T &_get() override {
+    return _value;
+  }
+
  public:
-  using StateFieldWritable<T>::operator=;
+  StateFieldValued() = delete;
 
   virtual ~StateFieldValued() = default;
 
   /** @brief Default constructs the parameter's initial value.
    *
+   *  @param[in] name State field's name.
+   *
    *  https://stackoverflow.com/questions/2417065/does-the-default-constructor-initialize-built-in-types
-   */
-  StateFieldValued()
-      : _value() { }
-
-  /** @param[in] value Initial value of the state field.
    *
    *  @{
    */
-  StateFieldValued(T const &value)
-      : _value(value) { }
+  StateFieldValued(std::string const &name)
+      : Nameable(name, "state_field_valued"), _value() { }
 
-  StateFieldValued(T &&value)
-      : _value(std::move(value)) { }
+  StateFieldValued(std::string &&name)
+      : Nameable(std::move(name), "state_field_valued"), _value() { }
   /** @}
    */
 
-  /** @param[in] param Initial value of the state field.
-   *
-   *  If the parameter's underlying type doesn't match the field's underlying
-   *  type, a runtime error will be thrown.
+  /** @param[in] name State field's name.
+   *  @param[in] value Initial value of the state field.
    *
    *  @{
    */
-  StateFieldValued(ParameterBase const &param)
-      : _value(param.get<T>()) { }
+  StateFieldValued(std::string const &name, T const &value)
+      : Nameable(name, "state_field_valued"), _value(value) { }
 
-  StateFieldValued(ParameterBase &&param)
-      : _value(std::move(param.get<T>())) { }
+  StateFieldValued(std::string &&name, T const &value)
+      : Nameable(std::move(name), "state_field_valued"), _value(value) { }
+
+  StateFieldValued(std::string const &name, T &&value)
+      : Nameable(name, "state_field_valued"), _value(std::move(value)) { }
+
+  StateFieldValued(std::string &&name, T &&value)
+      : Nameable(std::move(name), "state_field_valued"), _value(std::move(value)) { }
   /** @}
    */
 
-  /** @return Reference to the underlying value.
+  /** @return Reference to the underlying type.
+   *
+   *  This function was re-implemented to avoid potential type checking overhead
+   *  and keep a consistant interface.
    *
    *  @{
    */
-  virtual operator T const & () const override {
-    return _value;
+  T const &get() const {
+    return _get();
   }
 
-  virtual operator T & () override {
-    return _value;
+  T &get() {
+    return _get();
   }
   /** @}
    */

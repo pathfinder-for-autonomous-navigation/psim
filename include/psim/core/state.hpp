@@ -29,9 +29,9 @@
 #ifndef PSIM_CORE_STATE_HPP_
 #define PSIM_CORE_STATE_HPP_
 
-#include "state_field.hpp"
-#include "state_field_writable.hpp"
+#include <psim/core/state_field.hpp>
 
+#include <functional>
 #include <string>
 #include <unordered_map>
 
@@ -50,11 +50,13 @@ class State {
  private:
   /** @brief Map to the readable fields.
    */
-  std::unordered_map<std::string, StateFieldBase const *> _readable_fields;
+  std::unordered_map<std::reference_wrapper<std::string const>, StateFieldBase const *,
+      std::hash<std::string>, std::equal_to<std::string>> _readable_fields;
 
   /** @brief Map to the writable fields.
    */
-  std::unordered_map<std::string, StateFieldWritableBase *> _writable_fields;
+  std::unordered_map<std::reference_wrapper<std::string const>, StateFieldWritableBase *,
+      std::hash<std::string>, std::equal_to<std::string>> _writable_fields;
 
  public:
   State() = default;
@@ -87,7 +89,7 @@ class State {
    *  If a field already exists under the given name, a runtime error will be
    *  thrown.
    */
-  void add(std::string const &name, StateFieldBase const *field_ptr);
+  void add(StateFieldBase const *field_ptr);
 
   /** @brief Add a new writable field to the simulation state.
    *
@@ -97,7 +99,7 @@ class State {
    *  If a field already exists under the given name, a runtime error will be
    *  thrown.
    */
-  void add_writable(std::string const &name, StateFieldWritableBase *field_ptr);
+  void add_writable(StateFieldWritableBase *field_ptr);
 
   /** @brief Retrieve a field from the simulation state.
    *
