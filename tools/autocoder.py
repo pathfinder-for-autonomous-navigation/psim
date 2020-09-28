@@ -135,7 +135,7 @@ class Parameter(Variable):
     @property
     def constructor(self):
         if not self.__constructor:
-            self.__constructor = self.member_name + '(config[' + self.string_name + '])'
+            self.__constructor = self.member_name + '(config[' + self.string_name + '].get<' + self.underlying_type + '>())'
 
         return self.__constructor
 
@@ -197,9 +197,9 @@ class AddsStateField(StateField):
     def adds_expression(self):
         if not self.__adds_expression:
             if self.is_writable:
-                self.__adds_expression = 'state.add_writable(' + self.string_name + ', &' + self.member_name + ');'
+                self.__adds_expression = 'state.add_writable(&' + self.member_name + ');'
             else:
-                self.__adds_expression = 'state.add(' + self.string_name + ', &' + self.member_name + ');'
+                self.__adds_expression = 'state.add(&' + self.member_name + ');'
 
         return self.__adds_expression
 
@@ -207,12 +207,12 @@ class AddsStateField(StateField):
     def constructor(self):
         if not self.__constructor:
             if self.is_lazy:
-                self.__constructor = self.member_name + '(std::bind(&D::' + self.member_name + ', &derived()))'
+                self.__constructor = self.member_name + '(' + self.string_name + ', std::bind(&D::' + self.member_name + ', &derived()))'
             else:
                 if self.is_initialized:
-                    self.__constructor = self.member_name + '(config[' + self.string_name + '])'
+                    self.__constructor = self.member_name + '(' + self.string_name + ', config[' + self.string_name + '].get<' + self.underlying_type + '>())'
                 else:
-                    self.__constructor = self.member_name + '()'
+                    self.__constructor = self.member_name + '(' + self.string_name + ')'
 
         return self.__constructor
 
