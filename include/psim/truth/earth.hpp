@@ -50,7 +50,7 @@ class EarthGnc : public Earth<EarthGnc> {
 
   Vector4 prefix_earth_q_ecef_eci() const;
   Vector4 prefix_earth_q_eci_ecef() const;
-  Vector3 prefix_earth_w_earth() const;
+  Vector3 prefix_earth_w() const;
 };
 }  // namespace psim
 
