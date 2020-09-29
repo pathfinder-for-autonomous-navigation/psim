@@ -128,8 +128,19 @@ for i = 1 : N - 1
         fprintf('progress: step %d / %d\n', i, N - 1);
     end
 
-    [out_state, J_ecef, phase_till_next_node] = make_mex_orbit_controller(t_fire, t(i), r2, v2, r1, v1);
-    t_fire = out_state(1,0);
+    [t_last_fire, J_ecef, phase_till_next_node] = make_mex_orbit_controller(t_fire, t(i), r2, v2, r1, v1);
+    
+    if (J_ecef ~= 0)
+        % record firing position and time
+        r_fire = [r_fire, [r1; r2]];
+        t_fire = t_last_fire;
+        
+        % apply dv
+%         dv = J_ecef/m;
+%         v2 = v2 + dv;
+%         dv_vec(:, i) = dv;
+    end
+
     
     % simulate dynamics
     y = utl_ode4(@(t, y) frhs(t, y, quat_ecef_eci), [0.0, dt], [r1; v1; r2; v2]);
@@ -184,151 +195,151 @@ title('follower ECI position')
 legend('ECI position', 'firing points')
 axis equal
 
-% relative position norm
-figure
-hold on
-plot(t, X(1, :), '-r')
-plot(t, X(2, :), '-g')
-plot(t, X(3, :), '-b')
-hold off
-title('Relative Position of Satellite Two (rgb ~ xyz LVLH)')
-xlabel('Time (s)')
-ylabel('Position (m)')
-
-% relative position norm
-rel_pos = zeros(1, N);
-
-for i = 1 : N
-    
-    rel_pos(i) = norm(X(1 : 3, i));
-    
-end
-
-figure;
-
-plot(t, rel_pos)
-xlabel('t [s]')
-ylabel('position [m]')
-title('relative position norm')
-
-% relative velocity
-figure
-hold on
-plot(t, X(4, :), '-r')
-plot(t, X(5, :), '-g')
-plot(t, X(6, :), '-b')
-hold off
-title('Relative Velocity of Satellite Two (rgb ~ xyz LVLH)')
-xlabel('Time (s)')
-ylabel('Velocity (m/s)')
-
-% relative velocity norm
-rel_vel = zeros(1, N);
-
-for i = 1 : N
-    
-    rel_vel(i) = norm(X(4:6, i));
-    
-end
-
-figure;
-plot(t, rel_vel)
-xlabel('t [s]')
-ylabel('position [m/s]')
-title('relative velocity norm')
-
-% energy difference
-figure;
-plot(t, deltaenergies)
-xlabel('t [s]')
-title('delta energies')
-
-% dv
-figure;
-plot(dv_vec(1, :)); hold on
-plot(dv_vec(2, :))
-plot(dv_vec(3, :))
-xlabel('t [s]')
-ylabel('\Delta v [m/s]')
-legend('x', 'y', 'z')
-title('\Delta v')
-grid on
-
-dv_norm = zeros(N, 1);
-
-for i = 1 : N
-    
-    dv_norm(i) = norm(dv_vec(:, i));
-    
-end
-
-dv_total = cumsum(dv_norm);
-
-figure;
-plot(t, dv_norm)
-xlabel('t [s]')
-ylabel('\Delta v [m/s]')
-title('\Delta v norm')
-
-figure;
-plot(t, dv_total)
-xlabel('t [s]')
-ylabel('\Delta v [m/s]')
-title('Cumulative \Delta v')
-
-figure;
-plot(t, dv_p_vec); hold on
-plot(t, dv_d_vec)
-plot(t, dv_E_vec)
-plot(t, dv_h_vec)
-xlabel('t [s]')
-ylabel('\Delta v [m/s]')
-title('commanded \Delta v for energy and momentum matching')
-legend('p','d', 'E', 'h')
-
-figure;
-plot(t, dv_des); hold on
-plot(t, max_dv * ones(N, 1))
-xlabel('t [s]')
-ylabel('\Delta v [m/s]')
-title('Desired \Delta v norm')
-legend('commanded dv', 'max dv')
-
-% angular momentum
-figure;
-plot(dh_vec(1, :)); hold on
-plot(dh_vec(2, :))
-plot(dh_vec(3, :))
-xlabel('t [s]')
-ylabel('h_1 - h_2')
-title('angular momentum difference')
-grid on
-
-for i = 1 : N
-    dh_norm(i) = norm(dh_vec(:, i));
-    h1_norm(i) = norm(h1_vec(:, i));
-    h2_norm(i) = norm(h2_vec(:, i));
-end
-
-figure;
-plot(t, h1_norm); hold on
-plot(t, h2_norm);
-xlabel('t [s]')
-ylabel('h')
-title('angular momentums')
-legend('h_1', 'h_2')
-
-figure;
-plot(t, dh_norm)
-xlabel('t [s]')
-ylabel('h')
-title('angular momentum difference norm')
-
-figure;
-plot(t, dh_angle)
-xlabel('t [s]')
-ylabel('\phi [rad]')
-title('angle between h_1 and h_2')
+% % relative position norm
+% figure
+% hold on
+% plot(t, X(1, :), '-r')
+% plot(t, X(2, :), '-g')
+% plot(t, X(3, :), '-b')
+% hold off
+% title('Relative Position of Satellite Two (rgb ~ xyz LVLH)')
+% xlabel('Time (s)')
+% ylabel('Position (m)')
+% 
+% % relative position norm
+% rel_pos = zeros(1, N);
+% 
+% for i = 1 : N
+%     
+%     rel_pos(i) = norm(X(1 : 3, i));
+%     
+% end
+% 
+% figure;
+% 
+% plot(t, rel_pos)
+% xlabel('t [s]')
+% ylabel('position [m]')
+% title('relative position norm')
+% 
+% % relative velocity
+% figure
+% hold on
+% plot(t, X(4, :), '-r')
+% plot(t, X(5, :), '-g')
+% plot(t, X(6, :), '-b')
+% hold off
+% title('Relative Velocity of Satellite Two (rgb ~ xyz LVLH)')
+% xlabel('Time (s)')
+% ylabel('Velocity (m/s)')
+% 
+% % relative velocity norm
+% rel_vel = zeros(1, N);
+% 
+% for i = 1 : N
+%     
+%     rel_vel(i) = norm(X(4:6, i));
+%     
+% end
+% 
+% figure;
+% plot(t, rel_vel)
+% xlabel('t [s]')
+% ylabel('position [m/s]')
+% title('relative velocity norm')
+% 
+% % energy difference
+% figure;
+% plot(t, deltaenergies)
+% xlabel('t [s]')
+% title('delta energies')
+% 
+% % dv
+% figure;
+% plot(dv_vec(1, :)); hold on
+% plot(dv_vec(2, :))
+% plot(dv_vec(3, :))
+% xlabel('t [s]')
+% ylabel('\Delta v [m/s]')
+% legend('x', 'y', 'z')
+% title('\Delta v')
+% grid on
+% 
+% dv_norm = zeros(N, 1);
+% 
+% for i = 1 : N
+%     
+%     dv_norm(i) = norm(dv_vec(:, i));
+%     
+% end
+% 
+% dv_total = cumsum(dv_norm);
+% 
+% figure;
+% plot(t, dv_norm)
+% xlabel('t [s]')
+% ylabel('\Delta v [m/s]')
+% title('\Delta v norm')
+% 
+% figure;
+% plot(t, dv_total)
+% xlabel('t [s]')
+% ylabel('\Delta v [m/s]')
+% title('Cumulative \Delta v')
+% 
+% figure;
+% plot(t, dv_p_vec); hold on
+% plot(t, dv_d_vec)
+% plot(t, dv_E_vec)
+% plot(t, dv_h_vec)
+% xlabel('t [s]')
+% ylabel('\Delta v [m/s]')
+% title('commanded \Delta v for energy and momentum matching')
+% legend('p','d', 'E', 'h')
+% 
+% figure;
+% plot(t, dv_des); hold on
+% plot(t, max_dv * ones(N, 1))
+% xlabel('t [s]')
+% ylabel('\Delta v [m/s]')
+% title('Desired \Delta v norm')
+% legend('commanded dv', 'max dv')
+% 
+% % angular momentum
+% figure;
+% plot(dh_vec(1, :)); hold on
+% plot(dh_vec(2, :))
+% plot(dh_vec(3, :))
+% xlabel('t [s]')
+% ylabel('h_1 - h_2')
+% title('angular momentum difference')
+% grid on
+% 
+% for i = 1 : N
+%     dh_norm(i) = norm(dh_vec(:, i));
+%     h1_norm(i) = norm(h1_vec(:, i));
+%     h2_norm(i) = norm(h2_vec(:, i));
+% end
+% 
+% figure;
+% plot(t, h1_norm); hold on
+% plot(t, h2_norm);
+% xlabel('t [s]')
+% ylabel('h')
+% title('angular momentums')
+% legend('h_1', 'h_2')
+% 
+% figure;
+% plot(t, dh_norm)
+% xlabel('t [s]')
+% ylabel('h')
+% title('angular momentum difference norm')
+% 
+% figure;
+% plot(t, dh_angle)
+% xlabel('t [s]')
+% ylabel('\phi [rad]')
+% title('angle between h_1 and h_2')
 
 function dy = frhs(t, y, quat_ecef_eci)
 

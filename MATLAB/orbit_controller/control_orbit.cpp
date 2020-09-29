@@ -35,14 +35,9 @@ public:
         
         ArrayFactory f;
 
-        // will only contain one element
-        StructArray S = f.createStructArray({1,1}, {"t_last_firing"});
-
-        lin::Matrixd<1,1> dummy = {state.t_last_firing};
-        S[0]["t_last_firing"] = create_from_lin_mat(f, dummy);
-
         //outputs[0] is the state struct - just holds t_last_fire
-        outputs[0] = S;
+        lin::Matrixd<1,1> dummy = {state.t_last_firing};
+        outputs[0] = create_from_lin_mat(f, dummy);
 
         outputs[1] = create_from_lin_vec(f, actuation.J_ecef);
         dummy = {actuation.phase_till_next_node};
