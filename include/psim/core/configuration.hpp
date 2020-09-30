@@ -37,6 +37,7 @@
 #include <functional>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace psim {
 
@@ -57,16 +58,9 @@ class Configuration {
 
   Configuration() = default;
 
-  /** @brief Adds a parameter and associates it with the specified name.
-   *
-   *  @param[in] name
-   *  @param[in] value
-   *
-   *  If a parameter has already been associated with the name, a runtime error is
-   *  thrown.
-   */
   template <typename T>
-  void add(std::string const &name, T &&value);
+  void _add(std::string const &name, T &&value, std::string const &file, std::size_t l);
+  void _parse(std::string const &file);
 
  public:
   Configuration(Configuration const &) = delete;
@@ -103,10 +97,21 @@ class Configuration {
    *
    *  @return Parameters.
    *
-   *  If the configuration file doesn't exist, or a line with invalid formatting
-   *  is encountered, a runtime error will be thrown.
+   *  If the configuration file doesn't exist, a line with invalid formatting is
+   *  found, or a particular key is specified twice, a runtime error will be
+   *  thrown.
    */
   static Configuration make(std::string const &file);
+
+  /** @brief Parses a set of configuration files into a set of parameters.
+   *
+   *  @param[in] files Set of configuration file names.
+   *
+   *  If one of the configuration files don't exist, a line with invalid
+   *  formatting is found, or a particular key is specified twice, a runtime
+   *  error will be thrown.
+   */
+  static Configuration make(std::vector<std::string> const &files);
 };
 }  // namespace psim
 
