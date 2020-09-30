@@ -31,21 +31,21 @@
 namespace psim {
 
 void ModelList::add_fields(State &state) {
-  Model::add_fields(state);
+  this->Model::add_fields(state);
 
   for (auto const &model : _models)
     model->add_fields(state);
 }
 
 void ModelList::get_fields(State &state) {
-  Model::get_fields(state);
+  this->Model::get_fields(state);
 
   for (auto const &model : _models)
     model->get_fields(state);
 }
 
 void ModelList::step() {
-  Model::step();
+  this->Model::step();
 
   for (auto const &model : _models)
     model->step();

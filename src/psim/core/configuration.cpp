@@ -44,7 +44,8 @@ void Configuration::add(std::string const &name, T &&value) {
   if (iter != _parameters.end())
     throw std::runtime_error("Two or more parameters under the name: " + name);
 
-  _parameters[name] = new Parameter<T>(std::forward<T>(value));
+  auto const *param = new Parameter<T>(name, std::forward<T>(value));
+  _parameters[param->name()] = param;
 }
 
 Configuration::Configuration(Configuration &&config)

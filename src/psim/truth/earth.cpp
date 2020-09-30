@@ -49,7 +49,7 @@ Vector4 EarthGnc::prefix_earth_q_eci_ecef() const {
   return q_eci_ecef;
 }
 
-Vector3 EarthGnc::prefix_earth_w_earth() const {
+Vector3 EarthGnc::prefix_earth_w() const {
   auto const &t = prefix_t_s->get();
 
   Vector3 w_earth;

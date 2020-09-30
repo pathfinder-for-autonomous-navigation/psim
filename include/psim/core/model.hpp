@@ -32,7 +32,6 @@
 #include <psim/core/configuration.hpp>
 #include <psim/core/state.hpp>
 #include <psim/core/state_field.hpp>
-#include <psim/core/state_field_writable.hpp>
 
 #include <memory>
 #include <stdexcept>

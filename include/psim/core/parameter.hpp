@@ -22,19 +22,60 @@
 // SOFTWARE.
 //
 
-/** @file psim/core/parameters.hpp
+/** @file psim/core/parameter.hpp
  *  @author Kyle Krol
  */
 
 #ifndef PSIM_CORE_PARAMETER_HPP_
 #define PSIM_CORE_PARAMETER_HPP_
 
-#include "parameter_base.hpp"
+#include <psim/core/castable_base.hpp>
+#include <psim/core/nameable.hpp>
 
-#include <type_traits>
 #include <utility>
 
 namespace psim {
+
+template <typename T>
+class Parameter;
+
+/** @brief Virtual base class for all parameters.
+ *
+ *  The main purpose of this class is to allow dynamic casting to be used to check
+ *  parameter types at runtime and provide helpful casting functions.
+ */
+class ParameterBase : public virtual Nameable, public CastableBase<Parameter> {
+ protected:
+  ParameterBase() = default;
+
+ public:
+  using CastableBase<Parameter>::cast;
+
+  virtual ~ParameterBase() = default;
+
+  /** @brief Attempt to get the parameter's underlying value.
+   *
+   *  @tparam Expected underlying type.
+   *
+   *  @return Reference to the underlying value.
+   *
+   *  If the underlying type doesn't match the expected underlying type, a
+   *  runtime error will be thrown.
+   *
+   *  @{
+   */
+  template <typename T>
+  T const &get() const {
+    return cast<T>().get();
+  }
+
+  template <typename T>
+  T &get() {
+    return cast<T>().get();
+  }
+  /** @}
+   */
+};
 
 /** @brief Simulation parameter holding a single value of the underlying type.
  *
@@ -50,88 +91,76 @@ class Parameter : public ParameterBase {
  public:
   virtual ~Parameter() = default;
 
-  /** @brief Default constructs the parameter's initial value.
+  /** @brief Default constructs the parameter's initial value with no name.
    *
    *  https://stackoverflow.com/questions/2417065/does-the-default-constructor-initialize-built-in-types
    */
   Parameter()
-      : _value() { }
+      : Nameable("", "parameter"), _value() { }
+
+  /** @brief Default constructs the parameter's value.
+   *
+   *  @param[in] name Parameter's name.
+   *
+   *  @{
+   */
+  Parameter(std::string const &name)
+      : Nameable(name, "parameter"), _value() { }
+
+  Parameter(std::string &&name)
+      : Nameable(std::move(name), "parameter"), _value() { }
+  /** @}
+   */
 
   /** @param[in] value Parameter's initial value.
    *
    *  @{
    */
   Parameter(T const &value)
-      : _value(value) { }
+      : Nameable("", "parameter"), _value(value) { }
 
   Parameter(T &&value)
-      : _value(std::move(value)) { }
+      : Nameable("", "parameter"), _value(std::move(value)) { }
   /** @}
    */
 
-  /** @param[in] value Parameter's initial value.
-   *
-   *  If the passed parameter's underlying type does not match, a runtime error
-   *  will be thrown.
+  /** @param[in] name Parameter's name.
+   *  @param[in] value Parameter's initial value.
    *
    *  @{
    */
-  Parameter(ParameterBase const &param)
-      : _value(param.get<T>()) { }
+  Parameter(std::string const &name, T const &value)
+      : Nameable(name, "parameter"), _value(value) { }
 
-  Parameter(ParameterBase &&param)
-      : _value(std::move(param.get<T>())) { }
+  Parameter(std::string &&name, T const &value)
+      : Nameable(std::move(name), "parameter"), _value(value) { }
+
+  Parameter(std::string const &name, T &&value)
+      : Nameable(name, "parameter"), _value(std::move(value)) { }
+
+  Parameter(std::string &&name, T &&value)
+      : Nameable(std::move(name), "parameter"), _value(std::move(value)) { }
   /** @}
    */
 
-  /** @return Reference to the underlying type.
+  /** @return Reference to itself.
+   *
+   *  This function was implemented here with additional type checking to keep a
+   *  consistant interface with the parameter base class.
    *
    *  @{
    */
-  operator T const & () const {
-    return _value;
-  }
+  template <typename U = T>
+  Parameter<U> const &cast() const {
+    static_assert(std::is_same<U, T>::value, "Invalid type in call to Parameter::cast() const");
 
-  operator T & () {
-    return _value;
-  }
-  /** @}
-   */
-
-  /** @param[in] value New value held by the parameter.
-   *
-   *  @return Reference to this parameter.
-   *
-   *  @{
-   */
-  Parameter<T> &operator=(T const &value) {
-    _value = value;
     return *this;
   }
 
-  Parameter<T> &operator=(T &&value) {
-    _value = std::move(value);
-    return *this;
-  }
-  /** @}
-   */
+  template <typename U = T>
+  Parameter<U> &cast() {
+    static_assert(std::is_same<U, T>::value, "Invalid type in call to Parameter::cast()");
 
-  /** @param[in] param New value held by the parameter.
-   *
-   *  @return Reference to this parameter.
-   *
-   *  If the passed parameter's underlying type does not match a runtime error
-   *  will be thrown.
-   *
-   *  @{
-   */
-  Parameter<T> &operator=(ParameterBase const &param) {
-    _value = param.get<T>();
-    return *this;
-  }
-
-  Parameter<T> &operator=(ParameterBase &&param) {
-    _value = std::move(param.get<T>());
     return *this;
   }
   /** @}
@@ -139,20 +168,20 @@ class Parameter : public ParameterBase {
 
   /** @returns Reference to the underlying value.
    *
-   *  This function was re-implemented to avoid potential type checking overhead
-   *  and keep a consistant interface.
+   *  This function was implemented here with additional type checking to keep a
+   *  consistant interface with the parameter base class.
    *
    *  @{
    */
   template <typename U = T>
   U const &get() const {
-    static_assert(std::is_same<U, T>::value, "Invalid parameter type in call to 'get'.");
+    static_assert(std::is_same<U, T>::value, "Invalid type in call to Parameter::get() const");
     return _value;
   }
 
   template <typename U = T>
   U &get() {
-    static_assert(std::is_same<U, T>::value, "Invalid parameter type in call to 'get'.");
+    static_assert(std::is_same<U, T>::value, "Invalid type in call to Parameter::get()");
     return _value;
   }
   /** @}

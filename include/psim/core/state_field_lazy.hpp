@@ -29,10 +29,11 @@
 #ifndef PSIM_CORE_STATE_FIELD_LAZY_HPP_
 #define PSIM_CORE_STATE_FIELD_LAZY_HPP_
 
-#include "state_field.hpp"
-#include "state_field_writable.hpp"
+#include <psim/core/nameable.hpp>
+#include <psim/core/state_field.hpp>
 
 #include <functional>
+#include <string>
 #include <utility>
 
 namespace psim {
@@ -60,29 +61,7 @@ class StateFieldLazy : public StateField<T> {
    */
   T mutable _value;
 
- public:
-  StateFieldLazy() = delete;
-
-  virtual ~StateFieldLazy() = default;
-
-  /** @param[in] function Lazy evaluation function.
-   *
-   *  @{
-   */
-  StateFieldLazy(std::function<T ()> const &function)
-      : _function(function), _evaluated(false) { }
-
-  StateFieldLazy(std::function<T ()> &&function)
-      : _function(std::move(function)), _evaluated(false) { }
-  /** @}
-   */
-
-  /** @return Reference to the underlying value.
-   *
-   *  Note the actual calculation is only performed if the value is requested and
-   *  then cached until the lazy state field has been reset.
-   */
-  virtual operator T const & () const override {
+  virtual T const &_get() const override {
     if (!_evaluated) {
       _value = _function();
       _evaluated = true;
@@ -90,10 +69,47 @@ class StateFieldLazy : public StateField<T> {
     return _value;
   }
 
+ public:
+  StateFieldLazy() = delete;
+
+  virtual ~StateFieldLazy() = default;
+
+  /** @param[in] name State field's name.
+   *  @param[in] function Lazy evaluation function.
+   *
+   *  @{
+   */
+  StateFieldLazy(std::string const &name, std::function<T ()> const &function)
+      : Nameable(name, "state_field_lazy"), _function(function),
+        _evaluated(false) { }
+
+  StateFieldLazy(std::string &&name, std::function<T ()> const &function)
+      : Nameable(std::move(name), "state_field_lazy"), _function(function),
+        _evaluated(false) { }
+
+  StateFieldLazy(std::string const &name, std::function<T ()> &&function)
+      : Nameable(name, "state_field_lazy"), _function(std::move(function)),
+        _evaluated(false) { }
+
+  StateFieldLazy(std::string &&name, std::function<T ()> &&function)
+      : Nameable(std::move(name), "state_field_lazy"),
+        _function(std::move(function)), _evaluated(false) { }
+  /** @}
+   */
+
   /** @brief Clears the current value held by the state field.
    */
   void reset() {
     _evaluated = false;
+  }
+
+  /** @return Reference to the underlying type.
+   *
+   *  This function was re-implemented to avoid potential type checking overhead
+   *  and keep a consistant interface.
+   */
+  T const &get() const {
+    return _get();
   }
 };
 }  // namespace psim

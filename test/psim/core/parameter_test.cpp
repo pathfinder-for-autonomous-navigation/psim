@@ -9,67 +9,67 @@
 
 #include <stdexcept>
 
-TEST(Parameter, TestAssignment) {
-  // Underlying value assignment
-  {
-    psim::Parameter<psim::Real> param(0.0);
-    param = 3.0;
-
-    ASSERT_EQ((psim::Real) param, 3.0);
-  }
-
-  // Parameter base assignment
-  {
-    psim::Parameter<psim::Real> param_base(0.0);
-    psim::ParameterBase *param_ptr = &param_base;
-
-    // Test a proper assignment
-    {
-      psim::Parameter<psim::Real> param = 4.0;
-      param = *param_ptr;
-
-      ASSERT_EQ((psim::Real) param, 0.0);
-    }
-
-    // Ensure exception on invalid assignment
-    {
-      psim::Parameter<psim::Integer> param;
-
-      EXPECT_THROW(param = *param_ptr, std::runtime_error);
-    }
-  }
-}
-
 TEST(Parameter, TestConstructor) {
   // Default constructor
   {
     psim::Parameter<psim::Real> param;
-    ASSERT_EQ((psim::Real) param, psim::Real());
+
+    ASSERT_STREQ(param.name().c_str(), "");
+    ASSERT_STREQ(param.type().c_str(), "parameter");
+    ASSERT_EQ(param.get(), psim::Real());
   }
 
-  // Underlying value constructor
+  // Named default constructor
+  {
+    psim::Parameter<psim::Real> param("default");
+
+    ASSERT_STREQ(param.name().c_str(), "default");
+    ASSERT_STREQ(param.type().c_str(), "parameter");
+    ASSERT_EQ(param.get(), psim::Real());
+  }
+
+  // Value constructor
   {
     psim::Parameter<psim::Real> param(1.0);
-    ASSERT_EQ((psim::Real) param, 1.0);
+
+    ASSERT_STREQ(param.name().c_str(), "");
+    ASSERT_STREQ(param.type().c_str(), "parameter");
+    ASSERT_EQ(param.get(), 1.0);
   }
 
-  // Parameter base constructor
+  // Named value constructor
   {
-    psim::Parameter<psim::Real> param_base(2.0);
-    psim::Parameter<psim::Real> param((psim::ParameterBase &) param_base);
+    psim::Parameter<psim::Real> param("default", 1.0);
 
-    ASSERT_EQ((psim::Real) param, 2.0);
+    ASSERT_STREQ(param.name().c_str(), "default");
+    ASSERT_STREQ(param.type().c_str(), "parameter");
+    ASSERT_EQ(param.get(), 1.0);
   }
 }
 
 TEST(Parameter, TestGet) {
-  psim::Parameter<psim::Real> param;
-  psim::ParameterBase *param_ptr = &param;
+  psim::Parameter<psim::Real> param(1.0);
 
-  // Test a proper access
-  auto const value = param_ptr->get<psim::Real>();
-  ASSERT_EQ(value, psim::Real());
+  // Test read only access
+  {
+    auto const &value = param.get();
 
-  // Ensure exception on improper access
-  EXPECT_THROW(param_ptr->get<psim::Integer>(), std::runtime_error);
+    ASSERT_EQ(value, 1.0);
+  }
+
+  // Test read-write access
+  {
+    param.get() = 2.0;
+    auto const &value = param.get();
+
+    ASSERT_EQ(value, 2.0);
+  }
+
+  // Test dynamic access (proper and improper)
+  {
+    psim::ParameterBase *ptr = &param;
+
+    ASSERT_EQ(ptr->get<psim::Real>(), 2.0);
+    EXPECT_THROW(ptr->get<psim::Integer>(), std::runtime_error);
+  }
 }

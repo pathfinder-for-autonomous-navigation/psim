@@ -30,7 +30,6 @@
 
 #include <psim/core/simulation.hpp>
 #include <psim/core/state_field.hpp>
-#include <psim/core/state_field_writable.hpp>
 #include <psim/core/types.hpp>
 #include <psim/simulations/single_orbit.hpp>
 
@@ -70,7 +69,7 @@ static void py_assign(psim::StateFieldWritableBase &field, T const &value) {
   auto *ptr = dynamic_cast<psim::StateFieldWritable<T> *>(&field);
   if (!ptr)
     std::runtime_error("Attempted to write to state field with incorrect type.");
-  *ptr = value;
+  ptr->get() = value;
 }
 
 #define PY_SIMULATION(model) \

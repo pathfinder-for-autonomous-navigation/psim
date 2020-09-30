@@ -22,62 +22,54 @@
 // SOFTWARE.
 //
 
-/** @file psim/core/parameter_base.hpp
+/** @file psim/core/nameable.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_CORE_PARAMETER_BASE_HPP_
-#define PSIM_CORE_PARAMETER_BASE_HPP_
+#ifndef PSIM_CORE_NAMEABLE_HPP_
+#define PSIM_CORE_NAMEABLE_HPP_
 
-#include <stdexcept>
+#include <string>
+#include <utility>
 
 namespace psim {
 
-template <typename T>
-class Parameter;
-
-/** @brief Virtual base class for all parameters.
+/** @brief Ties a string name and string type representation to an object.
  *
- *  The main purpose of this class is to allow dynamic casting to be used to check
- *  parameter types at runtime and provide helpful casting functions.
+ *  This is useful for debugging and making useful error messages.
  */
-class ParameterBase {
+class Nameable {
+ private:
+  std::string const _name, _type;
+
  protected:
-  ParameterBase() = default;
+  Nameable(std::string const &name, std::string const &type)
+      : _name(name), _type(type) { }
+
+  Nameable(std::string &&name, std::string const &type)
+      : _name(std::move(name)), _type(type) { }
+
+  Nameable(std::string const &name, std::string &&type)
+      : _name(name), _type(std::move(type)) { }
+
+  Nameable(std::string &&name, std::string &&type)
+      : _name(std::move(name)), _type(std::move(type)) { }
 
  public:
-  virtual ~ParameterBase() = default;
+  Nameable() = default;
+  virtual ~Nameable() = default;
 
-  /** @brief Attempt to get the parameter's underlying value.
-   *
-   *  @tparam Expected underlying type.
-   *
-   *  @return Reference to the underlying value.
-   *
-   *  If the underlying type doesn't match the expected underlying type, a runtime
-   *  error will be thrown.
-   *
-   *  @{
+  /** @returns String name tied to this object.
    */
-  template <typename T>
-  T const &get() const {
-    auto const *param_ptr = dynamic_cast<Parameter<T> const *>(this);
-    if (!param_ptr)
-      throw std::runtime_error("Invalid parameter type in call to 'get'.");
-
-    return (T const &) *param_ptr;
+  inline std::string const &name() const {
+    return _name;
   }
 
-  template <typename T>
-  T &get() {
-    auto *param_ptr = dynamic_cast<Parameter<T> *>(this);
-    if (!param_ptr)
-      throw std::runtime_error("Invalid parameter type in call to 'get'.");
-
-    return (T &) *param_ptr;
-  }
-  /** @}
+  /** @returns String representation of this object's type.
    */
+  inline std::string const &type() const {
+    return _type;
+  }
 };
 }  // namespace psim
 
