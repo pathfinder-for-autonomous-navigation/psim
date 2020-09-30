@@ -40,7 +40,32 @@ TEST(Configuration, TestGet) {
   ASSERT_EQ(config.get("test.dne"), nullptr);
 }
 
-TEST(Configuration, TestMakeAndBracketsOperator) {
+TEST(Configuration, TestMultiFileMake) {
+  std::vector<std::string> const files = {
+    "test/psim/core/configuration_test_config.txt",
+    "test/psim/core/configuration_test_two_config.txt"
+  };
+  auto const config = psim::Configuration::make(files);
+
+  // Check Integer field(s) from both files
+  {
+    psim::Integer test_integer;
+
+    test_integer = config["test.integer"].get<psim::Integer>();
+    ASSERT_EQ(test_integer, 1);
+
+    test_integer = config["test.i"].get<psim::Integer>();
+    ASSERT_EQ(test_integer, -2);
+
+    test_integer = config["test.i"].get<psim::Integer>();
+    ASSERT_EQ(test_integer, -2);
+
+    test_integer = config["test.j"].get<psim::Integer>();
+    ASSERT_EQ(test_integer, 4);
+  }
+}
+
+TEST(Configuration, TestSingleFileMake) {
   std::string const file = "test/psim/core/configuration_test_config.txt";
   auto const config = psim::Configuration::make(file);
 
