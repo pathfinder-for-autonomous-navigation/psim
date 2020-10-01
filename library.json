@@ -4,7 +4,8 @@
   "license": "MIT",
   "build": {
       "includeDir": "include",
-      "srcDir": "src/gnc"
+      "srcDir": "src/gnc",
+      "srcFilter": "*.cpp"
   },
   "repository": {
       "type": "git",
