@@ -7,6 +7,6 @@ filegroup(
 
 filegroup(
   name = "plots",
-  data = glob(["plots/**/*.txt"]),
+  data = glob(["plots/**/*.yml"]),
   visibility = ["//visibility:public"],
 )
