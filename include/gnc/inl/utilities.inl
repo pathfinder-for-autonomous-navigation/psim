@@ -31,6 +31,13 @@ constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> co
 }
 
 template <typename T>
+constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> &q2) {
+  lin::Vector<T, 4> res;
+  quat_cross_mult(q1, q2, res);
+  q2 = res;
+}
+
+template <typename T>
 constexpr void quat_to_qrp(lin::Vector<T, 4> const &q, T a, T f, lin::Vector<T, 3> &p) {
   p = lin::ref<3, 1>(q, 0, 0) * (f / (a + q(3)));
 }

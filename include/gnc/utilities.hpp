@@ -47,7 +47,17 @@ template <typename T>
 constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1,
         lin::Vector<T, 4> const &q2, lin::Vector<T, 4> &res);
 
-/** @fn quat_to_grp
+/** @fn quat_cross_mult
+ *  @param[in]  q1
+ *  @param[inout]  q2
+ *  Cross multiplies two quaternions. This function essentially performs
+ *  q2 = q1 x q2 (q2 is mutated). There is no explicit handling of NaNs built into this
+ *  function; however, a finite input will always yield a finite result. */
+template <typename T>
+constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1,
+        lin::Vector<T, 4> &q2);
+
+ /** @fn quat_to_grp
  *  @param[in]  q Input quaternion.
  *  @param[in]  a 
  *  @param[in]  f
