@@ -1,11 +1,6 @@
 function [state,actuators] = update_FC_state(state,sensor_readings)
 % Global variables treated as inputs:
 %  * const
-%  * sensors
-% 
-% Global variables treated as outputs:
-%  * actuators
-%  * 
 
 % attitude PD controller
 %   calculate commanded wheel torque
@@ -15,7 +10,7 @@ global const
 %% Orbit Estimation %%
 estimator.valid_gps_measure=all(isfinite([sensor_readings.position_ecef; sensor_readings.velocity_ecef;]));
 if (estimator.valid_gps_measure)
-    estimator.time_ns= int64(sensor_readings.time*1E9);
+    estimator.time_ns= sensor_readings.gpstime-const.INIT_GPSNS;
 else
     estimator.time_ns= state.orbit_est_state.time_ns+const.dt;
 end
@@ -32,7 +27,7 @@ estimator.time= double(estimator.time_ns)*1E-9;
     estimator.time_ns, ...
     sensor_readings.target_position_ecef, ...
     sensor_readings.target_velocity_ecef, ...
-    int64(sensor_readings.target_time*1E9)); 
+    sensor_readings.target_gpstime-const.INIT_GPSNS); 
 estimator.target_position_ecef= estimator.self2target_r_ecef+estimator.position_ecef;
 estimator.target_velocity_ecef= estimator.self2target_v_ecef+estimator.velocity_ecef;
 
@@ -70,7 +65,7 @@ end
 actuators= actuators_off_command();
 actuators.position_ecef= estimator.position_ecef;
 actuators.velocity_ecef= estimator.velocity_ecef;
-actuators.time= estimator.time;
+actuators.gpstime= estimator.time_ns+const.INIT_GPSNS;
 
 %these are the pointing commands, primary is optimized before secondary
 %everything must be a unit vector in the body frame, or NaN

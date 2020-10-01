@@ -10,7 +10,7 @@ function actuator_commands = actuators_off_command()
 %  * `magrod_moment`, commanded x,y,z magnetorquer moments (Am^2)
 %  * `position_ecef`(3x1 matrix): estimated position of the satellite (m)
 %  * `velocity_ecef`(3x1 matrix): estimated velocity of the gps reciever of the satellite (m/s)
-%  * `time`(scalar): estimated time since initial GPS week (s)
+%  * `gpstime`(scalar int64): time since GPS epoch, time of the orbit estimate to send to ground (ns)
 actuator_commands= struct();
 actuator_commands.firing_start_times= inf(4,1);
 actuator_commands.firing_on_times= zeros(4,1);

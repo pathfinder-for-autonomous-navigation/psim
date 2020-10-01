@@ -35,6 +35,17 @@ constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> &q
   lin::Vector<T, 4> res;
   quat_cross_mult(q1, q2, res);
   q2 = res;
+
+constexpr void quat_to_qrp(lin::Vector<T, 4> const &q, T a, T f, lin::Vector<T, 3> &p) {
+  p = lin::ref<3, 1>(q, 0, 0) * (f / (a + q(3)));
+}
+
+template <typename T>
+constexpr void grp_to_quat(lin::Vector<T, 3> const &p, T a, T f, lin::Vector<T, 4> &q) {
+  T fro_p = lin::fro(p);
+  T sqr_f = f * f;
+  q(3) = (f * std::sqrt(sqr_f + (1 - a * a) * fro_p) - a * fro_p) / (sqr_f + fro_p);
+  lin::ref<3, 1>(q, 0, 0) = p * ((a + q(3)) / f);
 }
 
 template <typename T>

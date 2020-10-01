@@ -61,6 +61,8 @@ Most Matlab types are compatible with python types: [Python to Matlab function i
  * `./estimator_prototypes/*` - prototypes for estimators.
  * `./orbit_propagator_prototypes/*` - prototypes for orbit propagators.
  * `./orbit_estimation/*` - orbit estimator, main initialization, run, and some helper and test functions.
+ * `./estimator_test_file_gen/*` - scripts and helper functions to generate hdf5 estimator test files from the MATLAB sim
+
 
 ## Main State Data Structure
 
@@ -87,7 +89,7 @@ Each satellites state has the following members and submembers:
    * `magrod_hysteresis_body`(3x1 matrix): Real magnetorquer hysteresis moment (Am^2)
    * `ground_position_ecef`(3x1 matrix): ground known estimated position of the satellite (m)
    * `ground_velocity_ecef`(3x1 matrix): ground known estimated velocity of the gps reciever of the satellite (m/s)
-   * `ground_time`(scalar): ground known estimated time since initial GPS week (s)
+   * `ground_gpstime`(scalar int64): ground known estimated time since GPS epoch (ns)
  * `sensors`
    * `gyro_bias`: (rad/s)
    * `magnetometer_bias`: (T)
@@ -135,11 +137,12 @@ sensor readings is a struct with elements:
  * `sat2sun_body`, unit vector from satellite to sun (unitless)
  * `sun_sensor_true`, true if sun vector reading is good, else false.
  * `wheel_momentum_body`, wheel angular momentum reading (Nms)
- * `time`, time since initial GPS week (s)
+ * `gpstime`(scalar int64): time since GPS epoch (ns)
  * `position_ecef`, position of the gps reciever of the satellite (m)
  * `velocity_ecef`, velocity of the gps reciever of the satellite (m/s)
- * `target_position_ecef`, position of the target gps reciever of the satellite, from ground (m)
- * `target_velocity_ecef`, velocity of the target gps reciever of the satellite, from ground (m/s)
+ * `target_position_ecef`, position of the target satellite, from ground (m)
+ * `target_velocity_ecef`, velocity of the target satellite, from ground (m/s)
+ * `target_gpstime`(scalar int64): time since GPS epoch, from ground (ns)
  * `relative_position_ecef`, position vector from self to target, from cdgps (m)
 
 actuator commands is a struct with elements:
@@ -151,7 +154,7 @@ actuator commands is a struct with elements:
  * `magrod_moment`, commanded x,y,z magnetorquer moments (Am^2)
  * `position_ecef`(3x1 matrix): estimated position of the satellite to send to ground (m)
  * `velocity_ecef`(3x1 matrix): estimated velocity of the satellite to send to ground (m/s)
- * `time`(scalar): time since initial GPS week, time of the orbit estimate to send to ground (s)
+ * `gpstime`(scalar int64): time since GPS epoch, time of the orbit estimate to send to ground (ns)
 
 ## Functions
 
@@ -242,6 +245,8 @@ Constants are stored in the `const` global struct.
    * `mu`(positive scalar), Earth's gravitational constant (m^3/s^2)
    * `dt`(positive int64), Simulation timestep (ns)
    * `INITGPS_WN`(positive int), Initial gps week number, epoch for time (weeks)
+   * `INIT_DYEAR`(double): Decimal year at INITGPS_WN epoch (year, AD)
+   * `INIT_GPSNS`(int64): INITGPS_WN in nanoseconds (ns)
    * `R_EARTH`(positive scalar), Equatorial Radius of Earth (m)
    * `e_earth`(positive scalar), Earth's eccentricity
    * `tp_earth`(scalar), Time when earth was at perihelion (s)
@@ -271,21 +276,21 @@ The fraction of max wheel momentum detumbling ends at.
    * `cdgps_max_range`(positive scalar): Max range of cdgps antenna to other sat where cdgps can work (m)
    * `probability_of_ground_gps`(scalar 0-1): Propability of getting a ground gps reading over radio any control cycle the sat
 also can get regular gps.
-   * `gps_position_bias_sdiv`(positive scalar): standard diviation of bias of gps position measurements (m)
-   * `cdgps_position_bias_sdiv`(positive scalar): standard diviation of bias of cdgps relative position measurements (m)
-   * `gps_velocity_bias_sdiv`(positive scalar): standard diviation of bias of gps velocity measurements (m/s)
-   * `gps_position_noise_sdiv`(positive scalar): standard diviation of gps position measurements (m)
-   * `gps_velocity_noise_sdiv`(positive scalar): standard diviation of gps position measurements (m)
+   * `gps_position_bias_sdiv`(positive scalar): standard deviation of bias of gps position measurements (m)
+   * `cdgps_position_bias_sdiv`(positive scalar): standard deviation of bias of cdgps relative position measurements (m)
+   * `gps_velocity_bias_sdiv`(positive scalar): standard deviation of bias of gps velocity measurements (m/s)
+   * `gps_position_noise_sdiv`(positive scalar): standard deviation of gps position measurements (m)
+   * `gps_velocity_noise_sdiv`(positive scalar): standard deviation of gps position measurements (m)
    * `magnetometer_bias_readings_min`(positive int): number of readings per axis to get a 
 good magnetometer bias estimate.
    * `magnetometer_noise_sdiv`(positive scalar): 
-standard diviation of the magnetometer noise (T)
+standard deviation of the magnetometer noise (T)
    * `magnetometer_bias_sdiv`(positive scalar): 
-standard diviation of the magnetometer bias (T)
+standard deviation of the magnetometer bias (T)
    * `gyro_noise_sdiv`(positive scalar):
-standard diviation of the gyro noise (rad/s)
+standard deviation of the gyro noise (rad/s)
    * `gyro_bias_sdiv`(positive scalar):
-standard diviation of the gyro bias (rad/s)
+standard deviation of the gyro bias (rad/s)
 ### ORBIT_ESTIMATION parameters
    * `time_for_stale_cdgps`(int64 scalar): time to wait before making the target estimate stale (ns)
    * `orb_process_noise_var`(12x12 symetric matrix) Added variance for bad force models divided by timestep (mks units)

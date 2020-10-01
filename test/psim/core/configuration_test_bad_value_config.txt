@@ -1,0 +1,5 @@
+# Simple test to be sure the configuration parser catches an invalid parameter
+# value. In this case, we're testing too many values.
+#
+
+test.bad_value 0 1 2 3 4 5

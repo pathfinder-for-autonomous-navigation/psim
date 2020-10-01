@@ -1,3 +1,13 @@
-argparse
+matplotlib
+numpy
 platformio
 pylint
+pytest
+pyyaml
+./lib/lin
+# Held over from orbit estimator days
+cppimport
+h5py
+dulwich
+ipykernel
+notebook

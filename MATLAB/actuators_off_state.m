@@ -12,7 +12,7 @@ function actuators = actuators_off_state()
 %    * `magrod_hysteresis_body`(3x1 matrix): Real magnetorquer hysteresis moment (Am^2)
 %    * `ground_position_ecef`(3x1 matrix): ground known estimated position of the satellite (m)
 %    * `ground_velocity_ecef`(3x1 matrix): ground known estimated velocity of the gps reciever of the satellite (m/s)
-%    * `ground_time`(scalar): ground known estimated time since initial GPS week (s)
+%    * `ground_gpstime`(scalar int64): ground known estimated time since GPS epoch (ns)
 actuators=struct();
 actuators.firing_start_times= inf(4,1);
 actuators.thrust_vectors_body= zeros(3,4);
@@ -24,6 +24,6 @@ actuators.magrod_real_moment_body= zeros(3,1);
 actuators.magrod_hysteresis_body= zeros(3,1);
 actuators.ground_position_ecef= nan(3,1);
 actuators.ground_velocity_ecef= nan(3,1);
-actuators.ground_time= nan;
+actuators.ground_gpstime= int64(0);
 end
 

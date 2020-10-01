@@ -14,7 +14,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+#lib/
 lib64/
 parts/
 sdist/
@@ -115,6 +115,8 @@ venv.bak/
 
 # mkdocs documentation
 /site
+docs/*
+!docs/Doxyfile
 
 # mypy
 .mypy_cache/
@@ -123,6 +125,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# cppimport stuff
+*.cppimporthash
+*.rendered.*.cpp
 
 .DS_Store
 .vscode
@@ -140,3 +146,13 @@ geograv/build/*
 MATLAB/psim.html
 tmp/
 .idea/
+
+# Bazel
+bazel-bin
+bazel-out
+bazel-psim
+bazel-testlogs
+bazel-genfiles
+
+# Compiler commands from Bazel
+compile_commands.json

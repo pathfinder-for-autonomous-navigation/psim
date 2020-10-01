@@ -15,6 +15,8 @@ HPP_HEADER='''\
 
 #include <lin/core.hpp>
 
+#include <cstdint>
+
 #include <limits>
 
 namespace gnc {
@@ -29,7 +31,7 @@ HPP_FOOTER='''\
 
 '''
 
-CPP_FILE='src/gnc_constants.cpp'
+CPP_FILE='src/gnc/constants.cpp'
 CPP_HEADER='''\
 /** @file gnc_constants.cpp
  *  Autocoded constants source file. See tools/constants_generator.py for more
