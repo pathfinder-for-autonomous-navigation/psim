@@ -31,6 +31,13 @@ constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> co
 }
 
 template <typename T>
+constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> const &q2) {
+  lin::Vector<4, T> res;
+  quat_cross_mult(q1, q2, res);
+  q2 = res;
+}
+
+template <typename T>
 constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> const &v,
     lin::Vector<T, 3> &res) {
   auto const qv = lin::ref<3, 1>(q, 0, 0);

@@ -47,6 +47,16 @@ template <typename T>
 constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1,
         lin::Vector<T, 4> const &q2, lin::Vector<T, 4> &res);
 
+/** @fn quat_cross_mult
+ *  @param[in]  q1
+ *  @param[inout]  q2
+ *  Cross multiplies two quaternions. This function essentially performs
+ *  res = q1 x q2. There is no explicit handling of NaNs built into this
+ *  function; however, a finite input will always yield a finite result. */
+template <typename T>
+constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1,
+        lin::Vector<T, 4> &q2);
+
 /** @fn rotate_frame
  *  @param[in]  q   Quaternion specifying the frame rotation.
  *  @param[in]  v   Vector to be transformed.
