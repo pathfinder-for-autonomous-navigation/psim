@@ -31,7 +31,7 @@ constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> co
 }
 
 template <typename T>
-constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> const &q2) {
+constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> &q2) {
   lin::Vector<T, 4> res;
   quat_cross_mult(q1, q2, res);
   q2 = res;
