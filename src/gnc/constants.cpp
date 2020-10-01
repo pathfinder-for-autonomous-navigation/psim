@@ -24,6 +24,8 @@ GNC_TRACKED_CONSTANT(lin::Vector4d, q_ecef0_eci, 0.000917219458782, 0.0000388432
 
 GNC_TRACKED_CONSTANT(lin::Matrix3x3f, J_sat, 0.03798, 0.0, 0.0, 0.0, 0.03957, 0.0, 0.0, 0.0, 0.00688);
 
+GNC_TRACKED_CONSTANT(lin::Matrix3x3f, J_docked_sats, 0.03798, 0.0, 0.0, 0.0, 0.03957, 0.0, 0.0, 0.0, 0.00688); // TODO NEED TO DOUBLE
+
 GNC_TRACKED_CONSTANT(float, pointer_Kp, 20.0e-4f);
 
 GNC_TRACKED_CONSTANT(float, pointer_Kd, 22.5e-4f);

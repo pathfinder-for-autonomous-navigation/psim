@@ -68,6 +68,8 @@ GNC_TRACKED_CONSTANT(constexpr static double, max_mtr_moment, 0.113337 / 2.0);
 
 extern lin::Matrix3x3f J_sat;
 
+extern lin::Matrix3x3f J_docked_sats;
+
 extern float pointer_Kp;
 
 extern float pointer_Kd;
