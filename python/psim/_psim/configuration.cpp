@@ -66,5 +66,6 @@ static PyVariant py_visit(psim::ParameterBase const &field) {
 void py_configuration(py::module &m) {
   py::class_<psim::Configuration>(m, "Configuration")
     .def(py::init([](std::string const &file) { return psim::Configuration::make(file); }))
+    .def(py::init([](std::vector<std::string> const &files) { return psim::Configuration::make(files); }))
     .def("__getitem__", [](psim::Configuration const &self, std::string const &name) { return py_visit(self[name]); });
 }
