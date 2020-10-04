@@ -158,7 +158,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
   double a = -1 * gnc::constant::mu_earth / (2 * this_energy);
   double n = orbrate(a);
   double M = n * data.t;
-  M = (int)M % (int)(2 * pi);
+  M = std::fmod(M, (2 * pi));
 
   // Calculate eccentric anomaly
   double del = 1;
@@ -175,18 +175,18 @@ void mex_control_orbit(struct OrbitControllerState &state,
   }
 
   // Check if follower is at a firing point
-  if (std::fmod(E , (pi / 4)) < 0.01 && data.t - state.t_last_firing > dt_fire_min) {
+  if ((std::fmod(E , (pi / 4)) < 0.01) && ((data.t - state.t_last_firing) > dt_fire_min)) {
     // Record firing time
     state.t_last_firing = data.t;
 
     // Hill frame PD controller
     double p_term = K_p * (DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0))(1); 
-    double d_term = K_d * (DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0))(1); 
+    double d_term = -1 * K_d * (DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0))(1); //multiply by -1
     lin::Vector3d dv_p = p_term * this_v_hat;
     lin::Vector3d dv_d = d_term * this_v_hat;
     
     // Energy controller
-    double e_term = K_e * (this_energy - that_energy);
+    double e_term = -1 * K_e * (this_energy - that_energy); // multiply by -1
     lin::Vector3d dv_e = e_term * this_v_hat;
 
     // H Controller
@@ -223,10 +223,11 @@ void mex_control_orbit(struct OrbitControllerState &state,
     // this_v_ecef0 = this_v_ecef0 + dv;
     // How do I update actuate.phase_until_next_node?
   }
-  else{
-    actuation.J_ecef = 0;
-    actuation.phase_till_next_node = 0;
-  }
+//   else{
+//     //actuation.J_ecef = 0;
+//     lin::Vector3d zeros = {0,0,0}
+//     actuation.phase_till_next_node = 0;
+//   }
 
 }
 
