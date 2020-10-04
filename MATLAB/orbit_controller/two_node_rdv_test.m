@@ -130,15 +130,17 @@ for i = 1 : N - 1
 
     [t_last_fire, J_ecef, phase_till_next_node] = make_mex_orbit_controller(t_fire, t(i), r2, v2, r1, v1);
     
-    if (J_ecef ~= 0)
+    if (~isnan(J_ecef))
+        fprintf('J_ecef: %d %d %d\n', J_ecef(1), J_ecef(2), J_ecef(3));
+        
         % record firing position and time
         r_fire = [r_fire, [r1; r2]];
         t_fire = t_last_fire;
         
         % apply dv
-%         dv = J_ecef/m;
-%         v2 = v2 + dv;
-%         dv_vec(:, i) = dv;
+        dv = J_ecef/m;
+        v2 = v2 + dv;
+        dv_vec(:, i) = dv;
     end
 
     
