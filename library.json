@@ -5,7 +5,7 @@
   "build": {
       "includeDir": "include",
       "srcDir": "src/gnc",
-      "srcFilter": "*.cpp"
+      "srcFilter": "+<*.cpp>"
   },
   "repository": {
       "type": "git",
