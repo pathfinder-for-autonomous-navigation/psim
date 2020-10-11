@@ -22,11 +22,11 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_orbit.cpp
+/** @file psim/simulation/dual_orbit.cpp
  *  @author Kyle Krol
  */
 
-#include <psim/simulations/single_orbit.hpp>
+#include <psim/simulations/dual_orbit.hpp>
 
 #include <psim/truth/earth.hpp>
 #include <psim/truth/environment.hpp>
@@ -35,19 +35,26 @@
 #include <psim/truth/transform_position.hpp>
 #include <psim/truth/transform_velocity.hpp>
 
+#include <string>
+
 namespace psim {
 
-SingleOrbitGnc::SingleOrbitGnc(Configuration const &config) {
+DualOrbitGnc::DualOrbitGnc(Configuration const &config) {
+  auto const add_satellite = [this, &config](std::string const &satellite) -> void {
+    // Orbital dynamics
+    this->add<OrbitGncEci>(config, "truth", satellite);
+    this->add<TransformPositionEci>(config, "truth", "truth." + satellite + ".orbit.r");
+    this->add<TransformVelocityEci>(config, "truth", satellite, "truth." + satellite + ".orbit.v");
+    // Environmental models
+    this->add<EnvironmentGnc>(config, "truth", satellite);
+    this->add<TransformPositionEcef>(config, "truth", "truth." + satellite + ".environment.b");
+    this->add<TransformPositionEci>(config, "truth", "truth." + satellite + ".environment.s");
+  };
   // Time and Earth ephemeris
   add<Time>(config, "truth");
   add<EarthGnc>(config, "truth");
-  // Orbital dynamics
-  add<OrbitGncEci>(config, "truth", "leader");
-  add<TransformPositionEci>(config, "truth", "truth.leader.orbit.r");
-  add<TransformVelocityEci>(config, "truth", "leader", "truth.leader.orbit.v");
-  // Environmental models
-  add<EnvironmentGnc>(config, "truth", "leader");
-  add<TransformPositionEcef>(config, "truth", "truth.leader.environment.b");
-  add<TransformPositionEci>(config, "truth", "truth.leader.environment.s");
+  // Leader and follower satellites
+  add_satellite("leader");
+  add_satellite("follower");
 }
 }  // namespace psim

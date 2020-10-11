@@ -31,6 +31,7 @@
 #include <psim/core/simulation.hpp>
 #include <psim/core/state_field.hpp>
 #include <psim/core/types.hpp>
+#include <psim/simulations/dual_orbit.hpp>
 #include <psim/simulations/single_orbit.hpp>
 
 #include <lin/core.hpp>
@@ -101,4 +102,5 @@ static void py_assign(psim::StateFieldWritableBase &field, T const &value) {
 
 void py_simulation(py::module &m) {
   PY_SIMULATION(SingleOrbitGnc);
+  PY_SIMULATION(DualOrbitGnc);
 }

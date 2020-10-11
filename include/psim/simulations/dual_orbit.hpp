@@ -22,32 +22,28 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_orbit.cpp
+/** @file psim/simulation/dual_orbit.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/simulations/single_orbit.hpp>
+#ifndef PSIM_SIMULATIONS_DUAL_ORBIT_HPP_
+#define PSIM_SIMULATIONS_DUAL_ORBIT_HPP_
 
-#include <psim/truth/earth.hpp>
-#include <psim/truth/environment.hpp>
-#include <psim/truth/orbit.hpp>
-#include <psim/truth/time.hpp>
-#include <psim/truth/transform_position.hpp>
-#include <psim/truth/transform_velocity.hpp>
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-SingleOrbitGnc::SingleOrbitGnc(Configuration const &config) {
-  // Time and Earth ephemeris
-  add<Time>(config, "truth");
-  add<EarthGnc>(config, "truth");
-  // Orbital dynamics
-  add<OrbitGncEci>(config, "truth", "leader");
-  add<TransformPositionEci>(config, "truth", "truth.leader.orbit.r");
-  add<TransformVelocityEci>(config, "truth", "leader", "truth.leader.orbit.v");
-  // Environmental models
-  add<EnvironmentGnc>(config, "truth", "leader");
-  add<TransformPositionEcef>(config, "truth", "truth.leader.environment.b");
-  add<TransformPositionEci>(config, "truth", "truth.leader.environment.s");
-}
+/** @brief Models orbital dynamics for two satellites. All models are backed by
+ *         flight software's GNC implementations if possible.
+ */
+class DualOrbitGnc : public ModelList {
+ public:
+  DualOrbitGnc() = delete;
+  virtual ~DualOrbitGnc() = default;
+
+  DualOrbitGnc(Configuration const &config);
+};
 }  // namespace psim
+
+#endif
