@@ -47,11 +47,8 @@ void control_detumble(DetumbleControllerState &state,
     // adjustment to the magnetorquers
     auto size = state.b_body_buffer.size();
     auto db = state.b_body_buffer[size - 1] - state.b_body_buffer[size / 2];
-    state.mtr_body_cmd = {
-      static_cast<float>(constant::max_mtr_moment) * (db(0) > 0.0f ? -1.0f : 1.0f),
-      static_cast<float>(constant::max_mtr_moment) * (db(1) > 0.0f ? -1.0f : 1.0f),
-      static_cast<float>(constant::max_mtr_moment) * (db(2) > 0.0f ? -1.0f : 1.0f)
-    };
+  
+    state.mtr_body_cmd = static_cast<float>((-1) * constant::max_mtr_moment) * lin::sign(db);
     state.b_body_buffer.clear();
   }
 
