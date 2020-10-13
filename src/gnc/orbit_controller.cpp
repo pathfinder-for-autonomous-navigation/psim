@@ -47,7 +47,7 @@ namespace gnc {
 // Initialize constants
 static constexpr double mass = 3.7;             // Mass of spacecraft                    (kg)
 static constexpr double J_min = 0;              // Minimum impulse                       (N s)
-static constexpr double J_max = 2500;           // Maximum impulse                       (N s)
+static constexpr double J_max = 2.5e-2;         // Maximum impulse                       (N s)
 static constexpr double max_dv = J_max / mass;  // Max velocity change                   (m/s)
 static constexpr double min_dv = J_min / mass;  // Min velocity change                   (m/s)
 static constexpr double p = 1.0e-6;
@@ -88,25 +88,13 @@ OrbitActuation::OrbitActuation()
  * Calculates orbital energy given position and velocity
  */
 static double energy(lin::Vector3d const &r_ecef0, lin::Vector3d const &v_ecef0) {
-  // Convert position from ECEF0 to ECEF by rotating frame. not sure if i did this right...
-  lin::Vector3d r_ecef = r_ecef0;
-  //lin::Vector3d v_ecef = v_ecef0 + lin::cross(w_earth, r_ecef0);
-
   // Calculate gravitational potential
   double potential;
   lin::Vector3d acceleration;
-  env::gravity(r_ecef, acceleration, potential);
+  env::gravity(r_ecef0, acceleration, potential);
 
   // Return energy (E = K + U)
   return 0.5 * lin::dot(v_ecef0, v_ecef0) - potential;
-}
-
-/*
- * Calculates the orbital rate of the satellite assuming a circular orbit
- * with the given semimajor axis a.
- */
-static double orbrate(double a) {
-  return std::sqrt(gnc::constant::mu_earth / std::pow(a,3));
 }
 
 #ifndef MEX
@@ -149,85 +137,53 @@ void mex_control_orbit(struct OrbitControllerState &state,
 
   // Calculate the hill frame DCM
   utl::dcm(DCM_hill_ecef0, that_r_ecef0, that_v_ecef0);
-
+ 
   // Calculate energy
   double this_energy = energy(this_r_ecef0, this_v_ecef0);
   double that_energy = energy(that_r_ecef0, that_v_ecef0);
 
-  // Calculate follower orbital elements.
-  double a = -1 * gnc::constant::mu_earth / (2 * this_energy);
-  double n = orbrate(a);
-  double M = n * data.t;
-  M = std::fmod(M, (2 * pi));
-
-  // Calculate eccentric anomaly
-  double del = 1;
-  double E = M / (1 - e);
-
-  if ( E > std::sqrt(6 * (1 - e) / e) ) {
-    E = std::pow((6 * M / e), (1/3));
-  }
-
-  double eps = std::nextafter(2 * pi, 3 * pi) - (2 * pi);
-  while (del > eps) {
-    E = E - (M - E + e * sin(E)) / (e * cos(E) - 1);
-    del = std::abs( M - (E - e * sin(E)) );
-  }
-
-  // Check if follower is at a firing point
-  if ((std::fmod(E , (pi / 4)) < 0.01) && ((data.t - state.t_last_firing) > dt_fire_min)) {
-    // Record firing time
-    state.t_last_firing = data.t;
-
-    // Hill frame PD controller
-    double p_term = K_p * (DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0))(1); 
-    double d_term = -1 * K_d * (DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0))(1); //multiply by -1
-    lin::Vector3d dv_p = p_term * this_v_hat;
-    lin::Vector3d dv_d = d_term * this_v_hat;
+  // Hill frame PD controller
+  double p_term = K_p * (DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0))(1); 
+  double d_term = -K_d * (DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0))(1); //multiply by -1
+  lin::Vector3d dv_p = p_term * this_v_hat;
+  lin::Vector3d dv_d = d_term * this_v_hat; 
     
-    // Energy controller
-    double e_term = -1 * K_e * (this_energy - that_energy); // multiply by -1
-    lin::Vector3d dv_e = e_term * this_v_hat;
+  // Energy controller
+  double e_term = -K_e * (this_energy - that_energy); // multiply by -1
+  lin::Vector3d dv_e = e_term * this_v_hat;
 
-    // H Controller
+  // H Controller
 
-    // Define the direction of our impulse, always in the h2 direction
-    lin::Vector3d Jhat_plane = this_h_hat;
+  // Define the direction of our impulse, always in the h2 direction
+  lin::Vector3d Jhat_plane = this_h_hat;
 
-    // Project h1 onto the plane formed by h2 and (r2 x h2)
-    lin::Vector3d that_h_proj = that_h_ecef0 - lin::dot(that_h_ecef0, this_r_hat) * this_r_hat;
+  // Project h1 onto the plane formed by h2 and (r2 x h2)
+  lin::Vector3d that_h_proj = that_h_ecef0 - lin::dot(that_h_ecef0, this_r_hat) * this_r_hat;
 
-    // Calculate the angle between h1proj and h2 (this is what we are driving to zero with this burn)
-    double theta = lin::atan2( lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h_ecef0)), lin::dot(that_h_proj, this_h_ecef0) );
+  // Calculate the angle between h1proj and h2 (this is what we are driving to zero with this burn)
+  double theta = lin::atan2( lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h_ecef0)), lin::dot(that_h_proj, this_h_ecef0) );
 
-    // Scale the impulse delivered by the angle theta
-    lin::Vector3d J_plane = theta * Jhat_plane;
+  // Scale the impulse delivered by the angle theta
+  lin::Vector3d J_plane = theta * Jhat_plane;
 
-    // Scale dv by h_gain
-    lin::Vector3d dv_plane = K_h * J_plane / mass;
+  // Scale dv by h_gain
+  lin::Vector3d dv_plane = K_h * J_plane / mass;
 
-    // Total dv to be applied from all controllers
-    lin::Vector3d dv = dv_p + dv_d + dv_e + dv_plane;
+  // Total dv to be applied from all controllers
+  lin::Vector3d dv = dv_p + dv_d + dv_e + dv_plane;
 
-    // Thruster saturation
-    if (lin::norm(dv) > max_dv) {
-      dv = max_dv * (dv / lin::norm(dv));
-    }
-    if (lin::norm(dv) < min_dv) {
-      dv = min_dv * (dv / lin::norm(dv));
-    }
-
-    // Apply dv
-    actuation.J_ecef = mass * dv;
-    actuation.phase_till_next_node = 0;
-    // this_v_ecef0 = this_v_ecef0 + dv;
-    // How do I update actuate.phase_until_next_node?
+  // Thruster saturation
+  if (lin::norm(dv) > max_dv) {
+    dv = max_dv * (dv / lin::norm(dv));
   }
-//   else{
-//     //actuation.J_ecef = 0;
-//     lin::Vector3d zeros = {0,0,0}
-//     actuation.phase_till_next_node = 0;
-//   }
+  if (lin::norm(dv) < min_dv) {
+    dv = min_dv * (dv / lin::norm(dv));
+  }
+
+  // Apply actuation output
+  actuation.J_ecef = mass * dv;
+  actuation.phase_till_next_node = 0;
+  // How do I update actuate.phase_until_next_node?
 
 }
 

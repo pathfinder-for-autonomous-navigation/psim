@@ -127,7 +127,7 @@ for i = 1 : N - 1
     if ~mod(i, 1000)
         fprintf('progress: step %d / %d\n', i, N - 1);
     end
-    
+
     % calculate follower orbital elements
     a = -const.mu / (2 * energy2);
     n = utl_orbrate(a);
@@ -150,17 +150,66 @@ for i = 1 : N - 1
     end
     
     % check if follower is at a firing point
+%     if (abs(E) < 0.01 || abs(E - 2*pi/3) < 0.01) && t(i) - t_fire > dt_fire_min
     if mod(E, pi / 4) < 0.01 && t(i) - t_fire > dt_fire_min
-        r_fire = [r_fire, [r1; r2]];
         
-        [J_ecef, phase_till_next_node] = make_mex_orbit_controller(t(i), r2, v2, r1, v1);
-        
+        % record firing time and position
         t_fire = t(i);
-        dv = J_ecef/m;
+        r_fire = [r_fire, [r1; r2]];
+
+        % Hill frame PD controller
+        pterm = p * r_hill(2);
+        dterm = -d * v_hill(2);
+        dv_p = pterm * v2 / norm(v2);
+        dv_d = dterm * v2 / norm(v2);
+        
+        % energy controller
+        energy_term = -energy_gain * (energy2 - energy1);
+        dv_energy = energy_term * v2 / norm(v2);
+
+        % h controller
+        r2hat = r2 / norm(r2);
+
+        % define the direction of our impulse, always in the h2 direction
+        Jhat_plane = h2hat;
+
+        % project h1 onto the plane formed by h2 and (r2 x h2)
+        h1proj = h1 - dot(h1, r2hat) * r2hat;
+        
+        % calculate the angle between h1proj and h2 (this is what we are
+        % driving to zero with this burn)
+        theta = atan( dot(h1proj, cross(r2, h2)) / dot(h1proj, h2) );
+        
+        % scale the impulse delivered by the angle theta
+        J_plane = theta * Jhat_plane;
+        
+        % scale dv by h_gain
+        dv_plane = h_gain * J_plane / m;
+        
+        % total dv to be applied from all controllers
+        dv = dv_p + dv_d + dv_energy + dv_plane;
+        
+        dv_p_vec(i) = norm(dv_p);
+        dv_d_vec(i) = norm(dv_d);
+        dv_E_vec(i) = norm(dv_energy);
+        dv_h_vec(i) = norm(dv_plane);
+        dv_des(i) = norm(dv);
+        
+        % thruster saturation
+        if norm(dv) > max_dv
+            dv = max_dv * dv / norm(dv);
+        end
+        
+        if norm(dv) < min_dv
+            dv = min_dv * dv / norm(dv);
+        end
+        
+        % apply dv
         v2 = v2 + dv;
         dv_vec(:, i) = dv;
+        
     end
-    
+
     % simulate dynamics
     y = utl_ode4(@(t, y) frhs(t, y, quat_ecef_eci), [0.0, dt], [r1; v1; r2; v2]);
     r1 = y(end, 1:3)';
@@ -231,7 +280,7 @@ rel_pos = zeros(1, N);
 for i = 1 : N
     
     rel_pos(i) = norm(X(1 : 3, i));
-     
+    
 end
 
 figure;
@@ -260,7 +309,7 @@ for i = 1 : N
     rel_vel(i) = norm(X(4:6, i));
     
 end
- 
+
 figure;
 plot(t, rel_vel)
 xlabel('t [s]')
@@ -315,7 +364,7 @@ xlabel('t [s]')
 ylabel('\Delta v [m/s]')
 title('commanded \Delta v for energy and momentum matching')
 legend('p','d', 'E', 'h')
- 
+
 figure;
 plot(t, dv_des); hold on
 plot(t, max_dv * ones(N, 1))
@@ -339,7 +388,7 @@ for i = 1 : N
     h1_norm(i) = norm(h1_vec(:, i));
     h2_norm(i) = norm(h2_vec(:, i));
 end
- 
+
 figure;
 plot(t, h1_norm); hold on
 plot(t, h2_norm);
