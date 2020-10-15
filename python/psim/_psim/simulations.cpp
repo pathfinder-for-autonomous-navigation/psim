@@ -73,10 +73,21 @@ static void py_assign(psim::StateFieldWritableBase &field, T const &value) {
   ptr->get() = value;
 }
 
+template <class C>
+class PySimulation : public psim::Simulation {
+ public:
+  PySimulation() = delete;
+  virtual PySimulation() = default;
+
+  template <typename... Ts>
+  PySimulation(Configuration const &config, Ts &&... ts)
+    : Simulation(std::make_unique<C>(config, std::forward<Ts>(ts)...)) { }
+};
+
 #define PY_SIMULATION(model) \
-    py::class_<psim::Simulation>(m, #model) \
+    py::class_<PySimulation<model>>(m, #model) \
       .def(py::init([](psim::Configuration const &config) { \
-        return psim::Simulation::make<psim::model>(config); \
+        return new PySimulation<model>(config); \
       })) \
       .def("__getitem__", [](psim::Simulation const &self, std::string const &name) { \
         auto const *ptr = self.get(name); \

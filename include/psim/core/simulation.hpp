@@ -52,7 +52,8 @@ class Simulation : public State {
    */
   std::unique_ptr<Model> _model;
 
-  /** @brief Private constructor employeed by the factory function.
+ protected:
+  /** @brief Private constructor employed by the factory function.
    */
   Simulation(std::unique_ptr<Model> &&model);
 
