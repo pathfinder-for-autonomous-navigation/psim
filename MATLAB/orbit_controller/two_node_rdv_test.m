@@ -152,10 +152,10 @@ for i = 1 : N - 1
     % check if follower is at a firing point
     if mod(E, pi / 4) < 0.01 && t(i) - t_fire > dt_fire_min
         r_fire = [r_fire, [r1; r2]];
+        t_fire = t(i);
         
         [J_ecef, phase_till_next_node] = make_mex_orbit_controller(t(i), r2, v2, r1, v1);
         
-        t_fire = t(i);
         dv = J_ecef/m;
         v2 = v2 + dv;
         dv_vec(:, i) = dv;

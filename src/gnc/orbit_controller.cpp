@@ -41,6 +41,7 @@
 #include <cstdint>
 #include <cmath>
 #include <math.h>
+#include <iostream>
 
 namespace gnc {
 
@@ -108,7 +109,7 @@ static
 void mex_control_orbit(struct OrbitControllerState &state,
     struct OrbitControllerData const &data, struct OrbitActuation &actuation,
     double mass, double K_p, double K_d, double K_e, double K_h) {
-
+    
   lin::Vector3d &this_r_ecef0 = state.this_r_ecef0, &that_r_ecef0 = state.that_r_ecef0;
   lin::Vector3d &this_r_hat = state.this_r_hat;
   lin::Vector3d &this_v_ecef0 = state.this_v_ecef0, &that_v_ecef0 = state.that_v_ecef0;
@@ -118,7 +119,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
   lin::Matrix3x3d &DCM_hill_ecef0 = state.DCM_hill_ecef0;
 
   // Move to temporary ECEF0
-  {
+  //{
     lin::Vector3f w_earth;
     env::earth_angular_rate(data.t, w_earth);
 
@@ -133,8 +134,8 @@ void mex_control_orbit(struct OrbitControllerState &state,
     this_h_ecef0 = lin::cross(this_r_ecef0, this_v_ecef0);
     that_h_ecef0 = lin::cross(that_r_ecef0, that_v_ecef0);
     this_h_hat = this_h_ecef0 / lin::norm(this_h_ecef0);
-  }
-
+  //}
+  
   // Calculate the hill frame DCM
   utl::dcm(DCM_hill_ecef0, that_r_ecef0, that_v_ecef0);
  
@@ -143,8 +144,10 @@ void mex_control_orbit(struct OrbitControllerState &state,
   double that_energy = energy(that_r_ecef0, that_v_ecef0);
 
   // Hill frame PD controller
-  double p_term = K_p * (DCM_hill_ecef0 * (that_r_ecef0 - this_r_ecef0))(1); 
-  double d_term = -K_d * (DCM_hill_ecef0 * (that_v_ecef0 - this_v_ecef0))(1); //multiply by -1
+  lin::Vector3d r_hill = DCM_hill_ecef0 * (this_r_ecef0 - that_r_ecef0);
+  lin::Vector3d v_hill = (DCM_hill_ecef0 * (this_v_ecef0 - that_v_ecef0) + lin::cross(w_earth, r_hill)).eval();
+  double p_term = K_p * r_hill(1);
+  double d_term = -K_d * v_hill(1);
   lin::Vector3d dv_p = p_term * this_v_hat;
   lin::Vector3d dv_d = d_term * this_v_hat; 
     

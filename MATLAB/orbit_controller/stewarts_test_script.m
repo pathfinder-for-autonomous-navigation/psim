@@ -11,8 +11,8 @@ config();
 m = 3.7; % Mass (kg)
 % J_min = 1.25e-4; % Min impulse (Ns) 5ms ontime
 J_min = 0;
-% J_max = 2.5e-2; % Max impulse (Ns) 1s ontime
-J_max = 2500;
+J_max = 2.5e-2; % Max impulse (Ns) 1s ontime
+%J_max = 2500;
 max_dv = J_max / m;
 min_dv = J_min / m;
 t_drift = 60.0 * 60.0; % Drift time (s)
