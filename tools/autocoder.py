@@ -135,7 +135,7 @@ class Parameter(Variable):
     @property
     def constructor(self):
         if not self.__constructor:
-            self.__constructor = self.member_name + '(config[' + self.string_name + '].get<' + self.underlying_type + '>())'
+            self.__constructor = self.member_name + '(config[' + self.string_name + '].template get<' + self.underlying_type + '>())'
 
         return self.__constructor
 
@@ -210,7 +210,7 @@ class AddsStateField(StateField):
                 self.__constructor = self.member_name + '(' + self.string_name + ', std::bind(&D::' + self.member_name + ', &derived()))'
             else:
                 if self.is_initialized:
-                    self.__constructor = self.member_name + '(' + self.string_name + ', config[' + self.string_name + '].get<' + self.underlying_type + '>())'
+                    self.__constructor = self.member_name + '(' + self.string_name + ', config[' + self.string_name + '].template get<' + self.underlying_type + '>())'
                 else:
                     self.__constructor = self.member_name + '(' + self.string_name + ')'
 
