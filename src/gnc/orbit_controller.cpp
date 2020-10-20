@@ -144,7 +144,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
   double that_energy = energy(that_r_ecef0, that_v_ecef0);
 
   // Hill frame PD controller
-  lin::Vector3d r_hill = DCM_hill_ecef0 * (this_r_ecef0 - that_r_ecef0);
+  lin::Vector3d r_hill = (DCM_hill_ecef0 * (this_r_ecef0 - that_r_ecef0)).eval();
   lin::Vector3d v_hill = (DCM_hill_ecef0 * (this_v_ecef0 - that_v_ecef0) + lin::cross(w_earth, r_hill)).eval();
   double p_term = K_p * r_hill(1);
   double d_term = -K_d * v_hill(1);
