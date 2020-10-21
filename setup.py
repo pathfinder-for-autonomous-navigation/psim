@@ -9,7 +9,6 @@ import setuptools.command.build_ext
 import os
 import shutil
 import subprocess
-import sys
 
 __version__ = '0.0.1'
 
