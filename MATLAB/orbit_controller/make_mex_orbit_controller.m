@@ -6,5 +6,5 @@ function [J_ecef, phase_till_next_node] = make_mex_orbit_controller(t, r_ecef, v
     assert(isequal(size(dr_ecef),[3,1]), "dr_ecef must be a 3x1 vector")
     assert(isequal(size(dv_ecef),[3,1]), "dv_ecef must be a 3x1 vector")
 
-    [J_ecef, phase_till_next_node] = control_orbit(t, r_ecef, v_ecef, dr_ecef, dv_ecef);
+    J_ecef = control_orbit(t, r_ecef, v_ecef, dr_ecef, dv_ecef);
 end

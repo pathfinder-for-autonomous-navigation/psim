@@ -32,12 +32,9 @@ public:
         gnc::OrbitActuation actuation = gnc::OrbitActuation();
 
         control_orbit(state, data_in, actuation);
-        
-        ArrayFactory f;
 
+        ArrayFactory f;
         outputs[0] = create_from_lin_vec(f, actuation.J_ecef);
-        lin::Matrixd<1,1> dummy = {actuation.phase_till_next_node};
-        outputs[1] = create_from_lin_mat(f, dummy);
     }
 
     void checkArguments(matlab::mex::ArgumentList outputs, matlab::mex::ArgumentList inputs) {

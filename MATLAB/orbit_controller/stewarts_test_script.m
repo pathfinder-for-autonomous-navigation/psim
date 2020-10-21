@@ -178,7 +178,7 @@ for i = 1 : N - 1
         
         % calculate the angle between h1proj and h2 (this is what we are
         % driving to zero with this burn)
-        theta = atan( dot(h1proj, cross(r2, h2)) / dot(h1proj, h2) );
+        theta = atan( dot(h1proj, cross(r2hat, h2)) / dot(h1proj, h2) );
         
         % scale the impulse delivered by the angle theta
         J_plane = theta * Jhat_plane;
@@ -203,6 +203,10 @@ for i = 1 : N - 1
         if norm(dv) < min_dv
             dv = min_dv * dv / norm(dv);
         end
+        
+        J_ecef = make_mex_orbit_controller(t(i), r2, v2, r1, v1);
+        dv_cpp = J_ecef / m
+        dv
         
         % apply dv
         v2 = v2 + dv;

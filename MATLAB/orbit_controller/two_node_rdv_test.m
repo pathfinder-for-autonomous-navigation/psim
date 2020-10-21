@@ -154,7 +154,7 @@ for i = 1 : N - 1
         r_fire = [r_fire, [r1; r2]];
         t_fire = t(i);
         
-        [J_ecef, phase_till_next_node] = make_mex_orbit_controller(t(i), r2, v2, r1, v1);
+        J_ecef = make_mex_orbit_controller(t(i), r2, v2, r1-r2, v1-v2);
         
         dv = J_ecef/m;
         v2 = v2 + dv;
