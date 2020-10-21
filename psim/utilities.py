@@ -8,6 +8,9 @@ import os
 
 log = logging.getLogger(__name__)
 
+# Allow overriding the configuration search path
+_CONFIG_PATH = os.environ.get('PSIM_CONFIG_PATH', './')
+
 
 def get_simulation_type(simulation):
     """Translates a string name to a simulation type.
@@ -29,7 +32,7 @@ def get_simulation_type(simulation):
 def _get_files(prefix, suffix, files):
     _files = list()
     for file in files:
-        file = prefix + file + suffix
+        file = _CONFIG_PATH + prefix + file + suffix
         if not os.path.isfile(file):
             log.error('Cannot find the following requested file: "%s"', file)
         else:

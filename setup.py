@@ -37,6 +37,7 @@ setuptools.setup(
     version = __version__,
     author = 'Kyle Krol',
     description = '6-DOF simulation for the PAN missions',
+    install_requires=['numpy', 'pyyaml', 'matplotlib'],
     py_modules = ['_psim'],
     packages = ['psim', 'psim.plugins'],
     package_data = {'': ['_psim.so']},
