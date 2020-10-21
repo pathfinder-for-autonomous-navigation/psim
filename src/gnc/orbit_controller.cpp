@@ -25,6 +25,7 @@
 /** @file gnc_attitude_estimator.cpp
  *  @author Kyle Krol
  *  @author Stewart Aslan
+ *  @author Fatima Yousuf
  */
 
 #include <gnc/config.hpp>
@@ -101,15 +102,12 @@ static double energy(lin::Vector3d const &r_ecef0, lin::Vector3d const &v_ecef0)
 #ifndef MEX
 static
 #endif
-
-/*
- * Orbit Controller
- * Add more info when this is done
- */
 void mex_control_orbit(struct OrbitControllerState &state,
     struct OrbitControllerData const &data, struct OrbitActuation &actuation,
     double mass, double K_p, double K_d, double K_e, double K_h) {
-    
+  // Pull in references to the controller's state entries
+  auto const
+
   lin::Vector3d &this_r_ecef0 = state.this_r_ecef0, &that_r_ecef0 = state.that_r_ecef0;
   lin::Vector3d &this_r_hat = state.this_r_hat;
   lin::Vector3d &this_v_ecef0 = state.this_v_ecef0, &that_v_ecef0 = state.that_v_ecef0;
