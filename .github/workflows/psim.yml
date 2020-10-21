@@ -29,5 +29,5 @@ jobs:
       run: |
         bazel build //:gnc
         bazel test //test/psim:ci
-        pip install -vvv -e .
+        pip install -vvv .
         python -m psim --help
