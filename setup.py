@@ -14,23 +14,25 @@ import sys
 __version__ = '0.0.1'
 
 
-def bazel(argv):
-  p = subprocess.Popen(['bazel'] + argv)
-  while True:
-    try:
-      return p.wait()
-    except KeyboardInterrupt:
-      # Bazel will also get the signal and terminate.
-      # We should continue waiting until it does so.
-      pass
+class BuildExtCommand(setuptools.command.build_ext.build_ext):
+
+    def run(self):
+        p = subprocess.Popen(['bazel', 'build', '//:_psim'])
+        while True:
+            try:
+                return p.wait()
+            except KeyboardInterrupt:
+                # Bazel will also get the signal and terminate.
+                # We should continue waiting until it does so.
+                pass
+
+        ext = self.extensions[0]
+        shutil.copyfile('bazel-bin/_psim.so', self.get_ext_fullpath(ext.name))
 
 
 if os.name == 'Windows':
     raise RuntimeError('Installing psim with pip is not compatible with Windows')
 
-# Build the bazel Python extension
-bazel(['build', '//:_psim'])
-shutil.copyfile('bazel-bin/python/_psim.so', '_psim.so')
 
 setuptools.setup(
     name = 'psim',
@@ -38,7 +40,9 @@ setuptools.setup(
     author = 'Kyle Krol',
     description = '6-DOF simulation for the PAN missions',
     install_requires=['numpy', 'pyyaml', 'matplotlib'],
-    py_modules = ['_psim'],
+    ext_modules=[setuptools.Extension('_psim', sources=[])],
+    cmdclass = {'build_ext': BuildExtCommand},
     packages = ['psim', 'psim.plugins'],
+    package_dir = {'': 'python'},
     package_data = {'': ['_psim.so']},
 )
