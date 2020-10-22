@@ -34,7 +34,7 @@ TEST(Configuration, TestGet) {
   auto const config = psim::Configuration::make(file);
 
   // Test a proper access
-  ASSERT_EQ(config.get("test.integer")->get<psim::Integer>(), 1);
+  ASSERT_EQ(config.get("test.integer")->template get<psim::Integer>(), 1);
 
   // Ensure a null pointer on an invalid access
   ASSERT_EQ(config.get("test.dne"), nullptr);
@@ -51,16 +51,16 @@ TEST(Configuration, TestMultiFileMake) {
   {
     psim::Integer test_integer;
 
-    test_integer = config["test.integer"].get<psim::Integer>();
+    test_integer = config["test.integer"].template get<psim::Integer>();
     ASSERT_EQ(test_integer, 1);
 
-    test_integer = config["test.i"].get<psim::Integer>();
+    test_integer = config["test.i"].template get<psim::Integer>();
     ASSERT_EQ(test_integer, -2);
 
-    test_integer = config["test.i"].get<psim::Integer>();
+    test_integer = config["test.i"].template get<psim::Integer>();
     ASSERT_EQ(test_integer, -2);
 
-    test_integer = config["test.j"].get<psim::Integer>();
+    test_integer = config["test.j"].template get<psim::Integer>();
     ASSERT_EQ(test_integer, 4);
   }
 }
@@ -73,10 +73,10 @@ TEST(Configuration, TestSingleFileMake) {
   {
     psim::Integer test_integer;
 
-    test_integer = config["test.integer"].get<psim::Integer>();
+    test_integer = config["test.integer"].template get<psim::Integer>();
     ASSERT_EQ(test_integer, 1);
 
-    test_integer = config["test.i"].get<psim::Integer>();
+    test_integer = config["test.i"].template get<psim::Integer>();
     ASSERT_EQ(test_integer, -2);
   }
 
@@ -84,7 +84,7 @@ TEST(Configuration, TestSingleFileMake) {
   {
     psim::Real test_real;
 
-    test_real = config["test.real"].get<psim::Real>();
+    test_real = config["test.real"].template get<psim::Real>();
     ASSERT_DOUBLE_EQ(test_real, -1.0);
   }
 
@@ -92,7 +92,7 @@ TEST(Configuration, TestSingleFileMake) {
   {
     psim::Vector2 test_vector;
 
-    test_vector = config["test.vector2"].get<psim::Vector2>();
+    test_vector = config["test.vector2"].template get<psim::Vector2>();
     ASSERT_DOUBLE_EQ(test_vector(0), 1.0);
     ASSERT_DOUBLE_EQ(test_vector(1), 2.0);
   }
@@ -101,7 +101,7 @@ TEST(Configuration, TestSingleFileMake) {
   {
     psim::Vector3 test_vector;
 
-    test_vector = config["test.vector3"].get<psim::Vector3>();
+    test_vector = config["test.vector3"].template get<psim::Vector3>();
     ASSERT_DOUBLE_EQ(test_vector(0),  1.0);
     ASSERT_DOUBLE_EQ(test_vector(1), -2.0);
     ASSERT_DOUBLE_EQ(test_vector(2),  3.0);
@@ -111,7 +111,7 @@ TEST(Configuration, TestSingleFileMake) {
   {
     psim::Vector4 test_vector;
 
-    test_vector = config["test.vector4"].get<psim::Vector4>();
+    test_vector = config["test.vector4"].template get<psim::Vector4>();
     ASSERT_DOUBLE_EQ(test_vector(0), 1.0);
     ASSERT_DOUBLE_EQ(test_vector(1), 2.0);
     ASSERT_DOUBLE_EQ(test_vector(2), 3.0);

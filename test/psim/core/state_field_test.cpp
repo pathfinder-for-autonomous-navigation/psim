@@ -18,23 +18,23 @@ TEST(StateField, TestCast) {
   {
     psim::StateFieldBase &base_field = field;
 
-    ASSERT_EQ(&(base_field.cast<psim::Real>()), &field);
-    EXPECT_THROW(base_field.cast<psim::Integer>(), std::runtime_error);
+    ASSERT_EQ(&(base_field.template cast<psim::Real>()), &field);
+    EXPECT_THROW(base_field.template cast<psim::Integer>(), std::runtime_error);
   }
 
   // Test for `StateFieldBase const`
   {
     psim::StateFieldBase const &base_field = field;
 
-    ASSERT_EQ(&(base_field.cast<psim::Real>()), &field);
-    EXPECT_THROW(base_field.cast<psim::Integer>(), std::runtime_error);
+    ASSERT_EQ(&(base_field.template cast<psim::Real>()), &field);
+    EXPECT_THROW(base_field.template cast<psim::Integer>(), std::runtime_error);
   }
 
   // Test for `StateField`
   {
     psim::StateField<psim::Real> &base_field = field;
 
-    ASSERT_EQ(&(base_field.cast<psim::Real>()), &field);
+    ASSERT_EQ(&(base_field.template cast<psim::Real>()), &field);
     // EXPECT_THROW(base_field.cast<psim::Integer>(), std::runtime_error);
     //   ^ throws a state assertion error
   }
@@ -43,7 +43,7 @@ TEST(StateField, TestCast) {
   {
     psim::StateField<psim::Real> const &base_field = field;
 
-    ASSERT_EQ(&(base_field.cast<psim::Real>()), &field);
+    ASSERT_EQ(&(base_field.template cast<psim::Real>()), &field);
     // EXPECT_THROW(base_field.cast<psim::Integer>(), std::runtime_error);
     //   ^ throws a state assertion error
   }
@@ -58,28 +58,28 @@ TEST(StateField, TestCastWritable) {
     {
       psim::StateFieldBase &base_field = field;
 
-      EXPECT_THROW(base_field.cast_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(base_field.template cast_writable<psim::Real>(), std::runtime_error);
     }
 
     // Test for `StateFieldBase const`
     {
       psim::StateFieldBase const &base_field = field;
 
-      EXPECT_THROW(base_field.cast_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(base_field.template cast_writable<psim::Real>(), std::runtime_error);
     }
 
     // Test for `StateField`
     {
       psim::StateField<psim::Real> *field_ptr = &field;
 
-      EXPECT_THROW(field_ptr->cast_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(field_ptr->template cast_writable<psim::Real>(), std::runtime_error);
     }
 
     // Test for `StateField const`
     {
       psim::StateField<psim::Real> const &base_field = field;
 
-      EXPECT_THROW(base_field.cast_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(base_field.template cast_writable<psim::Real>(), std::runtime_error);
     }
   }
 
@@ -99,15 +99,15 @@ TEST(StateField, TestCastWritable) {
     {
       psim::StateFieldBase const &base_field = field;
 
-      ASSERT_EQ(&(base_field.cast<psim::Real>()), &field);
-      EXPECT_THROW(base_field.cast<psim::Integer>(), std::runtime_error);
+      ASSERT_EQ(&(base_field.template cast<psim::Real>()), &field);
+      EXPECT_THROW(base_field.template cast<psim::Integer>(), std::runtime_error);
     }
 
     // Test for `StateField`
     {
       psim::StateField<psim::Real> &base_field = field;
 
-      ASSERT_EQ(&(base_field.cast<psim::Real>()), &field);
+      ASSERT_EQ(&(base_field.template cast<psim::Real>()), &field);
       // EXPECT_THROW(base_field.cast<psim::Integer>(), std::runtime_error);
       //   ^ throws a state assertion error
     }
@@ -130,23 +130,23 @@ TEST(StateField, TestGet) {
   {
     psim::StateFieldBase &base_field = field;
 
-    ASSERT_EQ(base_field.get<psim::Real>(), 2.0);
-    EXPECT_THROW(base_field.get<psim::Integer>(), std::runtime_error);
+    ASSERT_EQ(base_field.template get<psim::Real>(), 2.0);
+    EXPECT_THROW(base_field.template get<psim::Integer>(), std::runtime_error);
   }
 
   // Test for `StateFieldBase const`
   {
     psim::StateFieldBase const &base_field = field;
 
-    ASSERT_EQ(base_field.get<psim::Real>(), 2.0);
-    EXPECT_THROW(base_field.get<psim::Integer>(), std::runtime_error);
+    ASSERT_EQ(base_field.template get<psim::Real>(), 2.0);
+    EXPECT_THROW(base_field.template get<psim::Integer>(), std::runtime_error);
   }
 
   // Test for `StateField`
   {
     psim::StateField<psim::Real> &base_field = field;
 
-    ASSERT_EQ(base_field.get<psim::Real>(), 2.0);
+    ASSERT_EQ(base_field.template get<psim::Real>(), 2.0);
     // EXPECT_THROW(base_field.get<psim::Integer>(), std::runtime_error);
     //   ^ throws a static assertion error
   }
@@ -155,7 +155,7 @@ TEST(StateField, TestGet) {
   {
     psim::StateField<psim::Real> const &base_field = field;
 
-    ASSERT_EQ(base_field.get<psim::Real>(), 2.0);
+    ASSERT_EQ(base_field.template get<psim::Real>(), 2.0);
     // EXPECT_THROW(base_field.get<psim::Integer>(), std::runtime_error);
     //   ^ throws a static assertion error
   }
@@ -170,14 +170,14 @@ TEST(StateField, TestGetWritable) {
     {
       psim::StateFieldBase &base_field = field;
 
-      EXPECT_THROW(base_field.get_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(base_field.template get_writable<psim::Real>(), std::runtime_error);
     }
 
     // Test for `StateField`
     {
       psim::StateField<psim::Real> &base_field = field;
 
-      EXPECT_THROW(base_field.get_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(base_field.template get_writable<psim::Real>(), std::runtime_error);
     }
   }
 
@@ -189,15 +189,15 @@ TEST(StateField, TestGetWritable) {
     {
       psim::StateFieldBase &base_field = field;
 
-      ASSERT_EQ(base_field.get_writable<psim::Real>(), 2.0);
-      EXPECT_THROW(base_field.get_writable<psim::Integer>(), std::runtime_error);
+      ASSERT_EQ(base_field.template get_writable<psim::Real>(), 2.0);
+      EXPECT_THROW(base_field.template get_writable<psim::Integer>(), std::runtime_error);
     }
 
     // Test for `StateField`
     {
       psim::StateField<psim::Real> &base_field = field;
 
-      ASSERT_EQ(base_field.get_writable<psim::Real>(), 2.0);
+      ASSERT_EQ(base_field.template get_writable<psim::Real>(), 2.0);
       // EXPECT_THROW(base_field.get_writable<psim::Integer>(), std::runtime_error);
       //   ^ throws a static assertion error
     }
