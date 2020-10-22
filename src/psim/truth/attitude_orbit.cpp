@@ -88,40 +88,53 @@ namespace psim {
     return dydt;
   }
 
-  void AttitudeOrbitNoFuelGnc::step(){
-      this->Super::step();
+void AttitudeOrbitNoFuelGnc::step(){
+    this->Super::step();
 
-       // Initialize variables from .yml
-       auto &mass = prefix_satellite_m.get();
-       auto &I = prefix_satellite_J.get();
-       auto &I_w = prefix_satellite_wheels_J.get();
-       auto &omega = prefix_satellite_attitude_w.get();
-       auto &tau_w = prefix_satellite_wheels_t.get();
-       auto &omega_w = prefix_satellite_wheels_w.get();
-       auto &m = prefix_satellite_magnetorquers_m.get();
-       auto &b = gnc::env::earth_attitude(t, q_ecef_eci);
+    // Initialize variables from .yml
+    auto &mass = prefix_satellite_m.get();
+    auto &I = prefix_satellite_J.get();
+    auto &I_w = prefix_satellite_wheels_J.get();
+    auto &tau_w = prefix_satellite_wheels_t.get();
+    auto &omega_w = prefix_satellite_wheels_w.get();
+    auto &m = prefix_satellite_magnetorquers_m.get();
+    auto &b = gnc::env::earth_attitude(t, q_ecef_eci);
 
-       // References to the current time and timestep
-       auto const &dt = prefix_dt_s->get();
-       auto const &t = prefix_t_s->get();
+    auto &q_body_eci = prefix_satellite_attitude_q_body_eci.get();
+    auto &w = prefix_satellite_attitude_w.get();
 
-       // References to position and velocity
-       auto &r = prefix_satellite_orbit_r.get();
-       auto &v = prefix_satellite_orbit_v.get();
+    // References to the current time and timestep
+    auto const &dt = prefix_dt_s->get();
+    auto const &t = prefix_t_s->get();
 
-       IntegratorData data {&mass, &I, &I_w, &omega, &tau_w, &omega_w, &m, &b};
+    // References to position and velocity
+    auto &r = prefix_satellite_orbit_r.get();
+    auto &v = prefix_satellite_orbit_v.get();
 
-       // Simulate our dynamics
-        auto const xf = ode4(t, dt, {r(0), r(1), r(2), v(0), v(1), v(2)}, nullptr,
-        [](Real t, lin::Vector<Real, 6> const &x, void *ptr) -> lin::Vector<Real, 6> { // include/gnc/ode4.hpp
-            // References to our position and velocity in ECI
-            auto const r = lin::ref<3, 1>(x, 0, 0);
-            auto const v = lin::ref<3, 1>(x, 3, 0);
-            auto *data = (IntegratorData *) ptr;
+    IntegratorData data {&mass, &I, &I_w, &omega, &tau_w, &omega_w, &m, &b};
 
-            // Angular acceleration
-            w_dot = inverse(data->I) * ((data->&m)).cross(data->&b) + (data->&tau_w) - (data->&omega).cross((data->&I))*(data->&omega)) + (data->&I_w)*(data->&omega_w))));
+    // Simulate our dynamics
+    
+    lin::Vector<Real, 13> const x = {
+        r(0), r(1), r(2),
+        v(0), v(1), v(2),
+        q_body_eci(0), q_body_eci(1), q_body_eci(2), q_body_eci(3),
+        w(0), w(1), w(2)
+    };
 
+    auto const xf = ode(t, dt, x, nullptr,
+      [](Real t, lin::Vector<Real, 13> const &x, void *ptr) -> lin::Vector<Real, 6> { // include/gnc/ode4.hpp
+        // References to our position and velocity in ECI
+        auto const r = lin::ref<3, 1>(x, 0,  0);
+        auto const v = lin::ref<3, 1>(x, 3,  0);
+        auto const q = lin::ref<4, 1>(x, 6,  0);
+        auto const w = lin::ref<3, 1>(x, 10, 0);
+        auto *data = (IntegratorData *) ptr;
+
+        lin::Vector<Real, 13> dx;
+
+        // Orbital dynamics
+        {
             // Calculate the Earth's current attitude (Position in ECI -> gravitational acceleration vector in ECI)
             Vector4 q; 
             gnc::env::earth_attitude(t, q);  // q = q_ecef_eci
@@ -138,8 +151,21 @@ namespace psim {
                 gnc::utl::rotate_frame(q, g);     // g = g_eci
             }
 
-            return {v(0), v(1), v(2), g(0), g(1), g(2)}; //F=ma
-        }); 
-  }
+            lin::ref<6, 1>(dx, 0, 0) = {v(0), v(1), v(2), g(0), g(1), g(2)};
+        }
+
+        // Angular acceleration
+            w_dot = inverse(data->I) * ((data->&m)).cross(data->&b) + (data->&tau_w) - (data->&omega).cross((data->&I))*(data->&omega)) + (data->&I_w)*(data->&omega_w))));
+
+        // Attitude dynamics
+        {
+            lin::ref<4, 1>(dx, 6, 0) = ...; // "dq"
+
+            lin::ref<3, 1>(dx, 10, 0) = ....; // "dw"
+        }
+
+        return dx;
+    }); 
+}
  
 }  // namespace psim
