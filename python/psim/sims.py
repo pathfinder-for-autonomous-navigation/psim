@@ -1,6 +1,7 @@
-"""Pulls in PSim simulations into a public module.
+"""Pull in all available C++ simulations.
 """
 
 from _psim import (
+    DualOrbitGnc,
     SingleOrbitGnc,
 )
