@@ -40,6 +40,7 @@ delta_time= double(const.dt)*1E-9;
             end
         end
         rate= max(min(target_rate,const.MAXWHEELRATE),-const.MAXWHEELRATE);
+
     end
     function ramp= wheelramp(t)
         %wheel ramp at any given time, includes saturation
@@ -96,21 +97,28 @@ delta_time= double(const.dt)*1E-9;
         dydt(4:6)= g_eci + F_envdrag_eci./(const.MASS);
         quat_rate=[y(11:13);0];
         dydt(7:10)= utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
+        ratee = wheelramp(t)
         Lwb= const.JWHEEL*wheelramp(t);
         %calculation of external torques 
         %TODO add drag, solar pressure, and gravity torques
         magnetic_field_body=utl_rotateframe(quat_body_ecef,magnetic_field_zero_order);
-        magnetic_torque_body= cross(actuators.magrod_real_moment_body,magnetic_field_body);
+        magnetic_torque_body= cross(actuators.magrod_real_moment_body,magnetic_field_body)
         %calculate the difference in the rates of the fuel and the sat
         Jfuel= const.JFUEL_NORM*fuel_mass(t);%moment of inertia of fuel, spherical
         rate_fuel_eci= y(14:16)/Jfuel;
         rate_sat_eci= utl_rotateframe(quat_eci_body,y(11:13));
         torque_from_fuel_eci= const.SLOSH_DAMPING*(rate_fuel_eci-rate_sat_eci);
+        torque_from_fuel_eci = [0;0;0;];
         dydt(14:16)= -torque_from_fuel_eci;
         Lb=magnetic_torque_body+utl_rotateframe(quat_body_eci,torque_from_fuel_eci);
+        
         dydt(11:13)=const.JBINV*( Lb-Lwb-cross(y(11:13),const.JB*y(11:13)+const.JWHEEL*wheelrate(t)));
         %dydt(11:13)=const.JBINV*(-cross(y(11:13),const.JB*y(11:13)));
         %equation 3.147 in Fundamentals of Spacecraft Attitude Determination and Control
+        dydt(11:13)=[0;0;0];
+        dydt(11:13)=const.JBINV * (magnetic_torque_body-cross(y(11:13),const.JB*y(11:13)));
+        % dydt(11:13)=const.JBINV * (magnetic_torque_body);
+
     end
     init_y=zeros([16,1]);
     init_y(1:3)=initial_state.position_eci;

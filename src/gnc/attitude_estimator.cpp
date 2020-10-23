@@ -25,6 +25,7 @@
 /** @file gnc_attitude_estimator.cpp
  *  @author Kyle Krol, Shihao Cao
  */
+#define LIN_DESKTOP
 
 #include <gnc/attitude_estimator.hpp>
 #include <gnc/config.hpp>
@@ -41,6 +42,9 @@
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
 #include <lin/substitutions/backward_substitution.hpp>
+
+#include <iostream>
+
 
 namespace gnc {
 namespace constant {
@@ -425,13 +429,14 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   state.P(4, 4) = state.P(3, 3);
   state.P(5, 5) = state.P(4, 4);
   state.is_valid = true;
-
   // If invalid, set everything back to NaNs
   if (!lin::isfinite(state.t) ||
       !lin::all(lin::isfinite(state.q)) ||
       !lin::all(lin::isfinite(state.x)) ||
-      !lin::all(lin::isfinite(state.P)))
+      !lin::all(lin::isfinite(state.P))){
     state = AttitudeEstimatorState();
+    std::cout << "INVALID TRIAD RESET\n";
+  }
 }
 
 void attitude_estimator_reset(AttitudeEstimatorState &state,
@@ -443,18 +448,23 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   
   lin::Vector3f b_ecef{};
   lin::Vector4f q{};
+  std::cout << "r_ecef: " << lin::transpose(r_ecef);
+
   env::magnetic_field(t, lin::Vector3f(r_ecef), b_ecef);
   env::earth_attitude(t, q);                             // q = q_ecef_eci
   utl::quat_conj(q);                                     // q = q_eci_ecef
 
   lin::Vector3f b_eci{};
+  std::cout << "b_ecef: " << lin::transpose(b_ecef);
   utl::rotate_frame(q, b_ecef, b_eci);                           // b_eci = b_ecef but rotated
   
   // Ensure the measured and expected magnetic field are large enough
   {
     float thresh = constant::b_noise_floor * constant::b_noise_floor;
-    if ((lin::fro(b_eci) < thresh) || (lin::fro(b_body) < thresh))
+    if ((lin::fro(b_eci) < thresh) || (lin::fro(b_body) < thresh)){
+      std::cout << "NOISE FLOOR RETURN\n";
       return;
+    }
   }
 
   // Determine the expected sun vector
@@ -467,8 +477,18 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
 
   // Perform triad
   // Remember the value of q_body_eci will be set to NaNs if triad fails
+
+  std::cout << "s_eci: " << lin::transpose(s_eci) << "\n";
+  std::cout << "b_eci: " << lin::transpose(b_eci) << "\n";
+  std::cout << "s_body: " << lin::transpose(s_body) << "\n";
+  std::cout << "b_body: " << lin::transpose(b_body) << "\n";
+
   utl::triad(s_eci, (b_eci / lin::norm(b_eci)).eval(), s_body,
       (b_body / lin::norm(b_body)).eval(), q_body_eci);
+
+  std::cout << "triad pass\n";
+  std::cout << "t: " << t << "\n";
+  std::cout << "q: " << lin::transpose(q_body_eci) << "\n";
 
   attitude_estimator_reset(state, t, q_body_eci);
 }

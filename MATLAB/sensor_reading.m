@@ -52,6 +52,9 @@ sensor_readings.target_gpstime= int64(0);
 
 if (my_satellite_state.sensors.gps_time_till_lock<=0)
     sensor_readings.gpstime= true_state.time_ns+const.INIT_GPSNS;
+    % if position_ecef == nan(3,1)
+    %     position_ecef = [(6371+400)*1000.0 0 0]
+    % end
     sensor_readings.position_ecef= position_ecef + randn(3,1)*const.gps_position_noise_sdiv+my_satellite_state.sensors.gps_position_bias_ecef;
     velocity_ecef= utl_rotateframe(quat_ecef_eci, true_state.velocity_eci)-cross(rate_ecef,position_ecef);
     sensor_readings.velocity_ecef= velocity_ecef + randn(3,1)*const.gps_velocity_noise_sdiv++my_satellite_state.sensors.gps_velocity_bias_ecef;

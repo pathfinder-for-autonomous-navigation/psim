@@ -49,7 +49,12 @@ switch condition
     case 'detumbled'
         dynamics.angular_rate_body= [0;0;0;];
     otherwise
-        dynamics.angular_rate_body=randn(3,1)*5*pi/180;
+        % dynamics.angular_rate_body=randn(3,1)*1*pi/180; % was 5* pi
+        % dynamics.angular_rate_body=[0.035;0.035;-0.01];
+        % dynamics.angular_rate_body=[0;0;0];
+        dynamics.angular_rate_body=[0.15;0.25;-0.01]*35;
+
+
 end
 dynamics.quat_body_eci=randn(4,1);
 dynamics.quat_body_eci=dynamics.quat_body_eci/norm(dynamics.quat_body_eci);
