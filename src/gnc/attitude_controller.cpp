@@ -10,6 +10,9 @@
 #include <lin/generators/constants.hpp>
 #include <lin/references.hpp>
 
+#include <lin/queries.hpp>
+#include <lin/math.hpp>
+
 #include <cmath>
 #include <limits>
 
@@ -36,7 +39,7 @@ void control_detumble(DetumbleControllerState &state,
 
   // We should always get a valid magnetic field reading otherwise the mission
   // is pretty much over
-  if (std::isnan(data.b_body(0))) return;
+  if (!lin::all(lin::isfinite(data.b_body))) return;
 
   // Push the new magnetic field into the buffer
   state.b_body_buffer.push(data.b_body);
