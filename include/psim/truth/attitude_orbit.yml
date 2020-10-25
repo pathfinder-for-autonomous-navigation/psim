@@ -1,0 +1,88 @@
+
+name: AttitudeOrbit
+type: Model
+comment: >
+    Generic interface for a six degree of freedom simulation. The presence of
+    reaction wheels and magnetorquers is assumed. The coordinate system of the
+    orbit propagation is implementation dependant.
+
+args:
+    - prefix
+    - satellite
+    - frame
+
+params:
+    - name: "{prefix}.{satellite}.m"
+      type: Real
+      comment: >
+          Mass of the satellite in units of kilograms.
+    - name: "{prefix}.{satellite}.J"
+      type: Vector3
+      comment: >
+          Diagonal elements of the satellites moment of inertia matrix. We're
+          assuming here that the off diagonal elements are small.
+    - name: "{prefix}.{satellite}.wheels.J"
+      type: Real
+      comment: >
+          Moment of inertia of a single reaction wheel on the satellite.
+    - name: "{prefix}.{satellite}.wheels.w_max"
+      type: Real
+      comment: >
+          Maximum angular rate a reaction wheel can spin at. Units are in
+          radians per second.
+
+adds:
+    - name: "{prefix}.{satellite}.orbit.r"
+      type: Initialized Vector3
+      comment: >
+          Position of the satellite in units of meters. The coordinate system is
+          implementation dependant.
+    - name: "{prefix}.{satellite}.orbit.v"
+      type: Initialized Vector3
+      comment: >
+          Velocity of the satellite in units of meters per second. The
+          coordinate system is implementation dependant.
+    - name: "{prefix}.{satellite}.orbit.J.{frame}"
+      type: Initialized Writable Vector3
+      comment: >
+          Impulse applied to the satellite on a given timestep in units of
+          kilogram meters per second squared. The coordinate system is
+          implementation dependant. Note that this field is zeroed out on each
+          simulation step to avoid applying a continuous input.
+    - name: "{prefix}.{satellite}.attitude.q.body_eci"
+      type: Initialized Vector4
+      comment: >
+          Attitude of the spacecraft. Also a quaternion transforming from ECI
+          to the body frame.
+    - name: "{prefix}.{satellite}.attitude.q.eci_body"
+      type: Lazy Vector4
+      comment: >
+          Quaternion transforming from the body frame to ECI.
+    - name: "{prefix}.{satellite}.attitude.w"
+      type: Initialized Vector3
+      comment: >
+          Angular rate of the spacecraft in the body frame.
+    - name: "{prefix}.{satellite}.wheels.t"
+      type: Writable Vector3
+      comment: >
+          Torque commanded of the reaction wheels. This value is defaulted back
+          to zero at each step.
+    - name: "{prefix}.{satellite}.wheels.w"
+      type: Initialized Vector3
+      comment: >
+          Angular rate of the reactions wheels.
+    - name: "{prefix}.{satellite}.magnetorquers.m"
+      type: Writable Vector3
+      comment: >
+          Magnetic moment commanded of the magnetic torque rods. This value is
+          defaulted back to zero at each step.
+
+gets:
+    - name: "{prefix}.t.s"
+      type: Real
+    - name: "{prefix}.dt.s"
+      type: Real
+    - name: "{prefix}.earth.q.eci_ecef"
+      type: Vector4
+    - name: "{prefix}.{satellite}.environment.b.eci"
+      type: Vector3

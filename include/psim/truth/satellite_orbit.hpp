@@ -22,24 +22,31 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_orbit.cpp
+/** @file psim/truth/satellite_orbit.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/simulations/single_orbit.hpp>
+#ifndef PSIM_TRUTH_SATELLITE_ORBIT_HPP_
+#define PSIM_TRUTH_SATELLITE_ORBIT_HPP_
 
-#include <psim/truth/earth.hpp>
-#include <psim/truth/satellite_orbit.hpp>
-#include <psim/truth/time.hpp>
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-SingleOrbitGnc::SingleOrbitGnc(Configuration const &config) {
-  std::string const prefix = "truth";
-  // Time and Earth ephemeris
-  add<Time>(config, prefix);
-  add<EarthGnc>(config, prefix);
-  // Leader satellite
-  add<SatelliteOrbitGnc>(config, prefix, "leader");
-}
+/** @brief Models a single satellite computing only orbital dynamics.
+ *
+ *  This model needs to be embedded within a larger simulation that has a time
+ *  and Earth ephemeris model.
+ */
+class SatelliteOrbitGnc : public ModelList {
+ public:
+  SatelliteOrbitGnc() = delete;
+  virtual ~SatelliteOrbitGnc() = default;
+
+  SatelliteOrbitGnc(Configuration const &config, std::string const &prefix,
+      std::string const &satellite);
+};
 }  // namespace psim
+
+#endif

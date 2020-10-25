@@ -69,7 +69,7 @@ TEST(Parameter, TestGet) {
   {
     psim::ParameterBase *ptr = &param;
 
-    ASSERT_EQ(ptr->get<psim::Real>(), 2.0);
-    EXPECT_THROW(ptr->get<psim::Integer>(), std::runtime_error);
+    ASSERT_EQ(ptr->template get<psim::Real>(), 2.0);
+    EXPECT_THROW(ptr->template get<psim::Integer>(), std::runtime_error);
   }
 }
