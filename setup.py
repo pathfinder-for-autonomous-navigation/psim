@@ -19,7 +19,8 @@ class BuildExtCommand(setuptools.command.build_ext.build_ext):
         p = subprocess.Popen(['bazel', 'build', '//:_psim'])
         while True:
             try:
-                return p.wait()
+                p.wait()
+                break
             except KeyboardInterrupt:
                 # Bazel will also get the signal and terminate.
                 # We should continue waiting until it does so.
@@ -32,7 +33,6 @@ class BuildExtCommand(setuptools.command.build_ext.build_ext):
 if os.name == 'Windows':
     raise RuntimeError('Installing psim with pip is not compatible with Windows')
 
-
 setuptools.setup(
     name = 'psim',
     version = __version__,
@@ -43,5 +43,5 @@ setuptools.setup(
     cmdclass = {'build_ext': BuildExtCommand},
     packages = ['psim', 'psim.plugins'],
     package_dir = {'': 'python'},
-    package_data = {'': ['_psim.so']},
+    #package_data = {'': ['_psim.so']},
 )
