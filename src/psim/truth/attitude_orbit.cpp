@@ -135,9 +135,9 @@ void AttitudeOrbitNoFuelGnc::step() {
 
     // Attitude dynamics
     {
-      lin::ref<4, 1>(dx, 6, 0) = dq; // "dq"
-      lin::ref<3, 1>(dx, 10, 0) = dw; // "dw"
-      lin::ref<3, 1>(dx, 14, 0) = dw_w; // "dw_w"
+      lin::ref<4, 1>(dx, 6, 0) = dq; 
+      lin::ref<3, 1>(dx, 10, 0) = dw; 
+      lin::ref<3, 1>(dx, 14, 0) = dw_w;
     }
 
     return dx;
