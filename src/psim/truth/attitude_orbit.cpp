@@ -47,9 +47,7 @@ struct IntegratorData{
   Real const &mass;
   Vector3 const &I;
   Real const &I_w;
-  Vector3 const &w;
   Vector3 const &tau_w;
-  Vector3 const &omega_w;
   Vector3 const &m;
   Vector3 const &b;
 };
@@ -77,7 +75,7 @@ void AttitudeOrbitNoFuelGnc::step() {
   auto &r = prefix_satellite_orbit_r.get();
   auto &v = prefix_satellite_orbit_v.get();
 
-  IntegratorData data {mass, I, I_w, w, tau_w, omega_w, m, b};
+  IntegratorData data {mass, I, I_w, tau_w, m, b};
 
   // Simulate our dynamics
   
@@ -90,7 +88,7 @@ void AttitudeOrbitNoFuelGnc::step() {
   };
 
   auto const xf = ode(t, dt, x, &data,
-      [](Real t, lin::Vector<Real, 16> const &x, void *ptr) -> lin::Vector<Real, 6> { // include/gnc/ode4.hpp
+      [](Real t, lin::Vector<Real, 16> const &x, void *ptr) -> lin::Vector<Real, 16> { // include/gnc/ode4.hpp
     // position, velocity, quat_body, ang velocity, wheel ang velocity
     auto const r = lin::ref<3, 1>(x, 0,  0);
     auto const v = lin::ref<3, 1>(x, 3,  0);
@@ -99,7 +97,7 @@ void AttitudeOrbitNoFuelGnc::step() {
     auto const w_w = lin::ref<3, 1>(x, 14, 0);
     auto *data = (IntegratorData *) ptr;
 
-    lin::Vector<Real, 13> dx;
+    lin::Vector<Real, 16> dx;
 
     // Orbital dynamics
     {
@@ -129,7 +127,7 @@ void AttitudeOrbitNoFuelGnc::step() {
 
     // dw = w dot from equation
     // Vector3 dw = inverse(data->I) * ((data->&m)).cross(data->&b) + (data->&tau_w) - (data->&omega).cross((data->&I))*(data->&omega)) + (data->&I_w)*(data->&omega_w))));
-    Vector3 dw = lin::cross(data->m,data->b) - lin::cross(data->w, lin::multiply(data->I, data->w) + (data->I_w)*(data->omega_w));
+    Vector3 dw = lin::cross(data->m,data->b) - lin::cross(w, lin::multiply(data->I, w) + (data->I_w)*w_w);
     dw = lin::divide(dw, data->I); // Multiplication by I inverse
 
     // dw_w = tau_w/I_w
@@ -140,7 +138,7 @@ void AttitudeOrbitNoFuelGnc::step() {
     {
       lin::ref<4, 1>(dx, 6, 0) = dq; // "dq"
       lin::ref<3, 1>(dx, 10, 0) = dw; // "dw"
-      lin::ref<3, 1>(dx, 13, 0) = dw_w; // "dw_w"
+      lin::ref<3, 1>(dx, 14, 0) = dw_w; // "dw_w"
     }
 
     return dx;
@@ -151,7 +149,7 @@ void AttitudeOrbitNoFuelGnc::step() {
   v = lin::ref<3, 1>(xf, 3, 0);
   q_body_eci = lin::ref<4, 1>(xf, 6, 0);
   w = lin::ref<3, 1>(xf, 10, 0);
-  omega_w = lin::ref<3, 1>(xf, 13, 0);
+  omega_w = lin::ref<3, 1>(xf, 14, 0);
 }
  
 }  // namespace psim

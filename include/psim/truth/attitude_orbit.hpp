@@ -41,7 +41,7 @@ namespace psim {
 class AttitudeOrbitNoFuelGnc : public AttitudeOrbit<AttitudeOrbitNoFuelGnc> {
  private:
   typedef AttitudeOrbit<AttitudeOrbitNoFuelGnc> Super;
-  gnc::Ode4<Real, 13> ode;
+  gnc::Ode4<Real, 16> ode;
 
  public:
   AttitudeOrbitNoFuelGnc() = delete;
