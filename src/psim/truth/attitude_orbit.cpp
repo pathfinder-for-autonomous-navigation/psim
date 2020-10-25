@@ -125,9 +125,8 @@ void AttitudeOrbitNoFuelGnc::step() {
     Vector4 quat_rate = {0.5 * w(0), 0.5 * w(1), 0.5 * w(2), 0.0};
     gnc::utl::quat_cross_mult(quat_rate, q.eval(), dq);
 
-    // dw = w dot from equation
-    // Vector3 dw = inverse(data->I) * ((data->&m)).cross(data->&b) + (data->&tau_w) - (data->&omega).cross((data->&I))*(data->&omega)) + (data->&I_w)*(data->&omega_w))));
-    Vector3 dw = lin::cross(data->m,data->b) - lin::cross(w, lin::multiply(data->I, w) + (data->I_w)*w_w);
+    // dw = I^{-1} * m x b - tau_w - w x (I * w + I_w * w_w)
+    Vector3 dw = lin::cross(data->m,data->b) - data->tau_w - lin::cross(w, lin::multiply(data->I, w) + (data->I_w)*w_w);
     dw = lin::divide(dw, data->I); // Multiplication by I inverse
 
     // dw_w = tau_w/I_w
