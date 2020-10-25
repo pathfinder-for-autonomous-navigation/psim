@@ -28,6 +28,7 @@ jobs:
     - name: Build and Test
       run: |
         bazel build //:gnc
+        bazel build //test/psim:all
         bazel test //test/psim:ci
         pip install -vvv .
         python -m psim --help
