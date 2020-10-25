@@ -59,7 +59,6 @@ static constexpr double h_gain = 2.0e-3;        // Angular momentum gain        
 static constexpr double dt_fire_min = 5 * 60;   // Minimum time between firings  (sec)
 
 // Initial orbital elements
-static constexpr double pi = gnc::constant::pi;
 static constexpr double e  = 0.001;             // Eccentricity                  (unitless)
 
 OrbitControllerState::OrbitControllerState()
