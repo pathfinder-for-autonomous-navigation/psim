@@ -178,10 +178,10 @@ void mex_control_orbit(struct OrbitControllerState &state,
     // Calculate the angle between this projection of the other satellites
     // angular momentum and our angular momentum
     double const theta = lin::atan2(
-        lin::dot(that_h_proj, lin::cross(this_r_hat, this_h_ecef0)),
+        lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h_ecef0)),
         lin::dot(that_h_proj, this_h_ecef0)
       ); // ^^ this seems a tad weird to me and would be of very different
-         // orders of magnitude
+         // orders of magnitude - i.e. `this_r_ecef0` or `this_r_hat`?
 
     dv_plane = this_h_hat * (K_h * theta / mass);
     // Don't understand why we divide by mass ^^ as we never were working with
