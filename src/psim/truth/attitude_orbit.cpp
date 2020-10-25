@@ -27,6 +27,14 @@
  */
 
 #include <psim/truth/attitude_orbit.hpp>
+#include <gnc/environment.hpp>
+#include <gnc/utilities.hpp> //useful functions, like cross product
+
+
+#include <lin/core.hpp>
+#include <lin/generators/constants.hpp>
+#include <lin/math.hpp>
+#include <lin/references.hpp>
 
 namespace psim {
  
@@ -35,58 +43,16 @@ namespace psim {
  : Super(config, prefix, satellite, "eci") { }
  
    };
-   /*  step function:   
- 
-       mass = "{prefix}.{satellite}.J"
-       I = "{prefix}.{satellite}.J"
-       I_w = "{prefix}.{satellite}.wheels.J"
-       omega = "{prefix}.{satellite}.attitude.w"
-       tau_w = "{prefix}.{satellite}.wheels.t"
-       omega_w = "{prefix}.{satellite}.wheels.w"
-       m = "{prefix}.{satellite}.magnetorquers.m"
-       b = gnc::env::earth_attitude(t, q_ecef_eci)
- 
-       w_dot = inverse(I) * (m.cross(b) + tau_w - omega.cross(I*omega + I_w*omega_w))
 
-       return w_dot + orbit.step()
-   */
-
-
-/* y = [x; y; z; xdot; ydot; zdot;q1;q2;q3;q4;ratex;ratey;ratez;
-     1  2  3  4     5     6    7  8  9  10 11    12    13    
-    
-     fuel_ang_momentx;fuel_ang_momenty;fuel_ang_momentz;]
-     14               15               16
-
-    Don't have any super expensive calculation in here.
-    Instead make first or zero order approximations of
-    perturbations before, and pass in as a function of time.
-*/
-  vector<double> AttitudeOrbitNoFuelGnc::state_dot(t,y,g){
-    vector<double> dydt(16, 0);
-
-    std::copy(y.begin() + 3, y.begin() + 5, dydt.begin()); // dydt(1:3)=y(4:6)
-
-    // dydt(4:6) = g_eci + F_envdrag_eci./(const.MASS);
-    // TODO: Do we include drag? Not in yml
-    std::copy(g.begin(), g.end(), dydt.begin() + 3);
-
-    // dydt(7:10) = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
-    // quat_body_eci=y(7:10);
-    vector<double> quat_body_eci(4);
-    std::copy(y.begin()+6, y.end()+9, quat_body.begin());
-    // quat_rate=[y(11:13);0];
-    vector<double> quat_rate(4);
-    [y(11:13);0];
-    qbqr_mult = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
-    std::copy(qbqr_mult.begin(), qbqr_mult.end(), dydt.begin() + 6);
-    
-    // dydt(14:16) = -torque_from_fuel_eci;
-
-    // dydt(11:13) = const.JBINV*( Lb-Lwb-cross(y(11:13),const.JB*y(11:13)+const.JWHEEL*wheelrate(t)));
-
-    return dydt;
-  }
+struct IntegratorData{
+      Real const &mass;
+      Vector3 const &I;
+      Real const &I_w;
+      Real const &tau_w;
+      Vector3 const &omega_w;
+      Vector3 const &m;
+      Vector3 const &b;
+    }
 
 void AttitudeOrbitNoFuelGnc::step(){
     this->Super::step();
@@ -115,20 +81,22 @@ void AttitudeOrbitNoFuelGnc::step(){
 
     // Simulate our dynamics
     
-    lin::Vector<Real, 13> const x = {
+    lin::Vector<Real, 16> const x = {
         r(0), r(1), r(2),
         v(0), v(1), v(2),
         q_body_eci(0), q_body_eci(1), q_body_eci(2), q_body_eci(3),
-        w(0), w(1), w(2)
+        w(0), w(1), w(2),
+        omega_w(0), omega_w(1), omega_w(2)
     };
 
     auto const xf = ode(t, dt, x, nullptr,
-      [](Real t, lin::Vector<Real, 13> const &x, void *ptr) -> lin::Vector<Real, 6> { // include/gnc/ode4.hpp
-        // References to our position and velocity in ECI
+      [](Real t, lin::Vector<Real, 16> const &x, void *ptr) -> lin::Vector<Real, 6> { // include/gnc/ode4.hpp
+        // position, velocity, quat_body, ang velocity, wheel ang velocity
         auto const r = lin::ref<3, 1>(x, 0,  0);
         auto const v = lin::ref<3, 1>(x, 3,  0);
         auto const q = lin::ref<4, 1>(x, 6,  0);
         auto const w = lin::ref<3, 1>(x, 10, 0);
+        auto const w_w = lin::ref<3, 1>(x, 14, 0);
         auto *data = (IntegratorData *) ptr;
 
         lin::Vector<Real, 13> dx;
@@ -153,19 +121,35 @@ void AttitudeOrbitNoFuelGnc::step(){
 
             lin::ref<6, 1>(dx, 0, 0) = {v(0), v(1), v(2), g(0), g(1), g(2)};
         }
+        
+        // dq = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
+        Vector4 dq = gnc::utl::quat_cross_mult(0.5 * w, q);
 
-        // Angular acceleration
-            w_dot = inverse(data->I) * ((data->&m)).cross(data->&b) + (data->&tau_w) - (data->&omega).cross((data->&I))*(data->&omega)) + (data->&I_w)*(data->&omega_w))));
+        // dw = w dot from equation
+        // Vector3 dw = inverse(data->I) * ((data->&m)).cross(data->&b) + (data->&tau_w) - (data->&omega).cross((data->&I))*(data->&omega)) + (data->&I_w)*(data->&omega_w))));
+        Vector3 dw = lin::cross(data->m,data->b) - lin::cross(data->omega, lin::multiply(data->I, data->omega) + (data->I_w)*(data->omega_w));
+        dw = lin::divide(dw, data->I); // Multiplication by I inverse
+
+        // dw_w = tau_w/I_w
+        Vector3 dw_w = lin::divide(data->tau_w, data->I_w);
+
 
         // Attitude dynamics
         {
-            lin::ref<4, 1>(dx, 6, 0) = ...; // "dq"
-
-            lin::ref<3, 1>(dx, 10, 0) = ....; // "dw"
+          lin::ref<4, 1>(dx, 6, 0) = dq; // "dq"
+          lin::ref<3, 1>(dx, 10, 0) = dw; // "dw"
+          lin::ref<3, 1>(dx, 13, 0) = dw_w; // "dw_w"
         }
 
         return dx;
     }); 
+
+  // Write back to our state fields
+  r = lin::ref<3, 1>(xf, 0, 0);
+  v = lin::ref<3, 1>(xf, 3, 0);
+  q_body_eci = lin::ref<4, 1>(xf, 6, 0);
+  w = lin::ref<3, 1>(xf, 10, 0);
+  omega_w = lin::ref<3, 1>(xf, 13, 0);
 }
  
 }  // namespace psim
