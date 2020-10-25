@@ -25,8 +25,8 @@ py_library(
 )
 
 py_binary(
-    name = "single_orbit",
-    srcs = ["scripts/single_orbit.py"],
+    name = "main",
+    srcs = ["scripts/main.py"],
     deps = ["//python:psim"],
     visibility = ["//visibility:public"],
 )

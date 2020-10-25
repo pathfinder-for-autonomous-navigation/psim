@@ -22,24 +22,28 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_orbit.cpp
+/** @file psim/simulation/dual_orbit.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/simulations/single_orbit.hpp>
+#ifndef PSIM_SIMULATIONS_DUAL_ORBIT_HPP_
+#define PSIM_SIMULATIONS_DUAL_ORBIT_HPP_
 
-#include <psim/truth/earth.hpp>
-#include <psim/truth/satellite_orbit.hpp>
-#include <psim/truth/time.hpp>
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-SingleOrbitGnc::SingleOrbitGnc(Configuration const &config) {
-  std::string const prefix = "truth";
-  // Time and Earth ephemeris
-  add<Time>(config, prefix);
-  add<EarthGnc>(config, prefix);
-  // Leader satellite
-  add<SatelliteOrbitGnc>(config, prefix, "leader");
-}
+/** @brief Models orbital dynamics for two satellites. All models are backed by
+ *         flight software's GNC implementations if possible.
+ */
+class DualOrbitGnc : public ModelList {
+ public:
+  DualOrbitGnc() = delete;
+  virtual ~DualOrbitGnc() = default;
+
+  DualOrbitGnc(Configuration const &config);
+};
 }  // namespace psim
+
+#endif

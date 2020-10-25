@@ -22,24 +22,24 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_orbit.cpp
- *  @author Kyle Krol
- */
-
-#include <psim/simulations/single_orbit.hpp>
-
-#include <psim/truth/earth.hpp>
 #include <psim/truth/satellite_orbit.hpp>
-#include <psim/truth/time.hpp>
+
+#include <psim/truth/environment.hpp>
+#include <psim/truth/orbit.hpp>
+#include <psim/truth/transform_position.hpp>
+#include <psim/truth/transform_velocity.hpp>
 
 namespace psim {
 
-SingleOrbitGnc::SingleOrbitGnc(Configuration const &config) {
-  std::string const prefix = "truth";
-  // Time and Earth ephemeris
-  add<Time>(config, prefix);
-  add<EarthGnc>(config, prefix);
-  // Leader satellite
-  add<SatelliteOrbitGnc>(config, prefix, "leader");
+SatelliteOrbitGnc::SatelliteOrbitGnc(Configuration const &config,
+    std::string const &prefix, std::string const &satellite) {
+  // Orbital dynamics
+  add<OrbitGncEci>(config, prefix, satellite);
+  add<TransformPositionEci>(config, prefix, prefix + "." + satellite + ".orbit.r");
+  add<TransformVelocityEci>(config, prefix, satellite, prefix + "." + satellite + ".orbit.v");
+  // Environmental models
+  add<EnvironmentGnc>(config, prefix, satellite);
+  add<TransformPositionEcef>(config, prefix, prefix + "." + satellite + ".environment.b");
+  add<TransformPositionEci>(config, prefix, prefix + "." + satellite + ".environment.s");
 }
 }  // namespace psim
