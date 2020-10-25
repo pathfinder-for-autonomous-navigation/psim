@@ -1,7 +1,7 @@
 """Random helper functions used throughout the rest of PSim.
 """
 
-from psim import sims
+from . import sims
 
 import logging
 import os

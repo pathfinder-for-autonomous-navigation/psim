@@ -1,8 +1,9 @@
 """Defines a set of classes that can be used to run a simulation.
 """
 
+from . import utilities
+
 from _psim import Configuration
-from psim import utilities
 
 import argparse
 import logging
