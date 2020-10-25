@@ -47,7 +47,8 @@ struct IntegratorData{
   Real const &mass;
   Vector3 const &I;
   Real const &I_w;
-  Real const &tau_w;
+  Vector3 const &w;
+  Vector3 const &tau_w;
   Vector3 const &omega_w;
   Vector3 const &m;
   Vector3 const &b;
@@ -63,7 +64,7 @@ void AttitudeOrbitNoFuelGnc::step() {
   auto &tau_w = prefix_satellite_wheels_t.get();
   auto &omega_w = prefix_satellite_wheels_w.get();
   auto &m = prefix_satellite_magnetorquers_m.get();
-  auto &b = gnc::env::earth_attitude(t, q_ecef_eci);
+  auto &b = prefix_satellite_environment_b_eci->get();
 
   auto &q_body_eci = prefix_satellite_attitude_q_body_eci.get();
   auto &w = prefix_satellite_attitude_w.get();
@@ -76,7 +77,7 @@ void AttitudeOrbitNoFuelGnc::step() {
   auto &r = prefix_satellite_orbit_r.get();
   auto &v = prefix_satellite_orbit_v.get();
 
-  IntegratorData data {mass, I, I_w, omega, tau_w, omega_w, m, b};
+  IntegratorData data {mass, I, I_w, w, tau_w, omega_w, m, b};
 
   // Simulate our dynamics
   
@@ -122,11 +123,13 @@ void AttitudeOrbitNoFuelGnc::step() {
     }
     
     // dq = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
-    Vector4 dq = gnc::utl::quat_cross_mult(0.5 * w, q);
+    Vector4 dq;
+    Vector4 quat_rate = {0.5 * w(0), 0.5 * w(1), 0.5 * w(2), 0.0};
+    gnc::utl::quat_cross_mult(quat_rate, q.eval(), dq);
 
     // dw = w dot from equation
     // Vector3 dw = inverse(data->I) * ((data->&m)).cross(data->&b) + (data->&tau_w) - (data->&omega).cross((data->&I))*(data->&omega)) + (data->&I_w)*(data->&omega_w))));
-    Vector3 dw = lin::cross(data->m,data->b) - lin::cross(data->omega, lin::multiply(data->I, data->omega) + (data->I_w)*(data->omega_w));
+    Vector3 dw = lin::cross(data->m,data->b) - lin::cross(data->w, lin::multiply(data->I, data->w) + (data->I_w)*(data->omega_w));
     dw = lin::divide(dw, data->I); // Multiplication by I inverse
 
     // dw_w = tau_w/I_w

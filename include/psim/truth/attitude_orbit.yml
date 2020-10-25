@@ -71,7 +71,7 @@ adds:
       type: Initialized Vector3
       comment: >
           Angular rate of the reactions wheels.
-    - name: "{prefix}.{satellite}.magnetourquers.m"
+    - name: "{prefix}.{satellite}.magnetorquers.m"
       type: Writable Vector3
       comment: >
           Magnetic moment commanded of the magnetic torque rods. This value is
@@ -84,3 +84,5 @@ gets:
       type: Real
     - name: "{prefix}.earth.q.eci_ecef"
       type: Vector4
+    - name: "{prefix}.{satellite}.environment.b.eci"
+      type: Vector3
