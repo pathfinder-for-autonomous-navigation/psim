@@ -19,7 +19,8 @@ class BuildExtCommand(setuptools.command.build_ext.build_ext):
         p = subprocess.Popen(['bazel', 'build', '//:_psim'])
         while True:
             try:
-                p.wait()
+                if p.wait() != 0:
+                    raise RuntimeError('`bazel build //:_psim` failed')
                 break
             except KeyboardInterrupt:
                 # Bazel will also get the signal and terminate.
