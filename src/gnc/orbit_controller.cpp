@@ -42,7 +42,6 @@
 #include <cstdint>
 #include <cmath>
 #include <math.h>
-#include <iostream>
 
 namespace gnc {
 
