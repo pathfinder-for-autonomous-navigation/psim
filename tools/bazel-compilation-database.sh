@@ -4,7 +4,7 @@
 # - https://github.com/grailbio/bazel-compilation-database
 # - https://stackoverflow.com/questions/61015990/how-do-i-enable-c-intellisense-for-a-bazel-project-in-vs-code
 
-INSTALL_DIR="/usr/local/bin"
+INSTALL_DIR="$HOME/.local/bin"
 VERSION="0.4.5"
 
 # Download and symlink.

@@ -44,7 +44,7 @@ class HillFrameEci : public HillFrame<HillFrameEci> {
   /** @brief Set the frame argument to ECI.
    */
   HillFrameEci(Configuration const &config, std::string const &prefix,
-      std::string const &satellite);
+      std::string const &leader, std::string const &follower);
 
   Vector4 prefix_leader_q_hill_frame() const;
   Vector3 prefix_leader_w_hill() const;
