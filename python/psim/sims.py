@@ -2,6 +2,8 @@
 """
 
 from _psim import (
+    DualAttitudeOrbitGnc,
     DualOrbitGnc,
+    SingleAttitudeOrbitGnc,
     SingleOrbitGnc,
 )
