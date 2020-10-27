@@ -1,0 +1,5 @@
+# Time model initial conditions in deployment cases.
+#
+
+truth.t.ns   0
+truth.dt.ns  100000000

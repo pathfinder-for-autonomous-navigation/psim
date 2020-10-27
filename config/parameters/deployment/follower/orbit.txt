@@ -1,0 +1,13 @@
+# Orbit model initial conditions in deployment cases for the follower.
+#
+# This assumes the orbit model takes impulse in ECI.
+#
+
+# Spacecraft mass
+truth.follower.m            5.0
+
+# Position, velocity, and initial impulse in ECI. The velocity is slightly
+# perturbed compared to the leader's.
+truth.follower.orbit.r      6.8538e6 0.0      0.0
+truth.follower.orbit.v      0.0      5.3954e3 5.3951e3
+truth.follower.orbit.J.eci  0.0      0.0      0.0
