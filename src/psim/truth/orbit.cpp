@@ -78,7 +78,6 @@ void OrbitGncEci::step() {
       gnc::env::gravity(r_ecef, g, _);  // g = g_ecef
       gnc::utl::quat_conj(q);           // q = q_eci_ecef
       gnc::utl::rotate_frame(q, g);     // g = g_eci
-      gnc::utl::quat_conj(q);           // q = q_ecef_eci
     }
 
     return {v(0), v(1), v(2), g(0), g(1), g(2)};
