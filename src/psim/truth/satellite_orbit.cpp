@@ -22,6 +22,10 @@
 // SOFTWARE.
 //
 
+/** @file psim/truth/satellite_orbit.cpp
+ *  @author Kyle Krol
+ */
+
 #include <psim/truth/satellite_orbit.hpp>
 
 #include <psim/truth/environment.hpp>

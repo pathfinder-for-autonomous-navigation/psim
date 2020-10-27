@@ -84,5 +84,5 @@ gets:
       type: Real
     - name: "{prefix}.earth.q.eci_ecef"
       type: Vector4
-    - name: "{prefix}.{satellite}.environment.b.eci"
+    - name: "{prefix}.{satellite}.environment.b.body"
       type: Vector3

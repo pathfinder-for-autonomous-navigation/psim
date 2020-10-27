@@ -22,7 +22,7 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/dual_orbit.cpp
+/** @file psim/simulations/dual_orbit.cpp
  *  @author Kyle Krol
  */
 

@@ -29,7 +29,7 @@
 #include <psim/truth/attitude_orbit.hpp>
 
 #include <gnc/environment.hpp>
-#include <gnc/utilities.hpp> //useful functions, like cross product
+#include <gnc/utilities.hpp>
 
 #include <lin/core.hpp>
 #include <lin/generators/constants.hpp>
@@ -38,10 +38,10 @@
 
 namespace psim {
  
-AttitudeOrbitNoFuelGnc::AttitudeOrbitNoFuelGnc(Configuration const &config,
-    std::string const &prefix, std::string const &satellite)
+AttitudeOrbitNoFuelEciGnc::AttitudeOrbitNoFuelEciGnc(
+    Configuration const &config, std::string const &prefix,
+    std::string const &satellite)
   : Super(config, prefix, satellite, "eci") { }
-
 
 struct IntegratorData{
   Real const &mass;
@@ -52,7 +52,7 @@ struct IntegratorData{
   Vector3 const &b;
 };
 
-void AttitudeOrbitNoFuelGnc::step() {
+void AttitudeOrbitNoFuelEciGnc::step() {
   this->Super::step();
 
   // Initialize variables from .yml
@@ -62,7 +62,7 @@ void AttitudeOrbitNoFuelGnc::step() {
   auto &tau_w = prefix_satellite_wheels_t.get();
   auto &omega_w = prefix_satellite_wheels_w.get();
   auto &m = prefix_satellite_magnetorquers_m.get();
-  auto &b = prefix_satellite_environment_b_eci->get();
+  auto &b = prefix_satellite_environment_b_body->get();
 
   auto &q_body_eci = prefix_satellite_attitude_q_body_eci.get();
   auto &w = prefix_satellite_attitude_w.get();
@@ -88,7 +88,7 @@ void AttitudeOrbitNoFuelGnc::step() {
   };
 
   auto const xf = ode(t, dt, x, &data,
-      [](Real t, lin::Vector<Real, 16> const &x, void *ptr) -> lin::Vector<Real, 16> { // include/gnc/ode4.hpp
+      [](Real t, lin::Vector<Real, 16> const &x, void *ptr) -> lin::Vector<Real, 16> {
     // position, velocity, quat_body, ang velocity, wheel ang velocity
     auto const r = lin::ref<3, 1>(x, 0,  0);
     auto const v = lin::ref<3, 1>(x, 3,  0);
@@ -119,7 +119,7 @@ void AttitudeOrbitNoFuelGnc::step() {
 
       lin::ref<6, 1>(dx, 0, 0) = {v(0), v(1), v(2), g(0), g(1), g(2)};
     }
-    
+
     // dq = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
     Vector4 dq;
     Vector4 quat_rate = {0.5 * w(0), 0.5 * w(1), 0.5 * w(2), 0.0};
@@ -131,7 +131,6 @@ void AttitudeOrbitNoFuelGnc::step() {
 
     // dw_w = tau_w/I_w
     Vector3 dw_w = lin::divide(data->tau_w, data->I_w);
-
 
     // Attitude dynamics
     {
@@ -150,5 +149,10 @@ void AttitudeOrbitNoFuelGnc::step() {
   w = lin::ref<3, 1>(xf, 10, 0);
   omega_w = lin::ref<3, 1>(xf, 14, 0);
 }
- 
+
+Vector4 AttitudeOrbitNoFuelEciGnc::prefix_satellite_attitude_q_eci_body() const {
+  auto const q_eci_body = this->prefix_satellite_attitude_q_body_eci.get();
+  gnc::utl::quat_conj(q_eci_body);
+  return q_eci_body;
+}
 }  // namespace psim

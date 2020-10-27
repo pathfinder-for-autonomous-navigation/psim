@@ -22,39 +22,27 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/attitude_orbit.hpp
+/** @file psim/simulation/single_attitude_orbit.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_ATTITUDE_ORBIT_HPP_
-#define PSIM_TRUTH_ATTITUDE_ORBIT_HPP_
+#ifndef PSIM_SIMULATIONS_SINGLE_ATTITUDE_ORBIT_HPP_
+#define PSIM_SIMULATIONS_SINGLE_ATTITUDE_ORBIT_HPP_
 
-#include <psim/truth/attitude_orbit.yml.hpp>
-
-#include <gnc/ode4.hpp>
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-/** @brief Simulates attitude dynamics without fuel slosh and propagates the
- *         orbital state with a Keplerian model in ECI.
+/** @brief Models a single satellite's orbital dynamics. All models are backed
+ *         by flight software's GNC implementations if possible.
  */
-class AttitudeOrbitNoFuelEciGnc : public AttitudeOrbit<AttitudeOrbitNoFuelEciGnc> {
- private:
-  typedef AttitudeOrbit<AttitudeOrbitNoFuelEciGnc> Super;
-  gnc::Ode4<Real, 16> ode;
-
+class SingleOrbitGnc : public ModelList {
  public:
-  AttitudeOrbitNoFuelEciGnc() = delete;
-  virtual ~AttitudeOrbitNoFuelEciGnc() = default;
+  SingleOrbitGnc() = delete;
+  virtual ~SingleOrbitGnc() = default;
 
-  /** @brief Set the frame argument to ECI.
-   */
-  AttitudeOrbitNoFuelEciGnc(Configuration const &config,
-      std::string const &prefix, std::string const &satellite);
-
-  Vector4 prefix_satellite_attitude_q_eci_body() const;
-
-  virtual void step() override;
+  SingleOrbitGnc(Configuration const &config);
 };
 }  // namespace psim
 
