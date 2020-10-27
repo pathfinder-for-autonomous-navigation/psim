@@ -29,6 +29,7 @@
 #include <psim/simulations/dual_attitude_orbit.hpp>
 
 #include <psim/truth/earth.hpp>
+#include <psim/truth/hill_frame.hpp>
 #include <psim/truth/satellite_attitude_orbit.hpp>
 #include <psim/truth/time.hpp>
 
@@ -44,5 +45,8 @@ DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(Configuration const &config) {
   // Leader and follower satellites
   add<SatelliteAttitudeOrbitGnc>(config, prefix, "leader");
   add<SatelliteAttitudeOrbitGnc>(config, prefix, "follower");
+  // Hill frame position and velocity
+  add<HillFrameEci>(config, prefix, "leader", "follower");
+  add<HillFrameEci>(config, prefix, "follower", "leader");
 }
 }  // namespace psim
