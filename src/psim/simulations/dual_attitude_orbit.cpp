@@ -38,15 +38,18 @@
 namespace psim {
 
 DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(Configuration const &config) {
-  std::string const prefix = "truth";
-  // Time and Earth ephemeris
-  add<Time>(config, prefix);
-  add<EarthGnc>(config, prefix);
-  // Leader and follower satellites
-  add<SatelliteAttitudeOrbitGnc>(config, prefix, "leader");
-  add<SatelliteAttitudeOrbitGnc>(config, prefix, "follower");
-  // Hill frame position and velocity
-  add<HillFrameEci>(config, prefix, "leader", "follower");
-  add<HillFrameEci>(config, prefix, "follower", "leader");
+  // Truth model
+  {
+    std::string const prefix = "truth";
+    // Time and Earth ephemeris
+    add<Time>(config, prefix);
+    add<EarthGnc>(config, prefix);
+    // Leader and follower satellites
+    add<SatelliteAttitudeOrbitGnc>(config, prefix, "leader");
+    add<SatelliteAttitudeOrbitGnc>(config, prefix, "follower");
+    // Hill frame position and velocity
+    add<HillFrameEci>(config, prefix, "leader", "follower");
+    add<HillFrameEci>(config, prefix, "follower", "leader");
+  }
 }
 }  // namespace psim
