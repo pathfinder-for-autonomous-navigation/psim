@@ -29,7 +29,7 @@ adds:
           Velocity of the satellite in units of meters per second. The
           coordinate system is implementation dependant.
     - name: "{prefix}.{satellite}.orbit.J.{frame}"
-      type: Initialized Writable Vector3
+      type: Writable Vector3
       comment: >
           Impulse applied to the satellite on a given timestep in units of
           kilogram meters per second squared. The coordinate system is

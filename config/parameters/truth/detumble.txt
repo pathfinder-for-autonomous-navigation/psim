@@ -1,0 +1,4 @@
+# Initial conditions for simulations starting during detumble.
+#
+
+# TODO

@@ -1,0 +1,40 @@
+# Initial conditions for simulations starting during deployment.
+#
+
+# Time model initial conditions.
+
+truth.t.ns   0
+truth.dt.ns  100000000
+
+# Leader spacecraft attitude and orbit initial conditions.
+
+truth.leader.m  5.0
+truth.leader.J  0.03798 0.03957 0.00688
+
+truth.leader.wheels.J      135.0e-7
+truth.leader.wheels.w_max  677.0
+
+truth.leader.attitude.q.eci_body  0.0   0.0    0.0   1.0
+truth.leader.attitude.w           0.001 0.002 -0.001
+truth.leader.wheels.w             0.0   0.0    0.0
+
+truth.leader.orbit.r  6.8538e6 0.0      0.0
+truth.leader.orbit.v  0.0      5.3952e3 5.3952e3
+
+# Follower spacecraft attitude and orbit initial conditions.
+#
+# The velocity vector is slightly perturbed from the leader's to allow them to
+# drift apart.
+
+truth.follower.m  5.0
+truth.follower.J  0.03798 0.03957 0.00688
+
+truth.follower.wheels.J      135.0e-7
+truth.follower.wheels.w_max  677.0
+
+truth.follower.attitude.q.eci_body  0.0    0.0   0.0   1.0
+truth.follower.attitude.w           0.001 -0.002 0.002
+truth.follower.wheels.w             0.0    0.0   0.0
+
+truth.follower.orbit.r  6.8538e6 0.0      0.0
+truth.follower.orbit.v  0.0      5.3954e3 5.3951e3
