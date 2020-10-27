@@ -30,6 +30,7 @@
 
 #include <psim/truth/attitude_orbit.hpp>
 #include <psim/truth/environment.hpp>
+#include <psim/truth/transform_direction.hpp>
 #include <psim/truth/transform_position.hpp>
 #include <psim/truth/transform_velocity.hpp>
 
@@ -44,7 +45,7 @@ SatelliteAttitudeOrbitGnc::SatelliteAttitudeOrbitGnc(
   add<TransformVelocityEci>(config, prefix, satellite, prefix + "." + satellite + ".orbit.v");
   // Environmental models
   add<EnvironmentGnc>(config, prefix, satellite);
-  add<TransformDirectionEcef>(config, prefix, prefix + "." + satellite + ".environment.b");
-  add<TransformDirectionEci>(config, prefix, prefix + "." + satellite + ".environment.s");
+  add<TransformDirectionEcef>(config, prefix, satellite, prefix + "." + satellite + ".environment.b");
+  add<TransformDirectionEci>(config, prefix, satellite, prefix + "." + satellite + ".environment.s");
 }
 }  // namespace psim

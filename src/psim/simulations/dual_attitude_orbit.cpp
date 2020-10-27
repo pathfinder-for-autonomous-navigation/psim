@@ -22,28 +22,27 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_attitude_orbit.hpp
+/** @file psim/simulations/dual_attitude_orbit.cpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_SIMULATIONS_SINGLE_ATTITUDE_ORBIT_HPP_
-#define PSIM_SIMULATIONS_SINGLE_ATTITUDE_ORBIT_HPP_
+#include <psim/simulations/dual_attitude_orbit.hpp>
 
-#include <psim/core/configuration.hpp>
-#include <psim/core/model_list.hpp>
+#include <psim/truth/earth.hpp>
+#include <psim/truth/satellite_attitude_orbit.hpp>
+#include <psim/truth/time.hpp>
+
+#include <string>
 
 namespace psim {
 
-/** @brief Models a single satellite's attitude and orbital dynamics. All models
- *         are backed by flight software's GNC implementations if possible.
- */
-class SingleAttitudeOrbitGnc : public ModelList {
- public:
-  SingleAttitudeOrbitGnc() = delete;
-  virtual ~SingleAttitudeOrbitGnc() = default;
-
-  SingleAttitudeOrbitGnc(Configuration const &config);
-};
+DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(Configuration const &config) {
+  std::string const prefix = "truth";
+  // Time and Earth ephemeris
+  add<Time>(config, prefix);
+  add<EarthGnc>(config, prefix);
+  // Leader and follower satellites
+  add<SatelliteAttitudeOrbitGnc>(config, prefix, "leader");
+  add<SatelliteAttitudeOrbitGnc>(config, prefix, "follower");
+}
 }  // namespace psim
-
-#endif

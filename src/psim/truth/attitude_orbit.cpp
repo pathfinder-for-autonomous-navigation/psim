@@ -151,8 +151,10 @@ void AttitudeOrbitNoFuelEciGnc::step() {
 }
 
 Vector4 AttitudeOrbitNoFuelEciGnc::prefix_satellite_attitude_q_eci_body() const {
-  auto const q_eci_body = this->prefix_satellite_attitude_q_body_eci.get();
-  gnc::utl::quat_conj(q_eci_body);
+  auto const &q_body_eci = this->prefix_satellite_attitude_q_body_eci.get();
+
+  Vector4 q_eci_body;
+  gnc::utl::quat_conj(q_body_eci, q_eci_body);
   return q_eci_body;
 }
 }  // namespace psim
