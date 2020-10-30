@@ -32,7 +32,6 @@ static void test_actuation_constructor() {
   gnc::OrbitActuation actuation;
 
   TEST_ASSERT_TRUE(lin::all(lin::isnan(actuation.J_ecef)));
-  TEST_ASSERT_TRUE(lin::isnan(actuation.phase_till_next_node));
 }
 
 static int test() {
