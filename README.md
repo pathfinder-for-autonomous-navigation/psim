@@ -21,7 +21,9 @@ below:
     source venv/bin/activate
     pip install --upgrade pip
     pip install -r requirements.txt
-    pio platform install native
+
+**_Note: Naming your virtual environment `venv` is required for PSim
+development!_**
 
 Officially, we support Python 3.7 (this is what continuous integration runs) but
 you'll most likely have success with Python 3.6+.
@@ -32,25 +34,44 @@ for the GNC code with:
     source venv/bin/activate
     pio test -e native
 
-**_Note: Naming your virtual environment `venv` is required for PSim
-development!_**
+For PSim development, there are the following additional requirements:
 
-For PSim development, we need to have the virtual environment setup as shown
-above, a couple extra Python bells and whistles you most likely already have,
-and then Bazel.
+* The Bazel build system.
+* Python development headers installed on your system for the same version of
+Python used for PSim development.
+* Python distutils package (again for the same Python version).
 
-Besides your system install of Python and the virtual environment that will be
-used to work with the PSim repository, you need to install the Python
-development headers and `distutils` for the version of Python you'll be using.
-The Bazel build system will require both of these to compile PSim into a Python
-module.
+All three of these should be available via your systems package manager. The
+last build dependency (Python's distutls) is most lilely installed on your
+system already so it may be worth giving building a go and see if Bazel/Python
+complain.
 
-Generally the Python development headers and `distutils` can be installed via a
-package manager. Note that Bazel will explicitly let you know if it can't find
-either of these.
+On a Debian based system, the Python development headers can be installed with:
 
-As far as Bazel is concerned, you should be able to install it through your
-package manager of choice as well.
+    sudo apt-get install python3-dev
+
+and Bazel install instructions (for other platforms too) can be found
+[here](https://docs.bazel.build/versions/master/install-ubuntu.html#installing-bazel).
+
+To ensure everything is working as expected, you should be able to build and run
+the C++ unit tests for PSim with:
+
+    bazel test //test/psim:all
+
+The PSim Python module can be compiled, installed, and run with:
+
+    pip install -e .
+    python -m psim --help
+
+Note the you can add the `-vvv` flags to the `pip` command to see compilation
+errors if the install fails. It's also recommended to use the `-e` flag to build
+PSim in place which avoids making Bazel track a new repository that `pip` would
+essentially create otherwise.
+
+When making changes to PSim, simply run `pip install -e .` again to have Bazel
+recompile the needed C++ files and `pip` update the Python source files.
+
+### Bazel VSCode Extension and C/C++ Intellisense
 
 It's also recommended to install the Bazel build tools along with the VSCode
 extensions 'Bazel' by the 'Bazel Build Team'. With this extension plus
