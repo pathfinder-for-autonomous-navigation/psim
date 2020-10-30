@@ -7,7 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  linux:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -22,6 +22,38 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install bazel
+        python -m venv venv
+        source venv/bin/activate
+        pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Build and run C++ tests
+      run: |
+        source venv/bin/activate
+        bazel test //test/psim:ci
+
+    - name: Build and run Python tests
+      run: |
+        source venv/bin/activate
+        pip install -e . -vvv
+        python -m psim --help
+
+  macos:
+    runs-on: macos
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: 'recursive'
+
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.7'
+        architecture: 'x64'
+
+    - name: Install dependencies
+      run: |
+        brew install bazel
+        brew upgrade bazel
         python -m venv venv
         source venv/bin/activate
         pip install --upgrade pip
