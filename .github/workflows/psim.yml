@@ -1,3 +1,5 @@
+# https://docs.github.com/en/free-pro-team@latest/actions/guides/building-and-testing-python
+
 name: PSim Regression Tests
 
 on:
@@ -24,9 +26,14 @@ jobs:
         source venv/bin/activate
         pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Build and Test
+    
+    - name: Build and run C++ tests
       run: |
-        bazel build //:gnc
-        bazel build //python:psim
-        bazel test //test/psim:ci 
+        source venv/bin/activate
+        bazel test //test/psim:ci
+
+    - name: Build and run Python tests
+      run: |
+        source venv/bin/activate
+        pip install -e . -vvv
+        python -m psim --help

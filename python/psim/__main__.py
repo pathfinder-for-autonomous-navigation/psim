@@ -1,6 +1,6 @@
 
 import lin
-from psim import (
+from . import (
   SimulationRunner,
   plugins,
 )
