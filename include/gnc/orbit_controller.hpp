@@ -105,7 +105,6 @@ struct OrbitControllerData {
  */
 struct OrbitActuation {
   lin::Vector3d J_ecef;       //!< Recommended impulse vector (Ns).
-  float phase_till_next_node; //!< Phase unil next firing (radians).
   /** @brief Defaults everything's value to NaN. */
   OrbitActuation();
 };
