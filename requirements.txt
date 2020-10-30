@@ -1,13 +1,11 @@
-matplotlib
-numpy
 platformio
 pylint
 pytest
 pyyaml
 ./lib/lin
-# Held over from orbit estimator days
-cppimport
-h5py
-dulwich
-ipykernel
-notebook
+# Required for old orbit estimator testing
+#cppimport
+#h5py
+#dulwich
+#ipykernel
+#notebook
