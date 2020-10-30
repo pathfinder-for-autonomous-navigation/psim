@@ -35,5 +35,5 @@ jobs:
     - name: Build and run Python tests
       run: |
         source venv/bin/activate
-        pip install .
+        pip install . -vvv
         python -m psim --help
