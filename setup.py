@@ -44,5 +44,4 @@ setuptools.setup(
     cmdclass = {'build_ext': BuildExtCommand},
     packages = ['psim', 'psim.plugins'],
     package_dir = {'': 'python'},
-    #package_data = {'': ['_psim.so']},
 )

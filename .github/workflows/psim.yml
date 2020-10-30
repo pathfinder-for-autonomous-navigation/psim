@@ -22,11 +22,18 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install bazel
+        python -m venv venv
+        source venv/bin/activate
         pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Build and test
+    
+    - name: Build and run C++ tests
       run: |
+        source venv/bin/activate
         bazel test //test/psim:ci
+
+    - name: Build and run Python tests
+      run: |
+        source venv/bin/activate
         pip install .
         python -m psim --help
