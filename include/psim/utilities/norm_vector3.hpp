@@ -22,40 +22,28 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/attitude_orbit.hpp
+/** @file psim/utilities/norm_vector3.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_ATTITUDE_ORBIT_HPP_
-#define PSIM_TRUTH_ATTITUDE_ORBIT_HPP_
+#ifndef PSIM_UTILITIES_NORM_VECTOR3_HPP_
+#define PSIM_UTILITIES_NORM_VECTOR3_HPP_
 
-#include <psim/truth/attitude_orbit.yml.hpp>
-
-#include <gnc/ode4.hpp>
+#include <psim/utilities/norm_vector3.yml.hpp>
 
 namespace psim {
 
-/** @brief Simulates attitude dynamics without fuel slosh and propagates the
- *         orbital state with a Keplerian model in ECI.
- */
-class AttitudeOrbitNoFuelEciGnc : public AttitudeOrbit<AttitudeOrbitNoFuelEciGnc> {
+class NormVector3 : public NormVector3Interface<NormVector3> {
  private:
-  typedef AttitudeOrbit<AttitudeOrbitNoFuelEciGnc> Super;
-  gnc::Ode4<Real, 16> ode;
+  typedef NormVector3Interface<NormVector3> Super;
 
  public:
-  AttitudeOrbitNoFuelEciGnc() = delete;
-  virtual ~AttitudeOrbitNoFuelEciGnc() = default;
+  using Super::NormVector3Interface;
 
-  /** @brief Set the frame argument to ECI.
-   */
-  AttitudeOrbitNoFuelEciGnc(Configuration const &config,
-      std::string const &prefix, std::string const &satellite);
+  NormVector3() = delete;
+  virtual ~NormVector3() = default;
 
-  Vector4 prefix_satellite_attitude_q_eci_body() const;
-  Vector3 prefix_satellite_attitude_L() const;
-
-  virtual void step() override;
+  Real vector_norm() const;
 };
 }  // namespace psim
 

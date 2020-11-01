@@ -33,6 +33,8 @@
 #include <psim/truth/transform_direction.hpp>
 #include <psim/truth/transform_position.hpp>
 #include <psim/truth/transform_velocity.hpp>
+#include <psim/utilities/norm_vector3.hpp>
+#include <psim/utilities/norm_vector4.hpp>
 
 namespace psim {
 
@@ -43,6 +45,9 @@ SatelliteAttitudeOrbitGnc::SatelliteAttitudeOrbitGnc(
   add<AttitudeOrbitNoFuelEciGnc>(config, prefix, satellite);
   add<TransformPositionEci>(config, prefix, prefix + "." + satellite + ".orbit.r");
   add<TransformVelocityEci>(config, prefix, satellite, prefix + "." + satellite + ".orbit.v");
+  // Extra telemetry
+  add<NormVector3>(config, prefix + "." + satellite + ".attitude.L");
+  add<NormVector4>(config, prefix + "." + satellite + ".attitude.q.body_eci");
   // Environmental models
   add<EnvironmentGnc>(config, prefix, satellite);
   add<TransformDirectionEcef>(config, prefix, satellite, prefix + "." + satellite + ".environment.b");

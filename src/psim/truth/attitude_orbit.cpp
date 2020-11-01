@@ -158,4 +158,13 @@ Vector4 AttitudeOrbitNoFuelEciGnc::prefix_satellite_attitude_q_eci_body() const 
   gnc::utl::quat_conj(q_body_eci, q_eci_body);
   return q_eci_body;
 }
+
+Vector3 AttitudeOrbitNoFuelEciGnc::prefix_satellite_attitude_L() const {
+  auto const &J = prefix_satellite_J.get();
+  auto const &J_w = prefix_satellite_wheels_J.get();
+  auto const &w = prefix_satellite_attitude_w.get();
+  auto const &wheels_w = prefix_satellite_wheels_w.get();
+
+  return lin::multiply(J, w) + J_w * wheels_w;
+}
 }  // namespace psim

@@ -76,6 +76,10 @@ adds:
       comment: >
           Magnetic moment commanded of the magnetic torque rods. This value is
           defaulted back to zero at each step.
+    - name: "{prefix}.{satellite}.attitude.L"
+      type: Lazy Vector3
+      comment: >
+          Angular momentum of the spacecraft in the body frame.
 
 gets:
     - name: "{prefix}.t.s"
