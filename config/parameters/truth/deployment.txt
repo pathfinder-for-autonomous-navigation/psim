@@ -14,9 +14,9 @@ truth.leader.J  0.03798 0.03957 0.00688
 truth.leader.wheels.J      135.0e-7
 truth.leader.wheels.w_max  677.0
 
-truth.leader.attitude.q.body_eci  0.0   0.0    0.0   1.0
-truth.leader.attitude.w           0.01 0.02 -0.01
-truth.leader.wheels.w             0.0   0.0    0.0
+truth.leader.attitude.q.body_eci  0.0  0.0   0.0  1.0
+truth.leader.attitude.w           0.01 0.04 -0.02
+truth.leader.wheels.w             0.0  0.0   0.0
 
 truth.leader.orbit.r  6.8538e6 0.0      0.0
 truth.leader.orbit.v  0.0      5.3952e3 5.3952e3
@@ -32,9 +32,9 @@ truth.follower.J  0.03798 0.03957 0.00688
 truth.follower.wheels.J      135.0e-7
 truth.follower.wheels.w_max  677.0
 
-truth.follower.attitude.q.body_eci  0.0    0.0   0.0   1.0
-truth.follower.attitude.w           0.001 -0.002 0.002
-truth.follower.wheels.w             0.0    0.0   0.0
+truth.follower.attitude.q.body_eci  0.0   0.0  0.0  1.0
+truth.follower.attitude.w           0.02 -0.03 0.02
+truth.follower.wheels.w             0.0   0.0  0.0
 
 truth.follower.orbit.r  6.8538e6 0.0      0.0
 truth.follower.orbit.v  0.0      5.3954e3 5.3951e3
