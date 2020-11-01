@@ -9,6 +9,10 @@ from .plot import (
     Plotter,
 )
 
+from .snapshot import (
+    Snapshot,
+)
+
 from .stop import (
     StopOnSteps,
 )

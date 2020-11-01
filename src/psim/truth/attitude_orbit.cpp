@@ -79,7 +79,6 @@ void AttitudeOrbitNoFuelEciGnc::step() {
   IntegratorData data {mass, I, I_w, tau_w, m, b};
 
   // Simulate our dynamics
-  
   lin::Vector<Real, 16> const x = {
       r(0), r(1), r(2),
       v(0), v(1), v(2),

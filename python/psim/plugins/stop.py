@@ -38,7 +38,7 @@ class StopOnSteps(Plugin):
             self._n = args.steps
 
     def poststep(self, sim):
-        super(StopOnSteps, self).__init__()
+        super(StopOnSteps, self).poststep(sim)
 
         self._steps = self._steps + 1
         if self._steps / self._n >= float(self._percent) / 100.0:

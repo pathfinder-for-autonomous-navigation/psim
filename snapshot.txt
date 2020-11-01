@@ -1,0 +1,43 @@
+truth.t.ns 1700000000000
+truth.leader.orbit.r Vector3
+-2.16431e+06
+4.60304e+06
+4.5925e+06
+truth.leader.orbit.r Vector3
+-2.16431e+06
+4.60304e+06
+4.5925e+06
+truth.leader.attitude.q.body_eci Vector4
+0.431573
+-0.859722
+0.208578
+-0.1764
+truth.leader.attitude.w Vector3
+-0.0391979
+0.0169796
+-0.00378184
+truth.leader.wheels.w Vector3
+0
+0
+0
+truth.follower.orbit.r Vector3
+-2.16425e+06
+4.60331e+06
+4.59251e+06
+truth.follower.orbit.r Vector3
+-2.16425e+06
+4.60331e+06
+4.59251e+06
+truth.follower.attitude.q.body_eci Vector4
+-0.273139
+0.0481226
+-0.700132
+0.657947
+truth.follower.attitude.w Vector3
+0.0310739
+0.0195842
+0.0157524
+truth.follower.wheels.w Vector3
+0
+0
+0

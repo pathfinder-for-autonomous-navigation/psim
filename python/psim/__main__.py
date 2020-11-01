@@ -6,6 +6,7 @@ from . import (
 )
 
 SimulationRunner([
+  plugins.Plotter(),
+  plugins.Snapshot(),
   plugins.StopOnSteps(),
-  plugins.Plotter()
 ]).run()
