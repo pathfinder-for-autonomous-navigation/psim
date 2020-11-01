@@ -4,7 +4,7 @@
 # Time model initial conditions.
 
 truth.t.ns   0
-truth.dt.ns  100000000
+truth.dt.ns  170000000
 
 # Leader spacecraft attitude and orbit initial conditions.
 
@@ -15,7 +15,7 @@ truth.leader.wheels.J      135.0e-7
 truth.leader.wheels.w_max  677.0
 
 truth.leader.attitude.q.body_eci  0.0   0.0    0.0   1.0
-truth.leader.attitude.w           0.001 0.002 -0.001
+truth.leader.attitude.w           0.01 0.02 -0.01
 truth.leader.wheels.w             0.0   0.0    0.0
 
 truth.leader.orbit.r  6.8538e6 0.0      0.0
