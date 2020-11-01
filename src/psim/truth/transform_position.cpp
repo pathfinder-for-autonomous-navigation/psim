@@ -42,7 +42,7 @@ Vector3 TransformPositionEcef::vector_eci() const {
 }
 
 Vector3 TransformPositionEci::vector_ecef() const {
-  auto const &r_eci= vector->get();
+  auto const &r_eci = vector->get();
   auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
 
   Vector3 r_ecef;
