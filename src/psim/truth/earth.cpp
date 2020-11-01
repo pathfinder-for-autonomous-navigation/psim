@@ -42,7 +42,7 @@ Vector4 EarthGnc::prefix_earth_q_ecef_eci() const {
 }
 
 Vector4 EarthGnc::prefix_earth_q_eci_ecef() const {
-  auto const &q_ecef_eci = this->Super::prefix_earth_q_eci_ecef.get();
+  auto const &q_ecef_eci = this->Super::prefix_earth_q_ecef_eci.get();
 
   Vector4 q_eci_ecef;
   gnc::utl::quat_conj(q_ecef_eci, q_eci_ecef);

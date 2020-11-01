@@ -37,7 +37,7 @@
 #include <lin/references.hpp>
 
 namespace psim {
- 
+
 AttitudeOrbitNoFuelEciGnc::AttitudeOrbitNoFuelEciGnc(
     Configuration const &config, std::string const &prefix,
     std::string const &satellite)
@@ -56,9 +56,10 @@ void AttitudeOrbitNoFuelEciGnc::step() {
   this->Super::step();
 
   // Initialize variables from .yml
-  auto &mass = prefix_satellite_m.get();
-  auto &I = prefix_satellite_J.get();
-  auto &I_w = prefix_satellite_wheels_J.get();
+  auto const &mass = prefix_satellite_m.get();
+  auto const &I = prefix_satellite_J.get();
+  auto const &I_w = prefix_satellite_wheels_J.get();
+
   auto &tau_w = prefix_satellite_wheels_t.get();
   auto &omega_w = prefix_satellite_wheels_w.get();
   auto &m = prefix_satellite_magnetorquers_m.get();
@@ -94,7 +95,7 @@ void AttitudeOrbitNoFuelEciGnc::step() {
     auto const v = lin::ref<3, 1>(x, 3,  0);
     auto const q = lin::ref<4, 1>(x, 6,  0);
     auto const w = lin::ref<3, 1>(x, 10, 0);
-    auto const w_w = lin::ref<3, 1>(x, 14, 0);
+    auto const w_w = lin::ref<3, 1>(x, 13, 0);
     auto *data = (IntegratorData *) ptr;
 
     lin::Vector<Real, 16> dx;
@@ -136,7 +137,7 @@ void AttitudeOrbitNoFuelEciGnc::step() {
     {
       lin::ref<4, 1>(dx, 6, 0) = dq; 
       lin::ref<3, 1>(dx, 10, 0) = dw; 
-      lin::ref<3, 1>(dx, 14, 0) = dw_w;
+      lin::ref<3, 1>(dx, 13, 0) = dw_w;
     }
 
     return dx;
@@ -147,7 +148,7 @@ void AttitudeOrbitNoFuelEciGnc::step() {
   v = lin::ref<3, 1>(xf, 3, 0);
   q_body_eci = lin::ref<4, 1>(xf, 6, 0);
   w = lin::ref<3, 1>(xf, 10, 0);
-  omega_w = lin::ref<3, 1>(xf, 14, 0);
+  omega_w = lin::ref<3, 1>(xf, 13, 0);
 }
 
 Vector4 AttitudeOrbitNoFuelEciGnc::prefix_satellite_attitude_q_eci_body() const {
