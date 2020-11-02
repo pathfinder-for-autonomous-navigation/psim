@@ -5,8 +5,8 @@
 #include "counter.hpp"
 
 Counter::Counter(psim::Configuration const &config)
-    : _dn("dn", config["dn"].template get<psim::Integer>()),
-      _n("n", config["n"].template get<psim::Integer>()) { }
+  : _dn("dn", config["dn"].template get<psim::Integer>()),
+    _n("n", config["n"].template get<psim::Integer>()) {}
 
 void Counter::add_fields(psim::State &state) {
   this->psim::Model::add_fields(state);

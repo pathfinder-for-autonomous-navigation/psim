@@ -44,16 +44,16 @@ class Nameable {
 
  protected:
   Nameable(std::string const &name, std::string const &type)
-      : _name(name), _type(type) { }
+    : _name(name), _type(type) {}
 
   Nameable(std::string &&name, std::string const &type)
-      : _name(std::move(name)), _type(type) { }
+    : _name(std::move(name)), _type(type) {}
 
   Nameable(std::string const &name, std::string &&type)
-      : _name(name), _type(std::move(type)) { }
+    : _name(name), _type(std::move(type)) {}
 
   Nameable(std::string &&name, std::string &&type)
-      : _name(std::move(name)), _type(std::move(type)) { }
+    : _name(std::move(name)), _type(std::move(type)) {}
 
  public:
   Nameable() = default;
@@ -71,6 +71,6 @@ class Nameable {
     return _type;
   }
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

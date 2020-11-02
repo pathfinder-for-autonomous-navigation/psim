@@ -48,11 +48,12 @@ class StateFieldWritable;
 
 /** @brief Parent class for all state fields.
  *
- *  The main purpose of this class is to allow dynamic casting to be used to check
- *  field types at runtime and provided casting functions for convenience.
+ *  The main purpose of this class is to allow dynamic casting to be used to
+ * check field types at runtime and provided casting functions for convenience.
  */
-class StateFieldBase : public virtual Nameable, public CastableBase<StateField>,
-    public CastableBase<StateFieldWritable> {
+class StateFieldBase : public virtual Nameable,
+                       public CastableBase<StateField>,
+                       public CastableBase<StateFieldWritable> {
  protected:
   StateFieldBase() = default;
 
@@ -103,12 +104,13 @@ class StateFieldBase : public virtual Nameable, public CastableBase<StateField>,
  *
  *  @tparam T Underlying type.
  *
- *  A generic state field allows reads producing data of the specified underlying
- *  type. Convenience functions to attempt casts to writable state fields are
- *  still supported.
+ *  A generic state field allows reads producing data of the specified
+ * underlying type. Convenience functions to attempt casts to writable state
+ * fields are still supported.
  */
 template <typename T>
-class StateField : virtual public StateFieldBase, public Castable<StateFieldWritable, T> {
+class StateField : virtual public StateFieldBase,
+                   public Castable<StateFieldWritable, T> {
  protected:
   StateField() = default;
 
@@ -138,13 +140,15 @@ class StateField : virtual public StateFieldBase, public Castable<StateFieldWrit
    */
   template <typename U = T>
   StateField<U> const &cast() const {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to StateField::cast() const");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to StateField::cast() const");
     return *this;
   }
 
   template <typename U = T>
   StateField<U> &cast() {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to StateField::cast()");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to StateField::cast()");
     return *this;
   }
   /** @}
@@ -157,7 +161,8 @@ class StateField : virtual public StateFieldBase, public Castable<StateFieldWrit
    */
   template <typename U = T>
   U const &get() const {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to StateField::get() const");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to StateField::get() const");
     return this->_get();
   }
 
@@ -197,8 +202,8 @@ class StateFieldWritableBase : virtual public StateFieldBase {
    *
    *  @return Reference to the underlying type.
    *
-   *  If the underlying type doesn't match the expected underlying type, a runtime
-   *  error will be thrown.
+   *  If the underlying type doesn't match the expected underlying type, a
+   * runtime error will be thrown.
    *
    *  @{
    */
@@ -236,8 +241,8 @@ class StateFieldWritableBase : virtual public StateFieldBase {
  *
  *  @tparam T Underlying type.
  *
- *  A writable state field allows reads or writes to or from the fields as long as
- *  they are of the underlying data type.
+ *  A writable state field allows reads or writes to or from the fields as long
+ * as they are of the underlying data type.
  */
 template <typename T>
 class StateFieldWritable : public StateFieldWritableBase, public StateField<T> {
@@ -260,13 +265,15 @@ class StateFieldWritable : public StateFieldWritableBase, public StateField<T> {
    */
   template <typename U = T>
   StateFieldWritable<U> const &cast() const {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to StateFieldWritable::cast() const");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to StateFieldWritable::cast() const");
     return *this;
   }
 
   template <typename U = T>
   StateFieldWritable<U> &cast() {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to StateFieldWritable::cast()");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to StateFieldWritable::cast()");
     return *this;
   }
 
@@ -291,13 +298,15 @@ class StateFieldWritable : public StateFieldWritableBase, public StateField<T> {
    */
   template <typename U = T>
   U const &get() const {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to StateFieldWritable::get() const");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to StateFieldWritable::get() const");
     return this->_get();
   }
 
   template <typename U = T>
   U &get() {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to StateFieldWritable::get()");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to StateFieldWritable::get()");
     return this->_get();
   }
 
@@ -308,6 +317,6 @@ class StateFieldWritable : public StateFieldWritableBase, public StateField<T> {
   /** @}
    */
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

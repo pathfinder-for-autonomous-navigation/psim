@@ -30,10 +30,10 @@
 
 namespace psim {
 
-void Model::add_fields(State &state) { }
+void Model::add_fields(State &state) {}
 
-void Model::get_fields(State &state) { }
+void Model::get_fields(State &state) {}
 
-void Model::step() { }
+void Model::step() {}
 
-}  // namespace psim
+} // namespace psim

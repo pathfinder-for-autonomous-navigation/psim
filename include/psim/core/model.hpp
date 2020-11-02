@@ -42,9 +42,9 @@ namespace psim {
 
 /** @brief The base unit of "logic" in a simulation.
  *
- *  Every simulation relies on a model type to declare state fields, request state
- *  fields, and contain all the neccesary functionality to step the simulation
- *  forward in time.
+ *  Every simulation relies on a model type to declare state fields, request
+ *  state fields, and contain all the neccesary functionality to step the
+ *  simulation forward in time.
  */
 class Model {
  protected:
@@ -58,13 +58,14 @@ class Model {
    *  @param[in] name  Field name.
    *
    *  @return Pointer to the state field.
-   * 
-   *  Note, if the field wasn't found or has an invalid underlying type, a runtime
-   *  error will be thrown.
+   *
+   *  Note, if the field wasn't found or has an invalid underlying type, a
+   * runtime error will be thrown.
    */
   template <typename T>
   StateField<T> const *get_field(State const &state, std::string const &name) {
-    auto const *field_ptr = dynamic_cast<StateField<T> const *>(state.get(name));
+    auto const *field_ptr =
+        dynamic_cast<StateField<T> const *>(state.get(name));
     if (!field_ptr)
       throw std::runtime_error("Invalid cast while getting a field: " + name);
 
@@ -79,15 +80,18 @@ class Model {
    *  @param[in] name  Field name.
    *
    *  @return Pointer to the writable state field.
-   * 
-   *  Note, if the field wasn't found or has an invalid underlying type, a runtime
-   *  error will be thrown.
+   *
+   *  Note, if the field wasn't found or has an invalid underlying type, a
+   * runtime error will be thrown.
    */
   template <typename T>
-  StateFieldWritable<T> *get_writable_field(State &state, std::string const &name) {
-    auto *field_ptr = dynamic_cast<StateFieldWritable<T> *>(state.get_writable(name));
+  StateFieldWritable<T> *get_writable_field(
+      State &state, std::string const &name) {
+    auto *field_ptr =
+        dynamic_cast<StateFieldWritable<T> *>(state.get_writable(name));
     if (!field_ptr)
-      throw std::runtime_error("Invalid cast while getting a writable field: " + name);
+      throw std::runtime_error(
+          "Invalid cast while getting a writable field: " + name);
 
     return field_ptr;
   }
@@ -119,6 +123,6 @@ class Model {
    */
   virtual void step();
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

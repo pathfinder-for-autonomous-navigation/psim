@@ -43,20 +43,24 @@ namespace psim {
  *  models themselves. Therefore, the state is invalid if any models are
  *  deallocated.
  *
- *  The fields are mapped one to one with a string name. It's not possible to have
- *  a readable and writable field registered to the same name.
+ *  The fields are mapped one to one with a string name. It's not possible to
+ *  have a readable and writable field registered to the same name.
  */
 class State {
  private:
   /** @brief Map to the readable fields.
    */
-  std::unordered_map<std::reference_wrapper<std::string const>, StateFieldBase const *,
-      std::hash<std::string>, std::equal_to<std::string>> _readable_fields;
+  std::unordered_map<std::reference_wrapper<std::string const>,
+      StateFieldBase const *, std::hash<std::string>,
+      std::equal_to<std::string>>
+      _readable_fields;
 
   /** @brief Map to the writable fields.
    */
-  std::unordered_map<std::reference_wrapper<std::string const>, StateFieldWritableBase *,
-      std::hash<std::string>, std::equal_to<std::string>> _writable_fields;
+  std::unordered_map<std::reference_wrapper<std::string const>,
+      StateFieldWritableBase *, std::hash<std::string>,
+      std::equal_to<std::string>>
+      _writable_fields;
 
  public:
   State() = default;
@@ -131,6 +135,6 @@ class State {
    */
   StateFieldBase const &operator[](std::string const &name) const;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

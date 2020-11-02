@@ -11,7 +11,8 @@
 #include <psim/core/types.hpp>
 
 TEST(Simulation, TestStep) {
-  auto const config = psim::Configuration::make("test/psim/core/simulation_test_config.txt");
+  auto const config =
+      psim::Configuration::make("test/psim/core/simulation_test_config.txt");
   auto sim = psim::Simulation::make<Counter>(config);
 
   // Check initial conditions

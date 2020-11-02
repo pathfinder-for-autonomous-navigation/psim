@@ -10,17 +10,20 @@
 #include <stdexcept>
 
 TEST(Configuration, TestBadName) {
-  std::string const file = "test/psim/core/configuration_test_bad_name_config.txt";
+  std::string const file =
+      "test/psim/core/configuration_test_bad_name_config.txt";
   EXPECT_THROW(psim::Configuration::make(file), std::runtime_error);
 }
 
 TEST(Configuration, TestBadValue) {
-  std::string const file = "test/psim/core/configuration_test_bad_value_config.txt";
+  std::string const file =
+      "test/psim/core/configuration_test_bad_value_config.txt";
   EXPECT_THROW(psim::Configuration::make(file), std::runtime_error);
 }
 
 TEST(Configuration, TestDuplicateName) {
-  std::string const file = "test/psim/core/configuration_test_duplicate_name_config.txt";
+  std::string const file =
+      "test/psim/core/configuration_test_duplicate_name_config.txt";
   EXPECT_THROW(psim::Configuration::make(file), std::runtime_error);
 }
 
@@ -42,9 +45,8 @@ TEST(Configuration, TestGet) {
 
 TEST(Configuration, TestMultiFileMake) {
   std::vector<std::string> const files = {
-    "test/psim/core/configuration_test_config.txt",
-    "test/psim/core/configuration_test_two_config.txt"
-  };
+      "test/psim/core/configuration_test_config.txt",
+      "test/psim/core/configuration_test_two_config.txt"};
   auto const config = psim::Configuration::make(files);
 
   // Check Integer field(s) from both files
@@ -102,9 +104,9 @@ TEST(Configuration, TestSingleFileMake) {
     psim::Vector3 test_vector;
 
     test_vector = config["test.vector3"].template get<psim::Vector3>();
-    ASSERT_DOUBLE_EQ(test_vector(0),  1.0);
+    ASSERT_DOUBLE_EQ(test_vector(0), 1.0);
     ASSERT_DOUBLE_EQ(test_vector(1), -2.0);
-    ASSERT_DOUBLE_EQ(test_vector(2),  3.0);
+    ASSERT_DOUBLE_EQ(test_vector(2), 3.0);
   }
 
   // Check Vector4 field(s)

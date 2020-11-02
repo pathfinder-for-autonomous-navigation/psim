@@ -52,34 +52,39 @@ TEST(StateField, TestCast) {
 TEST(StateField, TestCastWritable) {
   // Test for non-writable state fields
   {
-    psim::StateFieldLazy<psim::Real> field("default", []() { return psim::Real(); });
+    psim::StateFieldLazy<psim::Real> field(
+        "default", []() { return psim::Real(); });
 
     // Test for `StateFieldBase`
     {
       psim::StateFieldBase &base_field = field;
 
-      EXPECT_THROW(base_field.template cast_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(
+          base_field.template cast_writable<psim::Real>(), std::runtime_error);
     }
 
     // Test for `StateFieldBase const`
     {
       psim::StateFieldBase const &base_field = field;
 
-      EXPECT_THROW(base_field.template cast_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(
+          base_field.template cast_writable<psim::Real>(), std::runtime_error);
     }
 
     // Test for `StateField`
     {
       psim::StateField<psim::Real> *field_ptr = &field;
 
-      EXPECT_THROW(field_ptr->template cast_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(
+          field_ptr->template cast_writable<psim::Real>(), std::runtime_error);
     }
 
     // Test for `StateField const`
     {
       psim::StateField<psim::Real> const &base_field = field;
 
-      EXPECT_THROW(base_field.template cast_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(
+          base_field.template cast_writable<psim::Real>(), std::runtime_error);
     }
   }
 
@@ -100,7 +105,8 @@ TEST(StateField, TestCastWritable) {
       psim::StateFieldBase const &base_field = field;
 
       ASSERT_EQ(&(base_field.template cast<psim::Real>()), &field);
-      EXPECT_THROW(base_field.template cast<psim::Integer>(), std::runtime_error);
+      EXPECT_THROW(
+          base_field.template cast<psim::Integer>(), std::runtime_error);
     }
 
     // Test for `StateField`
@@ -164,20 +170,23 @@ TEST(StateField, TestGet) {
 TEST(StateField, TestGetWritable) {
   // Test for non-writable state fields
   {
-    psim::StateFieldLazy<psim::Real> field("default", []() { return psim::Real(); });
+    psim::StateFieldLazy<psim::Real> field(
+        "default", []() { return psim::Real(); });
 
     // Test for `StateFieldBase`
     {
       psim::StateFieldBase &base_field = field;
 
-      EXPECT_THROW(base_field.template get_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(
+          base_field.template get_writable<psim::Real>(), std::runtime_error);
     }
 
     // Test for `StateField`
     {
       psim::StateField<psim::Real> &base_field = field;
 
-      EXPECT_THROW(base_field.template get_writable<psim::Real>(), std::runtime_error);
+      EXPECT_THROW(
+          base_field.template get_writable<psim::Real>(), std::runtime_error);
     }
   }
 
@@ -190,7 +199,8 @@ TEST(StateField, TestGetWritable) {
       psim::StateFieldBase &base_field = field;
 
       ASSERT_EQ(base_field.template get_writable<psim::Real>(), 2.0);
-      EXPECT_THROW(base_field.template get_writable<psim::Integer>(), std::runtime_error);
+      EXPECT_THROW(base_field.template get_writable<psim::Integer>(),
+          std::runtime_error);
     }
 
     // Test for `StateField`
@@ -198,8 +208,9 @@ TEST(StateField, TestGetWritable) {
       psim::StateField<psim::Real> &base_field = field;
 
       ASSERT_EQ(base_field.template get_writable<psim::Real>(), 2.0);
-      // EXPECT_THROW(base_field.get_writable<psim::Integer>(), std::runtime_error);
-      //   ^ throws a static assertion error
+      // EXPECT_THROW(base_field.get_writable<psim::Integer>(),
+      //    std::runtime_error);
+      //      ^ throws a static assertion error
     }
   }
 }

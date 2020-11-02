@@ -45,6 +45,6 @@ typedef lin::Vector4d Vector4;
 /** @}
  */
 
-}  // namespace psim
+} // namespace psim
 
 #endif
