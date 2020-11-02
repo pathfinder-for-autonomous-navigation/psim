@@ -43,15 +43,15 @@ namespace psim {
  *  @tparam Underlying type.
  *
  *  This field is particularly useful for fields that may be helpful when
- *  debugging or devloping but don't need to be evaluated all the time. The field
- *  take a function that can later be evaluated if the field is read.
+ *  debugging or devloping but don't need to be evaluated all the time. The
+ * field take a function that can later be evaluated if the field is read.
  */
 template <typename T>
 class StateFieldLazy : public StateField<T> {
  private:
   /** @brief Lazy evaluation function.
    */
-  std::function<T ()> const _function;
+  std::function<T()> const _function;
 
   /** @brief Flag specifying if the currently held value is up to date.
    */
@@ -79,21 +79,21 @@ class StateFieldLazy : public StateField<T> {
    *
    *  @{
    */
-  StateFieldLazy(std::string const &name, std::function<T ()> const &function)
-      : Nameable(name, "state_field_lazy"), _function(function),
-        _evaluated(false) { }
+  StateFieldLazy(std::string const &name, std::function<T()> const &function)
+    : Nameable(name, "state_field_lazy"), _function(function),
+      _evaluated(false) {}
 
-  StateFieldLazy(std::string &&name, std::function<T ()> const &function)
-      : Nameable(std::move(name), "state_field_lazy"), _function(function),
-        _evaluated(false) { }
+  StateFieldLazy(std::string &&name, std::function<T()> const &function)
+    : Nameable(std::move(name), "state_field_lazy"), _function(function),
+      _evaluated(false) {}
 
-  StateFieldLazy(std::string const &name, std::function<T ()> &&function)
-      : Nameable(name, "state_field_lazy"), _function(std::move(function)),
-        _evaluated(false) { }
+  StateFieldLazy(std::string const &name, std::function<T()> &&function)
+    : Nameable(name, "state_field_lazy"), _function(std::move(function)),
+      _evaluated(false) {}
 
-  StateFieldLazy(std::string &&name, std::function<T ()> &&function)
-      : Nameable(std::move(name), "state_field_lazy"),
-        _function(std::move(function)), _evaluated(false) { }
+  StateFieldLazy(std::string &&name, std::function<T()> &&function)
+    : Nameable(std::move(name), "state_field_lazy"),
+      _function(std::move(function)), _evaluated(false) {}
   /** @}
    */
 
@@ -112,6 +112,6 @@ class StateFieldLazy : public StateField<T> {
     return _get();
   }
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

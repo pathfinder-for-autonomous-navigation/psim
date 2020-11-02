@@ -41,8 +41,8 @@ class Parameter;
 
 /** @brief Virtual base class for all parameters.
  *
- *  The main purpose of this class is to allow dynamic casting to be used to check
- *  parameter types at runtime and provide helpful casting functions.
+ *  The main purpose of this class is to allow dynamic casting to be used to
+ *  check parameter types at runtime and provide helpful casting functions.
  */
 class ParameterBase : public virtual Nameable, public CastableBase<Parameter> {
  protected:
@@ -95,8 +95,7 @@ class Parameter : public ParameterBase {
    *
    *  https://stackoverflow.com/questions/2417065/does-the-default-constructor-initialize-built-in-types
    */
-  Parameter()
-      : Nameable("", "parameter"), _value() { }
+  Parameter() : Nameable("", "parameter"), _value() {}
 
   /** @brief Default constructs the parameter's value.
    *
@@ -104,11 +103,10 @@ class Parameter : public ParameterBase {
    *
    *  @{
    */
-  Parameter(std::string const &name)
-      : Nameable(name, "parameter"), _value() { }
+  Parameter(std::string const &name) : Nameable(name, "parameter"), _value() {}
 
   Parameter(std::string &&name)
-      : Nameable(std::move(name), "parameter"), _value() { }
+    : Nameable(std::move(name), "parameter"), _value() {}
   /** @}
    */
 
@@ -116,11 +114,9 @@ class Parameter : public ParameterBase {
    *
    *  @{
    */
-  Parameter(T const &value)
-      : Nameable("", "parameter"), _value(value) { }
+  Parameter(T const &value) : Nameable("", "parameter"), _value(value) {}
 
-  Parameter(T &&value)
-      : Nameable("", "parameter"), _value(std::move(value)) { }
+  Parameter(T &&value) : Nameable("", "parameter"), _value(std::move(value)) {}
   /** @}
    */
 
@@ -130,16 +126,16 @@ class Parameter : public ParameterBase {
    *  @{
    */
   Parameter(std::string const &name, T const &value)
-      : Nameable(name, "parameter"), _value(value) { }
+    : Nameable(name, "parameter"), _value(value) {}
 
   Parameter(std::string &&name, T const &value)
-      : Nameable(std::move(name), "parameter"), _value(value) { }
+    : Nameable(std::move(name), "parameter"), _value(value) {}
 
   Parameter(std::string const &name, T &&value)
-      : Nameable(name, "parameter"), _value(std::move(value)) { }
+    : Nameable(name, "parameter"), _value(std::move(value)) {}
 
   Parameter(std::string &&name, T &&value)
-      : Nameable(std::move(name), "parameter"), _value(std::move(value)) { }
+    : Nameable(std::move(name), "parameter"), _value(std::move(value)) {}
   /** @}
    */
 
@@ -152,14 +148,16 @@ class Parameter : public ParameterBase {
    */
   template <typename U = T>
   Parameter<U> const &cast() const {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to Parameter::cast() const");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to Parameter::cast() const");
 
     return *this;
   }
 
   template <typename U = T>
   Parameter<U> &cast() {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to Parameter::cast()");
+    static_assert(
+        std::is_same<U, T>::value, "Invalid type in call to Parameter::cast()");
 
     return *this;
   }
@@ -175,18 +173,20 @@ class Parameter : public ParameterBase {
    */
   template <typename U = T>
   U const &get() const {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to Parameter::get() const");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to Parameter::get() const");
     return _value;
   }
 
   template <typename U = T>
   U &get() {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to Parameter::get()");
+    static_assert(
+        std::is_same<U, T>::value, "Invalid type in call to Parameter::get()");
     return _value;
   }
   /** @}
    */
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

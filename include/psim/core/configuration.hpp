@@ -43,9 +43,9 @@ namespace psim {
 
 /** @brief Represents a set of parameters used to initialize a simulation.
  *
- *  A configuration is a set of parameters parsed from a configuration file. These
- *  parameters are made accesible to the simulation's models during intialization
- *  to specify initial conditions and configure constants.
+ *  A configuration is a set of parameters parsed from a configuration file.
+ *  These parameters are made accesible to the simulation's models during
+ *  intialization to specify initial conditions and configure constants.
  */
 class Configuration {
  private:
@@ -53,13 +53,16 @@ class Configuration {
    *
    *  https://stackoverflow.com/questions/9139748/using-stdreference-wrapper-as-the-key-in-a-stdmap
    */
-  std::unordered_map<std::reference_wrapper<std::string const>, ParameterBase const *,
-      std::hash<std::string>, std::equal_to<std::string>> _parameters;
+  std::unordered_map<std::reference_wrapper<std::string const>,
+      ParameterBase const *, std::hash<std::string>, std::equal_to<std::string>>
+      _parameters;
 
   Configuration() = default;
 
   template <typename T>
-  void _add(std::string const &name, T &&value, std::string const &file, std::size_t l);
+  void _add(std::string const &name, T &&value, std::string const &file,
+      std::size_t l);
+
   void _parse(std::string const &file);
 
  public:
@@ -77,7 +80,8 @@ class Configuration {
    *
    *  @return Pointer to the parameter.
    *
-   *  If no parameter is found by the specified name, a null pointer is returned.
+   *  If no parameter is found by the specified name, a null pointer is
+   * returned.
    */
   ParameterBase const *get(std::string const &name) const;
 
@@ -113,6 +117,6 @@ class Configuration {
    */
   static Configuration make(std::vector<std::string> const &files);
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

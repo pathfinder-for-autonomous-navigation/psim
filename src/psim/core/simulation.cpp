@@ -27,7 +27,7 @@
 namespace psim {
 
 Simulation::Simulation(std::unique_ptr<Model> &&model)
-    : _model(std::move(model)) {
+  : _model(std::move(model)) {
   _model->add_fields(*this);
   _model->get_fields(*this);
 }
@@ -35,4 +35,4 @@ Simulation::Simulation(std::unique_ptr<Model> &&model)
 void Simulation::step() {
   _model->step();
 }
-}  // namespace psim
+} // namespace psim

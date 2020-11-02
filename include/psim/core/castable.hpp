@@ -66,28 +66,32 @@ class Castable : public virtual Nameable {
    */
   template <typename U = T>
   D<U> const &cast() const {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to Castable::cast() const");
+    static_assert(std::is_same<U, T>::value,
+        "Invalid type in call to Castable::cast() const");
 
     auto const *ptr = dynamic_cast<D<U> const *>(this);
     if (!ptr)
-      throw std::runtime_error("Invalid call to 'Castable::cast() const' on '" + name() + ":" + type() + "'");
+      throw std::runtime_error("Invalid call to 'Castable::cast() const' on '" +
+                               name() + ":" + type() + "'");
 
     return *ptr;
   }
 
   template <typename U = T>
   D<U> &cast() {
-    static_assert(std::is_same<U, T>::value, "Invalid type in call to Castable::cast()");
+    static_assert(
+        std::is_same<U, T>::value, "Invalid type in call to Castable::cast()");
 
     auto *ptr = dynamic_cast<D<U> *>(this);
     if (!ptr)
-      throw std::runtime_error("Invalid call to 'Castable::cast()' on '" + name() + ":" + type() + "'");
+      throw std::runtime_error("Invalid call to 'Castable::cast()' on '" +
+                               name() + ":" + type() + "'");
 
     return *ptr;
   }
   /** @}
    */
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

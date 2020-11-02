@@ -47,10 +47,9 @@ void State::add_writable(StateFieldWritableBase *field) {
     if (iter != _readable_fields.end()) {
       auto const *_field = iter->second;
       throw std::runtime_error(
-          "'" + _field->name() + ":" + _field->type() + "' already registered " +
-          "as a readable field. Cannot add '" + field->name() + ":" +
-          field->type() + "' as a writable field"
-        );
+          "'" + _field->name() + ":" + _field->type() +
+          "' already registered " + "as a readable field. Cannot add '" +
+          field->name() + ":" + field->type() + "' as a writable field");
     }
   }
   {
@@ -59,10 +58,9 @@ void State::add_writable(StateFieldWritableBase *field) {
     if (iter != _writable_fields.end()) {
       auto *_field = iter->second;
       throw std::runtime_error(
-          "'" + _field->name() + ":" + _field->type() + "' already registered " +
-          "as a writable field. Cannot add '" + field->name() + ":" +
-          field->type() + "' as a writable field"
-        );
+          "'" + _field->name() + ":" + _field->type() +
+          "' already registered " + "as a writable field. Cannot add '" +
+          field->name() + ":" + field->type() + "' as a writable field");
     }
   }
 
@@ -77,10 +75,9 @@ void State::add(StateFieldBase const *field) {
     if (iter != _readable_fields.end()) {
       auto const *_field = iter->second;
       throw std::runtime_error(
-          "'" + _field->name() + ":" + _field->type() + "' already registered " +
-          "as a readable field. Cannot add '" + field->name() + ":" +
-          field->type() + "' as a readable field"
-        );
+          "'" + _field->name() + ":" + _field->type() +
+          "' already registered " + "as a readable field. Cannot add '" +
+          field->name() + ":" + field->type() + "' as a readable field");
     }
   }
   {
@@ -89,10 +86,9 @@ void State::add(StateFieldBase const *field) {
     if (iter != _writable_fields.end()) {
       auto *_field = iter->second;
       throw std::runtime_error(
-          "'" + _field->name() + ":" + _field->type() + "' already registered " +
-          "as a writable field. Cannot add '" + field->name() + ":" +
-          field->type() + "' as a readable field"
-        );
+          "'" + _field->name() + ":" + _field->type() +
+          "' already registered " + "as a writable field. Cannot add '" +
+          field->name() + ":" + field->type() + "' as a readable field");
     }
   }
 
@@ -109,7 +105,7 @@ StateFieldBase const *State::get(std::string const &name) const {
   {
     auto const iter = _readable_fields.find(name);
     if (iter != _readable_fields.end())
-      return  iter->second;
+      return iter->second;
   }
   {
     auto const iter = _writable_fields.find(name);
@@ -127,4 +123,4 @@ StateFieldBase const &State::operator[](std::string const &name) const {
 
   return *field_ptr;
 }
-}  // namespace psim
+} // namespace psim

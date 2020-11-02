@@ -70,10 +70,10 @@ class StateFieldValued : public StateFieldWritable<T> {
    *  @{
    */
   StateFieldValued(std::string const &name)
-      : Nameable(name, "state_field_valued"), _value() { }
+    : Nameable(name, "state_field_valued"), _value() {}
 
   StateFieldValued(std::string &&name)
-      : Nameable(std::move(name), "state_field_valued"), _value() { }
+    : Nameable(std::move(name), "state_field_valued"), _value() {}
   /** @}
    */
 
@@ -83,16 +83,17 @@ class StateFieldValued : public StateFieldWritable<T> {
    *  @{
    */
   StateFieldValued(std::string const &name, T const &value)
-      : Nameable(name, "state_field_valued"), _value(value) { }
+    : Nameable(name, "state_field_valued"), _value(value) {}
 
   StateFieldValued(std::string &&name, T const &value)
-      : Nameable(std::move(name), "state_field_valued"), _value(value) { }
+    : Nameable(std::move(name), "state_field_valued"), _value(value) {}
 
   StateFieldValued(std::string const &name, T &&value)
-      : Nameable(name, "state_field_valued"), _value(std::move(value)) { }
+    : Nameable(name, "state_field_valued"), _value(std::move(value)) {}
 
   StateFieldValued(std::string &&name, T &&value)
-      : Nameable(std::move(name), "state_field_valued"), _value(std::move(value)) { }
+    : Nameable(std::move(name), "state_field_valued"),
+      _value(std::move(value)) {}
   /** @}
    */
 
@@ -113,6 +114,6 @@ class StateFieldValued : public StateFieldWritable<T> {
   /** @}
    */
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

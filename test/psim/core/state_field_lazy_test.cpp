@@ -17,7 +17,8 @@ TEST(StateFieldLazy, TestConstructorAndGet) {
 
 TEST(StateFieldLazy, TestReset) {
   auto value = 1.0;
-  psim::StateFieldLazy<psim::Real> field("default", [&]() { return 2.0 * value; });
+  psim::StateFieldLazy<psim::Real> field(
+      "default", [&]() { return 2.0 * value; });
 
   // Ensure the first evaluation returns the expected value
   ASSERT_EQ(field.get(), 2.0 * 1.0);
