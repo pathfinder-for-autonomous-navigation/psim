@@ -48,9 +48,9 @@ class EarthGnc : public Earth<EarthGnc> {
   EarthGnc() = delete;
   virtual ~EarthGnc() = default;
 
-  Vector4 prefix_earth_q_ecef_eci() const;
-  Vector4 prefix_earth_q_eci_ecef() const;
-  Vector3 prefix_earth_w() const;
+  Vector4 truth_earth_q_ecef_eci() const;
+  Vector4 truth_earth_q_eci_ecef() const;
+  Vector3 truth_earth_w() const;
 };
 }  // namespace psim
 

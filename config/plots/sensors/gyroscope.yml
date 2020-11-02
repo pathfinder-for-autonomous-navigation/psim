@@ -1,0 +1,12 @@
+
+# Gyroscope measurement over time.
+- x: truth.t.s
+  y: [sensors.leader.gyroscope.w.x, sensors.leader.gyroscope.w.y, sensors.leader.gyroscope.w.z]
+
+# Gyroscope bias over time.
+- x: truth.t.s
+  y: [sensors.leader.gyroscope.bias.x, sensors.leader.gyroscope.bias.y, sensors.leader.gyroscope.bias.z]
+
+# Gyroscope measurement error over time.
+- x: truth.t.s
+  y: [sensors.leader.gyroscope.w.error.x, sensors.leader.gyroscope.w.error.y, sensors.leader.gyroscope.w.error.z]

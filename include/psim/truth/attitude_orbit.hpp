@@ -50,10 +50,10 @@ class AttitudeOrbitNoFuelEciGnc : public AttitudeOrbit<AttitudeOrbitNoFuelEciGnc
   /** @brief Set the frame argument to ECI.
    */
   AttitudeOrbitNoFuelEciGnc(Configuration const &config,
-      std::string const &prefix, std::string const &satellite);
+      std::string const &satellite);
 
-  Vector4 prefix_satellite_attitude_q_eci_body() const;
-  Vector3 prefix_satellite_attitude_L() const;
+  Vector4 truth_satellite_attitude_q_eci_body() const;
+  Vector3 truth_satellite_attitude_L() const;
 
   virtual void step() override;
 };

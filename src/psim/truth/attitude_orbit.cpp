@@ -39,9 +39,8 @@
 namespace psim {
 
 AttitudeOrbitNoFuelEciGnc::AttitudeOrbitNoFuelEciGnc(
-    Configuration const &config, std::string const &prefix,
-    std::string const &satellite)
-  : Super(config, prefix, satellite, "eci") { }
+    Configuration const &config, std::string const &satellite)
+  : Super(config, satellite, "eci") { }
 
 struct IntegratorData{
   Real const &mass;
@@ -56,25 +55,25 @@ void AttitudeOrbitNoFuelEciGnc::step() {
   this->Super::step();
 
   // Initialize variables from .yml
-  auto const &mass = prefix_satellite_m.get();
-  auto const &I = prefix_satellite_J.get();
-  auto const &I_w = prefix_satellite_wheels_J.get();
+  auto const &mass = truth_satellite_m.get();
+  auto const &I = truth_satellite_J.get();
+  auto const &I_w = truth_satellite_wheels_J.get();
 
-  auto &tau_w = prefix_satellite_wheels_t.get();
-  auto &omega_w = prefix_satellite_wheels_w.get();
-  auto &m = prefix_satellite_magnetorquers_m.get();
-  auto &b = prefix_satellite_environment_b_body->get();
+  auto &tau_w = truth_satellite_wheels_t.get();
+  auto &omega_w = truth_satellite_wheels_w.get();
+  auto &m = truth_satellite_magnetorquers_m.get();
+  auto &b = truth_satellite_environment_b_body->get();
 
-  auto &q_body_eci = prefix_satellite_attitude_q_body_eci.get();
-  auto &w = prefix_satellite_attitude_w.get();
+  auto &q_body_eci = truth_satellite_attitude_q_body_eci.get();
+  auto &w = truth_satellite_attitude_w.get();
 
   // References to the current time and timestep
-  auto const &dt = prefix_dt_s->get();
-  auto const &t = prefix_t_s->get();
+  auto const &dt = truth_dt_s->get();
+  auto const &t = truth_t_s->get();
 
   // References to position and velocity
-  auto &r = prefix_satellite_orbit_r.get();
-  auto &v = prefix_satellite_orbit_v.get();
+  auto &r = truth_satellite_orbit_r.get();
+  auto &v = truth_satellite_orbit_v.get();
 
   IntegratorData data {mass, I, I_w, tau_w, m, b};
 
@@ -150,19 +149,19 @@ void AttitudeOrbitNoFuelEciGnc::step() {
   omega_w = lin::ref<3, 1>(xf, 13, 0);
 }
 
-Vector4 AttitudeOrbitNoFuelEciGnc::prefix_satellite_attitude_q_eci_body() const {
-  auto const &q_body_eci = this->prefix_satellite_attitude_q_body_eci.get();
+Vector4 AttitudeOrbitNoFuelEciGnc::truth_satellite_attitude_q_eci_body() const {
+  auto const &q_body_eci = this->truth_satellite_attitude_q_body_eci.get();
 
   Vector4 q_eci_body;
   gnc::utl::quat_conj(q_body_eci, q_eci_body);
   return q_eci_body;
 }
 
-Vector3 AttitudeOrbitNoFuelEciGnc::prefix_satellite_attitude_L() const {
-  auto const &J = prefix_satellite_J.get();
-  auto const &J_w = prefix_satellite_wheels_J.get();
-  auto const &w = prefix_satellite_attitude_w.get();
-  auto const &wheels_w = prefix_satellite_wheels_w.get();
+Vector3 AttitudeOrbitNoFuelEciGnc::truth_satellite_attitude_L() const {
+  auto const &J = truth_satellite_J.get();
+  auto const &J_w = truth_satellite_wheels_J.get();
+  auto const &w = truth_satellite_attitude_w.get();
+  auto const &wheels_w = truth_satellite_wheels_w.get();
 
   return lin::multiply(J, w) + J_w * wheels_w;
 }

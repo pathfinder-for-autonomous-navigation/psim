@@ -22,35 +22,29 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/satellite_attitude_orbit.cpp
+/** @file psim/sensors/satellite_sensors.cpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/satellite_attitude_orbit.hpp>
+#include <psim/sensors/satellite_sensors.hpp>
 
-#include <psim/truth/attitude_orbit.hpp>
-#include <psim/truth/environment.hpp>
-#include <psim/truth/transform_direction.hpp>
-#include <psim/truth/transform_position.hpp>
-#include <psim/truth/transform_velocity.hpp>
-#include <psim/utilities/norm_vector3.hpp>
-#include <psim/utilities/norm_vector4.hpp>
+#include <psim/sensors/gps_no_attitude.hpp>
+#include <psim/sensors/gyroscope.hpp>
+#include <psim/sensors/magnetometer.hpp>
+#include <psim/sensors/sun_sensors.hpp>
 
 namespace psim {
 
-SatelliteAttitudeOrbitGnc::SatelliteAttitudeOrbitGnc(
-    Configuration const &config, std::string const &prefix,
+SatelliteSensors::SatelliteSensors(Configuration const &config,
     std::string const &satellite) {
-  // Orbital dynamics
-  add<AttitudeOrbitNoFuelEciGnc>(config, prefix, satellite);
-  add<TransformPositionEci>(config, prefix, prefix + "." + satellite + ".orbit.r");
-  add<TransformVelocityEci>(config, prefix, satellite, prefix + "." + satellite + ".orbit.v");
-  // Extra telemetry
-  add<NormVector3>(config, prefix + "." + satellite + ".attitude.L");
-  add<NormVector4>(config, prefix + "." + satellite + ".attitude.q.body_eci");
-  // Environmental models
-  add<EnvironmentGnc>(config, prefix, satellite);
-  add<TransformDirectionEcef>(config, prefix, satellite, prefix + "." + satellite + ".environment.b");
-  add<TransformDirectionEci>(config, prefix, satellite, prefix + "." + satellite + ".environment.s");
+  add<GpsNoAttitude>(config, satellite);
+  add<Gyroscope>(config, satellite);
+  add<Magnetometer>(config, satellite);
+  add<SunSensors>(config, satellite);
+}
+
+SatelliteSensorsNoAttitude::SatelliteSensorsNoAttitude(
+    Configuration const &config, std::string const &satellite) {
+  add<GpsNoAttitude>(config, satellite);
 }
 }  // namespace psim

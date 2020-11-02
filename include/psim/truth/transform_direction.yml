@@ -9,7 +9,6 @@ comment: >
     'directional' vectors into the body frame to act as sensor measurements.
 
 args:
-    - prefix
     - satellite
     - vector
 
@@ -33,11 +32,11 @@ gets:
       comment: >
           Input vector. The frame of this vector is specified by the
           implementation.
-    - name: "{prefix}.earth.q.eci_ecef"
+    - name: "truth.earth.q.eci_ecef"
       type: Vector4
-    - name: "{prefix}.earth.q.ecef_eci"
+    - name: "truth.earth.q.ecef_eci"
       type: Vector4
-    - name: "{prefix}.{satellite}.attitude.q.body_eci"
+    - name: "truth.{satellite}.attitude.q.body_eci"
       type: Vector4
-    - name: "{prefix}.{satellite}.attitude.q.eci_body"
+    - name: "truth.{satellite}.attitude.q.eci_body"
       type: Vector4

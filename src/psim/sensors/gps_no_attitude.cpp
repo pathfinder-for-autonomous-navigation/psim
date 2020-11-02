@@ -22,38 +22,25 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/earth.cpp
+/** @file psim/sensors/gps_no_attitude.cpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/earth.hpp>
-
-#include <gnc/environment.hpp>
-#include <gnc/utilities.hpp>
+#include <psim/sensors/gps_no_attitude.hpp>
 
 namespace psim {
 
-Vector4 EarthGnc::truth_earth_q_ecef_eci() const {
-  auto const &t = truth_t_s->get();
+Vector3 GpsNoAttitude::sensors_satellite_gps_r() const {
+  auto const &truth_r_ecef = truth_satellite_orbit_r_ecef->get();
 
-  Vector4 q_ecef_eci;
-  gnc::env::earth_attitude(t, q_ecef_eci);
-  return q_ecef_eci;
+  // TODO : Implement a configurable white noise model
+  return truth_r_ecef;
 }
 
-Vector4 EarthGnc::truth_earth_q_eci_ecef() const {
-  auto const &q_ecef_eci = this->Super::truth_earth_q_ecef_eci.get();
+Vector3 GpsNoAttitude::sensors_satellite_gps_r_error() const {
+  auto const &truth_r_ecef = truth_satellite_orbit_r_ecef->get();
+  auto const &sensors_r_ecef = this->Super::sensors_satellite_gps_r.get();
 
-  Vector4 q_eci_ecef;
-  gnc::utl::quat_conj(q_ecef_eci, q_eci_ecef);
-  return q_eci_ecef;
-}
-
-Vector3 EarthGnc::truth_earth_w() const {
-  auto const &t = truth_t_s->get();
-
-  Vector3 w_earth;
-  gnc::env::earth_angular_rate(t, w_earth);
-  return w_earth;
+  return sensors_r_ecef - truth_r_ecef;
 }
 }  // namespace psim

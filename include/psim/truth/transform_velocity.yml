@@ -7,7 +7,6 @@ comment: >
     in the ECI and ECEF frames.
 
 args:
-    - prefix
     - satellite
     - vector
     - frame
@@ -28,13 +27,13 @@ gets:
       comment: >
           Input velocity vector. The frame of this vector is specified by the
           implementation.
-    - name: "{prefix}.earth.q.eci_ecef"
+    - name: "truth.earth.q.eci_ecef"
       type: Vector4
-    - name: "{prefix}.earth.q.ecef_eci"
+    - name: "truth.earth.q.ecef_eci"
       type: Vector4
-    - name: "{prefix}.earth.w"
+    - name: "truth.earth.w"
       type: Vector3
-    - name: "{prefix}.{satellite}.orbit.r.{frame}"
+    - name: "truth.{satellite}.orbit.r.{frame}"
       type: Vector3
       comment: >
           The frame of the position vector needs to be explicitly specified here

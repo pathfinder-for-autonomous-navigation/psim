@@ -1,0 +1,24 @@
+
+name: MagnetometerInterface
+type: Model
+comment: >
+    Interface for a model responsible for simulating the measurements reported
+    by the magnetometer during flight.
+
+args:
+    - satellite
+
+adds:
+    - name: "sensors.{satellite}.magnetometer.b"
+      type: Lazy Vector3
+      comment: >
+          Magnetic field reported by the magnetometer in the body frame.
+    - name: "sensors.{satellite}.magnetometer.b.error"
+      type: Lazy Vector3
+      comment: >
+          Error in the magnetic field reported by the magnetometer in the body
+          frame.
+
+gets:
+    - name: "truth.{satellite}.environment.b.body"
+      type: Vector3
