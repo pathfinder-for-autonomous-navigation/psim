@@ -65,8 +65,10 @@ class CastableBase : public virtual Nameable {
   D<T> const &cast() const {
     auto const *ptr = dynamic_cast<D<T> const *>(this);
     if (!ptr)
-      throw std::runtime_error("Invalid call to 'CastableBase::cast() const' on '" + name() + ":" + type() + "'");
-    
+      throw std::runtime_error(
+          "Invalid call to 'CastableBase::cast() const' on '" + name() + ":" +
+          type() + "'");
+
     return *ptr;
   }
 
@@ -74,13 +76,14 @@ class CastableBase : public virtual Nameable {
   D<T> &cast() {
     auto *ptr = dynamic_cast<D<T> *>(this);
     if (!ptr)
-      throw std::runtime_error("Invalid call to 'CastableBase::cast()' on '" + name() + ":" + type() + "'");
+      throw std::runtime_error("Invalid call to 'CastableBase::cast()' on '" +
+                               name() + ":" + type() + "'");
 
     return *ptr;
   }
   /** @}
    */
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

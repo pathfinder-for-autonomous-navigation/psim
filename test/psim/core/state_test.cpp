@@ -21,8 +21,8 @@ class State : public testing::Test {
 
  public:
   State()
-     : field0("field0"), field1("field1"), field2("field2"), field3("field3"),
-       field4("field4") { }
+    : field0("field0"), field1("field1"), field2("field2"), field3("field3"),
+      field4("field4") {}
 
   void SetUp() override {
     state.add(&field0);

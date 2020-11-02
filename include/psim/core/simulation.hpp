@@ -47,8 +47,8 @@ class Simulation : public State {
  private:
   /** @brief Model employed by the simulation.
    *
-   *  Making this field dynamically allocated was very intentional. It ensures on
-   *  moves that the stored state fields address remain valid.
+   *  Making this field dynamically allocated was very intentional. It ensures
+   *  on moves that the stored state fields address remain valid.
    */
   std::unique_ptr<Model> _model;
 
@@ -82,6 +82,6 @@ class Simulation : public State {
     return Simulation(std::make_unique<C>(std::forward<Ts>(ts)...));
   }
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

@@ -42,11 +42,10 @@ void Configuration::_add(std::string const &name, T &&value,
     std::string const &file, std::size_t l) {
   auto const iter = _parameters.find(name);
   if (iter != _parameters.end())
-    throw std::runtime_error(
-        "Error on line + " + std::to_string(l) + " while parsing " + file +
-        "as a configuration file.\n" +
-        "Duplicate parameter name '" + name + "'."
-      );
+    throw std::runtime_error("Error on line + " + std::to_string(l) +
+                             " while parsing " + file +
+                             "as a configuration file.\n" +
+                             "Duplicate parameter name '" + name + "'.");
 
   auto const *param = new Parameter<T>(name, std::forward<T>(value));
   _parameters[param->name()] = param;
@@ -59,8 +58,7 @@ void Configuration::_parse(std::string const &file) {
     throw std::runtime_error(
         "Error while parsing '" + file + "' as a configuration file.\n" +
         "Unable to open file. This is most likely because the file cannot be" +
-        "found."
-      );
+        "found.");
 
   // Parse line by line
   std::string line;
@@ -74,9 +72,8 @@ void Configuration::_parse(std::string const &file) {
 
     std::istringstream iss(line);
     std::vector<std::string> const tokens{
-      std::istream_iterator<std::string>{iss},
-      std::istream_iterator<std::string>{}
-    };
+        std::istream_iterator<std::string>{iss},
+        std::istream_iterator<std::string>{}};
 
     // Ignore lines only containing whitespace
     if (tokens.size() == 0)
@@ -92,72 +89,63 @@ void Configuration::_parse(std::string const &file) {
             "' as a configuration file.\n" +
             "Invalid configuration parameter name '" + tokens[0] + "'. " +
             "Parameter names must match the following regular expression: " +
-            "'[A-Za-z][A-Za-z_0-9\\\\.]*'."
-          );
+            "'[A-Za-z][A-Za-z_0-9\\\\.]*'.");
     }
 
     try {
       switch (tokens.size()) {
-        // Require a parameter value
-        case 1:
-          throw std::runtime_error(
-              "Error on line " + std::to_string(l) + " while parsing '" + file +
-              "' as a configuration file.\n" +
-              "Only one token detected in the following line: '" + line + "'"
-            );
+      // Require a parameter value
+      case 1:
+        throw std::runtime_error(
+            "Error on line " + std::to_string(l) + " while parsing '" + file +
+            "' as a configuration file.\n" +
+            "Only one token detected in the following line: '" + line + "'");
 
-        case 2:
-          if (tokens[1].find('.') == std::string::npos)
-            _add(tokens[0], std::stol(tokens[1]), file, l);
-          else
-            _add(tokens[0], std::stod(tokens[1]), file, l);
-          break;
+      case 2:
+        if (tokens[1].find('.') == std::string::npos)
+          _add(tokens[0], std::stol(tokens[1]), file, l);
+        else
+          _add(tokens[0], std::stod(tokens[1]), file, l);
+        break;
 
-        case 3:
-          _add(
-            tokens[0],
-            Vector2({std::stod(tokens[1]), std::stod(tokens[2])}),
-            file, l
-          );
-          break;
+      case 3:
+        _add(tokens[0], Vector2({std::stod(tokens[1]), std::stod(tokens[2])}),
+            file, l);
+        break;
 
-        case 4:
-          _add(
-            tokens[0],
-            Vector3({std::stod(tokens[1]), std::stod(tokens[2]), std::stod(tokens[3])}),
-            file, l
-          );
-          break;
+      case 4:
+        _add(tokens[0],
+            Vector3({std::stod(tokens[1]), std::stod(tokens[2]),
+                std::stod(tokens[3])}),
+            file, l);
+        break;
 
-        case 5:
-          _add(
-            tokens[0],
-            Vector4({std::stod(tokens[1]), std::stod(tokens[2]), std::stod(tokens[3]), std::stod(tokens[4])}),
-            file, l
-          );
-          break;
+      case 5:
+        _add(tokens[0],
+            Vector4({std::stod(tokens[1]), std::stod(tokens[2]),
+                std::stod(tokens[3]), std::stod(tokens[4])}),
+            file, l);
+        break;
 
-        // Only up to four dimensional vector can be specified
-        default:
-          throw std::runtime_error(
-              "Error on line " + std::to_string(l) + " while parsing '" + file +
-              "' as a configuration file.\n" +
-              "More than five token detected in the following line: '" + line +
-              "'"
-            );
+      // Only up to four dimensional vector can be specified
+      default:
+        throw std::runtime_error(
+            "Error on line " + std::to_string(l) + " while parsing '" + file +
+            "' as a configuration file.\n" +
+            "More than five token detected in the following line: '" + line +
+            "'");
       }
     } catch (std::logic_error const &e) {
       // Reinterpret errors potentially thrown by 'std::stod' and 'std::stol'.
-      throw std::runtime_error(
-          "Error on line " + std::to_string(l) + " while parsing '" + file +
-          "' as a configuration file.\n" + e.what()
-        );
+      throw std::runtime_error("Error on line " + std::to_string(l) +
+                               " while parsing '" + file +
+                               "' as a configuration file.\n" + e.what());
     }
   }
 }
 
 Configuration::Configuration(Configuration &&config)
-    : _parameters(std::move(config._parameters)) { }
+  : _parameters(std::move(config._parameters)) {}
 
 Configuration &Configuration::operator=(Configuration &&config) {
   _parameters = std::move(config._parameters);
@@ -194,4 +182,4 @@ Configuration Configuration::make(std::vector<std::string> const &files) {
     config._parse(file);
   return config;
 }
-}  // namespace psim
+} // namespace psim

@@ -50,4 +50,4 @@ void ModelList::step() {
   for (auto const &model : _models)
     model->step();
 }
-}  // namespace psim
+} // namespace psim

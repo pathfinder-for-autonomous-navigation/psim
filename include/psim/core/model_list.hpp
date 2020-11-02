@@ -72,7 +72,8 @@ class ModelList : public Model {
    */
   virtual void add_fields(State &state) override;
 
-  /** @brief All models request extra fields they need from the simulation state.
+  /** @brief All models request extra fields they need from the simulation
+   * state.
    *
    *  @param[in] state Simulation state.
    */
@@ -82,6 +83,6 @@ class ModelList : public Model {
    */
   virtual void step() override;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif
