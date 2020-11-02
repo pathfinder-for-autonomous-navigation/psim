@@ -1,0 +1,26 @@
+# Initial conditions for simulations starting during detumble. These initial
+# conditions were generated with the following command:
+#   python -m psim -s 10000 -c truth/base,truth/deployment --snapshot snapshot.txt DualAttitudeOrbitGnc
+#
+
+# Time model initial conditions.
+
+truth.t.ns  1700000000000
+
+# Leader spacecraft attitude and orbit initial conditions.
+
+truth.leader.attitude.q.body_eci  0.0629875 -0.185791 0.19747   -0.960479
+truth.leader.attitude.w          -0.077216   0.294684 0.0952384
+truth.leader.wheels.w             0.0        0.0      0.0
+
+truth.leader.orbit.r  -2.16431e6  4.60304e6  4.5925e6
+truth.leader.orbit.v  -7236.19   -1695.2    -1708.76
+
+# Follower spacecraft attitude and orbit initial conditions.
+
+truth.follower.orbit.r  -2.16425e6  4.60331e6  4.59251e6
+truth.follower.orbit.v  -7236.17   -1695.04   -1708.5
+
+truth.follower.attitude.q.body_eci -0.282557 -0.604902  -0.71832   -0.195632
+truth.follower.attitude.w          -0.247035  0.0574472  0.0659878
+truth.follower.wheels.w             0.0       0.0        0.0
