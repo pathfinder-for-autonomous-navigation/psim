@@ -1,0 +1,12 @@
+
+# Angular rate estimate over time.
+- x: truth.t.s
+  y: [fc.leader.attitude.w.x, fc.leader.attitude.w.y, fc.leader.attitude.w.z]
+
+# Gyroscope bias estimate over time.
+- x: truth.t.s
+  y: [fc.leader.gyroscope.bias.x, fc.leader.gyroscope.bias.y, fc.leader.gyroscope.bias.z]
+
+# Attitude state covariance norm over time.
+- x: truth.t.s
+  y: fc.leader.attitude.P.fro

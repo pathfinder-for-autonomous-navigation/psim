@@ -44,6 +44,14 @@ class SingleAttitudeOrbitGnc : public ModelList {
 
   SingleAttitudeOrbitGnc(Configuration const &config);
 };
+
+class FcSingleAttitudeOrbitGnc : public ModelList {
+ public:
+  FcSingleAttitudeOrbitGnc() = delete;
+  virtual ~FcSingleAttitudeOrbitGnc() = default;
+
+  FcSingleAttitudeOrbitGnc(Configuration const &config);
+};
 }  // namespace psim
 
 #endif

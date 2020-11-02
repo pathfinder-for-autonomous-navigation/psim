@@ -1,0 +1,51 @@
+
+name: FlightComputerInterface
+type: Model
+comment: >
+    Provides an interface for a simulation flight computer when simulating with
+    attitude dynamics. Currently, the flight computer doesn't feature an orbit
+    estimator.
+
+args:
+    - satellite
+
+adds:
+    - name: "fc.{satellite}.state"
+      type: Initialized Integer
+      comment: >
+          Initial state of the simulation flight computer. See the
+          implementation for details about the meaning of specific values.
+    - name: "fc.{satellite}.attitude.q.body_eci"
+      type: Vector4
+      comment: >
+          Estimated attitude of the spacecraft.
+    - name: "fc.{satellite}.attitude.w"
+      type: Vector3
+      comment: >
+          Estimated angular rate of the spacecraft.
+    - name: "fc.{satellite}.gyroscope.bias"
+      type: Vector3
+      comment: >
+          Estimated gyroscope bias.
+    - name: "fc.{satellite}.attitude.P.fro"
+      type: Lazy Real
+      comment: >
+          Frobenius norm of the attitude state covariance matrix.
+
+gets:
+    - name: "truth.t.s"                       # To be removed with an orbit estimator
+      type: Real
+    - name: "truth.{satellite}.orbit.r.ecef"  # To be removed with an orbit estimator
+      type: Vector3
+    - name: "truth.{satellite}.orbit.v.ecef"  # To be removed with an orbit estimator
+      type: Vector3
+    - name: "sensors.{satellite}.gyroscope.w"
+      type: Vector3
+    - name: "sensors.{satellite}.magnetometer.b"
+      type: Vector3
+    - name: "sensors.{satellite}.sun_sensors.s"
+      type: Vector3
+    - name: "truth.{satellite}.wheels.t"
+      type: Writable Vector3
+    - name: "truth.{satellite}.magnetorquers.m"
+      type: Writable Vector3

@@ -114,6 +114,7 @@ class PySimulation : public psim::Simulation {
       })
 
 void py_simulation(py::module &m) {
+  PY_SIMULATION(FcSingleAttitudeOrbitGnc);
   PY_SIMULATION(SingleAttitudeOrbitGnc);
   PY_SIMULATION(SingleOrbitGnc);
   PY_SIMULATION(DualAttitudeOrbitGnc);

@@ -22,32 +22,55 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulations/single_attitude_orbit.cpp
+/** @file psim/fc/flight_computer.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/simulations/single_attitude_orbit.hpp>
+#ifndef PSIM_FC_FLIGHT_COMPUTER_HPP_
+#define PSIM_FC_FLIGHT_COMPUTER_HPP_
 
-#include <psim/fc/flight_computer.hpp>
-#include <psim/sensors/satellite_sensors.hpp>
-#include <psim/truth/earth.hpp>
-#include <psim/truth/satellite_truth.hpp>
-#include <psim/truth/time.hpp>
+#include <psim/fc/flight_computer.yml.hpp>
+
+#include <gnc/attitude_controller.hpp>
+#include <gnc/attitude_estimator.hpp>
+#include <gnc/constants.hpp>
 
 namespace psim {
 
-SingleAttitudeOrbitGnc::SingleAttitudeOrbitGnc(Configuration const &config) {
-  // Truth model
-  add<Time>(config);
-  add<EarthGnc>(config);
-  add<SatelliteTruthGnc>(config, "leader");
-  // Sensors model
-  add<SatelliteSensors>(config, "leader");
-}
+enum FcState {
+  DEPLOYMENT,
+  DETUMBLE,
+  STANDBY
+};
 
-FcSingleAttitudeOrbitGnc::FcSingleAttitudeOrbitGnc(
-    Configuration const &config) {
-  add<SingleAttitudeOrbitGnc>(config);
-  add<FlightComputer>(config, "leader");
-}
+class FlightComputer : public FlightComputerInterface<FlightComputer> {
+ private:
+  typedef FlightComputerInterface<FlightComputer> Super;
+
+  gnc::AttitudeEstimatorState attitude_estimator_state;
+  gnc::AttitudeEstimatorData attitude_estimator_data;
+  gnc::AttitudeEstimate attitude_estimate;
+
+  gnc::DetumbleControllerState detumbler_state;
+  gnc::DetumbleControllerData detumbler_data;
+  gnc::DetumbleActuation detumbler_actuation;
+
+  gnc::PointingControllerState pointer_state;
+  gnc::PointingControllerData pointer_data;
+  gnc::PointingActuation pointer_actuation;
+
+  Real exit_deployment_on = gnc::constant::nan;
+
+ public:
+  using Super::FlightComputerInterface;
+
+  FlightComputer() = delete;
+  virtual ~FlightComputer() = default;
+
+  virtual void step() override;
+
+  Real fc_satellite_attitude_P_fro() const;
+};
 }  // namespace psim
+
+#endif

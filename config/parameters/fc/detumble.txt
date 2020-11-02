@@ -1,0 +1,2 @@
+fc.leader.state 1
+fc.follower.state 1
