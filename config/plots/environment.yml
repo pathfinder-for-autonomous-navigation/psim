@@ -1,0 +1,8 @@
+
+# Sun vector in the body frame over time.
+- x: truth.t.s
+  y: [truth.leader.environment.s.body.x, truth.leader.environment.s.body.y, truth.leader.environment.s.body.z]
+
+# Magnetic field in the body frame over time.
+- x: truth.t.s
+  y: [truth.leader.environment.b.body.x, truth.leader.environment.b.body.y, truth.leader.environment.b.body.z]

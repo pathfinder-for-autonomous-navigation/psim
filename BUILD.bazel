@@ -55,6 +55,13 @@ psim_cc_library(
 # Builds the PSim truth models
 psim_autocoded_cc_library(
     name = "truth",
+    deps = ["@lin//:lin", "//:gnc", "//:psim_core", "//:psim_utilities"],
+    visibility = ["//visibility:public"],
+)
+
+# Builds the PSim utilities models
+psim_autocoded_cc_library(
+    name = "utilities",
     deps = ["@lin//:lin", "//:gnc", "//:psim_core"],
     visibility = ["//visibility:public"],
 )
@@ -62,7 +69,7 @@ psim_autocoded_cc_library(
 # Builds all PSim models deemed "simulation" worthy.
 psim_cc_library(
     name = "simulations",
-    deps = ["//:psim_core", "//:psim_truth"],
+    deps = ["//:psim_core", "//:psim_truth", "//:psim_utilities"],
     visibility = ["//visibility:public"],
 )
 
@@ -74,7 +81,7 @@ psim_py_extension(
         "src/psim/_psim/**/*.cpp",
     ]),
     deps = [
-        "@variant//:variant", "//:psim_core", "//:psim_simulations",
+        "@variant//:variant", "//:psim_core", "//:psim_simulations"
     ],
     visibility = ["//visibility:public"],
 )

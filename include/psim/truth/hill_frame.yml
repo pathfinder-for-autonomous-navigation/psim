@@ -1,0 +1,45 @@
+
+name: HillFrame
+type: Model
+comment: >
+    Transforms the position and velocity of the follower spacecraft into the
+    hill frame of the leader. Note the 'leader' and 'follower' are determined by
+    the model arguments and don't refer to the 'leader' and 'follower' of the
+    simulation. The 'frame' argument is the reference frame used to perform the
+    calculation.
+
+args:
+    - prefix
+    - leader
+    - follower
+    - frame
+
+adds:
+    - name: "{prefix}.{leader}.q.hill_{frame}"
+      type: Lazy Vector4
+      comment: >
+          Rotation from the requested frame to the hill frame of the leader.
+    - name: "{prefix}.{leader}.w.hill"
+      type: Lazy Vector3
+      comment: >
+          Angular rate of the hill frame of the leader in an inertial frame.
+    - name: "{prefix}.{follower}.orbit.r.hill"
+      type: Lazy Vector3
+      comment: >
+          Position of the follower satellite in the hill frame of the leader.
+          Units are in meters.
+    - name: "{prefix}.{follower}.orbit.v.hill"
+      type: Lazy Vector3
+      comment: >
+          Velocity of the follower satellite in the hill frame of the leader.
+          Units are in meters.
+
+gets:
+    - name: "{prefix}.{leader}.orbit.r.{frame}"
+      type: Vector3
+    - name: "{prefix}.{leader}.orbit.v.{frame}"
+      type: Vector3
+    - name: "{prefix}.{follower}.orbit.r.{frame}"
+      type: Vector3
+    - name: "{prefix}.{follower}.orbit.v.{frame}"
+      type: Vector3

@@ -22,35 +22,17 @@
 // SOFTWARE.
 //
 
-#include <psim/truth/transform_position.hpp>
+/** @file psim/utilities/norm_vector2.cpp
+ *  @author Kyle Krol
+ */
 
-#include <gnc/utilities.hpp>
+#include <psim/utilities/norm_vector2.hpp>
+
+#include <lin/core.hpp>
 
 namespace psim {
 
-Vector3 TransformPositionEcef::vector_ecef() const {
-  return vector->get();
-}
-
-Vector3 TransformPositionEcef::vector_eci() const {
-  auto const &r_ecef = vector->get();
-  auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
-
-  Vector3 r_eci;
-  gnc::utl::rotate_frame(q_eci_ecef, r_ecef, r_eci);
-  return r_eci;
-}
-
-Vector3 TransformPositionEci::vector_ecef() const {
-  auto const &r_eci = vector->get();
-  auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
-
-  Vector3 r_ecef;
-  gnc::utl::rotate_frame(q_ecef_eci, r_eci, r_ecef);
-  return r_ecef;
-}
-
-Vector3 TransformPositionEci::vector_eci() const {
-  return vector->get();
+Real NormVector2::vector_norm() const {
+  return lin::norm(vector->get());
 }
 }  // namespace psim

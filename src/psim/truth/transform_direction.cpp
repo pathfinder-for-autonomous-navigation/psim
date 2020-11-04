@@ -47,19 +47,19 @@ Vector3 TransformDirectionBody::vector_ecef() const {
 
 Vector3 TransformDirectionBody::vector_eci() const {
   auto const &d_body = vector->get();
-  auto const &q_body_eci = prefix_satellite_attitude_q_body_eci->get();
+  auto const &q_eci_body = prefix_satellite_attitude_q_eci_body->get();
 
   Vector3 d_eci;
-  gnc::utl::rotate_frame(q_body_eci, d_body, d_eci);
+  gnc::utl::rotate_frame(q_eci_body, d_body, d_eci);
   return d_eci;
 }
 
 Vector3 TransformDirectionEcef::vector_body() const {
   auto const &d_eci = Super::vector_eci.get();
-  auto const q_eci_body = prefix_satellite_attitude_q_eci_body->get();
+  auto const q_body_eci = prefix_satellite_attitude_q_body_eci->get();
 
   Vector3 d_body;
-  gnc::utl::rotate_frame(q_eci_body, d_eci, d_body);
+  gnc::utl::rotate_frame(q_body_eci, d_eci, d_body);
   return d_body;
 }
 

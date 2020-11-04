@@ -22,7 +22,7 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_orbit.cpp
+/** @file psim/simulations/single_orbit.cpp
  *  @author Kyle Krol
  */
 
@@ -35,11 +35,14 @@
 namespace psim {
 
 SingleOrbitGnc::SingleOrbitGnc(Configuration const &config) {
-  std::string const prefix = "truth";
-  // Time and Earth ephemeris
-  add<Time>(config, prefix);
-  add<EarthGnc>(config, prefix);
-  // Leader satellite
-  add<SatelliteOrbitGnc>(config, prefix, "leader");
+  // Truth model
+  {
+    std::string const prefix = "truth";
+    // Time and Earth ephemeris
+    add<Time>(config, prefix);
+    add<EarthGnc>(config, prefix);
+    // Leader satellite
+    add<SatelliteOrbitGnc>(config, prefix, "leader");
+  }
 }
 }  // namespace psim

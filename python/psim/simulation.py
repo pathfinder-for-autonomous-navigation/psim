@@ -44,7 +44,7 @@ class Simulation(object):
         self._sim = sim(Configuration(configs))
 
     def __getitem__(self, name):
-        """Retrives a state field from the underlying simulation.
+        """Retrieves a state field from the underlying simulation.
         """
         return self._sim[name]
 
@@ -52,6 +52,15 @@ class Simulation(object):
         """Sets a state field in the underlying simulation.
         """
         self._sim[name] = value
+
+    def get(self, name):
+        """Attempts to retrieve a state field from the underlying simulation.
+        Upon failure, 'None' is returned.
+        """
+        try:
+            return self[name]
+        except RuntimeError:
+            return None
 
     def step(self):
         """Steps the underlying simulation forward in time.
@@ -128,6 +137,12 @@ class SimulationRunner(object):
         """Sets a state field in the underlying simulation.
         """
         self._sim[name] = value
+
+    def get(self, name):
+        """Attempts to retrieve a state field from the underlying simulation.
+        Upon failure, 'None' is returned.
+        """
+        return self._sim.get(name)
 
     def should_stop(self):
         """Function available to plugins to allow them to signal the simulation

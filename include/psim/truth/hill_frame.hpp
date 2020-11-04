@@ -22,35 +22,35 @@
 // SOFTWARE.
 //
 
-#include <psim/truth/transform_position.hpp>
+/** @file psim/truth/hill_frame.hpp
+ *  @author Kyle Krol
+ */
 
-#include <gnc/utilities.hpp>
+#ifndef PSIM_TRUTH_HILL_FRAME_HPP_
+#define PSIM_TRUTH_HILL_FRAME_HPP_
+
+#include <psim/truth/hill_frame.yml.hpp>
 
 namespace psim {
 
-Vector3 TransformPositionEcef::vector_ecef() const {
-  return vector->get();
-}
+class HillFrameEci : public HillFrame<HillFrameEci> {
+ private:
+  typedef HillFrame<HillFrameEci> Super;
 
-Vector3 TransformPositionEcef::vector_eci() const {
-  auto const &r_ecef = vector->get();
-  auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
+ public:
+  HillFrameEci() = delete;
+  virtual ~HillFrameEci() = default;
 
-  Vector3 r_eci;
-  gnc::utl::rotate_frame(q_eci_ecef, r_ecef, r_eci);
-  return r_eci;
-}
+  /** @brief Set the frame argument to ECI.
+   */
+  HillFrameEci(Configuration const &config, std::string const &prefix,
+      std::string const &leader, std::string const &follower);
 
-Vector3 TransformPositionEci::vector_ecef() const {
-  auto const &r_eci = vector->get();
-  auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
-
-  Vector3 r_ecef;
-  gnc::utl::rotate_frame(q_ecef_eci, r_eci, r_ecef);
-  return r_ecef;
-}
-
-Vector3 TransformPositionEci::vector_eci() const {
-  return vector->get();
-}
+  Vector4 prefix_leader_q_hill_frame() const;
+  Vector3 prefix_leader_w_hill() const;
+  Vector3 prefix_follower_orbit_r_hill() const;
+  Vector3 prefix_follower_orbit_v_hill() const;
+};
 }  // namespace psim
+
+#endif

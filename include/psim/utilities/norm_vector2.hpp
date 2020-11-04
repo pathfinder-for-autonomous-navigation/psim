@@ -22,35 +22,29 @@
 // SOFTWARE.
 //
 
-#include <psim/truth/transform_position.hpp>
+/** @file psim/utilities/norm_vector2.hpp
+ *  @author Kyle Krol
+ */
 
-#include <gnc/utilities.hpp>
+#ifndef PSIM_UTILITIES_NORM_VECTOR2_HPP_
+#define PSIM_UTILITIES_NORM_VECTOR2_HPP_
+
+#include <psim/utilities/norm_vector2.yml.hpp>
 
 namespace psim {
 
-Vector3 TransformPositionEcef::vector_ecef() const {
-  return vector->get();
-}
+class NormVector2 : public NormVector2Interface<NormVector2> {
+ private:
+  typedef NormVector2Interface<NormVector2> Super;
 
-Vector3 TransformPositionEcef::vector_eci() const {
-  auto const &r_ecef = vector->get();
-  auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
+ public:
+  using Super::NormVector2Interface;
 
-  Vector3 r_eci;
-  gnc::utl::rotate_frame(q_eci_ecef, r_ecef, r_eci);
-  return r_eci;
-}
+  NormVector2() = delete;
+  virtual ~NormVector2() = default;
 
-Vector3 TransformPositionEci::vector_ecef() const {
-  auto const &r_eci = vector->get();
-  auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
-
-  Vector3 r_ecef;
-  gnc::utl::rotate_frame(q_ecef_eci, r_eci, r_ecef);
-  return r_ecef;
-}
-
-Vector3 TransformPositionEci::vector_eci() const {
-  return vector->get();
-}
+  Real vector_norm() const;
+};
 }  // namespace psim
+
+#endif

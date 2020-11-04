@@ -43,7 +43,7 @@ adds:
           Velocity of the satellite in units of meters per second. The
           coordinate system is implementation dependant.
     - name: "{prefix}.{satellite}.orbit.J.{frame}"
-      type: Initialized Writable Vector3
+      type: Writable Vector3
       comment: >
           Impulse applied to the satellite on a given timestep in units of
           kilogram meters per second squared. The coordinate system is
@@ -76,6 +76,10 @@ adds:
       comment: >
           Magnetic moment commanded of the magnetic torque rods. This value is
           defaulted back to zero at each step.
+    - name: "{prefix}.{satellite}.attitude.L"
+      type: Lazy Vector3
+      comment: >
+          Angular momentum of the spacecraft in the body frame.
 
 gets:
     - name: "{prefix}.t.s"
@@ -84,5 +88,5 @@ gets:
       type: Real
     - name: "{prefix}.earth.q.eci_ecef"
       type: Vector4
-    - name: "{prefix}.{satellite}.environment.b.eci"
+    - name: "{prefix}.{satellite}.environment.b.body"
       type: Vector3

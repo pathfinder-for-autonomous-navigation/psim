@@ -22,35 +22,32 @@
 // SOFTWARE.
 //
 
-#include <psim/truth/transform_position.hpp>
+/** @file psim/truth/satellite_attitude_orbit.hpp
+ *  @author Kyle Krol
+ */
 
-#include <gnc/utilities.hpp>
+#ifndef PSIM_TRUTH_SATELLITE_ATTITUDE_ORBIT_HPP_
+#define PSIM_TRUTH_SATELLITE_ATTITUDE_ORBIT_HPP_
+
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-Vector3 TransformPositionEcef::vector_ecef() const {
-  return vector->get();
-}
+/** @brief Models a single satellite computing only attitude and orbital
+ *         dynamics.
+ *
+ *  This model needs to be embedded within a larger simulation that has a time
+ *  and Earth ephemeris model.
+ */
+class SatelliteAttitudeOrbitGnc : public ModelList {
+ public:
+  SatelliteAttitudeOrbitGnc() = delete;
+  virtual ~SatelliteAttitudeOrbitGnc() = default;
 
-Vector3 TransformPositionEcef::vector_eci() const {
-  auto const &r_ecef = vector->get();
-  auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
-
-  Vector3 r_eci;
-  gnc::utl::rotate_frame(q_eci_ecef, r_ecef, r_eci);
-  return r_eci;
-}
-
-Vector3 TransformPositionEci::vector_ecef() const {
-  auto const &r_eci = vector->get();
-  auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
-
-  Vector3 r_ecef;
-  gnc::utl::rotate_frame(q_ecef_eci, r_eci, r_ecef);
-  return r_ecef;
-}
-
-Vector3 TransformPositionEci::vector_eci() const {
-  return vector->get();
-}
+  SatelliteAttitudeOrbitGnc(Configuration const &config,
+      std::string const &prefix, std::string const &satellite);
+};
 }  // namespace psim
+
+#endif
