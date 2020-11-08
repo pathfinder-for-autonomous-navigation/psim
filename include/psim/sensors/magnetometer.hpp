@@ -22,30 +22,29 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/satellite_orbit.hpp
+/** @file psim/sensors/magnetometer.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_SATELLITE_ORBIT_HPP_
-#define PSIM_TRUTH_SATELLITE_ORBIT_HPP_
+#ifndef PSIM_SENSORS_MAGNETOMETER_HPP_
+#define PSIM_SENSORS_MAGNETOMETER_HPP_
 
-#include <psim/core/configuration.hpp>
-#include <psim/core/model_list.hpp>
+#include <psim/sensors/magnetometer.yml.hpp>
 
 namespace psim {
 
-/** @brief Models a single satellite computing only orbital dynamics.
- *
- *  This model needs to be embedded within a larger simulation that has a time
- *  and Earth ephemeris model.
- */
-class SatelliteOrbitGnc : public ModelList {
- public:
-  SatelliteOrbitGnc() = delete;
-  virtual ~SatelliteOrbitGnc() = default;
+class Magnetometer : public MagnetometerInterface<Magnetometer> {
+ private:
+  typedef MagnetometerInterface<Magnetometer> Super;
 
-  SatelliteOrbitGnc(Configuration const &config, std::string const &prefix,
-      std::string const &satellite);
+ public:
+  using Super::MagnetometerInterface;
+
+  Magnetometer() = delete;
+  virtual ~Magnetometer() = default;
+
+  Vector3 sensors_satellite_magnetometer_b() const;
+  Vector3 sensors_satellite_magnetometer_b_error() const;
 };
 }  // namespace psim
 

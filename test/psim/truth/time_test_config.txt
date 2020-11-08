@@ -1,2 +1,2 @@
-time.t.ns  0
-time.dt.ns 5
+truth.t.ns  0
+truth.dt.ns 5

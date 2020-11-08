@@ -18,8 +18,8 @@ py_runtime(
     visibility = ["//visibility:private"],
 )
 
-# Register the autocoder as an executable. This is later consumed by the autocoder
-# command. See psim.bzl for more information.
+# Register the autocoder as an executable. This is later consumed by the
+# autocoder command. See psim.bzl for more information.
 py_binary(
     name = "autocoder",
     srcs = ["//:tools/autocoder.py"],
@@ -52,6 +52,13 @@ psim_cc_library(
     visibility = ["//visibility:public"],
 )
 
+# Builds the PSim sensor models
+psim_autocoded_cc_library(
+    name = "sensors",
+    deps = ["@lin//:lin", "//:gnc", "//:psim_core", "//:psim_utilities"],
+    visibility = ["//visibility:public"],
+)
+
 # Builds the PSim truth models
 psim_autocoded_cc_library(
     name = "truth",
@@ -69,7 +76,10 @@ psim_autocoded_cc_library(
 # Builds all PSim models deemed "simulation" worthy.
 psim_cc_library(
     name = "simulations",
-    deps = ["//:psim_core", "//:psim_truth", "//:psim_utilities"],
+    deps = [
+        "//:psim_core", "//:psim_sensors", "//:psim_truth",
+        "//:psim_utilities"
+    ],
     visibility = ["//visibility:public"],
 )
 

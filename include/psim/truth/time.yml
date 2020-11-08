@@ -5,23 +5,20 @@ comment: >
     Simple model responsible for stepping the simulation forward in time. Time
     is counted since the PAN epoch.
 
-args:
-    - prefix
-
 adds:
-    - name: "{prefix}.t.ns"
+    - name: "truth.t.ns"
       type: Initialized Integer
       comment: >
           Current simulation time in nanoseconds since the PAN epoch.
-    - name: "{prefix}.t.s"
+    - name: "truth.t.s"
       type: Lazy Real
       comment: >
           Current simulation time in seconds since the PAN epoch.
-    - name: "{prefix}.dt.ns"
+    - name: "truth.dt.ns"
       type: Initialized Writable Integer
       comment: >
           Current simulation timestep in nanoseconds.
-    - name: "{prefix}.dt.s"
+    - name: "truth.dt.s"
       type: Lazy Real
       comment: >
           Current simulation timestep in seconds.

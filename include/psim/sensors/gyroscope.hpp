@@ -22,38 +22,32 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/earth.cpp
+/** @file psim/sensors/gyroscope.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/earth.hpp>
+#ifndef PSIM_SENSORS_GYROSCOPE_HPP_
+#define PSIM_SENSORS_GYROSCOPE_HPP_
 
-#include <gnc/environment.hpp>
-#include <gnc/utilities.hpp>
+#include <psim/sensors/gyroscope.yml.hpp>
 
 namespace psim {
 
-Vector4 EarthGnc::truth_earth_q_ecef_eci() const {
-  auto const &t = truth_t_s->get();
+class Gyroscope : public GyroscopeInterface<Gyroscope> {
+ private:
+  typedef GyroscopeInterface<Gyroscope> Super;
 
-  Vector4 q_ecef_eci;
-  gnc::env::earth_attitude(t, q_ecef_eci);
-  return q_ecef_eci;
-}
+ public:
+  using Super::GyroscopeInterface;
 
-Vector4 EarthGnc::truth_earth_q_eci_ecef() const {
-  auto const &q_ecef_eci = this->Super::truth_earth_q_ecef_eci.get();
+  Gyroscope() = delete;
+  virtual ~Gyroscope() = default;
 
-  Vector4 q_eci_ecef;
-  gnc::utl::quat_conj(q_ecef_eci, q_eci_ecef);
-  return q_eci_ecef;
-}
+  virtual void step() override;
 
-Vector3 EarthGnc::truth_earth_w() const {
-  auto const &t = truth_t_s->get();
-
-  Vector3 w_earth;
-  gnc::env::earth_angular_rate(t, w_earth);
-  return w_earth;
-}
+  Vector3 sensors_satellite_gyroscope_w() const;
+  Vector3 sensors_satellite_gyroscope_w_error() const;
+};
 }  // namespace psim
+
+#endif

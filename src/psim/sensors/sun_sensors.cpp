@@ -22,38 +22,18 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/earth.cpp
+/** @file psim/sensors/sun_sensors.cpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/earth.hpp>
-
-#include <gnc/environment.hpp>
-#include <gnc/utilities.hpp>
+#include <psim/sensors/sun_sensors.hpp>
 
 namespace psim {
 
-Vector4 EarthGnc::truth_earth_q_ecef_eci() const {
-  auto const &t = truth_t_s->get();
+Vector3 SunSensors::sensors_satellite_sun_sensors_s() const {
+  auto const &truth_s = truth_satellite_environment_s_body->get();
 
-  Vector4 q_ecef_eci;
-  gnc::env::earth_attitude(t, q_ecef_eci);
-  return q_ecef_eci;
-}
-
-Vector4 EarthGnc::truth_earth_q_eci_ecef() const {
-  auto const &q_ecef_eci = this->Super::truth_earth_q_ecef_eci.get();
-
-  Vector4 q_eci_ecef;
-  gnc::utl::quat_conj(q_ecef_eci, q_eci_ecef);
-  return q_eci_ecef;
-}
-
-Vector3 EarthGnc::truth_earth_w() const {
-  auto const &t = truth_t_s->get();
-
-  Vector3 w_earth;
-  gnc::env::earth_angular_rate(t, w_earth);
-  return w_earth;
+  // TODO : Implement a configurable sun sensor model
+  return truth_s;
 }
 }  // namespace psim

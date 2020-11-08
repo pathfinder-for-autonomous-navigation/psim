@@ -22,31 +22,29 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/satellite_attitude_orbit.hpp
+/** @file psim/sensors/gps_no_attitude.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_SATELLITE_ATTITUDE_ORBIT_HPP_
-#define PSIM_TRUTH_SATELLITE_ATTITUDE_ORBIT_HPP_
+#ifndef PSIM_SENSORS_GPS_NO_ATTITUDE_HPP_
+#define PSIM_SENSORS_GPS_NO_ATTITUDE_HPP_
 
-#include <psim/core/configuration.hpp>
-#include <psim/core/model_list.hpp>
+#include <psim/sensors/gps_no_attitude.yml.hpp>
 
 namespace psim {
 
-/** @brief Models a single satellite computing only attitude and orbital
- *         dynamics.
- *
- *  This model needs to be embedded within a larger simulation that has a time
- *  and Earth ephemeris model.
- */
-class SatelliteAttitudeOrbitGnc : public ModelList {
- public:
-  SatelliteAttitudeOrbitGnc() = delete;
-  virtual ~SatelliteAttitudeOrbitGnc() = default;
+class GpsNoAttitude : public GpsNoAttitudeInterface<GpsNoAttitude> {
+ private:
+  typedef GpsNoAttitudeInterface<GpsNoAttitude> Super;
 
-  SatelliteAttitudeOrbitGnc(Configuration const &config,
-      std::string const &prefix, std::string const &satellite);
+ public:
+  using Super::GpsNoAttitudeInterface;
+
+  GpsNoAttitude() = delete;
+  virtual ~GpsNoAttitude() = default;
+
+  Vector3 sensors_satellite_gps_r() const;
+  Vector3 sensors_satellite_gps_r_error() const;
 };
 }  // namespace psim
 

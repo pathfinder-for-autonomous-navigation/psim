@@ -39,23 +39,23 @@
 namespace psim {
 
 OrbitGncEci::OrbitGncEci(Configuration const &config,
-    std::string const &prefix, std::string const &satellite)
-  : Super(config, prefix, satellite, "eci") { }
+    std::string const &satellite)
+  : Super(config, satellite, "eci") { }
 
 void OrbitGncEci::step() {
   this->Super::step();
 
   // References to the current time and timestep
-  auto const &dt = prefix_dt_s->get();
-  auto const &t = prefix_t_s->get();
+  auto const &dt = truth_dt_s->get();
+  auto const &t = truth_t_s->get();
 
   // References to position and velocity
-  auto &r = prefix_satellite_orbit_r.get();
-  auto &v = prefix_satellite_orbit_v.get();
+  auto &r = truth_satellite_orbit_r.get();
+  auto &v = truth_satellite_orbit_v.get();
 
   // Treat our thruster firings as purely impulses
-  v = v + prefix_satellite_orbit_J_frame.get() / prefix_satellite_m.get();
-  prefix_satellite_orbit_J_frame.get() = lin::zeros<Vector3>();
+  v = v + truth_satellite_orbit_J_frame.get() / truth_satellite_m.get();
+  truth_satellite_orbit_J_frame.get() = lin::zeros<Vector3>();
 
   // Simulate our dynamics
   auto const xf = ode(t, dt, {r(0), r(1), r(2), v(0), v(1), v(2)}, nullptr,

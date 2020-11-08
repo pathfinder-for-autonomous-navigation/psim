@@ -45,7 +45,7 @@ class TransformVelocityEcef : public TransformVelocity<TransformVelocityEcef> {
 
   /** @brief Sets the frame arguments to ECEF.
    */
-  TransformVelocityEcef(Configuration const &config, std::string const &prefix,
+  TransformVelocityEcef(Configuration const &config,
       std::string const &satellite, std::string const &vector);
 
   Vector3 vector_ecef() const;
@@ -64,7 +64,7 @@ class TransformVelocityEci : public TransformVelocity<TransformVelocityEci> {
 
   /** @brief Sets the frame arguments to ECI.
    */
-  TransformVelocityEci(Configuration const &config, std::string const &prefix,
+  TransformVelocityEci(Configuration const &config,
       std::string const &satellite, std::string const &vector);
 
   Vector3 vector_ecef() const;

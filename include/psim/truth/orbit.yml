@@ -7,28 +7,27 @@ comment: >
     used for simulations that don't rely on attitude dynamics.
 
 args:
-    - prefix
     - satellite
     - frame
 
 params:
-    - name: "{prefix}.{satellite}.m"
+    - name: "truth.{satellite}.m"
       type: Real
       comment: >
           Mass of the satellite in units of kilograms.
 
 adds:
-    - name: "{prefix}.{satellite}.orbit.r"
+    - name: "truth.{satellite}.orbit.r"
       type: Initialized Vector3
       comment: >
           Position of the satellite in units of meters. The coordinate system is
           implementation dependant.
-    - name: "{prefix}.{satellite}.orbit.v"
+    - name: "truth.{satellite}.orbit.v"
       type: Initialized Vector3
       comment: >
           Velocity of the satellite in units of meters per second. The
           coordinate system is implementation dependant.
-    - name: "{prefix}.{satellite}.orbit.J.{frame}"
+    - name: "truth.{satellite}.orbit.J.{frame}"
       type: Writable Vector3
       comment: >
           Impulse applied to the satellite on a given timestep in units of
@@ -37,11 +36,11 @@ adds:
           simulation step to avoid applying a continuous input.
 
 gets:
-    - name: "{prefix}.t.s"
+    - name: "truth.t.s"
       type: Real
       comment: >
           Time sense the PAN epoch in seconds.
-    - name: "{prefix}.dt.s"
+    - name: "truth.dt.s"
       type: Real
       comment: >
           Timestep of the simulation in seconds.

@@ -26,20 +26,20 @@
 
 namespace psim {
 
-Time::Time(Configuration const &config, std::string const &prefix)
-  : Super(config, prefix) { }
+Time::Time(Configuration const &config)
+  : Super(config) { }
 
 void Time::step() {
   this->Super::step();
 
-  this->prefix_t_ns.get() += this->prefix_dt_ns.get();
+  this->truth_t_ns.get() += this->truth_dt_ns.get();
 }
 
-Real Time::prefix_t_s() const {
-  return ((Real) prefix_t_ns.get()) / 1.0e9;
+Real Time::truth_t_s() const {
+  return ((Real) truth_t_ns.get()) / 1.0e9;
 }
 
-Real Time::prefix_dt_s() const {
-  return ((Real) prefix_dt_ns.get()) / 1.0e9;
+Real Time::truth_dt_s() const {
+  return ((Real) truth_dt_ns.get()) / 1.0e9;
 }
 }  // namespace psim
