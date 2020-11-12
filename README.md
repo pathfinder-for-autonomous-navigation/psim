@@ -13,36 +13,36 @@ new C++ implementation of PSim.
 
 ## Getting Started
 
-For GNC development, it's only necessary to setup the PlatformIO development
-environment. This requires setting up a local virtual environment as shown
-below:
+### GNC Development
 
-    python -m venv venv
-    source venv/bin/activate
+Setting up the PlatformIO build system for GNC development can be done with the
+following:
+
+    python3 -m venv venv
+    . venv/bin/activate
     pip install --upgrade pip
     pip install -r requirements.txt
 
-**_Note: Naming your virtual environment `venv` is required for PSim
-development!_**
+You can ensure PlatformIO is behaving properly by running:
 
-Officially, we support Python 3.7 (this is what continuous integration runs) but
-you'll most likely have success with Python 3.6+.
-
-You can ensure everything is behaving as expected by building and running tests
-for the GNC code with:
-
-    source venv/bin/activate
+    . venv/bin/activate
     pio test -e native
+
+**_Note: Using you're system's default Python 3 is recommended if you will also
+be developing/working with PSim. PSim will build Python extensions using the
+development headers associated with your system's default version of Python
+3._**
+
+### PSim development
 
 For PSim development, there are the following additional requirements:
 
 * The Bazel build system.
-* Python development headers installed on your system for the same version of
-Python used for PSim development.
-* Python distutils package (again for the same Python version).
+* Python 3 development headers installed on your system.
+* Python 3 distutils package installed on your system.
 
 All three of these should be available via your systems package manager. The
-last build dependency (Python's distutls) is most lilely installed on your
+last build dependency (Python's distutls) is most likely installed on your
 system already so it may be worth giving building a go and see if Bazel/Python
 complain.
 
@@ -60,6 +60,10 @@ the C++ unit tests for PSim with:
 
 The PSim Python module can be compiled, installed, and run with:
 
+    python3 -m venv venv
+    . venv/bin/activate
+    pip install --upgrade pip
+    pip install -r requirements.txt
     pip install -e .
     python -m psim --help
 
