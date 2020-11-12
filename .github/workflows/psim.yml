@@ -36,4 +36,3 @@ jobs:
     - name: Build and run Python tests
       run: |
         python -m psim --help
-
