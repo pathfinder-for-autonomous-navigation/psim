@@ -27,7 +27,7 @@ jobs:
 
     - name: Build and run C++ unit tests
       run: |
-        build test //test/psim:ci
+        bazel test //test/psim:ci
 
     - name: Build and install psim Python module
       run: |
