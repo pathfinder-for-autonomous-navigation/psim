@@ -1,7 +1,6 @@
 platformio
 pylint
 pytest
-pyyaml
 ./lib/lin
 # Required for old orbit estimator testing
 cppimport
