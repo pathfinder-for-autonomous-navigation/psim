@@ -55,10 +55,6 @@ static constexpr double p = 1.0e-6;
 static constexpr double d = 5.0e-2;
 static constexpr double energy_gain = 5.0e-5;   // Energy gain                   (J)
 static constexpr double h_gain = 2.0e-3;        // Angular momentum gain         (kg m^2/sec)
-static constexpr double dt_fire_min = 5 * 60;   // Minimum time between firings  (sec)
-
-// Initial orbital elements
-static constexpr double e  = 0.001;             // Eccentricity                  (unitless)
 
 OrbitControllerState::OrbitControllerState()
   : t_last_firing(0),
