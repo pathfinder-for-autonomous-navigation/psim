@@ -3,8 +3,6 @@ workspace(name = "psim")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-load("//bazel:psim_workspace.bzl", "psim_configure")
-
 # Standard cc rules
 git_repository(
     name = "rules_cc",
@@ -15,9 +13,17 @@ git_repository(
 # Standard Python rules
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.0.2/rules_python-0.0.2.tar.gz",
-    strip_prefix = "rules_python-0.0.2",
-    sha256 = "b5668cde8bb6e3515057ef465a35ad712214962f0b3a314e551204266c7be90c",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz",
+    sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
+)
+
+# Load and install python three requirements
+load("@rules_python//python:pip.bzl", "pip_install")
+pip_install(
+    name = "python_requirements",
+    python_interpreter = "python3",
+    quiet = False,
+    requirements = "//bazel:requirements.txt",
 )
 
 # Pybind11
@@ -59,7 +65,8 @@ local_repository(
     path = "lib/lin",
 )
 
-# Grabs the systems Python headers in preparation for building with Pybind11
+# Grabs the system's Python3 headers in preparation for building with Pybind11
+load("//bazel:psim_workspace.bzl", "psim_configure")
 psim_configure(
     name = "psim_configuration"
 )

@@ -22,38 +22,32 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/earth.cpp
+/** @file psim/sensors/gyroscope.cpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/earth.hpp>
-
-#include <gnc/environment.hpp>
-#include <gnc/utilities.hpp>
+#include <psim/sensors/gyroscope.hpp>
 
 namespace psim {
 
-Vector4 EarthGnc::truth_earth_q_ecef_eci() const {
-  auto const &t = truth_t_s->get();
+void Gyroscope::step() {
+  this->Super::step();
 
-  Vector4 q_ecef_eci;
-  gnc::env::earth_attitude(t, q_ecef_eci);
-  return q_ecef_eci;
+  // TODO : Implement gyroscope bias drift
 }
 
-Vector4 EarthGnc::truth_earth_q_eci_ecef() const {
-  auto const &q_ecef_eci = this->Super::truth_earth_q_ecef_eci.get();
+Vector3 Gyroscope::sensors_satellite_gyroscope_w() const {
+  auto const &truth_w = truth_satellite_attitude_w->get();
+  auto const &bias = sensors_satellite_gyroscope_bias.get();
 
-  Vector4 q_eci_ecef;
-  gnc::utl::quat_conj(q_ecef_eci, q_eci_ecef);
-  return q_eci_ecef;
+  // TODO : Implement a white noise model
+  return truth_w + bias;
 }
 
-Vector3 EarthGnc::truth_earth_w() const {
-  auto const &t = truth_t_s->get();
+Vector3 Gyroscope::sensors_satellite_gyroscope_w_error() const {
+  auto const &truth_w = truth_satellite_attitude_w->get();
+  auto const &sensors_w = this->Super::sensors_satellite_gyroscope_w.get();
 
-  Vector3 w_earth;
-  gnc::env::earth_angular_rate(t, w_earth);
-  return w_earth;
+  return sensors_w - truth_w;
 }
 }  // namespace psim

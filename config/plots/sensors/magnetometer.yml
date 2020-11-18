@@ -1,0 +1,8 @@
+
+# Magnetometer measurement over time.
+- x: truth.t.s
+  y: [sensors.leader.magnetometer.b.x, sensors.leader.magnetometer.b.y, sensors.leader.magnetometer.b.z]
+
+# Magnetometer measurement error over time.
+- x: truth.t.s
+  y: [sensors.leader.magnetometer.b.error.x, sensors.leader.magnetometer.b.error.y, sensors.leader.magnetometer.b.error.z]

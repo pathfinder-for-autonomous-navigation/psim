@@ -22,38 +22,38 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/earth.cpp
+/** @file psim/sensors/satellite_sensors.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/earth.hpp>
+#ifndef PSIM_SENSORS_SATELLITE_SENSORS_HPP_
+#define PSIM_SENSORS_SATELLITE_SENSORS_HPP_
 
-#include <gnc/environment.hpp>
-#include <gnc/utilities.hpp>
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-Vector4 EarthGnc::truth_earth_q_ecef_eci() const {
-  auto const &t = truth_t_s->get();
+/** @brief Models a single satellites sensors.
+ */
+class SatelliteSensors : public ModelList {
+ public:
+  SatelliteSensors() = delete;
+  virtual ~SatelliteSensors() = default;
 
-  Vector4 q_ecef_eci;
-  gnc::env::earth_attitude(t, q_ecef_eci);
-  return q_ecef_eci;
-}
+  SatelliteSensors(Configuration const &config, std::string const &satellite);
+};
 
-Vector4 EarthGnc::truth_earth_q_eci_ecef() const {
-  auto const &q_ecef_eci = this->Super::truth_earth_q_ecef_eci.get();
+/** @brief Models a single satellites sensors without attitude dynamics.
+ */
+class SatelliteSensorsNoAttitude : public ModelList {
+ public:
+  SatelliteSensorsNoAttitude() = delete;
+  virtual ~SatelliteSensorsNoAttitude() = default;
 
-  Vector4 q_eci_ecef;
-  gnc::utl::quat_conj(q_ecef_eci, q_eci_ecef);
-  return q_eci_ecef;
-}
-
-Vector3 EarthGnc::truth_earth_w() const {
-  auto const &t = truth_t_s->get();
-
-  Vector3 w_earth;
-  gnc::env::earth_angular_rate(t, w_earth);
-  return w_earth;
-}
+  SatelliteSensorsNoAttitude(Configuration const &config,
+      std::string const &satellite);
+};
 }  // namespace psim
+
+#endif

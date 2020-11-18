@@ -33,21 +33,21 @@
 namespace psim {
 
 EnvironmentGnc::EnvironmentGnc(Configuration const &config,
-    std::string const &prefix, std::string const &satellite)
-  : Super(config, prefix, satellite, "ecef") { }
+    std::string const &satellite)
+  : Super(config, satellite, "ecef") { }
 
 
-Vector3 EnvironmentGnc::prefix_satellite_environment_b() const {
-  auto const &r_ecef = prefix_satellite_orbit_r_frame->get();
-  auto const &t = prefix_t_s->get();
+Vector3 EnvironmentGnc::truth_satellite_environment_b() const {
+  auto const &r_ecef = truth_satellite_orbit_r_frame->get();
+  auto const &t = truth_t_s->get();
 
   Vector3 b_ecef;
   gnc::env::magnetic_field(t, r_ecef, b_ecef);
   return b_ecef;
 }
 
-Vector3 EnvironmentGnc::prefix_satellite_environment_s() const {
-  auto const &t = prefix_t_s->get();
+Vector3 EnvironmentGnc::truth_satellite_environment_s() const {
+  auto const &t = truth_t_s->get();
 
   Vector3 s_eci;
   gnc::env::sun_vector(t, s_eci);

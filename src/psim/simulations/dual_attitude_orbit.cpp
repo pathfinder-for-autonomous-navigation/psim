@@ -28,28 +28,24 @@
 
 #include <psim/simulations/dual_attitude_orbit.hpp>
 
+#include <psim/sensors/satellite_sensors.hpp>
 #include <psim/truth/earth.hpp>
 #include <psim/truth/hill_frame.hpp>
-#include <psim/truth/satellite_attitude_orbit.hpp>
+#include <psim/truth/satellite_truth.hpp>
 #include <psim/truth/time.hpp>
-
-#include <string>
 
 namespace psim {
 
 DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(Configuration const &config) {
   // Truth model
-  {
-    std::string const prefix = "truth";
-    // Time and Earth ephemeris
-    add<Time>(config, prefix);
-    add<EarthGnc>(config, prefix);
-    // Leader and follower satellites
-    add<SatelliteAttitudeOrbitGnc>(config, prefix, "leader");
-    add<SatelliteAttitudeOrbitGnc>(config, prefix, "follower");
-    // Hill frame position and velocity
-    add<HillFrameEci>(config, prefix, "leader", "follower");
-    add<HillFrameEci>(config, prefix, "follower", "leader");
-  }
+  add<Time>(config);
+  add<EarthGnc>(config);
+  add<SatelliteTruthGnc>(config, "leader");
+  add<SatelliteTruthGnc>(config, "follower");
+  add<HillFrameEci>(config, "leader", "follower");
+  add<HillFrameEci>(config, "follower", "leader");
+  // Sensors model
+  add<SatelliteSensors>(config, "leader");
+  add<SatelliteSensors>(config, "follower");
 }
 }  // namespace psim

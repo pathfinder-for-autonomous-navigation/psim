@@ -22,38 +22,44 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/earth.cpp
+/** @file psim/truth/satellite_orbit.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/earth.hpp>
+#ifndef PSIM_TRUTH_SATELLITE_TRUTH_HPP_
+#define PSIM_TRUTH_SATELLITE_TRUTH_HPP_
 
-#include <gnc/environment.hpp>
-#include <gnc/utilities.hpp>
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-Vector4 EarthGnc::truth_earth_q_ecef_eci() const {
-  auto const &t = truth_t_s->get();
+/** @brief Provides a single satellites truth model.
+ *
+ *  This model needs to be embedded within a larger simulation that has a time
+ *  and Earth ephemeris model.
+ */
+class SatelliteTruthGnc : public ModelList {
+ public:
+  SatelliteTruthGnc() = delete;
+  virtual ~SatelliteTruthGnc() = default;
 
-  Vector4 q_ecef_eci;
-  gnc::env::earth_attitude(t, q_ecef_eci);
-  return q_ecef_eci;
-}
+  SatelliteTruthGnc(Configuration const &config, std::string const &satellite);
+};
 
-Vector4 EarthGnc::truth_earth_q_eci_ecef() const {
-  auto const &q_ecef_eci = this->Super::truth_earth_q_ecef_eci.get();
+/** @brief Provides a single satellites truth model without attitude dynamics.
+ *
+ *  This model needs to be embedded within a larger simulation that has a time
+ *  and Earth ephemeris model.
+ */
+class SatelliteTruthNoAttitudeGnc : public ModelList {
+ public:
+  SatelliteTruthNoAttitudeGnc() = delete;
+  virtual ~SatelliteTruthNoAttitudeGnc() = default;
 
-  Vector4 q_eci_ecef;
-  gnc::utl::quat_conj(q_ecef_eci, q_eci_ecef);
-  return q_eci_ecef;
-}
-
-Vector3 EarthGnc::truth_earth_w() const {
-  auto const &t = truth_t_s->get();
-
-  Vector3 w_earth;
-  gnc::env::earth_angular_rate(t, w_earth);
-  return w_earth;
-}
+  SatelliteTruthNoAttitudeGnc(Configuration const &config,
+      std::string const &satellite);
+};
 }  // namespace psim
+
+#endif

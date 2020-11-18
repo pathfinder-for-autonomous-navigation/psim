@@ -22,28 +22,25 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/satellite_orbit.cpp
+/** @file psim/sensors/magnetometer.cpp
  *  @author Kyle Krol
  */
 
-#include <psim/truth/satellite_orbit.hpp>
-
-#include <psim/truth/environment.hpp>
-#include <psim/truth/orbit.hpp>
-#include <psim/truth/transform_position.hpp>
-#include <psim/truth/transform_velocity.hpp>
+#include <psim/sensors/magnetometer.hpp>
 
 namespace psim {
 
-SatelliteOrbitGnc::SatelliteOrbitGnc(Configuration const &config,
-    std::string const &prefix, std::string const &satellite) {
-  // Orbital dynamics
-  add<OrbitGncEci>(config, prefix, satellite);
-  add<TransformPositionEci>(config, prefix, prefix + "." + satellite + ".orbit.r");
-  add<TransformVelocityEci>(config, prefix, satellite, prefix + "." + satellite + ".orbit.v");
-  // Environmental models
-  add<EnvironmentGnc>(config, prefix, satellite);
-  add<TransformPositionEcef>(config, prefix, prefix + "." + satellite + ".environment.b");
-  add<TransformPositionEci>(config, prefix, prefix + "." + satellite + ".environment.s");
+Vector3 Magnetometer::sensors_satellite_magnetometer_b() const {
+  auto const &truth_b = truth_satellite_environment_b_body->get();
+
+  // TODO : Implement a configurable white noise model
+  return truth_b;
+}
+
+Vector3 Magnetometer::sensors_satellite_magnetometer_b_error() const {
+  auto const &truth_b = truth_satellite_environment_b_body->get();
+  auto const &sensors_b = this->Super::sensors_satellite_magnetometer_b.get();
+
+  return sensors_b - truth_b;
 }
 }  // namespace psim

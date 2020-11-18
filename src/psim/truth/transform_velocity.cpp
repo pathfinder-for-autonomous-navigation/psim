@@ -30,19 +30,18 @@
 namespace psim {
 
 TransformVelocityEcef::TransformVelocityEcef(Configuration const &config,
-    std::string const &prefix, std::string const &satellite,
-    std::string const &vector)
-  : Super(config, prefix, satellite, vector, "ecef") { }
+    std::string const &satellite, std::string const &vector)
+  : Super(config, satellite, vector, "ecef") { }
 
 Vector3 TransformVelocityEcef::vector_ecef() const {
   return vector->get();
 }
 
 Vector3 TransformVelocityEcef::vector_eci() const {
-  auto const &r_ecef = prefix_satellite_orbit_r_frame->get();
+  auto const &r_ecef = truth_satellite_orbit_r_frame->get();
   auto const &v_ecef = vector->get();
-  auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
-  auto const &w_earth = prefix_earth_w->get();
+  auto const &q_eci_ecef = truth_earth_q_eci_ecef->get();
+  auto const &w_earth = truth_earth_w->get();
 
   Vector3 v_eci;
   gnc::utl::rotate_frame(q_eci_ecef, (v_ecef + lin::cross(w_earth, r_ecef)).eval(), v_eci);
@@ -50,15 +49,14 @@ Vector3 TransformVelocityEcef::vector_eci() const {
 }
 
 TransformVelocityEci::TransformVelocityEci(Configuration const &config,
-    std::string const &prefix, std::string const &satellite,
-    std::string const &vector)
-  : Super(config, prefix, satellite, vector, "eci") { }
+    std::string const &satellite, std::string const &vector)
+  : Super(config, satellite, vector, "eci") { }
 
 Vector3 TransformVelocityEci::vector_ecef() const {
-  auto const &r_eci = prefix_satellite_orbit_r_frame->get();
+  auto const &r_eci = truth_satellite_orbit_r_frame->get();
   auto const &v_eci = vector->get();
-  auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
-  auto const &w_earth = prefix_earth_w->get();
+  auto const &q_ecef_eci = truth_earth_q_ecef_eci->get();
+  auto const &w_earth = truth_earth_w->get();
 
   Vector3 v_ecef;
   gnc::utl::rotate_frame(q_ecef_eci, (v_eci - lin::cross(w_earth, r_eci).eval(), v_ecef));

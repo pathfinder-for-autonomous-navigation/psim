@@ -34,7 +34,7 @@ Vector3 TransformPositionEcef::vector_ecef() const {
 
 Vector3 TransformPositionEcef::vector_eci() const {
   auto const &r_ecef = vector->get();
-  auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
+  auto const &q_eci_ecef = truth_earth_q_eci_ecef->get();
 
   Vector3 r_eci;
   gnc::utl::rotate_frame(q_eci_ecef, r_ecef, r_eci);
@@ -43,7 +43,7 @@ Vector3 TransformPositionEcef::vector_eci() const {
 
 Vector3 TransformPositionEci::vector_ecef() const {
   auto const &r_eci = vector->get();
-  auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
+  auto const &q_ecef_eci = truth_earth_q_ecef_eci->get();
 
   Vector3 r_ecef;
   gnc::utl::rotate_frame(q_ecef_eci, r_eci, r_ecef);

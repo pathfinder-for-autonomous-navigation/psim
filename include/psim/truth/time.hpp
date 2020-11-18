@@ -41,12 +41,12 @@ class Time : public TimeInterface<Time> {
   Time() = delete;
   virtual ~Time() = default;
 
-  Time(Configuration const &config, std::string const &prefix);
+  Time(Configuration const &config);
 
   virtual void step() override;
 
-  Real prefix_t_s() const;
-  Real prefix_dt_s() const;
+  Real truth_t_s() const;
+  Real truth_dt_s() const;
 };
 }  // namespace psim
 

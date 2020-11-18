@@ -1,0 +1,23 @@
+
+name: GpsNoAttitudeInterface
+type: Model
+comment: >
+    Interface for a model responsible for simulating the measurements seen by
+    the GPS sensor during flight.
+
+args:
+    - satellite
+
+adds:
+    - name: "sensors.{satellite}.gps.r"
+      type: Lazy Vector3
+      comment: >
+          Position reported by the GPS in ECEF.
+    - name: "sensors.{satellite}.gps.r.error"
+      type: Lazy Vector3
+      comment: >
+          Error in the position reported by the GPS in ECEF.
+
+gets:
+    - name: "truth.{satellite}.orbit.r.ecef"
+      type: Vector3

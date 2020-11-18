@@ -28,21 +28,19 @@
 
 #include <psim/simulations/single_orbit.hpp>
 
+#include <psim/sensors/satellite_sensors.hpp>
 #include <psim/truth/earth.hpp>
-#include <psim/truth/satellite_orbit.hpp>
+#include <psim/truth/satellite_truth.hpp>
 #include <psim/truth/time.hpp>
 
 namespace psim {
 
 SingleOrbitGnc::SingleOrbitGnc(Configuration const &config) {
   // Truth model
-  {
-    std::string const prefix = "truth";
-    // Time and Earth ephemeris
-    add<Time>(config, prefix);
-    add<EarthGnc>(config, prefix);
-    // Leader satellite
-    add<SatelliteOrbitGnc>(config, prefix, "leader");
-  }
+  add<Time>(config);
+  add<EarthGnc>(config);
+  add<SatelliteTruthNoAttitudeGnc>(config, "leader");
+  // Sensors model
+  add<SatelliteSensorsNoAttitude>(config, "leader");
 }
 }  // namespace psim

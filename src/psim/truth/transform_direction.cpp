@@ -38,7 +38,7 @@ Vector3 TransformDirectionBody::vector_body() const {
 
 Vector3 TransformDirectionBody::vector_ecef() const {
   auto const &d_eci = Super::vector_eci.get();
-  auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
+  auto const &q_ecef_eci = truth_earth_q_ecef_eci->get();
 
   Vector3 d_ecef;
   gnc::utl::rotate_frame(q_ecef_eci, d_eci, d_ecef);
@@ -47,7 +47,7 @@ Vector3 TransformDirectionBody::vector_ecef() const {
 
 Vector3 TransformDirectionBody::vector_eci() const {
   auto const &d_body = vector->get();
-  auto const &q_eci_body = prefix_satellite_attitude_q_eci_body->get();
+  auto const &q_eci_body = truth_satellite_attitude_q_eci_body->get();
 
   Vector3 d_eci;
   gnc::utl::rotate_frame(q_eci_body, d_body, d_eci);
@@ -56,7 +56,7 @@ Vector3 TransformDirectionBody::vector_eci() const {
 
 Vector3 TransformDirectionEcef::vector_body() const {
   auto const &d_eci = Super::vector_eci.get();
-  auto const q_body_eci = prefix_satellite_attitude_q_body_eci->get();
+  auto const q_body_eci = truth_satellite_attitude_q_body_eci->get();
 
   Vector3 d_body;
   gnc::utl::rotate_frame(q_body_eci, d_eci, d_body);
@@ -69,7 +69,7 @@ Vector3 TransformDirectionEcef::vector_ecef() const {
 
 Vector3 TransformDirectionEcef::vector_eci() const {
   auto const &d_ecef = vector->get();
-  auto const &q_eci_ecef = prefix_earth_q_eci_ecef->get();
+  auto const &q_eci_ecef = truth_earth_q_eci_ecef->get();
 
   Vector3 d_eci;
   gnc::utl::rotate_frame(q_eci_ecef, d_ecef, d_eci);
@@ -78,7 +78,7 @@ Vector3 TransformDirectionEcef::vector_eci() const {
 
 Vector3 TransformDirectionEci::vector_body() const {
   auto const &d_eci = vector->get();
-  auto const &q_body_eci = prefix_satellite_attitude_q_body_eci->get();
+  auto const &q_body_eci = truth_satellite_attitude_q_body_eci->get();
 
   Vector3 d_body;
   gnc::utl::rotate_frame(q_body_eci, d_eci, d_body);
@@ -87,7 +87,7 @@ Vector3 TransformDirectionEci::vector_body() const {
 
 Vector3 TransformDirectionEci::vector_ecef() const {
   auto const &d_eci = vector->get();
-  auto const &q_ecef_eci = prefix_earth_q_ecef_eci->get();
+  auto const &q_ecef_eci = truth_earth_q_ecef_eci->get();
 
   Vector3 d_ecef;
   gnc::utl::rotate_frame(q_ecef_eci, d_eci, d_ecef);

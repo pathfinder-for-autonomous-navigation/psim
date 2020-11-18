@@ -1,0 +1,20 @@
+
+name: SunSensorsInterface
+type: Model
+comment: >
+    Interface for a model responsible for simulating the measurements reported
+    by the sun sensors during flight.
+
+args:
+    - satellite
+
+adds:
+    - name: "sensors.{satellite}.sun_sensors.s"
+      type: Lazy Vector3
+      comment: >
+          Sun vector reported by the sun sensors in the body frame. This vector
+          is set to NaN if a sun vector cannot be determined.
+
+gets:
+    - name: "truth.{satellite}.environment.s.body"
+      type: Vector3

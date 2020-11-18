@@ -1,0 +1,29 @@
+
+name: GyroscopeInterface
+type: Model
+comment: >
+    Interface for a model responsible for simulating the measurements reported
+    by the gyroscope during flight.
+
+args:
+    - satellite
+
+adds:
+    - name: "sensors.{satellite}.gyroscope.w"
+      type: Lazy Vector3
+      comment: >
+          Angular rate reported by the gyroscope in the body frame.
+    - name: "sensors.{satellite}.gyroscope.bias"
+      type: Initialized Vector3
+      comment: >
+          Bias exhibited by the gyroscope readings in the body frame. This
+          cannot be a lazy field as it needs to drift at each timestep and not
+          just the ones where the field was accessed.
+    - name: "sensors.{satellite}.gyroscope.w.error"
+      type: Lazy Vector3
+      comment: >
+          Error in the angular rate reported by the gyroscope in the body frame.
+
+gets:
+    - name: "truth.{satellite}.attitude.w"
+      type: Vector3
