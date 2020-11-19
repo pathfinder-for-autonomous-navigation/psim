@@ -9,7 +9,7 @@
 #include <psim/truth/time.hpp>
 
 TEST(Time, TestStep) {
-  auto const config = psim::Configuration::make("test/psim/truth/time_test_config.txt");
+  auto const config = psim::Configuration("test/psim/truth/time_test_config.txt");
   auto sim = psim::Simulation::make<psim::Time>(config);
 
   // Assert intial conditions

@@ -35,44 +35,49 @@
 #include "types.hpp"
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 namespace psim {
 
-/** @brief Represents a set of parameters used to initialize a simulation.
- *
- *  A configuration is a set of parameters parsed from a configuration file.
- *  These parameters are made accesible to the simulation's models during
- *  intialization to specify initial conditions and configure constants.
- */
 class Configuration {
  private:
-  /** @brief Map containing the parameter pointers.
-   *
-   *  https://stackoverflow.com/questions/9139748/using-stdreference-wrapper-as-the-key-in-a-stdmap
-   */
-  std::unordered_map<std::reference_wrapper<std::string const>,
-      ParameterBase const *, std::hash<std::string>, std::equal_to<std::string>>
-      _parameters;
-
-  Configuration() = default;
-
   template <typename T>
   void _add(std::string const &name, T &&value, std::string const &file,
       std::size_t l);
+
+ protected:
+  std::unordered_map<std::reference_wrapper<std::string const>,
+                     std::unique_ptr<ParameterBase const>,
+                     std::hash<std::string>, std::equal_to<std::string>>
+                     _parameters;
+
+  Configuration() = default;
 
   void _parse(std::string const &file);
 
  public:
   Configuration(Configuration const &) = delete;
-  Configuration &operator=(Configuration const &) = delete;
+  Configuration & operator=(Configuration const &) = delete;
 
-  Configuration(Configuration &&config);
-  Configuration &operator=(Configuration &&config);
+  Configuration(Configuration &&) = default;
+  Configuration &operator=(Configuration &&) = default;
 
-  virtual ~Configuration();
+  virtual ~Configuration() = default;
+
+  /** @brief
+   *
+   *  @param[in] file
+   */
+  Configuration(std::string const &file);
+
+  /** @brief
+   *
+   *  @param[in] files
+   */
+  Configuration(std::vector<std::string> const &files);
 
   /** @brief Retrives a parameter by name.
    *
@@ -94,28 +99,6 @@ class Configuration {
    *  If no parameter is found by the specified name, a runtime error is thrown.
    */
   ParameterBase const &operator[](std::string const &name) const;
-
-  /** @brief Parses a configuration file into a set of parameters.
-   *
-   *  @param[in] file Configuration file.
-   *
-   *  @return Parameters.
-   *
-   *  If the configuration file doesn't exist, a line with invalid formatting is
-   *  found, or a particular key is specified twice, a runtime error will be
-   *  thrown.
-   */
-  static Configuration make(std::string const &file);
-
-  /** @brief Parses a set of configuration files into a set of parameters.
-   *
-   *  @param[in] files Set of configuration file names.
-   *
-   *  If one of the configuration files don't exist, a line with invalid
-   *  formatting is found, or a particular key is specified twice, a runtime
-   *  error will be thrown.
-   */
-  static Configuration make(std::vector<std::string> const &files);
 };
 } // namespace psim
 
