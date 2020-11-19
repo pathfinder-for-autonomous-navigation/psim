@@ -49,8 +49,6 @@ class PyConfiguration : public psim::Configuration {
  public:
   using psim::Configuration::Configuration;
 
-  PyConfiguration() = default;
-
   virtual ~PyConfiguration() = default;
 
   PyVariant get(std::string const &name) {
