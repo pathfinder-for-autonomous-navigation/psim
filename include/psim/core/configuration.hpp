@@ -42,6 +42,12 @@
 
 namespace psim {
 
+/** @brief Represents a set of parameters used to initialize a simulation.
+ *
+ *  A configuration is a set of parameters parsed from a configuration file.
+ *  These parameters are made accesible to the simulation's models during
+ *  intialization to specify initial conditions and configure constants.
+ */
 class Configuration {
  private:
   template <typename T>
@@ -49,6 +55,10 @@ class Configuration {
       std::size_t l);
 
  protected:
+  /** @brief Map containing the parameter pointers.
+   *
+   *  https://stackoverflow.com/questions/9139748/using-stdreference-wrapper-as-the-key-in-a-stdmap
+   */
   std::unordered_map<std::reference_wrapper<std::string const>,
                      std::unique_ptr<ParameterBase const>,
                      std::hash<std::string>, std::equal_to<std::string>>
@@ -67,15 +77,23 @@ class Configuration {
 
   virtual ~Configuration() = default;
 
-  /** @brief
+  /** @brief Parses a configuration file into a configuration.
    *
-   *  @param[in] file
+   *  @param[in] file Configuration file.
+   *
+   *  If the configuration file doesn't exist, a line with invalid formatting is
+   *  found, or a particular key is specified twice, a runtime error will be
+   *  thrown.
    */
   Configuration(std::string const &file);
 
-  /** @brief
+  /** @brief Parses a set of configuration files into a configuration.
    *
-   *  @param[in] files
+   *  @param[in] files Set of configuration file names.
+   *
+   *  If one of the configuration files don't exist, a line with invalid
+   *  formatting is found, or a particular key is specified twice, a runtime
+   *  error will be thrown.
    */
   Configuration(std::vector<std::string> const &files);
 
