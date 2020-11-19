@@ -88,7 +88,7 @@ class PyConfiguration : public psim::Configuration {
 };
 
 void py_configuration(py::module &m) {
-  py::class_<PyConfiguration, psim::Configuration>(m, "Configuration")
+  py::class_<psim::Configuration, PyConfiguration>(m, "Configuration")
     .def(py::init([](std::string const &file) { return new PyConfiguration; }))
     .def(py::init([](std::string const &file) { return new PyConfiguration(file); }))
     .def(py::init([](std::vector<std::string> const &files) { return new PyConfiguration(files); }))
