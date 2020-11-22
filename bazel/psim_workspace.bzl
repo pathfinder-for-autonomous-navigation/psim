@@ -41,29 +41,6 @@ def _psim_get_python_bin(repository_ctx):
     return python_bin
 
 
-def _psim_get_python_lib(repository_ctx, python_bin):
-    """Retrieves the Python path to the appropriate system site packages.
-    """
-    result = repository_ctx.execute([
-        python_bin, "-c", (
-        "\n" +
-        "import site\n" +
-        "import sys\n" +
-        "\n" +
-        "site_packages = site.getsitepackages()\n" +
-        "\n" +
-        "if len(site_packages) == 1:\n" +
-        "    print(site_packages[0])\n" +
-        "else:\n" +
-        "    print('Expected a single system site package path', file=sys.stderr)\n" +
-        "    print('but instead got: ', site_packages, file=sys.stderr)\n" +
-        ""
-        )
-    ])
-    if result.stderr:
-      _psim_fail("Failed to retrieve Python library path:\n%s" % result.stderr)
-
-    return  result.stdout.strip("\n")
 def _psim_get_python_inc(repository_ctx, python_bin):
     """Retrieves the include path to the core Python library.
 
