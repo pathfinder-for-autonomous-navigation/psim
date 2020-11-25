@@ -12,29 +12,29 @@
 TEST(Configuration, TestBadName) {
   std::string const file =
       "test/psim/core/configuration_test_bad_name_config.txt";
-  EXPECT_THROW(psim::Configuration::make(file), std::runtime_error);
+  EXPECT_THROW(psim::Configuration _(file), std::runtime_error);
 }
 
 TEST(Configuration, TestBadValue) {
   std::string const file =
       "test/psim/core/configuration_test_bad_value_config.txt";
-  EXPECT_THROW(psim::Configuration::make(file), std::runtime_error);
+  EXPECT_THROW(psim::Configuration _(file), std::runtime_error);
 }
 
 TEST(Configuration, TestDuplicateName) {
   std::string const file =
       "test/psim/core/configuration_test_duplicate_name_config.txt";
-  EXPECT_THROW(psim::Configuration::make(file), std::runtime_error);
+  EXPECT_THROW(psim::Configuration _(file), std::runtime_error);
 }
 
 TEST(Configuration, TestFieldNotFound) {
   std::string const file = "test/psim/core/configuration_test_dne_config.txt";
-  EXPECT_THROW(psim::Configuration::make(file), std::runtime_error);
+  EXPECT_THROW(psim::Configuration _(file), std::runtime_error);
 }
 
 TEST(Configuration, TestGet) {
   std::string const file = "test/psim/core/configuration_test_config.txt";
-  auto const config = psim::Configuration::make(file);
+  auto const config = psim::Configuration(file);
 
   // Test a proper access
   ASSERT_EQ(config.get("test.integer")->template get<psim::Integer>(), 1);
@@ -47,7 +47,7 @@ TEST(Configuration, TestMultiFileMake) {
   std::vector<std::string> const files = {
       "test/psim/core/configuration_test_config.txt",
       "test/psim/core/configuration_test_two_config.txt"};
-  auto const config = psim::Configuration::make(files);
+  auto const config = psim::Configuration(files);
 
   // Check Integer field(s) from both files
   {
@@ -69,7 +69,7 @@ TEST(Configuration, TestMultiFileMake) {
 
 TEST(Configuration, TestSingleFileMake) {
   std::string const file = "test/psim/core/configuration_test_config.txt";
-  auto const config = psim::Configuration::make(file);
+  auto const config = psim::Configuration(file);
 
   // Check Integer field(s)
   {

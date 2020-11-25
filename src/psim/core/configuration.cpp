@@ -40,6 +40,8 @@ namespace psim {
 template <typename T>
 void Configuration::_add(std::string const &name, T &&value,
     std::string const &file, std::size_t l) {
+  typedef Parameter<typename std::remove_reference<T>::type> Parameter;
+
   auto const iter = _parameters.find(name);
   if (iter != _parameters.end())
     throw std::runtime_error("Error on line + " + std::to_string(l) +
@@ -47,8 +49,8 @@ void Configuration::_add(std::string const &name, T &&value,
                              "as a configuration file.\n" +
                              "Duplicate parameter name '" + name + "'.");
 
-  auto const *param = new Parameter<T>(name, std::forward<T>(value));
-  _parameters[param->name()] = param;
+  auto param = std::make_unique<Parameter>(name, std::forward<T>(value));
+  _parameters[param->name()] = std::move(param);
 }
 
 void Configuration::_parse(std::string const &file) {
@@ -144,21 +146,17 @@ void Configuration::_parse(std::string const &file) {
   }
 }
 
-Configuration::Configuration(Configuration &&config)
-  : _parameters(std::move(config._parameters)) {}
-
-Configuration &Configuration::operator=(Configuration &&config) {
-  _parameters = std::move(config._parameters);
-  return *this;
+Configuration::Configuration(std::string const &file) {
+  _parse(file);
 }
 
-Configuration::~Configuration() {
-  for (auto &parameter : _parameters)
-    delete parameter.second;
+Configuration::Configuration(std::vector<std::string> const &files) {
+  for (auto const &file : files)
+    _parse(file);
 }
 
 ParameterBase const &Configuration::operator[](std::string const &name) const {
-  auto const *parameter_ptr = this->get(name);
+  auto const &parameter_ptr = this->get(name);
   if (!parameter_ptr)
     throw std::runtime_error("Parameter not found with name: " + name);
 
@@ -167,19 +165,6 @@ ParameterBase const &Configuration::operator[](std::string const &name) const {
 
 ParameterBase const *Configuration::get(std::string const &name) const {
   auto const iter = _parameters.find(name);
-  return (iter == _parameters.end() ? nullptr : iter->second);
-}
-
-Configuration Configuration::make(std::string const &file) {
-  Configuration config;
-  config._parse(file);
-  return config;
-}
-
-Configuration Configuration::make(std::vector<std::string> const &files) {
-  Configuration config;
-  for (auto const &file : files)
-    config._parse(file);
-  return config;
+  return (iter == _parameters.end() ? nullptr : iter->second.get());
 }
 } // namespace psim

@@ -38,34 +38,60 @@ namespace py = pybind11;
 
 using PyVariant = mapbox::util::variant<psim::Integer, psim::Real, psim::Vector2, psim::Vector3, psim::Vector4>;
 
-static PyVariant py_visit(psim::ParameterBase const &field) {
-  // TODO : Update this to use double dispatch or something else that's better
-  {
-    auto const *ptr = dynamic_cast<psim::Parameter<psim::Integer> const *>(&field);
-    if (ptr) return ptr->get();
+class PyConfiguration : public psim::Configuration {
+ private:
+  template <typename T>
+  void _set(std::string const &name, T const &value) {
+    auto param = std::make_unique<psim::Parameter<T>>(name, value);
+    _parameters[param->name()] = std::move(param);
   }
-  {
-    auto const *ptr = dynamic_cast<psim::Parameter<psim::Real> const *>(&field);
-    if (ptr) return ptr->get();
+
+ public:
+  using psim::Configuration::Configuration;
+
+  virtual ~PyConfiguration() = default;
+
+  PyVariant get(std::string const &name) {
+    auto const &field = (*this)[name];
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Integer> const *>(&field);
+      if (ptr) return ptr->get();
+    }
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Real> const *>(&field);
+      if (ptr) return ptr->get();
+    }
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector2> const *>(&field);
+      if (ptr) return ptr->get();
+    }
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector3> const *>(&field);
+      if (ptr) return ptr->get();
+    }
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector4> const *>(&field);
+      if (ptr) return ptr->get();
+    }
+    throw std::runtime_error("Attempted to retrieve state field of an unsupported type.");
   }
-  {
-    auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector2> const *>(&field);
-    if (ptr) return ptr->get();
+
+  void set(std::string const &name, PyVariant const &value) {
+    value.match(
+      [this, &name](psim::Real    const &v) { _set(name, v); },
+      [this, &name](psim::Integer const &v) { _set(name, v); },
+      [this, &name](psim::Vector2 const &v) { _set(name, v); },
+      [this, &name](psim::Vector3 const &v) { _set(name, v); },
+      [this, &name](psim::Vector4 const &v) { _set(name, v); }
+    );
   }
-  {
-    auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector3> const *>(&field);
-    if (ptr) return ptr->get();
-  }
-  {
-    auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector4> const *>(&field);
-    if (ptr) return ptr->get();
-  }
-  throw std::runtime_error("Attempted to retrieve state field of an unsupported type.");
-}
+};
 
 void py_configuration(py::module &m) {
-  py::class_<psim::Configuration>(m, "Configuration")
-    .def(py::init([](std::string const &file) { return psim::Configuration::make(file); }))
-    .def(py::init([](std::vector<std::string> const &files) { return psim::Configuration::make(files); }))
-    .def("__getitem__", [](psim::Configuration const &self, std::string const &name) { return py_visit(self[name]); });
+  py::class_<psim::Configuration, PyConfiguration>(m, "Configuration")
+    .def(py::init([]() { return new PyConfiguration; }))
+    .def(py::init([](std::string const &file) { return new PyConfiguration(file); }))
+    .def(py::init([](std::vector<std::string> const &files) { return new PyConfiguration(files); }))
+    .def("__getitem__", [](PyConfiguration &self, std::string const &name) { return self.get(name); })
+    .def("__setitem__", [](PyConfiguration &self, std::string const &name, PyVariant const &value) { self.set(name, value); });
 }

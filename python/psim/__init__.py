@@ -9,6 +9,7 @@ from .plugins import (
 )
 
 from .simulation import (
+    Configuration,
     Simulation,
     SimulationRunner,
 )

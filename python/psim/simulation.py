@@ -38,10 +38,10 @@ class Simulation(object):
     This is the recommended entrypoint if you're not interested in using the
     plugin system and don't want to use the simulation runner.
     """
-    def __init__(self, sim, configs):
+    def __init__(self, sim, config):
         super(Simulation, self).__init__()
 
-        self._sim = sim(Configuration(configs))
+        self._sim = sim(config)
 
     def __getitem__(self, name):
         """Retrieves a state field from the underlying simulation.
@@ -120,7 +120,7 @@ class SimulationRunner(object):
         log.debug('Simulation type set to "%s"', str(sim))
 
         # Construct the simulation
-        self._sim = Simulation(sim, configs)
+        self._sim = Simulation(sim, Configuration(configs))
 
         # Initialize plugins
         for plugin in self._plugins:
