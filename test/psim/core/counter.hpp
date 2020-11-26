@@ -22,7 +22,7 @@ class Counter : public psim::Model {
   Counter() = delete;
   virtual ~Counter() = default;
 
-  Counter(psim::Configuration const &config);
+  Counter(psim::RandomsGenerator &randoms, psim::Configuration const &config);
   virtual void add_fields(psim::State &state) override;
   virtual void step() override;
 };
