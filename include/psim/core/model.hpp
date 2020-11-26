@@ -52,7 +52,9 @@ class Model {
    */
   RandomsGenerator &_randoms;
 
-  /**
+  /** @brief Sets the model random number generator.
+   *
+   *  @param[in] randoms
    */
   Model(lin::internal::RandomsGenerator &randoms);
 
