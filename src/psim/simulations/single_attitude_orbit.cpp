@@ -35,12 +35,14 @@
 
 namespace psim {
 
-SingleAttitudeOrbitGnc::SingleAttitudeOrbitGnc(Configuration const &config) {
+SingleAttitudeOrbitGnc::SingleAttitudeOrbitGnc(
+    RandomsGenerator &randoms, Configuration const &config)
+  : ModelList(randoms) {
   // Truth model
-  add<Time>(config);
-  add<EarthGnc>(config);
-  add<SatelliteTruthGnc>(config, "leader");
+  add<Time>(randoms, config);
+  add<EarthGnc>(randoms, config);
+  add<SatelliteTruthGnc>(randoms, config, "leader");
   // Sensors model
-  add<SatelliteSensors>(config, "leader");
+  add<SatelliteSensors>(randoms, config, "leader");
 }
-}  // namespace psim
+} // namespace psim

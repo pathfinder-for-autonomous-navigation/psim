@@ -48,7 +48,13 @@ namespace psim {
  */
 class Model {
  protected:
-  Model() = default;
+  /** @brief Reference to the simulation's random number generator.
+   */
+  RandomsGenerator &_randoms;
+
+  /**
+   */
+  Model(lin::internal::RandomsGenerator &randoms);
 
   /** @brief Retrive a field from the simulation state.
    *
@@ -97,6 +103,7 @@ class Model {
   }
 
  public:
+  Model() = delete;
   Model(Model const &) = delete;
   Model(Model &&) = delete;
   Model &operator=(Model const &) = delete;

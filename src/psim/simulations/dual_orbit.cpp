@@ -36,16 +36,18 @@
 
 namespace psim {
 
-DualOrbitGnc::DualOrbitGnc(Configuration const &config) {
+DualOrbitGnc::DualOrbitGnc(
+    RandomsGenerator &randoms, Configuration const &config)
+  : ModelList(randoms) {
   // Truth model
-  add<Time>(config);
-  add<EarthGnc>(config);
-  add<SatelliteTruthNoAttitudeGnc>(config, "leader");
-  add<SatelliteTruthNoAttitudeGnc>(config, "follower");
-  add<HillFrameEci>(config, "leader", "follower");
-  add<HillFrameEci>(config, "follower", "leader");
+  add<Time>(randoms, config);
+  add<EarthGnc>(randoms, config);
+  add<SatelliteTruthNoAttitudeGnc>(randoms, config, "leader");
+  add<SatelliteTruthNoAttitudeGnc>(randoms, config, "follower");
+  add<HillFrameEci>(randoms, config, "leader", "follower");
+  add<HillFrameEci>(randoms, config, "follower", "leader");
   // Sensors model
-  add<SatelliteSensorsNoAttitude>(config, "leader");
-  add<SatelliteSensorsNoAttitude>(config, "follower");
+  add<SatelliteSensorsNoAttitude>(randoms, config, "leader");
+  add<SatelliteSensorsNoAttitude>(randoms, config, "follower");
 }
-}  // namespace psim
+} // namespace psim

@@ -32,10 +32,9 @@
 
 namespace psim {
 
-EnvironmentGnc::EnvironmentGnc(Configuration const &config,
-    std::string const &satellite)
-  : Super(config, satellite, "ecef") { }
-
+EnvironmentGnc::EnvironmentGnc(RandomsGenerator &randoms,
+    Configuration const &config, std::string const &satellite)
+  : Super(randoms, config, satellite, "ecef") {}
 
 Vector3 EnvironmentGnc::truth_satellite_environment_b() const {
   auto const &r_ecef = truth_satellite_orbit_r_frame->get();
@@ -53,4 +52,4 @@ Vector3 EnvironmentGnc::truth_satellite_environment_s() const {
   gnc::env::sun_vector(t, s_eci);
   return s_eci;
 }
-}  // namespace psim
+} // namespace psim

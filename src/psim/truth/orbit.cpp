@@ -38,9 +38,9 @@
 
 namespace psim {
 
-OrbitGncEci::OrbitGncEci(Configuration const &config,
+OrbitGncEci::OrbitGncEci(RandomsGenerator &randoms, Configuration const &config,
     std::string const &satellite)
-  : Super(config, satellite, "eci") { }
+  : Super(randoms, config, satellite, "eci") { }
 
 void OrbitGncEci::step() {
   this->Super::step();

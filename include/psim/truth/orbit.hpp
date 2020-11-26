@@ -48,10 +48,11 @@ class OrbitGncEci : public Orbit<OrbitGncEci> {
 
   /** @brief Set the frame argument to ECI.
    */
-  OrbitGncEci(Configuration const &config, std::string const &satellite);
+  OrbitGncEci(RandomsGenerator &randoms, Configuration const &config,
+      std::string const &satellite);
 
   virtual void step() override;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

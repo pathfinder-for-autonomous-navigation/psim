@@ -42,7 +42,7 @@ class DualOrbitGnc : public ModelList {
   DualOrbitGnc() = delete;
   virtual ~DualOrbitGnc() = default;
 
-  DualOrbitGnc(Configuration const &config);
+  DualOrbitGnc(RandomsGenerator &randoms, Configuration const &config);
 };
 }  // namespace psim
 

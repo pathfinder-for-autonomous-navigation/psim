@@ -41,7 +41,8 @@ class SatelliteSensors : public ModelList {
   SatelliteSensors() = delete;
   virtual ~SatelliteSensors() = default;
 
-  SatelliteSensors(Configuration const &config, std::string const &satellite);
+  SatelliteSensors(RandomsGenerator &randoms, Configuration const &config,
+      std::string const &satellite);
 };
 
 /** @brief Models a single satellites sensors without attitude dynamics.
@@ -51,8 +52,8 @@ class SatelliteSensorsNoAttitude : public ModelList {
   SatelliteSensorsNoAttitude() = delete;
   virtual ~SatelliteSensorsNoAttitude() = default;
 
-  SatelliteSensorsNoAttitude(Configuration const &config,
-      std::string const &satellite);
+  SatelliteSensorsNoAttitude(RandomsGenerator &randoms,
+      Configuration const &config, std::string const &satellite);
 };
 }  // namespace psim
 

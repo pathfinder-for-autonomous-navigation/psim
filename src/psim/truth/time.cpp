@@ -26,9 +26,6 @@
 
 namespace psim {
 
-Time::Time(Configuration const &config)
-  : Super(config) { }
-
 void Time::step() {
   this->Super::step();
 

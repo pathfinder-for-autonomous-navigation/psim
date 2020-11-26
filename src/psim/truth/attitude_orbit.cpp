@@ -38,9 +38,9 @@
 
 namespace psim {
 
-AttitudeOrbitNoFuelEciGnc::AttitudeOrbitNoFuelEciGnc(
+AttitudeOrbitNoFuelEciGnc::AttitudeOrbitNoFuelEciGnc(RandomsGenerator &randoms, 
     Configuration const &config, std::string const &satellite)
-  : Super(config, satellite, "eci") { }
+  : Super(randoms, config, satellite, "eci") { }
 
 struct IntegratorData{
   Real const &mass;
