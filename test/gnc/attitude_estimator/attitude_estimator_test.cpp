@@ -48,7 +48,7 @@ static void test_estimate_constructor() {
 
 static void test_simple_reset() {
   lin::internal::RandomsGenerator randoms;
-  double t = randoms.next();
+  double t = randoms.rand();
   lin::Vector4d q = lin::rands<lin::Vector4d>(randoms, 4, 1);
   q = q / lin::norm(q);
 
