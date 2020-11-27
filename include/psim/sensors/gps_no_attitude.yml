@@ -8,6 +8,12 @@ comment: >
 args:
     - satellite
 
+params:
+    - name: "sensors.{satellite}.gps.r.sigma"
+      type: Vector3
+      comment: >
+        Standard deviation of the position reading from the GPS.
+
 adds:
     - name: "sensors.{satellite}.gps.r"
       type: Lazy Vector3

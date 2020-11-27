@@ -8,12 +8,24 @@ comment: >
 args:
     - satellite
 
+params:
+    - name: "sensors.{satellite}.gyroscope.w.sigma"
+      type: Vector3
+      comment: >
+        Standard deviation of the angular rate reading from the gyroscope. This
+        is white noise independent of the bias model.
+    - name: "sensors.{satellite}.gyroscope.w.bias.sigma"
+      type: Vector3
+      comment: >
+        Standard deviation of the noise integrated to simulate the gyroscope
+        bias' random walk over time.
+
 adds:
     - name: "sensors.{satellite}.gyroscope.w"
       type: Lazy Vector3
       comment: >
           Angular rate reported by the gyroscope in the body frame.
-    - name: "sensors.{satellite}.gyroscope.bias"
+    - name: "sensors.{satellite}.gyroscope.w.bias"
       type: Initialized Vector3
       comment: >
           Bias exhibited by the gyroscope readings in the body frame. This
@@ -25,5 +37,7 @@ adds:
           Error in the angular rate reported by the gyroscope in the body frame.
 
 gets:
+    - name: "truth.dt.s"
+      type: Real
     - name: "truth.{satellite}.attitude.w"
       type: Vector3
