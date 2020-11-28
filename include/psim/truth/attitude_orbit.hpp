@@ -38,7 +38,8 @@ namespace psim {
 /** @brief Simulates attitude dynamics without fuel slosh and propagates the
  *         orbital state with a Keplerian model in ECI.
  */
-class AttitudeOrbitNoFuelEciGnc : public AttitudeOrbit<AttitudeOrbitNoFuelEciGnc> {
+class AttitudeOrbitNoFuelEciGnc
+  : public AttitudeOrbit<AttitudeOrbitNoFuelEciGnc> {
  private:
   typedef AttitudeOrbit<AttitudeOrbitNoFuelEciGnc> Super;
   gnc::Ode4<Real, 16> ode;
@@ -49,14 +50,14 @@ class AttitudeOrbitNoFuelEciGnc : public AttitudeOrbit<AttitudeOrbitNoFuelEciGnc
 
   /** @brief Set the frame argument to ECI.
    */
-  AttitudeOrbitNoFuelEciGnc(Configuration const &config,
-      std::string const &satellite);
+  AttitudeOrbitNoFuelEciGnc(RandomsGenerator &randoms,
+      Configuration const &config, std::string const &satellite);
 
   Vector4 truth_satellite_attitude_q_eci_body() const;
   Vector3 truth_satellite_attitude_L() const;
 
   virtual void step() override;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

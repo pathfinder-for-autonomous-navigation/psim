@@ -4,8 +4,9 @@
 
 #include "counter.hpp"
 
-Counter::Counter(psim::Configuration const &config)
-  : _dn("dn", config["dn"].template get<psim::Integer>()),
+Counter::Counter(psim::RandomsGenerator &randoms, psim::Configuration const &config)
+  : Model(randoms),
+    _dn("dn", config["dn"].template get<psim::Integer>()),
     _n("n", config["n"].template get<psim::Integer>()) {}
 
 void Counter::add_fields(psim::State &state) {

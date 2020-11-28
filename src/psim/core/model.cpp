@@ -30,6 +30,8 @@
 
 namespace psim {
 
+Model::Model(RandomsGenerator &randoms) : _randoms(randoms) { }
+
 void Model::add_fields(State &state) {}
 
 void Model::get_fields(State &state) {}

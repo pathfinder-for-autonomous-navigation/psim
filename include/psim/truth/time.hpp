@@ -38,10 +38,10 @@ class Time : public TimeInterface<Time> {
   typedef TimeInterface<Time> Super;
 
  public:
+  using Super::TimeInterface;
+
   Time() = delete;
   virtual ~Time() = default;
-
-  Time(Configuration const &config);
 
   virtual void step() override;
 

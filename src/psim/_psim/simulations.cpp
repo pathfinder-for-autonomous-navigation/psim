@@ -75,29 +75,18 @@ static void py_assign(psim::StateFieldWritableBase &field, T const &value) {
   ptr->get() = value;
 }
 
-template <class C>
-class PySimulation : public psim::Simulation {
- public:
-  PySimulation() = delete;
-  virtual ~PySimulation() = default;
-
-  template <typename... Ts>
-  PySimulation(psim::Configuration const &config, Ts &&... ts)
-    : Simulation(std::make_unique<C>(config, std::forward<Ts>(ts)...)) { }
-};
-
 #define PY_SIMULATION(model) \
-    py::class_<PySimulation<psim::model>>(m, #model) \
+    py::class_<psim::Simulation<psim::model>>(m, #model) \
       .def(py::init([](psim::Configuration const &config) { \
-        return new PySimulation<psim::model>(config); \
+        return new psim::Simulation<psim::model>(config); \
       })) \
-      .def("__getitem__", [](PySimulation<psim::model> const &self, std::string const &name) { \
+      .def("__getitem__", [](psim::Simulation<psim::model> const &self, std::string const &name) { \
         auto const *ptr = self.get(name); \
         if (!ptr) \
           throw std::runtime_error("State field '" + name + "' does not exist."); \
         return py_visit(*ptr); \
       }) \
-      .def("__setitem__", [](PySimulation<psim::model> &self, std::string const &name, PyVariant const &value) { \
+      .def("__setitem__", [](psim::Simulation<psim::model> &self, std::string const &name, PyVariant const &value) { \
         auto *ptr = self.get_writable(name); \
         if (!ptr) \
           throw std::runtime_error("Writable state field '" + name + "' does not exist."); \
@@ -109,7 +98,7 @@ class PySimulation : public psim::Simulation {
           [&ptr](psim::Vector4 const &v) { py_assign(*ptr, v); } \
         ); \
       }) \
-      .def("step", [](PySimulation<psim::model> &self) { \
+      .def("step", [](psim::Simulation<psim::model> &self) { \
         self.step(); \
       })
 

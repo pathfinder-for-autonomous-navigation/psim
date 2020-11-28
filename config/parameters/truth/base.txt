@@ -2,6 +2,8 @@
 # conditions.
 #
 
+seed  0
+
 # Time model shared initial conditions.
 
 truth.dt.ns  170000000

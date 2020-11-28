@@ -29,9 +29,10 @@
 
 namespace psim {
 
-TransformVelocityEcef::TransformVelocityEcef(Configuration const &config,
-    std::string const &satellite, std::string const &vector)
-  : Super(config, satellite, vector, "ecef") { }
+TransformVelocityEcef::TransformVelocityEcef(RandomsGenerator &randoms,
+    Configuration const &config, std::string const &satellite,
+    std::string const &vector)
+  : Super(randoms, config, satellite, vector, "ecef") { }
 
 Vector3 TransformVelocityEcef::vector_ecef() const {
   return vector->get();
@@ -48,9 +49,10 @@ Vector3 TransformVelocityEcef::vector_eci() const {
   return v_eci;
 }
 
-TransformVelocityEci::TransformVelocityEci(Configuration const &config,
-    std::string const &satellite, std::string const &vector)
-  : Super(config, satellite, vector, "eci") { }
+TransformVelocityEci::TransformVelocityEci(RandomsGenerator &randoms,
+    Configuration const &config, std::string const &satellite,
+    std::string const &vector)
+  : Super(randoms, config, satellite, vector, "eci") { }
 
 Vector3 TransformVelocityEci::vector_ecef() const {
   auto const &r_eci = truth_satellite_orbit_r_frame->get();

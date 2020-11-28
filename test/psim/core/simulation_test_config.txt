@@ -1,4 +1,6 @@
 
+seed 0
+
 # Initial count and step
 n  0
 dn 1

@@ -39,30 +39,33 @@
 
 namespace psim {
 
-SatelliteTruthGnc::SatelliteTruthGnc(Configuration const &config,
-    std::string const &satellite) {
+SatelliteTruthGnc::SatelliteTruthGnc(RandomsGenerator &randoms,
+    Configuration const &config, std::string const &satellite)
+  : ModelList(randoms) {
   // Orbital dynamics
-  add<AttitudeOrbitNoFuelEciGnc>(config, satellite);
-  add<TransformPositionEci>(config, "truth." + satellite + ".orbit.r");
-  add<TransformVelocityEci>(config, satellite, "truth." + satellite + ".orbit.v");
+  add<AttitudeOrbitNoFuelEciGnc>(randoms, config, satellite);
+  add<TransformPositionEci>(randoms, config, "truth." + satellite + ".orbit.r");
+  add<TransformVelocityEci>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
   // Extra telemetry
-  add<NormVector3>(config, "truth." + satellite + ".attitude.L");
-  add<NormVector4>(config, "truth." + satellite + ".attitude.q.body_eci");
+  add<NormVector3>(randoms, config, "truth." + satellite + ".attitude.L");
+  add<NormVector4>(randoms, config, "truth." + satellite + ".attitude.q.body_eci");
   // Environmental models
-  add<EnvironmentGnc>(config, satellite);
-  add<TransformDirectionEcef>(config, satellite, "truth." + satellite + ".environment.b");
-  add<TransformDirectionEci>(config, satellite, "truth." + satellite + ".environment.s");
+  add<EnvironmentGnc>(randoms, config, satellite);
+  add<TransformDirectionEcef>(randoms, config, satellite, "truth." + satellite + ".environment.b");
+  add<TransformDirectionEci>(randoms, config, satellite, "truth." + satellite + ".environment.s");
 }
 
 SatelliteTruthNoAttitudeGnc::SatelliteTruthNoAttitudeGnc(
-    Configuration const &config, std::string const &satellite) {
+    RandomsGenerator &randoms,  Configuration const &config,
+    std::string const &satellite)
+  : ModelList(randoms) {
   // Orbital dynamics
-  add<OrbitGncEci>(config, satellite);
-  add<TransformPositionEci>(config, "truth." + satellite + ".orbit.r");
-  add<TransformVelocityEci>(config, satellite, "truth." + satellite + ".orbit.v");
+  add<OrbitGncEci>(randoms, config, satellite);
+  add<TransformPositionEci>(randoms, config, "truth." + satellite + ".orbit.r");
+  add<TransformVelocityEci>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
   // Environmental models
-  add<EnvironmentGnc>(config, satellite);
-  add<TransformPositionEcef>(config, "truth." + satellite + ".environment.b");
-  add<TransformPositionEci>(config, "truth." + satellite + ".environment.s");
+  add<EnvironmentGnc>(randoms, config, satellite);
+  add<TransformPositionEcef>(randoms, config, "truth." + satellite + ".environment.b");
+  add<TransformPositionEci>(randoms, config, "truth." + satellite + ".environment.s");
 }
 }  // namespace psim

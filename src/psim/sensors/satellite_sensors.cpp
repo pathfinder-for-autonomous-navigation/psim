@@ -35,16 +35,19 @@
 
 namespace psim {
 
-SatelliteSensors::SatelliteSensors(Configuration const &config,
-    std::string const &satellite) {
-  add<GpsNoAttitude>(config, satellite);
-  add<Gyroscope>(config, satellite);
-  add<Magnetometer>(config, satellite);
-  add<SunSensors>(config, satellite);
+SatelliteSensors::SatelliteSensors(RandomsGenerator &randoms,
+    Configuration const &config, std::string const &satellite)
+  : ModelList(randoms) {
+  add<GpsNoAttitude>(randoms, config, satellite);
+  add<Gyroscope>(randoms, config, satellite);
+  add<Magnetometer>(randoms, config, satellite);
+  add<SunSensors>(randoms, config, satellite);
 }
 
 SatelliteSensorsNoAttitude::SatelliteSensorsNoAttitude(
-    Configuration const &config, std::string const &satellite) {
-  add<GpsNoAttitude>(config, satellite);
+    RandomsGenerator &randoms, Configuration const &config,
+    std::string const &satellite)
+  : ModelList(randoms) {
+  add<GpsNoAttitude>(randoms, config, satellite);
 }
-}  // namespace psim
+} // namespace psim

@@ -42,7 +42,7 @@ class SingleOrbitGnc : public ModelList {
   SingleOrbitGnc() = delete;
   virtual ~SingleOrbitGnc() = default;
 
-  SingleOrbitGnc(Configuration const &config);
+  SingleOrbitGnc(RandomsGenerator &randoms, Configuration const &config);
 };
 }  // namespace psim
 

@@ -10,7 +10,7 @@
 
 TEST(Time, TestStep) {
   auto const config = psim::Configuration("test/psim/truth/time_test_config.txt");
-  auto sim = psim::Simulation::make<psim::Time>(config);
+  psim::Simulation<psim::Time> sim(config);
 
   // Assert intial conditions
   ASSERT_EQ(sim["truth.dt.ns"].get<psim::Integer>(), 5);

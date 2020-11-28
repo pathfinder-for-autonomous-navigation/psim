@@ -45,7 +45,7 @@ class TransformVelocityEcef : public TransformVelocity<TransformVelocityEcef> {
 
   /** @brief Sets the frame arguments to ECEF.
    */
-  TransformVelocityEcef(Configuration const &config,
+  TransformVelocityEcef(RandomsGenerator &randoms, Configuration const &config,
       std::string const &satellite, std::string const &vector);
 
   Vector3 vector_ecef() const;
@@ -64,12 +64,12 @@ class TransformVelocityEci : public TransformVelocity<TransformVelocityEci> {
 
   /** @brief Sets the frame arguments to ECI.
    */
-  TransformVelocityEci(Configuration const &config,
+  TransformVelocityEci(RandomsGenerator &randoms, Configuration const &config,
       std::string const &satellite, std::string const &vector);
 
   Vector3 vector_ecef() const;
   Vector3 vector_eci() const;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

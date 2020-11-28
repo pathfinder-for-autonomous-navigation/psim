@@ -46,7 +46,7 @@ class ModelList : public Model {
   std::vector<std::unique_ptr<Model>> _models;
 
  protected:
-  ModelList() = default;
+  ModelList(RandomsGenerator &randoms);
 
   /** @brief Adds a new model to the model list.
    *
@@ -73,7 +73,7 @@ class ModelList : public Model {
   virtual void add_fields(State &state) override;
 
   /** @brief All models request extra fields they need from the simulation
-   * state.
+   *  state.
    *
    *  @param[in] state Simulation state.
    */

@@ -30,6 +30,7 @@
 #define PSIM_CORE_TYPES_HPP_
 
 #include <lin/core.hpp>
+#include <lin/generators/randoms.hpp>
 
 namespace psim {
 
@@ -44,6 +45,10 @@ typedef lin::Vector3d Vector3;
 typedef lin::Vector4d Vector4;
 /** @}
  */
+
+/** @brief Used as a random number generator for all simulations.
+ */
+typedef lin::internal::RandomsGenerator RandomsGenerator;
 
 } // namespace psim
 

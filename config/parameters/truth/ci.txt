@@ -1,6 +1,8 @@
 # Initial conditions for simulations starting during deployment.
 #
 
+seed  0
+
 # Time model initial conditions.
 
 truth.t.ns  0

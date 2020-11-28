@@ -372,14 +372,14 @@ class Model(Commented):
             '\n' + \
             '  virtual ~{}() = default;\n'.format(self._name) + \
             '\n' + \
-            '  {}(Configuration const &config'.format(self._name)
+            '  {}(RandomsGenerator &randoms, Configuration const &config'.format(self._name)
 
             # Arg arguments
             for arg in self._args:
                 self.__code += ', std::string const &' + arg._name
 
             self.__code += ')\n' + \
-            '  : {}()'.format(self._type)
+            '  : {}(randoms)'.format(self._type)
 
             # Construct member varaibles
             for member in itertools.chain(self._args, self._params, self._adds, self._gets):

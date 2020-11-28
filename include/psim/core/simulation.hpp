@@ -32,54 +32,53 @@
 #include <psim/core/model.hpp>
 #include <psim/core/state.hpp>
 
-#include <memory>
-#include <utility>
-
 namespace psim {
 
 /** @brief Represents a full simulation.
+ *
+ *  @tparam C Underlying model used by the simulation.
  *
  *  The main purpose of the simulation class is to merge the functionality of a
  *  state and model. It's how end users are intended to interact with models,
  *  state fields, and steps.
  */
+template <class C>
 class Simulation : public State {
  private:
-  /** @brief Model employed by the simulation.
-   *
-   *  Making this field dynamically allocated was very intentional. It ensures
-   *  on moves that the stored state fields address remain valid.
+  /** @brief Random number generator shared across the entire simulation.
    */
-  std::unique_ptr<Model> _model;
+  RandomsGenerator _randoms;
 
- protected:
-  /** @brief Private constructor employed by the factory function.
+  /** @brief Model employed by the simulation.
    */
-  Simulation(std::unique_ptr<Model> &&model);
+  C _model;
 
  public:
   Simulation() = delete;
   Simulation(Simulation const &) = delete;
-  Simulation(Simulation &&) = default;
+  Simulation(Simulation &&) = delete;
   Simulation &operator=(Simulation const &) = delete;
-  Simulation &operator=(Simulation &&) = default;
+  Simulation &operator=(Simulation &&) = delete;
 
   virtual ~Simulation() = default;
 
+  /** @brief Creates a simulation based on the provided configuration.
+   *
+   *  @param[in] config Simulation configuration.
+   *
+   *  Note, the simulation expects a field named 'seed' in the configuration to
+   *  initialize the random number generator.
+   */
+  Simulation(Configuration const &config)
+    : _randoms(config["seed"].get<Integer>()), _model(_randoms, config) {
+    _model.add_fields(*this);
+    _model.get_fields(*this);
+  }
+
   /** @brief Steps the simulation (and all underlying models) forward.
    */
-  void step();
-
-  /** @brief Create a simulation based on the given model type.
-   *
-   *  @tparam C  Model type.
-   *  @tparam Ts Model constructor arguments.
-   *
-   *  @return A simulation.
-   */
-  template <class C, typename... Ts>
-  static Simulation make(Ts &&... ts) {
-    return Simulation(std::make_unique<C>(std::forward<Ts>(ts)...));
+  void step() {
+    _model.step();
   }
 };
 } // namespace psim

@@ -30,6 +30,8 @@
 
 namespace psim {
 
+ModelList::ModelList(RandomsGenerator &randoms) : Model(randoms) { }
+
 void ModelList::add_fields(State &state) {
   this->Model::add_fields(state);
 

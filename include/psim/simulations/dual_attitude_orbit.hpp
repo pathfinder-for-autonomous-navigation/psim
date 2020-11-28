@@ -42,8 +42,8 @@ class DualAttitudeOrbitGnc : public ModelList {
   DualAttitudeOrbitGnc() = delete;
   virtual ~DualAttitudeOrbitGnc() = default;
 
-  DualAttitudeOrbitGnc(Configuration const &config);
+  DualAttitudeOrbitGnc(RandomsGenerator &randoms, Configuration const &config);
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

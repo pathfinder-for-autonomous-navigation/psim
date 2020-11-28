@@ -44,7 +44,8 @@ class SatelliteTruthGnc : public ModelList {
   SatelliteTruthGnc() = delete;
   virtual ~SatelliteTruthGnc() = default;
 
-  SatelliteTruthGnc(Configuration const &config, std::string const &satellite);
+  SatelliteTruthGnc(RandomsGenerator &randoms, Configuration const &config,
+      std::string const &satellite);
 };
 
 /** @brief Provides a single satellites truth model without attitude dynamics.
@@ -57,9 +58,9 @@ class SatelliteTruthNoAttitudeGnc : public ModelList {
   SatelliteTruthNoAttitudeGnc() = delete;
   virtual ~SatelliteTruthNoAttitudeGnc() = default;
 
-  SatelliteTruthNoAttitudeGnc(Configuration const &config,
-      std::string const &satellite);
+  SatelliteTruthNoAttitudeGnc(RandomsGenerator &randoms,
+      Configuration const &config, std::string const &satellite);
 };
-}  // namespace psim
+} // namespace psim
 
 #endif
