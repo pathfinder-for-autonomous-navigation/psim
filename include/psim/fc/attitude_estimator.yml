@@ -1,0 +1,67 @@
+
+name: AttitudeEstimatorInterface
+type: Model
+comment: >
+    Interface for how the flight computer's attitude estimator will interact
+    with the simulation in PSim standalone.
+
+args:
+    - satellite
+
+adds:
+    - name: "fc.{satellite}.attitude.is_valid"
+      type: Integer
+      comment: >
+        Flag specifying whether or not the estimator is currently initialized.
+        Zero indicated the estimator isn't initialized while one indicates it
+        has been initialized.
+    - name: "fc.{satellite}.attitude.q.body_eci"
+      type: Vector4
+      comment: >
+        Current attitude estimate.
+    - name: "fc.{satellite}.attitude.q.body_eci.error"
+      type: Lazy Vector4
+      comment: >
+        Current attitude estimate error.
+    - name: "fc.{satellite}.attitude.q.body_eci.error.degrees"
+      type: Lazy Real
+      comment: >
+        Current attitude estimate error represented as a scalar in degrees.
+    - name: "fc.{satellite}.attitude.p.body_eci.error"
+      type: Lazy Vector3
+      comment: >
+        Current attitude estimate error. This value is represented as a
+        Generalized Rodrigues Parameter.
+    - name: "fc.{satellite}.attitude.p.body_eci.sigma"
+      type: Lazy Vector3
+      comment: >
+        One sigma bounds on the current attitude estimate error. This value is
+        represented as a Generalized Rodrigues Parameter.
+    - name: "fc.{satellite}.attitude.w.bias"
+      type: Vector3
+      comment: >
+        Current angular rate bias estimate.
+    - name: "fc.{satellite}.attitude.w.bias.error"
+      type: Lazy Vector3
+      comment: >
+        Current angular rate bias estimate error.
+    - name: "fc.{satellite}.attitude.w.bias.sigma"
+      type: Lazy Vector3
+      comment: >
+        One sigma bounds on the current angular rate bias estimate error.
+
+gets:
+    - name: "truth.t.s"
+      type: Real
+    - name: "truth.{satellite}.orbit.r.ecef"
+      type: Vector3
+    - name: "truth.{satellite}.attitude.q.eci_body"
+      type: Vector4
+    - name: "sensors.{satellite}.gyroscope.w"
+      type: Vector3
+    - name: "sensors.{satellite}.gyroscope.w.bias"
+      type: Vector3
+    - name: "sensors.{satellite}.sun_sensors.s"
+      type: Vector3
+    - name: "sensors.{satellite}.magnetometer.b"
+      type: Vector3
