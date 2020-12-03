@@ -30,8 +30,9 @@ pip_install(
 http_archive(
   name = "pybind11",
   build_file = "//bazel:pybind11.BUILD",
-  strip_prefix = "pybind11-2.5.0",
-  urls = ["https://github.com/pybind/pybind11/archive/v2.5.0.tar.gz"],
+  url = "https://github.com/pybind/pybind11/archive/v2.6.1.tar.gz",
+  sha256 = "cdbe326d357f18b83d10322ba202d69f11b2f49e2d87ade0dc2be0c5c34f8e2a",
+  strip_prefix = "pybind11-2.6.1",
 )
 
 # Googletest
