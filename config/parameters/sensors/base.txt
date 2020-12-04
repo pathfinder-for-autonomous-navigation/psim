@@ -1,24 +1,20 @@
 # Basic configuration information shared across all sensor model initial
 # conditions.
 #
+# All configuration values for the gyroscope and magnetometer were
+# experimentally determined. See the following folder in the PAN team google
+# drive:
+#   System Level > Integration and Testing > Sensor Charactarization
+#
 
 # Leader spacecraft base sensor configuration
 
 sensors.leader.gps.r.sigma  0.0 0.0 0.0
 
-# The source for these numbers is currectly Stewart's original attitude
-# estimator script written in MATLAB. This will be updated down the road
-# but the datasheet is still linked below.
-#
-# https://www.st.com/content/ccc/resource/technical/document/datasheet/76/27/cf/88/c5/03/42/6b/DM00218116.pdf/files/DM00218116.pdf/jcr:content/translations/en.DM00218116.pdf
 sensors.leader.gyroscope.w.bias        0.02    0.01    -0.03
 sensors.leader.gyroscope.w.bias.sigma  1.00e-6 1.00e-6  1.00e-6
 sensors.leader.gyroscope.w.sigma       2.75e-4 2.75e-4  2.75e-4
 
-# Pulled from the LIS3MDL datasheet. Note that the noises specified there are
-# 3.2e-, 3.2e-7, and 4.0e-7 respectively but we are being conservative here.
-#
-# https://www.st.com/resource/en/datasheet/lis3mdl.pdf
 sensors.leader.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7
 
 # Follower spacecraft base sensor configuration
