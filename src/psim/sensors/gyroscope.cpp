@@ -33,15 +33,19 @@ namespace psim {
 void Gyroscope::step() {
   this->Super::step();
 
-  // TODO : Implement gyroscope bias drift
+  auto       &bias = sensors_satellite_gyroscope_w_bias.get();
+  auto const &bias_sigma = sensors_satellite_gyroscope_w_bias_sigma.get();
+  auto const &dt = truth_dt_s->get();
+
+  bias = bias + dt * lin::multiply(bias_sigma, lin::gaussians<Vector3>(_randoms));
 }
 
 Vector3 Gyroscope::sensors_satellite_gyroscope_w() const {
   auto const &truth_w = truth_satellite_attitude_w->get();
-  auto const &bias = sensors_satellite_gyroscope_bias.get();
+  auto const &bias = sensors_satellite_gyroscope_w_bias.get();
+  auto const &sigma = sensors_satellite_gyroscope_w_sigma.get();
 
-  // TODO : Implement a white noise model
-  return truth_w + bias;
+  return truth_w + bias + lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
 }
 
 Vector3 Gyroscope::sensors_satellite_gyroscope_w_error() const {

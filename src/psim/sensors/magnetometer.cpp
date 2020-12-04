@@ -32,9 +32,9 @@ namespace psim {
 
 Vector3 Magnetometer::sensors_satellite_magnetometer_b() const {
   auto const &truth_b = truth_satellite_environment_b_body->get();
+  auto const &sigma = sensors_satellite_magnetometer_b_sigma.get();
 
-  // TODO : Implement a configurable white noise model
-  return truth_b;
+  return truth_b + lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
 }
 
 Vector3 Magnetometer::sensors_satellite_magnetometer_b_error() const {
