@@ -1,10 +1,28 @@
-# Basic configuration information shared across all sensor model configurations.
+# Basic configuration information shared across all sensor model initial
+# conditions.
+#
+# All configuration values for the gyroscope and magnetometer were
+# experimentally determined. See the following folder in the PAN team google
+# drive:
+#   System Level > Integration and Testing > Sensor Charactarization
 #
 
 # Leader spacecraft base sensor configuration
 
-sensors.leader.gyroscope.bias  0.02 0.01 -0.03
+sensors.leader.gps.r.sigma  0.0 0.0 0.0
+
+sensors.leader.gyroscope.w.bias        0.02    0.01    -0.03
+sensors.leader.gyroscope.w.bias.sigma  1.00e-6 1.00e-6  1.00e-6
+sensors.leader.gyroscope.w.sigma       2.75e-4 2.75e-4  2.75e-4
+
+sensors.leader.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7
 
 # Follower spacecraft base sensor configuration
 
-sensors.follower.gyroscope.bias  -0.01 0.00 0.05
+sensors.follower.gps.r.sigma  0.0 0.0 0.0
+
+sensors.follower.gyroscope.w.bias        -0.01    0.01    0.04
+sensors.follower.gyroscope.w.bias.sigma   1.00e-6 1.00e-6 1.00e-6
+sensors.follower.gyroscope.w.sigma        2.75e-4 2.75e-4 2.75e-4
+
+sensors.follower.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7

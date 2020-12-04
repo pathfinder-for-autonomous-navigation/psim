@@ -8,6 +8,12 @@ comment: >
 args:
     - satellite
 
+params:
+    - name: "sensors.{satellite}.magnetometer.b.sigma"
+      type: Vector3
+      comment: >
+        Standard deviation of the magnetic field reading from the magnetometer.
+
 adds:
     - name: "sensors.{satellite}.magnetometer.b"
       type: Lazy Vector3

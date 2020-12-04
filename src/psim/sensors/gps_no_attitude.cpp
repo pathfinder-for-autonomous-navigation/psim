@@ -32,9 +32,9 @@ namespace psim {
 
 Vector3 GpsNoAttitude::sensors_satellite_gps_r() const {
   auto const &truth_r_ecef = truth_satellite_orbit_r_ecef->get();
+  auto const &sigma = sensors_satellite_gps_r_sigma.get();
 
-  // TODO : Implement a configurable white noise model
-  return truth_r_ecef;
+  return truth_r_ecef + lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
 }
 
 Vector3 GpsNoAttitude::sensors_satellite_gps_r_error() const {
