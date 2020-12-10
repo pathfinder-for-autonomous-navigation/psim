@@ -111,3 +111,17 @@ modules as a dependency. Unit test are implemented under `test/psim/**` and can
 be run with the following command:
 
     bazel test //test/psim:all --test_output=all
+
+If you're interested in running the standalone version of PSim, you should install
+a development version of the PSim module locally in you're virtual environment:
+
+    source venv/bin/activate
+    pip install -e .
+    python -m psim --help
+
+From there, you should be able to run PSim standalone cases, start simulation off
+with difference configurations, and plot state fields over the course of the
+simulation. Note, that `pip install -e .` calls the `setup.py` file which calls Bazel.
+Therefore, if any C++ changes are made you must reinstall the PSim module with `pip`
+to update the PSim binaries. Note the `-e` flag ensures `pip` doesn't copy the entire
+respository and rebuild for each install.
