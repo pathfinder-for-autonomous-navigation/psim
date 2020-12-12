@@ -7,14 +7,19 @@ main_state=struct();
 rng(seed,'threefry');
 main_state.leader=struct();
 main_state.follower=struct();
+
 [dynamics,actuators,sensors] = initialize_states(condition);
 main_state.leader.dynamics=dynamics;
 main_state.leader.actuators=actuators;
+sensors.tag = 1; %tag = 1 as identity is Leader
 main_state.leader.sensors=sensors;
+
 [dynamics,actuators,sensors] = initialize_states(condition);
 main_state.follower.dynamics=dynamics;
 main_state.follower.actuators=actuators;
+%tag remains 0  as identity is Follower
 main_state.follower.sensors=sensors;
+
 
 %perturb follower orbit
 main_state.follower.dynamics.velocity_eci=main_state.leader.dynamics.velocity_eci+randn(3,1)*0.1;
@@ -86,6 +91,26 @@ sensors.sunsensor_real_normals= transpose([ 0.9397	0.3420      0
 sensors.sunsensor_real_voltage_maximums= 3.3 * ones(20, 1);
 sensors.sunsensor_measured_voltage_maximums= sensors.sunsensor_real_voltage_maximums;
 sensors.sunsensor_measured_normals= sensors.sunsensor_real_normals;
+
+%load voltage data for Leader
+load('leader_ssvoltages','inclinometerPlotsL','voltages_measuredL','curvefit_mL')
+sensors.inclinometerPlotsL = inclinometerPlotsL;
+sensors.voltages_measuredL = voltages_measuredL;
+sensors.curvefitsL = curvefit_mL;
+load('normsL','normsL') 
+sensors.normsL = normsL;
+
+%load voltage data for Follower
+load('follower_ssvoltages','inclinometerPlotsF','voltages_measuredF','curvefit_mF') 
+sensors.inclinometerPlotsF = inclinometerPlotsF;
+sensors.voltages_measuredF = voltages_measuredF;
+sensors.curvefitsF = curvefit_mF;
+load('normsF','normsF') 
+sensors.normsF = normsF;
+
+%tag = 1 if Leader, tag = 0 if Follower; default = 0
+sensors.tag = 0; 
+
 %gps model
 sensors.gps_position_bias_ecef= const.gps_position_bias_sdiv*randn(3,1);
 sensors.gps_velocity_bias_ecef= const.gps_velocity_bias_sdiv*randn(3,1);

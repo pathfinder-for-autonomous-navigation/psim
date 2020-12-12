@@ -34,8 +34,8 @@ sat2sun_body=utl_rotateframe(quat_body_eci,sat2sun_eci')';
 eclipse = env_eclipse(true_state.position_eci,sat2sun_eci);
 
 [sensor_readings.sat2sun_body,...    %unit vector in the body frame
- sensor_readings.sun_sensor_true,... %true if succesfull
-] = update_sun_sensors(my_satellite_state.sensors, sat2sun_body, eclipse);
+ sensor_readings.sun_sensor_true... %% true if success
+ ] = update_sun_sensors(my_satellite_state.sensors, sat2sun_body, eclipse);
 
 %% wheel angular momentum reading
 
@@ -68,68 +68,5 @@ if (my_satellite_state.sensors.gps_time_till_lock<=0)
         sensor_readings.target_velocity_ecef= other_satellite_state.actuators.ground_velocity_ecef;
         sensor_readings.target_gpstime= other_satellite_state.actuators.ground_gpstime;
     end
-end
-
-
-end
-
-
-function [sun_vec, success] = update_sun_sensors(my_satellite_sensors, sat2sun, eclipse)
-%update_sun_sensors simulates the behavior of the sun sensor array and sun
-%vector determination algorithm on the ADCS. All vectors are in the body
-%frame.
-%   my_satellite_sensors is the struct containing all state information
-%       about the satellites sensors (for our purposes here the real
-%       normals, measured normals, real voltage maximums, and measured
-%       voltage maximums.
-%   sat2sun is a unit vector pointing from the satellite to the sun in the
-%       body frame.
-%   eclipse is true if the satellite is in eclipse and false otherwise.
-%   sun_vec is the measured sun vector in the body frame of the spacecraft.
-%   success is true if the returned sun vector is accurate and false
-%       otherwise.
-
-real_n     = my_satellite_sensors.sunsensor_real_normals;
-measured_n = my_satellite_sensors.sunsensor_measured_normals;
-real_v     = my_satellite_sensors.sunsensor_real_voltage_maximums;
-measured_v = my_satellite_sensors.sunsensor_measured_voltage_maximums;
-
-% Assume failure or eclipse
-success = 0;
-sun_vec = NaN(3,1);
-
-if (~eclipse)
-
-    %generate voltages that would be measured by the ADCS
-    [~, N] = size(real_n);
-    voltages = zeros(N, 1);
-    for i = 1:N
-        %magnitude of a normal is the inverse of the max voltage reading so
-        %dividing by the frobenius norm gives a voltage measure.
-        voltages(i) = sat2sun' * real_n(:, i) * real_v(i);
-    end
-
-    %run sun vector determination algorithm run by the adcs computer
-    A = zeros(N, 3);
-    Y = zeros(N, 1);
-    j = 0;
-    for i = 1:N
-        %enforce voltage threshold for inclusion in sun vector calculation
-        voltages(i) = voltages(i) / measured_v(i);
-        if voltages(i) > 0.5
-            j = j + 1;
-            A(j, :) = measured_n(:, i)';
-            Y(j) = voltages(i);
-        end
-    end
-    if j >= 3  % TODO : Perhaps play with this parameter
-        A = A(1:j, :);
-        Y = Y(1:j, :);
-        [Q, R] = qr(A);
-        sun_vec = R \ (Q' * Y);
-        sun_vec = sun_vec / norm(sun_vec);
-        success = 1;
-    end
-    
 end
 end
