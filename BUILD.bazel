@@ -71,10 +71,9 @@ psim_cc_library(
 # PSim Python extension
 psim_py_extension(
     name = "_psim",
-    srcs = glob([
-        "src/psim/_psim/**/*.hpp", "src/psim/_psim/**/*.inl",
-        "src/psim/_psim/**/*.cpp",
-    ]),
+    srcs = [
+        "python/psim/_psim.cpp"
+    ],
     deps = [
         "@variant//:variant", "//:psim_core", "//:psim_simulations"
     ],

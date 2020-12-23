@@ -46,7 +46,7 @@ namespace psim {
  *
  *  A configuration is a set of parameters parsed from a configuration file.
  *  These parameters are made accesible to the simulation's models during
- *  intialization to specify initial conditions and configure constants.
+ *  initialization to specify initial conditions and configure constants.
  */
 class Configuration {
  private:
@@ -104,7 +104,7 @@ class Configuration {
    *  @return Pointer to the parameter.
    *
    *  If no parameter is found by the specified name, a null pointer is
-   * returned.
+   *  returned.
    */
   ParameterBase const *get(std::string const &name) const;
 

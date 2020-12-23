@@ -59,7 +59,7 @@ void Configuration::_parse(std::string const &file) {
   if (!ifs.is_open())
     throw std::runtime_error(
         "Error while parsing '" + file + "' as a configuration file.\n" +
-        "Unable to open file. This is most likely because the file cannot be" +
+        "Unable to open file. This is most likely because the file cannot be " +
         "found.");
 
   // Parse line by line
