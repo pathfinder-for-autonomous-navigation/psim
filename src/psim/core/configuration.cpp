@@ -44,13 +44,11 @@ void Configuration::_add(std::string const &name, T &&value,
 
   auto const iter = _parameters.find(name);
   if (iter != _parameters.end())
-    throw std::runtime_error("Error on line + " + std::to_string(l) +
-                             " while parsing " + file +
-                             "as a configuration file.\n" +
-                             "Duplicate parameter name '" + name + "'.");
+    throw std::runtime_error(
+        "Error on line + " + std::to_string(l) + " while parsing " + file +
+        "as a configuration file.\n" + "Duplicate parameter '" + name + "'.");
 
-  auto param = std::make_unique<Parameter>(name, std::forward<T>(value));
-  _parameters[param->name()] = std::move(param);
+  _parameters[name] = std::make_unique<Parameter>(name, std::forward<T>(value));
 }
 
 void Configuration::_parse(std::string const &file) {

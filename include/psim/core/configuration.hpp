@@ -56,13 +56,9 @@ class Configuration {
 
  protected:
   /** @brief Map containing the parameter pointers.
-   *
-   *  https://stackoverflow.com/questions/9139748/using-stdreference-wrapper-as-the-key-in-a-stdmap
    */
-  std::unordered_map<std::reference_wrapper<std::string const>,
-                     std::unique_ptr<ParameterBase const>,
-                     std::hash<std::string>, std::equal_to<std::string>>
-                     _parameters;
+  std::unordered_map<std::string, std::unique_ptr<ParameterBase const>>
+      _parameters;
 
   Configuration() = default;
 
@@ -70,7 +66,7 @@ class Configuration {
 
  public:
   Configuration(Configuration const &) = delete;
-  Configuration & operator=(Configuration const &) = delete;
+  Configuration &operator=(Configuration const &) = delete;
 
   Configuration(Configuration &&) = default;
   Configuration &operator=(Configuration &&) = default;

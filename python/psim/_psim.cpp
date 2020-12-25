@@ -73,9 +73,7 @@ class PyConfiguration : public psim::Configuration {
  private:
   template <typename T>
   void _set(std::string const &name, T const &value) {
-    auto param = std::make_unique<psim::Parameter<T>>(name, value);
-    _parameters.erase(_parameters.find(param->name()));
-    _parameters[param->name()] = std::move(param);
+    _parameters[name] = std::make_unique<psim::Parameter<T>>(name, value);
   }
 
  public:
