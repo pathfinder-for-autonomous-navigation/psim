@@ -1,8 +1,10 @@
 
 # GPS measurement over time.
-- x: truth.t.s
+- type: Plot2D
+  x: truth.t.s
   y: [sensors.leader.gps.r.x, sensors.leader.gps.r.y, sensors.leader.gps.r.z]
 
 # GPS measurement error over time.
-- x: truth.t.s
+- type: Plot2D
+  x: truth.t.s
   y: [sensors.leader.gps.r.error.x, sensors.leader.gps.r.error.y, sensors.leader.gps.r.error.z]
