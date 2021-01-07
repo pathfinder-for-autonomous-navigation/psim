@@ -9,6 +9,14 @@
   x: truth.t.s
   y: fc.leader.attitude.q.body_eci.error.degrees
 
+# Attitude estimator's angular rate estimate and estimate error.
+- type: Plot2D
+  x: truth.t.s
+  y: [fc.leader.attitude.w.x, fc.leader.attitude.w.y, fc.leader.attitude.w.z]
+- type: Plot2D
+  x: truth.t.s
+  y: [fc.leader.attitude.w.error.x, fc.leader.attitude.w.error.y, fc.leader.attitude.w.error.z]
+
 # Attitude estimator performance in terms attitude and gyroscope bias error.
 - type: PlotEstimate
   x: truth.t.s
