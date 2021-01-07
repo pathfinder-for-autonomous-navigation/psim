@@ -117,6 +117,20 @@ Vector3 AttitudeEstimator::fc_satellite_attitude_p_body_eci_sigma() const {
   return {lin::sqrt(P(0, 0)), lin::sqrt(P(1, 1)), lin::sqrt(P(2, 2))};
 }
 
+Vector3 AttitudeEstimator::fc_satellite_attitude_w() const {
+  auto const &bias = fc_satellite_attitude_w_bias.get();
+  auto const &sensors_w = sensors_satellite_gyroscope_w->get();
+
+  return sensors_w - bias;
+}
+
+Vector3 AttitudeEstimator::fc_satellite_attitude_w_error() const {
+  auto const &w = Super::fc_satellite_attitude_w.get();
+  auto const &truth_w = truth_satellite_attitude_w->get();
+
+  return w - truth_w;
+}
+
 Vector3 AttitudeEstimator::fc_satellite_attitude_w_bias_error() const {
   auto const &truth_bias = sensors_satellite_gyroscope_w_bias->get();
   auto const &bias = fc_satellite_attitude_w_bias.get();
