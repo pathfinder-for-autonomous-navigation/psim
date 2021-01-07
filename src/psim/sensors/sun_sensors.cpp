@@ -28,6 +28,9 @@
 
 #include <psim/sensors/sun_sensors.hpp>
 
+#include <gnc/constants.hpp>
+#include <gnc/utilities.hpp>
+
 #include <lin/core.hpp>
 #include <lin/generators.hpp>
 #include <lin/math.hpp>
@@ -53,21 +56,39 @@ Vector3 SunSensors::sensors_satellite_sun_sensors_s() const {
   }
 
   /* Currently, we're using noise representation in spherical coordinates.
-   * This is alright for now but has issues when theta is near ninety or
-   * negative ninety degrees.
+   * This is alright for now but really we should update this model to simulate
+   * each photodiode and the sun vector calculation performed on the ADCS
+   * computer.
    *
    * TODO: Update the sun sensor model to include individual diodes.
    */
   auto const &truth_s_body = truth_satellite_environment_s_body->get();
   auto const &sigma = sensors_satellite_sun_sensors_s_sigma.get();
 
-  auto const phi = lin::atan2(truth_s_body(1), truth_s_body(0)) +
-                   sigma(0) * _randoms.gaussian();
-  auto const theta = lin::acos(truth_s_body(2) / lin::norm(truth_s_body)) +
-                     sigma(1) * _randoms.gaussian();
+  /* 1. Generate a quaternion transform from the x axis to the true sun vector
+   *    in the body frame.
+   */
+  Vector4 q;
+  gnc::utl::vec_rot_to_quat(truth_s_body, Vector3({1.0, 0.0, 0.0}), q);
 
-  return {lin::sin(theta) * lin::cos(phi), lin::sin(theta) * lin::sin(phi),
-      lin::cos(theta)};
+  /* 2. Generate sensors noise values in spherical coordinates centered about
+   *    the x axis.
+   */
+  auto const phi = sigma(0) * _randoms.gaussian();
+  auto const theta = gnc::constant::pi / 2.0 + sigma(1) * _randoms.gaussian();
+
+  /* 3. Reconstruct the measured sun vector relative to the x axis (which is the
+   *    true sun vector given step 1).
+   */
+  Vector3 s;
+  s(0) = lin::sin(theta) * lin::cos(phi);
+  s(1) = lin::sin(theta) * lin::sin(phi);
+  s(2) = lin::cos(theta);
+
+  /* 4. Rotate the measured sun vector back into the body frame.
+   */
+  gnc::utl::rotate_frame(q, s);
+  return s;
 }
 
 Vector3 SunSensors::sensors_satellite_sun_sensors_s_error() const {
