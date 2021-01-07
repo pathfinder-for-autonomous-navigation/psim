@@ -24,7 +24,7 @@
   y: fc.leader.attitude.w.bias.x
 - type: PlotEstimate
   x: truth.t.s
-  y: fc.leader.attitude.p.body_eci.y
+  y: fc.leader.attitude.w.bias.y
 - type: PlotEstimate
   x: truth.t.s
-  y: fc.leader.attitude.p.body_eci.z
+  y: fc.leader.attitude.w.bias.z
