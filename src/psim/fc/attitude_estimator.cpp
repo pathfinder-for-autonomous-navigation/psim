@@ -28,6 +28,7 @@
 
 #include <psim/fc/attitude_estimator.hpp>
 
+#include <gnc/constants.hpp>
 #include <gnc/utilities.hpp>
 
 #include <lin/core.hpp>
@@ -95,7 +96,8 @@ Vector4 AttitudeEstimator::fc_satellite_attitude_q_body_eci_error() const {
 Real AttitudeEstimator::fc_satellite_attitude_q_body_eci_error_degrees() const {
   auto const &q_error = Super::fc_satellite_attitude_q_body_eci_error.get();
 
-  return 2.0 * lin::asin(lin::norm(lin::ref<3, 1>(q_error, 0, 0)));
+  return 2.0 * gnc::constant::rad_to_deg *
+         lin::asin(lin::norm(lin::ref<3, 1>(q_error, 0, 0)));
 }
 
 Vector3 AttitudeEstimator::fc_satellite_attitude_p_body_eci_error() const {
