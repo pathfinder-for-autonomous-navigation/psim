@@ -44,6 +44,7 @@ class SunSensors : public SunSensorsInterface<SunSensors> {
   virtual ~SunSensors() = default;
 
   Vector3 sensors_satellite_sun_sensors_s() const;
+  Vector3 sensors_satellite_sun_sensors_s_error() const;
 };
 }  // namespace psim
 

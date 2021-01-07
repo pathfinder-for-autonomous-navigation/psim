@@ -8,13 +8,36 @@ comment: >
 args:
     - satellite
 
+params:
+    - name: "sensors.{satellite}.sun_sensors.s.sigma"
+      type: Vector2
+      comment: >
+          Noise in terms of a spherical coordinate representation of the sun
+          vector. The noise affects the phi and theta angles in the body frame
+          currently.
+    - name: "sensors.{satellite}.sun_sensors.model_eclipse"
+      type: Integer
+      comment: >
+          Toggle whether or not being in eclipse prevents a sun vector from
+          being modelled.
+
 adds:
     - name: "sensors.{satellite}.sun_sensors.s"
       type: Lazy Vector3
       comment: >
           Sun vector reported by the sun sensors in the body frame. This vector
           is set to NaN if a sun vector cannot be determined.
+    - name: "sensors.{satellite}.sun_sensors.s.error"
+      type: Lazy Vector3
+      comment: >
+          Error in the sun vector reported by the sun sensors. Note, that the
+          error in being represented as the difference between two unit vectors
+          and therefore has an extra degree of freedom.
 
 gets:
     - name: "truth.{satellite}.environment.s.body"
+      type: Vector3
+    - name: "truth.{satellite}.environment.s.eci"
+      type: Vector3
+    - name: "truth.{satellite}.orbit.r.eci"
       type: Vector3
