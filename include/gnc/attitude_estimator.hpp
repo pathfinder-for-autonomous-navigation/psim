@@ -134,6 +134,7 @@ struct AttitudeEstimatorState {
   lin::Matrixd<6, 6> P_bar;
   lin::Matrixd<5, 5> P_vv;
   lin::Matrixd<6, 5> P_xy;
+  lin::Vector4d      q_s;
   /** @} */
   /** Persistant, state varibles
    *  @{ */
