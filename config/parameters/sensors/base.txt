@@ -6,6 +6,12 @@
 # drive:
 #   System Level > Integration and Testing > Sensor Charactarization
 #
+# The noise distribution for the sun sensors was chosen as two degrees, one
+# sigma. This matches the attitude filter's settings.
+#
+# Currently, we're not modelling eclipse with the sun sensors due to the
+# attitude estimators questionable performance. This will be updated later.
+#
 
 # Leader spacecraft base sensor configuration
 
@@ -17,6 +23,9 @@ sensors.leader.gyroscope.w.sigma       2.75e-4 2.75e-4  2.75e-4
 
 sensors.leader.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7
 
+sensors.leader.sun_sensors.model_eclipse  0
+sensors.leader.sun_sensors.s.sigma        0.0349066 0.0349066
+
 # Follower spacecraft base sensor configuration
 
 sensors.follower.gps.r.sigma  0.0 0.0 0.0
@@ -26,3 +35,6 @@ sensors.follower.gyroscope.w.bias.sigma   1.00e-6 1.00e-6 1.00e-6
 sensors.follower.gyroscope.w.sigma        2.75e-4 2.75e-4 2.75e-4
 
 sensors.follower.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7
+
+sensors.follower.sun_sensors.model_eclipse  0
+sensors.follower.sun_sensors.s.sigma        0.0349066 0.0349066
