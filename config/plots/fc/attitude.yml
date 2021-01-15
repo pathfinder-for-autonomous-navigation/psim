@@ -1,0 +1,4 @@
+
+# Attitude estimator's validity over time.
+- x: truth.t.s
+  y: fc.leader.attitude.is_valid
