@@ -22,30 +22,21 @@
 // SOFTWARE.
 //
 
-/** @file psim/sensors/sun_sensors.hpp
+/** @file psim/simulations/attitude_estimator_test.cpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_SENSORS_SUN_SENSORS_HPP_
-#define PSIM_SENSORS_SUN_SENSORS_HPP_
+#include <psim/simulations/attitude_estimator_test.hpp>
 
-#include <psim/sensors/sun_sensors.yml.hpp>
+#include <psim/fc/attitude_estimator.hpp>
+#include <psim/simulations/single_attitude_orbit.hpp>
 
 namespace psim {
 
-class SunSensors : public SunSensorsInterface<SunSensors> {
- private:
-  typedef SunSensorsInterface<SunSensors> Super;
-
- public:
-  using Super::SunSensorsInterface;
-
-  SunSensors() = delete;
-  virtual ~SunSensors() = default;
-
-  Vector3 sensors_satellite_sun_sensors_s() const;
-  Vector3 sensors_satellite_sun_sensors_s_error() const;
-};
-}  // namespace psim
-
-#endif
+AttitudeEstimatorTestGnc::AttitudeEstimatorTestGnc(
+    RandomsGenerator &randoms, Configuration const &config)
+  : ModelList(randoms) {
+  add<SingleAttitudeOrbitGnc>(randoms, config);
+  add<AttitudeEstimator>(randoms, config, "leader");
+}
+} // namespace psim

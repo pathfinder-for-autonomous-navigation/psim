@@ -1,0 +1,10 @@
+
+# Sun sensor's measurement over time.
+- type: Plot2D
+  x: truth.t.s
+  y: [sensors.leader.sun_sensors.s.x, sensors.leader.sun_sensors.s.y, sensors.leader.sun_sensors.s.z]
+
+# Sun sensor's measurement error over time.
+- type: Plot2D
+  x: truth.t.s
+  y: [sensors.leader.sun_sensors.s.error.x, sensors.leader.sun_sensors.s.error.y, sensors.leader.sun_sensors.s.error.z]

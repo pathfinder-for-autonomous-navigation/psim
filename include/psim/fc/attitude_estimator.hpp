@@ -22,30 +22,47 @@
 // SOFTWARE.
 //
 
-/** @file psim/sensors/sun_sensors.hpp
+/** @file psim/fc/attitude_estimator.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_SENSORS_SUN_SENSORS_HPP_
-#define PSIM_SENSORS_SUN_SENSORS_HPP_
+#ifndef PSIM_FC_ATTITUDE_ESTIMATOR_HPP_
+#define PSIM_FC_ATTITUDE_ESTIMATOR_HPP_
 
-#include <psim/sensors/sun_sensors.yml.hpp>
+#include <psim/fc/attitude_estimator.yml.hpp>
+
+#include <gnc/attitude_estimator.hpp>
 
 namespace psim {
 
-class SunSensors : public SunSensorsInterface<SunSensors> {
+class AttitudeEstimator : public AttitudeEstimatorInterface<AttitudeEstimator> {
  private:
-  typedef SunSensorsInterface<SunSensors> Super;
+  typedef AttitudeEstimatorInterface<AttitudeEstimator> Super;
+
+  gnc::AttitudeEstimatorState _attitude_state;
+  gnc::AttitudeEstimatorData _attitude_data;
+  gnc::AttitudeEstimate _attitude_estimate;
+
+  void _set_attitude_outputs();
 
  public:
-  using Super::SunSensorsInterface;
+  using Super::AttitudeEstimatorInterface;
 
-  SunSensors() = delete;
-  virtual ~SunSensors() = default;
+  AttitudeEstimator() = delete;
+  virtual ~AttitudeEstimator() = default;
 
-  Vector3 sensors_satellite_sun_sensors_s() const;
-  Vector3 sensors_satellite_sun_sensors_s_error() const;
+  virtual void add_fields(State &state) override;
+  virtual void step() override;
+
+  Vector4 fc_satellite_attitude_q_body_eci_error() const;
+  Real fc_satellite_attitude_q_body_eci_error_degrees() const;
+  Vector3 fc_satellite_attitude_p_body_eci_error() const;
+  Vector3 fc_satellite_attitude_p_body_eci_sigma() const;
+  Vector3 fc_satellite_attitude_w() const;
+  Vector3 fc_satellite_attitude_w_error() const;
+  Vector3 fc_satellite_attitude_w_bias_error() const;
+  Vector3 fc_satellite_attitude_w_bias_sigma() const;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

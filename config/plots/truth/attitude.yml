@@ -1,22 +1,26 @@
 
 # Angular rate over time.
-- x: truth.t.s
+- type: Plot2D
+  x: truth.t.s
   y: [truth.leader.attitude.w.x, truth.leader.attitude.w.y, truth.leader.attitude.w.z]
 
 # Angular momentum over time
-- x: truth.t.s
+- type: Plot2D
+  x: truth.t.s
   y: [truth.leader.attitude.L.x, truth.leader.attitude.L.y, truth.leader.attitude.L.z]
 
 # Angular momentum norm over time.
 #
 # Without actuations, we expect this to be about constant and can be used as a
 # criterion to vet the simulation.
-- x: truth.t.s
+- type: Plot2D
+  x: truth.t.s
   y: truth.leader.attitude.L.norm
 
 # Attitude quaternion norm over time.
 #
 # This should be near one at all times. If not, the step size of the simulation
 # is likely too large or a higher order integrator needs to be used.
-- x: truth.t.s
+- type: Plot2D
+  x: truth.t.s
   y: truth.leader.attitude.q.body_eci.norm
