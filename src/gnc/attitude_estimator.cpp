@@ -23,7 +23,8 @@
 //
 
 /** @file gnc_attitude_estimator.cpp
- *  @author Kyle Krol, Shihao Cao
+ *  @author Kyle Krol
+ *  @author Shihao Cao
  */
 
 #include <gnc/attitude_estimator.hpp>
@@ -33,14 +34,12 @@
 #include <gnc/utilities.hpp>
 
 #include <lin/core.hpp>
-#include <lin/factorizations/chol.hpp>
-#include <lin/factorizations/qr.hpp>
-#include <lin/generators/constants.hpp>
-#include <lin/generators/identity.hpp>
+#include <lin/factorizations.hpp>
+#include <lin/generators.hpp>
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 #include <lin/references.hpp>
-#include <lin/substitutions/backward_substitution.hpp>
+#include <lin/substitutions.hpp>
 
 namespace gnc {
 namespace constant {
@@ -202,6 +201,10 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       utl::rotate_frame(q_new, s_exp, s); // s in the body frame
       utl::rotate_frame(q_new, b_exp, b); // b in the body frame
 
+      // Determine the rotation that will be applied to all sun vectors.
+      utl::vec_rot_to_quat(UkfVector3({1.0, 0.0, 0.0}), s, state.q_s);
+      utl::rotate_frame(state.q_s, s);
+
       state.measures[0] = {
         lin::atan(s(1) / s(0)),
         lin::acos(s(2)),
@@ -232,6 +235,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       {
         UkfVector3 s, b;
         utl::rotate_frame(_q_new, s_exp, s); // s in the body frame
+        utl::rotate_frame(state.q_s, s);
         utl::rotate_frame(_q_new, b_exp, b); // b in the body frame
 
         state.measures[i] = {
@@ -366,13 +370,17 @@ static void ukf_ms(AttitudeEstimatorState &state, AttitudeEstimatorData const &d
       K = state.P_xy * Q;
     }
 
+    // Transform sun vector
+    UkfVector3 s;
+    utl::rotate_frame(state.q_s, UkfVector3(data.s_body), s);
+
     // Calculate this steps measurement
     UkfVector5 z_new {
-      lin::atan(data.s_body(1) / data.s_body(0)),
-      lin::acos(data.s_body(2)),
-      data.b_body(0),
-      data.b_body(1),
-      data.b_body(2)
+      lin::atan(s(1) / s(0)),
+      lin::acos(s(2)),
+      (ukf_float) data.b_body(0),
+      (ukf_float) data.b_body(1),
+      (ukf_float) data.b_body(2)
     };
 
     // Update the state vector and covariance
