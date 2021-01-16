@@ -9,8 +9,9 @@
 # The noise distribution for the sun sensors was chosen as two degrees, one
 # sigma. This matches the attitude filter's settings.
 #
-# Currently, we're not modelling eclipse with the sun sensors due to the
-# attitude estimators questionable performance. This will be updated later.
+# Currently, we're not modelling eclipse with the sun sensors due to GNC
+# assert statements not being tolerant of NaN inputs:
+# https://github.com/pathfinder-for-autonomous-navigation/psim/issues/206.
 #
 
 # Leader spacecraft base sensor configuration
