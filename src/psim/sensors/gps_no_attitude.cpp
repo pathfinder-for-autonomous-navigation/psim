@@ -55,4 +55,18 @@ Vector3 GpsNoAttitude::sensors_satellite_gps_v_error() const {
 
   return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
 }
+
+Vector3 GpsNoAttitude::sensors_satellite_gps_v() const {
+  auto const &truth_v_ecef = truth_satellite_orbit_v_ecef->get();
+  auto const &sigma = sensors_satellite_gps_v_sigma.get();
+
+  return truth_v_ecef + lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+}
+
+Vector3 GpsNoAttitude::sensors_satellite_gps_v_error() const {
+  auto const &truth_v_ecef = truth_satellite_orbit_v_ecef->get();
+  auto const &sensors_v_ecef = this->Super::sensors_satellite_gps_v.get();
+
+  return sensors_v_ecef - truth_v_ecef;
+}
 }  // namespace psim

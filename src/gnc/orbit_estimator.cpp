@@ -40,69 +40,147 @@ namespace gnc {
 
 void OrbitEstimator::_check_validity() {
   Orbit::_check_validity();
+
+  // TODO : Implement checks on the state uncertainty
 }
 
-void OrbitEstimator::_reset(double dt, lin::Vectord<3> const &w,
-    lin::Vectord<3> const &z0, lin::Vectord<3> const &z1,
-    lin::Vectord<3> const &r) {
-  // Initialize state covariance
-  _P = lin::zeros<lin::Matrixd<6, 6>>();
-  for (lin::size_t i = 0; i < r.size(); i++)
-    _P(i, i) = r(i) * r(i) * r(i) * r(i) / dt;
+void OrbitEstimator::_dv(Vector<3> const &dv, Vector<3> const &ds) {
+  Orbit::_dv(dv);
 
-  // Initialize state
-  lin::ref<3, 1>(_x, 0, 0) = z1;
-  lin::ref<3, 1>(_x, 3, 0) = (z1 - z0) / dt;
-
-  _check_validity();
+  // Apply additive process noise to the velocity states
+  auto S = lin::ref<Matrix<3, 3>>(_S, 3, 3);
+  S = S + lin::diag(ds);
 }
 
-void OrbitEstimator::_update(double dt, lin::Vectord<3> const &w,
-    lin::Vectord<3> const &z, lin::Vectord<3> const &q,
-    lin::Vectord<3> const &r) {
-  // Assemble noise matrices
-  lin::Matrixd<6, 6> Q = lin::zeros<lin::Matrixd<6, 6>>();
-  for (lin::size_t i = 0; i < q.size(); i++)
-    Q(i, i) = q(i) * q(i);
-  lin::Matrixd<3, 3> R = lin::zeros<lin::Matrixd<3, 3>>();
-  for (lin::size_t i = 0; i < r.size(); i++)
-    R(i, i) = r(i) * r(i);
+void OrbitEstimator::_reset(Vector<3> const &w, Vector<3> const &r,
+    Vector<3> const &v, Vector<6> const &s) {
+  Orbit::_reset(w, r, v);
 
-  // Predict state covariance
-  lin::Matrixd<6, 6> F;
-  _jac(gnc::constant::mu_earth, w, _x, F);
-  F = lin::identity<lin::Matrixd<6, 6>>() + dt * F;
-  _P = F * (_P * lin::transpose(F)).eval() + Q;
+  // Reset the state uncertainty
+  _S = lin::diag(s);
+}
 
-  // Predict state
-  Orbit::_update(dt);
-
-  // Kalman gain
-  lin::Matrixd<6, 3> K;
+void OrbitEstimator::_update(
+    Real dt, Vector<3> const &w, Vector<6> const &sqrt_q) {
+  // State uncertainty prediction step
   {
-    // TODO
+    Matrix<6, 6> F;
+    _jac(mu, w, _x, F);
+    F = lin::identity<Matrix<6, 6>>() + dt * F;
+
+    /* This leverages the square root formulation of the EKF covariance
+     * prediction step:
+     *
+     *   qr([ S_k|k transpose(F_k) ]) = _ S_k+1|k
+     *     ([       sqrt(Q_k)      ])
+     */
+    Matrix<12, 6> A, _;
+    lin::ref<Matrix<6, 6>>(A, 0, 0) = _S * lin::transpose(F);
+    lin::ref<Matrix<6, 6>>(A, 6, 0) = lin::diag(sqrt_q);
+    lin::qr(A, _, _S);
   }
 
-  // Update state covariance
-  // TODO
-
-  // Update state
-  // TODO
+  // State prediction step
+  Orbit::_update(dt, w);
 }
 
-void OrbitEstimator::reset(
-    int64_t dt_ns, lin::Vectord<3> const &dr_ecef, lin::Vectord<3> const &r) {
-  _reset(static_cast<double>(dt_ns)*1.0e-9, dr_ecef, r);
+void OrbitEstimator::_update(Real dt, Vector<3> const &w, Vector<3> const &r,
+    Vector<3> const &v, Vector<6> const &sqrt_q, Vector<6> const &sqrt_r) {
+  // Prediction step
+  _update(dt, w, sqrt_q);
+
+  // Update step
+  {
+    /* This again leverages the square root formulation of the EKF. The update
+     * step is given by:
+     * 
+     *   qr([      sqrt(R)             0    ]) = _ [ transpose(C)      D     ]
+     *     ([ S_k+1|k transpose(H)  S_k+1|k ])     [      0        S_k+1|k+1 ]
+     */
+    Matrix<12, 12> A, B, _;
+    lin::ref<Matrix<6, 6>>(A, 0, 0) = lin::diag(sqrt_r);
+    lin::ref<Matrix<6, 6>>(A, 0, 6) = lin::zeros<Matrix<6, 6>>();
+    lin::ref<Matrix<6, 6>>(A, 6, 0) = _S;  // H = I
+    lin::ref<Matrix<6, 6>>(A, 6, 6) = _S;
+    lin::qr(A, _, B);
+
+    Matrix<6, 6> C, D;
+    C = lin::transpose(lin::ref<Matrix<6, 6>>(B, 0, 0));
+    D = lin::ref<Matrix<6, 6>>(B, 0, 6);
+
+    /* Kalman gain calculation from the square root formulation:
+     *
+     *   K_k+1 = D inverse(C)
+     */
+    Matrix<6, 6> K;
+    {
+      Matrix<6, 6> Q, R;
+      lin::qr(lin::transpose(C).eval(), Q, R);
+      lin::backward_sub(R, K, (lin::transpose(Q) * lin::transpose(D)).eval());
+
+      K = lin::transpose(K).eval();
+    }
+
+    // Measurement
+    Vector<6> z;
+    lin::ref<Vector<3>>(z, 0, 0) = r;
+    lin::ref<Vector<3>>(z, 3, 0) = v;
+
+    _x = _x + K * (z - _x).eval();
+    _S = lin::ref<Matrix<6, 6>>(B, 6, 6);
+  }
+}
+
+OrbitEstimator::OrbitEstimator(Vector<3> const &w_ecef, Vector<3> const &r_ecef,
+      Vector<3> const &v_ecef, Vector<6> const &s) {
+  _reset(w_ecef, r_ecef, v_ecef, s);
   _check_validity();
 }
 
-void OrbitEstimator::update(int64_t dt_ns, lin::Vectord<3> const &w_ecef,
-    lin::Vectord<3> r_ecef, lin::Vectord<3> const &q,
-    lin::Vectord<3> const &r) {
+OrbitEstimator::Vector<3> OrbitEstimator::r_ecef_sigma() const {
+  if (!is_valid())
+    return lin::nans<Vector<3>>();
+
+  return lin::ref<Vector<3>>(lin::diag(_S), 0, 0);
+}
+
+OrbitEstimator::Vector<3> OrbitEstimator::v_ecef_sigma() const {
+  if (!is_valid())
+    return lin::nans<Vector<3>>();
+
+  return lin::ref<Vector<3>>(lin::diag(_S), 3, 0);
+}
+
+void OrbitEstimator::dv(Vector<3> const &dv_ecef, Vector<3> const &ds) {
   if (!is_valid())
     return;
 
-  _update(static_cast<double>(dt_ns)*1.0e-9, w_ecef, r_ecef, q, r);
+  _dv(dv_ecef, ds);
+  _check_validity();
+}
+
+void OrbitEstimator::reset(Vector<3> const &w_ecef, Vector<3> const &r_ecef,
+    Vector<3> const &v_ecef, Vector<6> const &s) {
+  _reset(w_ecef, r_ecef, v_ecef, s);
+  _check_validity();
+}
+
+void OrbitEstimator::update(
+    Time dt_ns, Vector<3> const &w_ecef, Vector<6> const &sqrt_q) {
+  if (!is_valid())
+    return;
+
+  _update(_time(dt_ns), w_ecef, sqrt_q);
+  _check_validity();
+}
+
+void OrbitEstimator::update(Time dt_ns, Vector<3> const &w_ecef,
+    Vector<3> const &r_ecef, Vector<3> const &v_ecef, Vector<6> const &sqrt_q,
+    Vector<6> const &sqrt_r) {
+  if (!is_valid())
+    return;
+
+  _update(_time(dt_ns), w_ecef, r_ecef, v_ecef, sqrt_q, sqrt_r);
   _check_validity();
 }
 } // namespace gnc

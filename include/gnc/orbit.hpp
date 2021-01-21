@@ -29,6 +29,9 @@
 #ifndef GNC_ORBIT_HPP_
 #define GNC_ORBIT_HPP_
 
+#include "config.hpp"
+#include "constants.hpp"
+
 #include <gnc/ode4.hpp>
 #include <lin/core.hpp>
 
@@ -38,36 +41,49 @@ namespace gnc {
 
 class Orbit {
  protected:
-  static void _dot(double mu, lin::Vectord<3> const &w,
-      lin::Vectord<6> const &x, lin::Vectord<6> &dx);
-  static void _jac(double mu, lin::Vectord<3> const &w,
-      lin::Vectord<6> const &x, lin::Matrixd<6, 6> &J);
+  typedef double Real;
+  typedef int64_t Time;
+  template <lin::size_t N, lin::size_t MN = N>
+  using Vector = lin::Vector<Real, N, MN>;
+  template <lin::size_t N, lin::size_t MN = N>
+  using RowVector = lin::RowVector<Real, N, MN>;
+  template <lin::size_t R, lin::size_t C, lin::size_t MR = R, lin::size_t MC = C>
+  using Matrix = lin::Matrix<Real, R, C, MR, MC>;
 
- private:
-  gnc::Ode4<double, 6> _ode;
+  static constexpr Real mu = constant::mu_earth;
+
+  inline static Real _time(Time t) { return static_cast<Real>(t) * 1.0e-9; }
+  static void _dot(Real mu, Vector<3> const &w, Vector<6> const &x, Vector<6> &dx);
+  static void _jac(Real mu, Vector<3> const &w, Vector<6> const &x, Matrix<6, 6> &J);
 
  protected:
+  gnc::Ode4<Real, 6> _ode;
   bool _is_valid = false;
-  lin::Vectord<6> _x;
+  Vector<3> _w;
+  Vector<6> _x;
 
   void _check_validity();
-  void _update(double dt, lin::Vectord<3> const &w_ecwef);
+  void _dv(Vector<3> const &dv);
+  void _reset(Vector<3> const &w, Vector<3> const &r, Vector<3> const &v);
+  void _update(Real dt, Vector<3> const &w);
 
  public:
   Orbit() = default;
   Orbit(Orbit const &) = default;
   Orbit(Orbit &&) = default;
   Orbit &operator=(Orbit const &) = default;
-  Orbit &operetor = (Orbit &&) = default;
+  Orbit &operator=(Orbit &&) = default;
 
-  Orbit(lin::Vectord<3> const &r_ecef, lin::Vectord<3> const &v_ecef);
+  Orbit(Vector<3> const &w_ecef, Vector<3> const &r_ecef,
+      Vector<3> const &v_ecef);
 
-  bool is_valid() const;
-  lin::Vectord<3> r_ecef() const;
-  lin::Vectord<3> v_ecef() const;
+  inline bool is_valid() const { return _is_valid; }
+  Vector<3> r_ecef() const;
+  Vector<3> v_ecef() const;
 
-  void dv(lin::Vectord<3> const &dv_ecef);
-  void update(int64_t dt, lin::Vectord<3> const &w_ecef);
+  void dv(Vector<3> const &dv_ecef);
+  void reset(Vector<3> const &w_ecef, Vector<3> const &r_ecef, Vector<3> const &v_ecef);
+  void update(Time dt_ns, Vector<3> const &w_ecef);
 };
 } // namespace gnc
 

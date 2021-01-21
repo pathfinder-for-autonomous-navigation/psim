@@ -29,22 +29,21 @@
 #ifndef GNC_ORBIT_ESTIMATOR_HPP_
 #define GNC_ORBIT_ESTIMATOR_HPP_
 
-#include <gnc/orbit.hpp>
-#include <lin/core.hpp>
-
-#include <cstdint>
+#include "orbit.hpp"
 
 namespace gnc {
 
 class OrbitEstimator : public Orbit {
  protected:
-  lin::Matrixd<6, 6> _P;
+  Matrix<6, 6> _S;
 
   void _check_validity();
-  void _reset(double dt, lin::Vectord<3> const &w, lin::Vectord<3> const &dz,
-      lin::Vectord<3> const &r);
-  void _update(double dt, lin::Vectord<3> const &w, lin::Vectord<3> const &z,
-      lin::Vectord<3> const &q, lin::Vectord<3> const &r);
+  void _dv(Vector<3> const &dv, Vector<3> const &ds);
+  void _reset(Vector<3> const &w, Vector<3> const &r, Vector<3> const &v,
+      Vector<6> const &s);
+  void _update(Real dt, Vector<3> const &w, Vector<6> const &sqrt_q);
+  void _update(Real dt, Vector<3> const &w, Vector<3> const &r,
+      Vector<3> const &v, Vector<6> const &sqrt_q, Vector<6> const &sqrt_r);
 
  public:
   OrbitEstimator() = default;
@@ -53,12 +52,18 @@ class OrbitEstimator : public Orbit {
   OrbitEstimator &operator=(OrbitEstimator const &) = default;
   OrbitEstimator &operator=(OrbitEstimator &&) = default;
 
-  void reset(
-      int64_t dt_ns, lin::Vectord<3> const &dr_ecef, lin::Vectord<3> const &r);
+  OrbitEstimator(Vector<3> const &w_ecef, Vector<3> const &r_ecef,
+      Vector<3> const &v_ecef, Vector<6> const &s);
 
-  void update(int64_t dt_ns, lin::Vectord<3> const &w_ecef,
-      lin::Vectord<3> r_ecef, lin::Vectord<3> const &q,
-      lin::Vectord<3> const &r);
+  Vector<3> r_ecef_sigma() const;
+  Vector<3> v_ecef_sigma() const;
+
+  void dv(Vector<3> const &dv_ecef, Vector<3> const &ds);
+  void reset(Vector<3> const &w_ecef, Vector<3> const &r_ecef,
+      Vector<3> const &v_ecef, Vector<6> const &s);
+  void update(Time dt_ns, Vector<3> const &w_ecef, Vector<6> const &sqrt_q);
+  void update(Time dt_ns, Vector<3> const &w_ecef, Vector<3> const &r_ecef,
+      Vector<3> const &v_ecef, Vector<6> const &sqrt_q, Vector<6> const &sqrt_r);
 };
 } // namespace gnc
 
