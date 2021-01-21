@@ -34,7 +34,8 @@
 
 namespace psim {
 
-/** @brief Types that are held by parameters and fields.
+/** @brief Types that are held by parameters and fields and transactable with
+ *         Python.
  *
  *  @{
  */
@@ -43,6 +44,21 @@ typedef double Real;
 typedef lin::Vector2d Vector2;
 typedef lin::Vector3d Vector3;
 typedef lin::Vector4d Vector4;
+/** @}
+ */
+
+/** @brief Standardized matrix and vector types for use throughout psim.
+ *
+ *  @{
+ */
+template <lin::size_t N, lin::size_t MN = N>
+using Vector = lin::Vector<Real, N, MN>;
+
+template <lin::size_t N, lin::size_t MN = N>
+using RowVector = lin::RowVector<Real, N, MN>;
+
+template <lin::size_t R, lin::size_t C, lin::size_t MR = R, lin::size_t MC = C>
+using Matrix = lin::Matrix<Real, R, C, MR, MC>;
 /** @}
  */
 

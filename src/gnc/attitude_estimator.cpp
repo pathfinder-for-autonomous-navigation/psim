@@ -60,6 +60,11 @@ typedef lin::Vector<ukf_float, 3> UkfVector3;
 typedef lin::Vector<ukf_float, 4> UkfVector4;
 typedef lin::Vector<ukf_float, 5> UkfVector5;
 typedef lin::Vector<ukf_float, 6> UkfVector6;
+typedef lin::RowVector<ukf_float, 2> UkfRowVector2;
+typedef lin::RowVector<ukf_float, 3> UkfRowVector3;
+typedef lin::RowVector<ukf_float, 4> UkfRowVector4;
+typedef lin::RowVector<ukf_float, 5> UkfRowVector5;
+typedef lin::RowVector<ukf_float, 6> UkfRowVector6;
 typedef lin::Matrix<ukf_float, 3, 3> UkfMatrix3x3;
 typedef lin::Matrix<ukf_float, 4, 4> UkfMatrix4x4;
 typedef lin::Matrix<ukf_float, 5, 5> UkfMatrix5x5;
@@ -92,9 +97,9 @@ static void ukf_propegate(ukf_float dt, UkfVector3 const &w,
              -psi(1),          psi(0),  ukf_float(0.0)
     };
     O = lin::cos(0.5f * norm_w * dt) * lin::identity<ukf_float, 4, 4>();
-    lin::ref<3, 3>(O, 0, 0) = lin::ref<3, 3>(O, 0, 0) - psi_x;
-    lin::ref<3, 1>(O, 0, 3) = psi;
-    lin::ref<1, 3>(O, 3, 0) = -lin::transpose(psi);
+    lin::ref<UkfMatrix3x3>(O, 0, 0) = lin::ref<UkfMatrix3x3>(O, 0, 0) - psi_x;
+    lin::ref<UkfVector3>(O, 0, 3) = psi;
+    lin::ref<UkfRowVector3>(O, 3, 0) = -lin::transpose(psi);
   }
 
   // Propegate our quaternion forward and normalize to be safe
@@ -169,14 +174,14 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
 
     state.sigmas[0] = state.x;
     L = lin::sqrt(N + lambda) * L;
-    for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + 1] = state.x + lin::ref_col(L, i);
-    for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + L.cols() + 1] = state.x - lin::ref_col(L, i);
+    for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + 1] = state.x + lin::col(L, i);
+    for (lin::size_t i = 0; i < L.cols(); i++) state.sigmas[i + L.cols() + 1] = state.x - lin::col(L, i);
   }
 
   // Propegate the center sigma points attitude
   UkfVector4 q_new;
   {
-    UkfVector3 w = data.w_body - lin::ref<3, 1>(state.x, 3, 0);
+    UkfVector3 w = data.w_body - lin::ref<UkfVector3>(state.x, 3, 0);
     ukf_propegate(dt, w, state.q, q_new);
   }
 
@@ -224,10 +229,10 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
       UkfVector4 _q_new;
       {
         UkfVector4 q, _q_old;
-        utl::grp_to_quat(lin::ref<3, 1>(state.sigmas[i], 0, 0).eval(), a, f, q);
+        utl::grp_to_quat(lin::ref<UkfVector3>(state.sigmas[i], 0, 0).eval(), a, f, q);
         utl::quat_cross_mult(q, UkfVector4(state.q), _q_old);
 
-        UkfVector3 w = data.w_body - lin::ref<3, 1>(state.sigmas[i], 3, 0);
+        UkfVector3 w = data.w_body - lin::ref<UkfVector3>(state.sigmas[i], 3, 0);
         ukf_propegate(dt, w, _q_old, _q_new);
       }
 
@@ -255,7 +260,7 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
 
         UkfVector3 p;
         utl::quat_to_qrp(q, a, f, p);
-        lin::ref<3, 1>(state.sigmas[i], 0, 0) = p;
+        lin::ref<UkfVector3>(state.sigmas[i], 0, 0) = p;
       }
     }
   }
@@ -319,11 +324,11 @@ static void ukf(AttitudeEstimatorState &state, AttitudeEstimatorData const &data
 
     // Perturb q_new according to the new state
     lin::Vector4d q;
-    utl::grp_to_quat(lin::ref<3, 1>(state.x, 0, 0).eval(), a, f, q);
+    utl::grp_to_quat(lin::ref<UkfVector3>(state.x, 0, 0).eval(), a, f, q);
     utl::quat_cross_mult(q, q_new, state.q);
 
     // Reset the attitude portion of the state to zeros
-    lin::ref<3, 1>(state.x, 0, 0) = lin::zeros<UkfVector3>();
+    lin::ref<UkfVector3>(state.x, 0, 0) = lin::zeros<UkfVector3>();
   }
 }
 
@@ -337,9 +342,9 @@ static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &da
     UkfMatrix6x3 K;
     {
       UkfMatrix3x3 Q, R;
-      lin::qr(lin::ref<3, 3>(state.P_vv, 2, 2), Q, R);
+      lin::qr(lin::ref<UkfMatrix3x3>(state.P_vv, 2, 2), Q, R);
       lin::backward_sub(R, Q, lin::transpose(Q).eval());
-      K = lin::ref<6, 3>(state.P_xy, 0, 2) * Q;
+      K = lin::ref<UkfMatrix6x3>(state.P_xy, 0, 2) * Q;
     }
 
     UkfVector3 z_new {
@@ -349,8 +354,8 @@ static void ukf_m(AttitudeEstimatorState &state, AttitudeEstimatorData const &da
     };
 
     // Update the state vector and covariance
-    state.x = state.x_bar + K * (z_new - lin::ref<3, 1>(state.z_bar, 2, 0)).eval();
-    state.P = state.P_bar - K * (lin::ref<3, 3>(state.P_vv, 2, 2) * lin::transpose(K)).eval();
+    state.x = state.x_bar + K * (z_new - lin::ref<UkfVector3>(state.z_bar, 2, 0)).eval();
+    state.P = state.P_bar - K * (lin::ref<UkfMatrix3x3>(state.P_vv, 2, 2) * lin::transpose(K)).eval();
   });
 }
 
@@ -466,7 +471,7 @@ void attitude_estimator_reset(AttitudeEstimatorState &state,
   }
 
   // Determine the expected sun vector
-  lin::Vector3f s_eci{};
+  lin::Vector3f s_eci;
   env::sun_vector(t, s_eci);
 
   // Ensure the sun vectors are unit vectors
@@ -521,7 +526,7 @@ void attitude_estimator_update(AttitudeEstimatorState &state,
   // Update gave a valid output
   else {
     estimate.q_body_eci = state.q;
-    estimate.gyro_bias = lin::ref<3, 1>(state.x, 3, 0);
+    estimate.gyro_bias = lin::ref<UkfVector3>(state.x, 3, 0);
     estimate.P = state.P;
     estimate.is_valid = true;
   }

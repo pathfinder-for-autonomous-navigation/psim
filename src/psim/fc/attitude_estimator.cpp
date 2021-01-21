@@ -97,7 +97,7 @@ Real AttitudeEstimator::fc_satellite_attitude_q_body_eci_error_degrees() const {
   auto const &q_error = Super::fc_satellite_attitude_q_body_eci_error.get();
 
   return 2.0 * gnc::constant::rad_to_deg *
-         lin::asin(lin::norm(lin::ref<3, 1>(q_error, 0, 0)));
+         lin::asin(lin::norm(lin::ref<Vector3>(q_error, 0, 0)));
 }
 
 Vector3 AttitudeEstimator::fc_satellite_attitude_p_body_eci_error() const {
@@ -114,7 +114,7 @@ Vector3 AttitudeEstimator::fc_satellite_attitude_p_body_eci_error() const {
 Vector3 AttitudeEstimator::fc_satellite_attitude_p_body_eci_sigma() const {
   auto const &P = _attitude_state.P;
 
-  return {lin::sqrt(P(0, 0)), lin::sqrt(P(1, 1)), lin::sqrt(P(2, 2))};
+  return lin::sqrt(lin::ref<Vector3>(lin::diag(P), 0, 0));
 }
 
 Vector3 AttitudeEstimator::fc_satellite_attitude_w() const {
@@ -141,6 +141,6 @@ Vector3 AttitudeEstimator::fc_satellite_attitude_w_bias_error() const {
 Vector3 AttitudeEstimator::fc_satellite_attitude_w_bias_sigma() const {
   auto const &P = _attitude_state.P;
 
-  return {lin::sqrt(P(3, 3)), lin::sqrt(P(4, 4)), lin::sqrt(P(5, 5))};
+  return lin::sqrt(lin::ref<Vector3>(lin::diag(P), 3, 0));
 }
 } // namespace psim

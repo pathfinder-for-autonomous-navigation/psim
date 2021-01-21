@@ -78,7 +78,7 @@ void AttitudeOrbitNoFuelEciGnc::step() {
   IntegratorData data {mass, I, I_w, tau_w, m, b};
 
   // Simulate our dynamics
-  lin::Vector<Real, 16> const x = {
+  Vector<16> const x = {
       r(0), r(1), r(2),
       v(0), v(1), v(2),
       q_body_eci(0), q_body_eci(1), q_body_eci(2), q_body_eci(3),
@@ -87,16 +87,16 @@ void AttitudeOrbitNoFuelEciGnc::step() {
   };
 
   auto const xf = ode(t, dt, x, &data,
-      [](Real t, lin::Vector<Real, 16> const &x, void *ptr) -> lin::Vector<Real, 16> {
+      [](Real t, Vector<16> const &x, void *ptr) -> Vector<16> {
     // position, velocity, quat_body, ang velocity, wheel ang velocity
-    auto const r = lin::ref<3, 1>(x, 0,  0);
-    auto const v = lin::ref<3, 1>(x, 3,  0);
-    auto const q = lin::ref<4, 1>(x, 6,  0);
-    auto const w = lin::ref<3, 1>(x, 10, 0);
-    auto const w_w = lin::ref<3, 1>(x, 13, 0);
+    auto const r = lin::ref<Vector3>(x, 0,  0);
+    auto const v = lin::ref<Vector3>(x, 3,  0);
+    auto const q = lin::ref<Vector4>(x, 6,  0);
+    auto const w = lin::ref<Vector3>(x, 10, 0);
+    auto const w_w = lin::ref<Vector3>(x, 13, 0);
     auto *data = (IntegratorData *) ptr;
 
-    lin::Vector<Real, 16> dx;
+    Vector<16> dx;
 
     // Orbital dynamics
     {
@@ -116,7 +116,7 @@ void AttitudeOrbitNoFuelEciGnc::step() {
         gnc::utl::rotate_frame(q, g);     // g = g_eci
       }
 
-      lin::ref<6, 1>(dx, 0, 0) = {v(0), v(1), v(2), g(0), g(1), g(2)};
+      lin::ref<Vector<6>>(dx, 0, 0) = {v(0), v(1), v(2), g(0), g(1), g(2)};
     }
 
     // dq = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
@@ -133,20 +133,20 @@ void AttitudeOrbitNoFuelEciGnc::step() {
 
     // Attitude dynamics
     {
-      lin::ref<4, 1>(dx, 6, 0) = dq; 
-      lin::ref<3, 1>(dx, 10, 0) = dw; 
-      lin::ref<3, 1>(dx, 13, 0) = dw_w;
+      lin::ref<Vector4>(dx, 6, 0) = dq; 
+      lin::ref<Vector3>(dx, 10, 0) = dw; 
+      lin::ref<Vector3>(dx, 13, 0) = dw_w;
     }
 
     return dx;
   }); 
 
   // Write back to our state fields
-  r = lin::ref<3, 1>(xf, 0, 0);
-  v = lin::ref<3, 1>(xf, 3, 0);
-  q_body_eci = lin::ref<4, 1>(xf, 6, 0);
-  w = lin::ref<3, 1>(xf, 10, 0);
-  omega_w = lin::ref<3, 1>(xf, 13, 0);
+  r = lin::ref<Vector3>(xf, 0, 0);
+  v = lin::ref<Vector3>(xf, 3, 0);
+  q_body_eci = lin::ref<Vector4>(xf, 6, 0);
+  w = lin::ref<Vector3>(xf, 10, 0);
+  omega_w = lin::ref<Vector3>(xf, 13, 0);
 }
 
 Vector4 AttitudeOrbitNoFuelEciGnc::truth_satellite_attitude_q_eci_body() const {
