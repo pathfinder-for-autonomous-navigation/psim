@@ -75,7 +75,7 @@ void OrbitEstimator::_update(double dt, lin::Vectord<3> const &w,
   _P = F * (_P * lin::transpose(F)).eval() + Q;
 
   // Predict state
-  Orbit::update(dt);
+  Orbit::_update(dt);
 
   // Kalman gain
   lin::Matrixd<6, 3> K;
