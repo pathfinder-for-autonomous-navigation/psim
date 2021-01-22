@@ -54,8 +54,8 @@ void OrbitEstimator::add_fields(State &state) {
 void OrbitEstimator::step() {
   this->Super::step();
 
-  constexpr auto sqrt_q = lin::consts<Vector<6>>(0.1).eval(); // process noise
-  constexpr auto sqrt_r = lin::consts<Vector<6>>(5.0).eval();    // sensor noise
+  constexpr auto sqrt_q = lin::consts<Vector<6>>(0.1).eval();  // process noise
+  constexpr auto sqrt_r = lin::consts<Vector<6>>(5.0).eval();  // sensor noise
 
   auto const &t = truth_t_s->get();
   auto const &dt = truth_dt_ns->get();
