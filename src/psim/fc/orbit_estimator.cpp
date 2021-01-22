@@ -54,6 +54,9 @@ void OrbitEstimator::add_fields(State &state) {
 void OrbitEstimator::step() {
   this->Super::step();
 
+  constexpr auto sqrt_q = lin::consts<Vector<6>>(0.1).eval(); // process noise
+  constexpr auto sqrt_r = lin::consts<Vector<6>>(5.0).eval();    // sensor noise
+
   auto const &t = truth_t_s->get();
   auto const &dt = truth_dt_ns->get();
   auto const &r = sensors_satellite_gps_r->get();
@@ -64,13 +67,13 @@ void OrbitEstimator::step() {
 
   if (estimator.is_valid()) {
     if (lin::all(lin::isfinite(r)) && lin::all(lin::isfinite(v)))
-      estimator.update(dt, w, r, v, lin::zeros<Vector<6>>(), lin::zeros<Vector<6>>()); // TODO : define q r
+      estimator.update(dt, w, r, v, sqrt_q, sqrt_r);
     else
-      estimator.update(dt, w, lin::zeros<Vector<6>>());
+      estimator.update(dt, w, sqrt_q);
   }
   else {
     if (lin::all(lin::isfinite(r)) && lin::all(lin::isfinite(v)))
-      estimator.reset(w, r, v, lin::zeros<Vector<6>>()); // TODO : define s
+      estimator.reset(w, r, v, sqrt_r);
   }
 
   _set_orbit_outputs();

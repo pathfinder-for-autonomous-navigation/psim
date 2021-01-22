@@ -1,0 +1,26 @@
+
+# Orbit estimate's validity over time.
+- type: Plot2D
+  x: truth.t.s
+  y: fc.leader.orbit.is_valid
+
+# Orbit estimator's performance in terms of position and velocity estimate
+# error.
+- type: PlotEstimate
+  x: truth.t.s
+  y: fc.leader.orbit.r.x
+- type: PlotEstimate
+  x: truth.t.s
+  y: fc.leader.orbit.r.y
+- type: PlotEstimate
+  x: truth.t.s
+  y: fc.leader.orbit.r.z
+- type: PlotEstimate
+  x: truth.t.s
+  y: fc.leader.orbit.v.x
+- type: PlotEstimate
+  x: truth.t.s
+  y: fc.leader.orbit.v.y
+- type: PlotEstimate
+  x: truth.t.s
+  y: fc.leader.orbit.v.z

@@ -37,6 +37,7 @@ AttitudeEstimatorTestGnc::AttitudeEstimatorTestGnc(
     RandomsGenerator &randoms, Configuration const &config)
   : ModelList(randoms) {
   add<SingleAttitudeOrbitGnc>(randoms, config);
-  add<AttitudeEstimator>(randoms, config, "leader");
+  add<AttitudeEstimator>(
+      randoms, config, "leader", "truth.leader.orbit.r.ecef");
 }
 } // namespace psim

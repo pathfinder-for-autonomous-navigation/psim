@@ -34,8 +34,9 @@
 
 namespace psim {
 
-/** @brief Models orbital dynamics for two satellites. All models are backed by
- *         flight software's GNC implementations if possible.
+/** @brief Models orbital dynamics for two satellites.
+ *
+ *  All models are backed by flight software's GNC implementation if possible.
  */
 class DualOrbitGnc : public ModelList {
  public:
@@ -44,6 +45,19 @@ class DualOrbitGnc : public ModelList {
 
   DualOrbitGnc(RandomsGenerator &randoms, Configuration const &config);
 };
-}  // namespace psim
+
+/** @brief Models orbital dynamics for two satellites along with flight computer
+ *         models.
+ *
+ *  All models are backed by flight software's GNC implementation if possible.
+ */
+class DualOrbitGncFc : public ModelList {
+ public:
+  DualOrbitGncFc() = delete;
+  virtual ~DualOrbitGncFc() = default;
+
+  DualOrbitGncFc(RandomsGenerator &randoms, Configuration const &config);
+};
+} // namespace psim
 
 #endif

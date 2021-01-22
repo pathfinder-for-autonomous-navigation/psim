@@ -28,6 +28,7 @@
 
 #include <psim/simulations/single_attitude_orbit.hpp>
 
+#include <psim/fc/satellite_fc.hpp>
 #include <psim/sensors/satellite_sensors.hpp>
 #include <psim/truth/earth.hpp>
 #include <psim/truth/satellite_truth.hpp>
@@ -45,4 +46,13 @@ SingleAttitudeOrbitGnc::SingleAttitudeOrbitGnc(
   // Sensors model
   add<SatelliteSensors>(randoms, config, "leader");
 }
+
+SingleAttitudeOrbitGncFc::SingleAttitudeOrbitGncFc(
+    RandomsGenerator &randoms, Configuration const &config)
+  : ModelList(randoms) {
+    // Simulation
+    add<SingleAttitudeOrbitGnc>(randoms, config);
+    // Flight computer model
+    add<SatelliteFc>(randoms, config, "leader");
+  }
 } // namespace psim

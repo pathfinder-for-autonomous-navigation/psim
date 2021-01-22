@@ -44,6 +44,19 @@ class DualAttitudeOrbitGnc : public ModelList {
 
   DualAttitudeOrbitGnc(RandomsGenerator &randoms, Configuration const &config);
 };
+
+/** @brief Models attitude and orbital dynamics for two satellites along with
+ *         flight computer models.
+ * 
+ *  All models are backed by flight software's GNC implementation if possible.
+ */
+class DualAttitudeOrbitGncFc : public ModelList {
+ public:
+  DualAttitudeOrbitGncFc() = delete;
+  virtual ~DualAttitudeOrbitGncFc() = default;
+
+  DualAttitudeOrbitGncFc(RandomsGenerator &randoms, Configuration const &config);
+};
 } // namespace psim
 
 #endif
