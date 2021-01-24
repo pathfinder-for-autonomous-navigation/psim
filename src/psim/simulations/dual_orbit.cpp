@@ -28,6 +28,7 @@
 
 #include <psim/simulations/dual_orbit.hpp>
 
+#include <psim/fc/satellite_fc.hpp>
 #include <psim/sensors/satellite_sensors.hpp>
 #include <psim/truth/earth.hpp>
 #include <psim/truth/hill_frame.hpp>
@@ -49,5 +50,15 @@ DualOrbitGnc::DualOrbitGnc(
   // Sensors model
   add<SatelliteSensorsNoAttitude>(randoms, config, "leader");
   add<SatelliteSensorsNoAttitude>(randoms, config, "follower");
+}
+
+DualOrbitGncFc::DualOrbitGncFc(
+    RandomsGenerator &randoms, Configuration const &config)
+  : ModelList(randoms) {
+  // Simulation
+  add<DualOrbitGnc>(randoms, config);
+  // Flight computer models
+  add<SatelliteFcNoAttitude>(randoms, config, "leader");
+  add<SatelliteFcNoAttitude>(randoms, config, "follower");
 }
 } // namespace psim

@@ -7,6 +7,7 @@ comment: >
 
 args:
     - satellite
+    - orbit
 
 adds:
     - name: "fc.{satellite}.attitude.is_valid"
@@ -61,7 +62,7 @@ adds:
 gets:
     - name: "truth.t.s"
       type: Real
-    - name: "truth.{satellite}.orbit.r.ecef"
+    - name: "{orbit}"
       type: Vector3
     - name: "truth.{satellite}.attitude.q.eci_body"
       type: Vector4

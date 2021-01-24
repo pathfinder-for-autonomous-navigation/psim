@@ -34,8 +34,9 @@
 
 namespace psim {
 
-/** @brief Models a single satellite's orbital dynamics. All models are backed
- *         by flight software's GNC implementations if possible.
+/** @brief Models orbital dynamics for a single satellite.
+ *
+ *  All models are backed by flight software's GNC implementations if possible.
  */
 class SingleOrbitGnc : public ModelList {
  public:
@@ -44,6 +45,19 @@ class SingleOrbitGnc : public ModelList {
 
   SingleOrbitGnc(RandomsGenerator &randoms, Configuration const &config);
 };
-}  // namespace psim
+
+/** @brief Models orbital dynamics for a single satellite along with a flight
+ *         computer model.
+ *
+ *  All models are backed by flight software's GNC implementations if possible.
+ */
+class SingleOrbitGncFc : public ModelList {
+ public:
+  SingleOrbitGncFc() = delete;
+  virtual ~SingleOrbitGncFc() = default;
+
+  SingleOrbitGncFc(RandomsGenerator &randoms, Configuration const &config);
+};
+} // namespace psim
 
 #endif

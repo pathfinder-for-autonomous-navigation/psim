@@ -187,9 +187,13 @@ static void py_assign(psim::StateFieldWritableBase &field, T const &value) {
 void py_simulation(py::module &m) {
   PY_SIMULATION(AttitudeEstimatorTestGnc);
   PY_SIMULATION(SingleAttitudeOrbitGnc);
+  PY_SIMULATION(SingleAttitudeOrbitGncFc);
   PY_SIMULATION(SingleOrbitGnc);
+  PY_SIMULATION(SingleOrbitGncFc);
   PY_SIMULATION(DualAttitudeOrbitGnc);
+  PY_SIMULATION(DualAttitudeOrbitGncFc);
   PY_SIMULATION(DualOrbitGnc);
+  PY_SIMULATION(DualOrbitGncFc);
 }
 
 PYBIND11_MODULE(_psim, m) {

@@ -91,7 +91,7 @@ class Plot2DLog(Plot2D):
 class Plot3D(Plot):
 
     def __init__(self, x=None, y=None, z=None, **kwargs):
-        super(Plot2D, self).__init__(**kwargs)
+        super(Plot3D, self).__init__(**kwargs)
 
         if not x or not y or not z:
             raise RuntimeError('A 3D plot requires "x", "y", and "z" arguments.')

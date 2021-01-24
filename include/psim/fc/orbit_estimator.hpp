@@ -22,43 +22,40 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_attitude_orbit.hpp
+/** @file psim/fc/orbit_estimator.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_SIMULATIONS_SINGLE_ATTITUDE_ORBIT_HPP_
-#define PSIM_SIMULATIONS_SINGLE_ATTITUDE_ORBIT_HPP_
+#ifndef PSIM_FC_ORBIT_ESTIMATOR_HPP_
+#define PSIM_FC_ORBIT_ESTIMATOR_HPP_
 
-#include <psim/core/configuration.hpp>
-#include <psim/core/model_list.hpp>
+#include <psim/fc/orbit_estimator.yml.hpp>
+
+#include <gnc/orbit_estimator.hpp>
 
 namespace psim {
 
-/** @brief Models attitude and orbital dynamics for a single satellite.
- *
- *  All models are backed by flight software's GNC implementations if possible.
- */
-class SingleAttitudeOrbitGnc : public ModelList {
+class OrbitEstimator : public OrbitEstimatorInterface<OrbitEstimator> {
+ private:
+  typedef OrbitEstimatorInterface<OrbitEstimator> Super;
+
+  gnc::OrbitEstimator estimator;
+
+  void _set_orbit_outputs();
+
  public:
-  SingleAttitudeOrbitGnc() = delete;
-  virtual ~SingleAttitudeOrbitGnc() = default;
+  using Super::OrbitEstimatorInterface;
 
-  SingleAttitudeOrbitGnc(
-      RandomsGenerator &randoms, Configuration const &config);
-};
+  OrbitEstimator() = delete;
+  virtual ~OrbitEstimator() = default;
 
-/** @brief Models attitude and orbital dynamics for a single satellite along
- *         with a flight computer model.
- *
- *  All models are backed by flight software's GNC implementations if possible.
- */
-class SingleAttitudeOrbitGncFc : public ModelList {
- public:
-  SingleAttitudeOrbitGncFc() = delete;
-  virtual ~SingleAttitudeOrbitGncFc() = default;
+  virtual void add_fields(State &state) override;
+  virtual void step() override;
 
-  SingleAttitudeOrbitGncFc(
-      RandomsGenerator &randoms, Configuration const &config);
+  Vector3 fc_satellite_orbit_r_error() const;
+  Vector3 fc_satellite_orbit_r_sigma() const;
+  Vector3 fc_satellite_orbit_v_error() const;
+  Vector3 fc_satellite_orbit_v_sigma() const;
 };
 } // namespace psim
 

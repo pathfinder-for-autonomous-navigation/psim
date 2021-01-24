@@ -56,7 +56,7 @@ void AttitudeEstimator::step() {
   this->Super::step();
 
   auto const &t = truth_t_s->get();
-  auto const &r = truth_satellite_orbit_r_ecef->get();
+  auto const &r = orbit->get();
   auto const &b = sensors_satellite_magnetometer_b->get();
   auto const &s = sensors_satellite_sun_sensors_s->get();
   auto const &w = sensors_satellite_gyroscope_w->get();

@@ -22,44 +22,28 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulation/single_attitude_orbit.hpp
+/** @file psim/fc/satellite_fc.cpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_SIMULATIONS_SINGLE_ATTITUDE_ORBIT_HPP_
-#define PSIM_SIMULATIONS_SINGLE_ATTITUDE_ORBIT_HPP_
+#include <psim/fc/satellite_fc.hpp>
 
-#include <psim/core/configuration.hpp>
-#include <psim/core/model_list.hpp>
+#include <psim/fc/attitude_estimator.hpp>
+#include <psim/fc/orbit_estimator.hpp>
 
 namespace psim {
 
-/** @brief Models attitude and orbital dynamics for a single satellite.
- *
- *  All models are backed by flight software's GNC implementations if possible.
- */
-class SingleAttitudeOrbitGnc : public ModelList {
- public:
-  SingleAttitudeOrbitGnc() = delete;
-  virtual ~SingleAttitudeOrbitGnc() = default;
+SatelliteFc::SatelliteFc(RandomsGenerator &randoms, Configuration const &config,
+    std::string const &satellite)
+  : ModelList(randoms) {
+  add<OrbitEstimator>(randoms, config, satellite);
+  add<AttitudeEstimator>(
+      randoms, config, satellite, "fc." + satellite + ".orbit.r");
+}
 
-  SingleAttitudeOrbitGnc(
-      RandomsGenerator &randoms, Configuration const &config);
-};
-
-/** @brief Models attitude and orbital dynamics for a single satellite along
- *         with a flight computer model.
- *
- *  All models are backed by flight software's GNC implementations if possible.
- */
-class SingleAttitudeOrbitGncFc : public ModelList {
- public:
-  SingleAttitudeOrbitGncFc() = delete;
-  virtual ~SingleAttitudeOrbitGncFc() = default;
-
-  SingleAttitudeOrbitGncFc(
-      RandomsGenerator &randoms, Configuration const &config);
-};
+SatelliteFcNoAttitude::SatelliteFcNoAttitude(RandomsGenerator &randoms,
+    Configuration const &config, std::string const &satellite)
+  : ModelList(randoms) {
+  add<OrbitEstimator>(randoms, config, satellite);
+}
 } // namespace psim
-
-#endif
