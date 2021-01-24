@@ -22,7 +22,7 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/satellite_orbit.hpp
+/** @file psim/truth/satellite_truth.hpp
  *  @author Kyle Krol
  */
 

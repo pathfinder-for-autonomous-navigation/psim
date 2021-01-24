@@ -1,0 +1,54 @@
+
+name: OrbitEstimatorInterface
+type: Model
+comment: >
+    Interface for how the flight computer's orbit estimator will interact with
+    simulation in PSim standalone.
+
+args:
+    - satellite
+
+adds:
+    - name: "fc.{satellite}.orbit.is_valid"
+      type: Integer
+      comment: >
+        Flag specifying whether or not the estimate is currently valid. Zero
+        indicates the estimate isn't valid while one indicates it is.
+    - name: "fc.{satellite}.orbit.r"
+      type: Vector3
+      comment: >
+        Current position estimate in ECEF.
+    - name: "fc.{satellite}.orbit.r.error"
+      type: Lazy Vector3
+      comment: >
+        Current position estimate error.
+    - name: "fc.{satellite}.orbit.r.sigma"
+      type: Lazy Vector3
+      comment: >
+        One sigma bounds on the current position estimate error.
+    - name: "fc.{satellite}.orbit.v"
+      type: Vector3
+      comment: >
+        Current velocity estimate in ECEF.
+    - name: "fc.{satellite}.orbit.v.error"
+      type: Lazy Vector3
+      comment: >
+        Current velocity estimate error.
+    - name: "fc.{satellite}.orbit.v.sigma"
+      type: Lazy Vector3
+      comment: >
+        One sigma bounds on the current velocity estimate error.
+
+gets:
+    - name: "truth.t.s"
+      type: Real
+    - name: "truth.dt.ns"
+      type: Integer
+    - name: "truth.{satellite}.orbit.r.ecef"
+      type: Vector3
+    - name: "truth.{satellite}.orbit.v.ecef"
+      type: Vector3
+    - name: "sensors.{satellite}.gps.r"
+      type: Vector3
+    - name: "sensors.{satellite}.gps.v"
+      type: Vector3
