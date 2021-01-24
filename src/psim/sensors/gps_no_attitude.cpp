@@ -32,15 +32,27 @@ namespace psim {
 
 Vector3 GpsNoAttitude::sensors_satellite_gps_r() const {
   auto const &truth_r_ecef = truth_satellite_orbit_r_ecef->get();
-  auto const &sigma = sensors_satellite_gps_r_sigma.get();
+  auto const &error = Super::sensors_satellite_gps_r_error.get();
 
-  return truth_r_ecef + lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  return truth_r_ecef + error;
 }
 
 Vector3 GpsNoAttitude::sensors_satellite_gps_r_error() const {
-  auto const &truth_r_ecef = truth_satellite_orbit_r_ecef->get();
-  auto const &sensors_r_ecef = this->Super::sensors_satellite_gps_r.get();
+  auto const &sigma = sensors_satellite_gps_r_sigma.get();
 
-  return sensors_r_ecef - truth_r_ecef;
+  return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+}
+
+Vector3 GpsNoAttitude::sensors_satellite_gps_v() const {
+  auto const &truth_v_ecef = truth_satellite_orbit_v_ecef->get();
+  auto const &error = Super::sensors_satellite_gps_v_error.get();
+
+  return truth_v_ecef + error;
+}
+
+Vector3 GpsNoAttitude::sensors_satellite_gps_v_error() const {
+  auto const &sigma = sensors_satellite_gps_v_sigma.get();
+
+  return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
 }
 }  // namespace psim
