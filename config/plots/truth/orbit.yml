@@ -4,8 +4,24 @@
   x: truth.t.s
   y: [truth.leader.orbit.r.eci.x, truth.leader.orbit.r.eci.y, truth.leader.orbit.r.eci.z]
 
-# Plot the 3D trajectory
+# Plot the 3D trajectory in ECI
 - type: Plot3D
   x: truth.leader.orbit.r.eci.x
   y: truth.leader.orbit.r.eci.y
   z: truth.leader.orbit.r.eci.z
+
+# Plot velocity over time in ECI
+- type: Plot2D
+  x: truth.t.s
+  y: [truth.leader.orbit.v.eci.x, truth.leader.orbit.v.eci.y, truth.leader.orbit.v.eci.z]
+
+# Plot the 3D trajectory in ECEF
+- type: Plot3D
+  x: truth.leader.orbit.r.ecef.x
+  y: truth.leader.orbit.r.ecef.y
+  z: truth.leader.orbit.r.ecef.z
+
+# Plot velocity over time in ECEF
+- type: Plot2D
+  x: truth.t.s
+  y: [truth.leader.orbit.v.ecef.x, truth.leader.orbit.v.ecef.y, truth.leader.orbit.v.ecef.z]
