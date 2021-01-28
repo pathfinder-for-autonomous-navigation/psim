@@ -32,16 +32,16 @@ namespace psim {
 TransformVelocityEcef::TransformVelocityEcef(RandomsGenerator &randoms,
     Configuration const &config, std::string const &satellite,
     std::string const &vector)
-  : Super(randoms, config, satellite, vector, "ecef") { }
+  : Super(randoms, config, satellite, vector) { }
 
 Vector3 TransformVelocityEcef::vector_ecef() const {
   return vector->get();
 }
 
 Vector3 TransformVelocityEcef::vector_eci() const {
-  auto const &r_ecef = truth_satellite_orbit_r_frame->get();
   auto const &v_ecef = vector->get();
   auto const &q_eci_ecef = truth_earth_q_eci_ecef->get();
+  auto const &r_ecef = truth_satellite_orbit_r_ecef->get();
   auto const &w_earth = truth_earth_w->get();
 
   Vector3 v_eci;
@@ -52,17 +52,17 @@ Vector3 TransformVelocityEcef::vector_eci() const {
 TransformVelocityEci::TransformVelocityEci(RandomsGenerator &randoms,
     Configuration const &config, std::string const &satellite,
     std::string const &vector)
-  : Super(randoms, config, satellite, vector, "eci") { }
+  : Super(randoms, config, satellite, vector) { }
 
 Vector3 TransformVelocityEci::vector_ecef() const {
-  auto const &r_eci = truth_satellite_orbit_r_frame->get();
   auto const &v_eci = vector->get();
   auto const &q_ecef_eci = truth_earth_q_ecef_eci->get();
+  auto const &r_ecef = truth_satellite_orbit_r_ecef->get();
   auto const &w_earth = truth_earth_w->get();
 
-  Vector3 v_ecef;
-  gnc::utl::rotate_frame(q_ecef_eci, (v_eci - lin::cross(w_earth, r_eci).eval(), v_ecef));
-  return v_ecef;
+  Vector3 v;
+  gnc::utl::rotate_frame(q_ecef_eci, v_eci, v);
+  return v - lin::cross(w_earth, r_ecef);
 }
 
 Vector3 TransformVelocityEci::vector_eci() const {
