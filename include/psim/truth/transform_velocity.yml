@@ -9,7 +9,6 @@ comment: >
 args:
     - satellite
     - vector
-    - frame
 
 adds:
     - name: "{vector}.ecef"
@@ -33,9 +32,9 @@ gets:
       type: Vector4
     - name: "truth.earth.w"
       type: Vector3
-    - name: "truth.{satellite}.orbit.r.{frame}"
+    - name: "truth.{satellite}.orbit.r.ecef"
       type: Vector3
       comment: >
-          The frame of the position vector needs to be explicitly specified here
-          because we need the position of the frame we're transforming from.
-          This implies this model is also dependant on a position transformer.
+          The position of the satellite is required in the ECEF frame in order
+          to account for Earth's rotation. This implies dependance on the
+          position transformer as well.
