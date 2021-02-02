@@ -13,6 +13,10 @@ params:
       type: Vector3
       comment: >
         Standard deviation of the position reading from the GPS.
+    - name: "sensors.{satellite}.gps.v.sigma"
+      type: Vector3
+      comment: >
+        Standard deviation of the velocity reading from the GPS.
 
 adds:
     - name: "sensors.{satellite}.gps.r"
@@ -23,7 +27,17 @@ adds:
       type: Lazy Vector3
       comment: >
           Error in the position reported by the GPS in ECEF.
+    - name: "sensors.{satellite}.gps.v"
+      type: Lazy Vector3
+      comment: >
+          Velocity reported by the GPS in ECEF.
+    - name: "sensors.{satellite}.gps.v.error"
+      type: Lazy Vector3
+      comment: >
+          Error in the velocity reported by the GPS in ECEF.
 
 gets:
     - name: "truth.{satellite}.orbit.r.ecef"
+      type: Vector3
+    - name: "truth.{satellite}.orbit.v.ecef"
       type: Vector3
