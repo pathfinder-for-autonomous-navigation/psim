@@ -21,7 +21,7 @@ cc_library(
         "include/gnc/**/*.inl"
     ]),
     hdrs = glob([
-        "include/gnc/**/*.hpp", "include/orb/*.h", "include/orb/*.hpp"
+        "include/gnc/**/*.hpp", "include/orb/**/*.h", "include/orb/**/*.hpp"
     ]),
     includes = ["include"],
     copts = ["-Isrc", "-fvisibility=hidden"],
