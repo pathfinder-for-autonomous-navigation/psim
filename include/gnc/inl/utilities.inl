@@ -24,9 +24,9 @@ constexpr void quat_conj(lin::Vector<T, 4> &q) {
 template <typename T>
 constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> const &q2,
     lin::Vector<T, 4> &res) {
-  auto const qv1 = lin::ref<3, 1>(q1, 0, 0);
-  auto const qv2 = lin::ref<3, 1>(q2, 0, 0);
-  lin::ref<3, 1>(res, 0, 0) = lin::cross(qv2, qv1) + q1(3) * qv2 + q2(3) * qv1;
+  auto const qv1 = lin::ref<lin::Vector<T, 3>>(q1, 0, 0);
+  auto const qv2 = lin::ref<lin::Vector<T, 3>>(q2, 0, 0);
+  lin::ref<lin::Vector<T, 3>>(res, 0, 0) = lin::cross(qv2, qv1) + q1(3) * qv2 + q2(3) * qv1;
   res(3) = q1(3) * q2(3) - lin::dot(qv1, qv2);
 }
 
@@ -39,7 +39,7 @@ constexpr void quat_cross_mult(lin::Vector<T, 4> const &q1, lin::Vector<T, 4> &q
 
 template <typename T>
 constexpr void quat_to_qrp(lin::Vector<T, 4> const &q, T a, T f, lin::Vector<T, 3> &p) {
-  p = lin::ref<3, 1>(q, 0, 0) * (f / (a + q(3)));
+  p = lin::ref<lin::Vector<T, 3>>(q, 0, 0) * (f / (a + q(3)));
 }
 
 template <typename T>
@@ -47,13 +47,13 @@ constexpr void grp_to_quat(lin::Vector<T, 3> const &p, T a, T f, lin::Vector<T, 
   T fro_p = lin::fro(p);
   T sqr_f = f * f;
   q(3) = (f * std::sqrt(sqr_f + (1 - a * a) * fro_p) - a * fro_p) / (sqr_f + fro_p);
-  lin::ref<3, 1>(q, 0, 0) = p * ((a + q(3)) / f);
+  lin::ref<lin::Vector<T, 3>>(q, 0, 0) = p * ((a + q(3)) / f);
 }
 
 template <typename T>
 constexpr void rotate_frame(lin::Vector<T, 4> const &q, lin::Vector<T, 3> const &v,
     lin::Vector<T, 3> &res) {
-  auto const qv = lin::ref<3, 1>(q, 0, 0);
+  auto const qv = lin::ref<lin::Vector<T, 3>>(q, 0, 0);
   res = v + lin::cross(
       (static_cast<T>(2.0) * qv).eval(),
       (lin::cross(qv, v) - q(3) * v).eval()
@@ -75,9 +75,9 @@ constexpr void dcm(lin::Matrix<T, 3, 3> &DCM, lin::Vector<T, 3> const &x,
   }
 
   // Generate references to our unit vector destinations
-  auto x_hat = lin::ref_row(DCM, 0);
-  auto y_hat = lin::ref_row(DCM, 1);
-  auto z_hat = lin::ref_row(DCM, 2);
+  auto x_hat = lin::row(DCM, 0);
+  auto y_hat = lin::row(DCM, 1);
+  auto z_hat = lin::row(DCM, 2);
   // Set x_hat in place
   x_hat = lin::transpose(x);
   x_hat = x_hat / lin::norm(x_hat);
@@ -89,12 +89,12 @@ constexpr void dcm(lin::Matrix<T, 3, 3> &DCM, lin::Vector<T, 3> const &x,
   z_hat = lin::cross(x_hat, y_hat);
 
   // Assert that DCM is a direction cosine matrix
-  GNC_ASSERT_NORMALIZED(lin::ref_col(DCM, 0));
-  GNC_ASSERT_NORMALIZED(lin::ref_col(DCM, 1));
-  GNC_ASSERT_NORMALIZED(lin::ref_col(DCM, 2));
-  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(DCM, 0), lin::ref_col(DCM, 1)), 1.0e-3f);
-  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(DCM, 0), lin::ref_col(DCM, 2)), 1.0e-3f);
-  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(DCM, 1), lin::ref_col(DCM, 2)), 1.0e-3f);
+  GNC_ASSERT_NORMALIZED(lin::col(DCM, 0));
+  GNC_ASSERT_NORMALIZED(lin::col(DCM, 1));
+  GNC_ASSERT_NORMALIZED(lin::col(DCM, 2));
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::col(DCM, 0), lin::col(DCM, 1)), 1.0e-3f);
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::col(DCM, 0), lin::col(DCM, 2)), 1.0e-3f);
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::col(DCM, 1), lin::col(DCM, 2)), 1.0e-3f);
 }
 
 // TODO : Potentially add diagonal references to lin
@@ -102,12 +102,12 @@ template <typename T>
 constexpr void dcm_to_quat(lin::Matrix<T, 3, 3> const &DCM,
     lin::Vector<T, 4> &q) {
   // Assert that DCM is a direction cosine matrix
-  GNC_ASSERT_NORMALIZED(lin::ref_col(DCM, 0));
-  GNC_ASSERT_NORMALIZED(lin::ref_col(DCM, 1));
-  GNC_ASSERT_NORMALIZED(lin::ref_col(DCM, 2));
-  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(DCM, 0), lin::ref_col(DCM, 1)), 1.0e-3f);
-  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(DCM, 0), lin::ref_col(DCM, 2)), 1.0e-3f);
-  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::ref_col(DCM, 1), lin::ref_col(DCM, 2)), 1.0e-3f);
+  GNC_ASSERT_NORMALIZED(lin::col(DCM, 0));
+  GNC_ASSERT_NORMALIZED(lin::col(DCM, 1));
+  GNC_ASSERT_NORMALIZED(lin::col(DCM, 2));
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::col(DCM, 0), lin::col(DCM, 1)), 1.0e-3f);
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::col(DCM, 0), lin::col(DCM, 2)), 1.0e-3f);
+  GNC_ASSERT_NEAR(0.0f, lin::dot(lin::col(DCM, 1), lin::col(DCM, 2)), 1.0e-3f);
 
   // Find the maximum among the diagonal elements and trace
   T max = DCM(0, 0);
@@ -218,7 +218,7 @@ constexpr void vec_rot_to_quat(lin::Vector<T, 3> const &u,
   // Handle the general case
   else {
     q(3) = sqrt((static_cast<T>(1) + x) / static_cast<T>(2));
-    lin::ref<3, 1>(q, 0, 0) = lin::cross(u, v) / (static_cast<T>(2) * q(3));
+    lin::ref<lin::Vector<T, 3>>(q, 0, 0) = lin::cross(u, v) / (static_cast<T>(2) * q(3));
   }
 }
 }  // namespace utl

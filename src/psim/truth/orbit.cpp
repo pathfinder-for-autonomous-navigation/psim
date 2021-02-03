@@ -59,10 +59,10 @@ void OrbitGncEci::step() {
 
   // Simulate our dynamics
   auto const xf = ode(t, dt, {r(0), r(1), r(2), v(0), v(1), v(2)}, nullptr,
-      [](Real t, lin::Vector<Real, 6> const &x, void *) -> lin::Vector<Real, 6> {
+      [](Real t, Vector<6> const &x, void *) -> Vector<6> {
     // References to our position and velocity in ECI
-    auto const r = lin::ref<3, 1>(x, 0, 0);
-    auto const v = lin::ref<3, 1>(x, 3, 0);
+    auto const r = lin::ref<Vector3>(x, 0, 0);
+    auto const v = lin::ref<Vector3>(x, 3, 0);
 
     // Calculate the Earth's current attitude
     Vector4 q;
@@ -84,7 +84,7 @@ void OrbitGncEci::step() {
   });
 
   // Write back to our state fields
-  r = lin::ref<3, 1>(xf, 0, 0);
-  v = lin::ref<3, 1>(xf, 3, 0);
+  r = lin::ref<Vector3>(xf, 0, 0);
+  v = lin::ref<Vector3>(xf, 3, 0);
 }
 }  // namespace psim

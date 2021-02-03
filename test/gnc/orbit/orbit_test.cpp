@@ -41,12 +41,12 @@ T det(const lin::Matrix<T, 0, 0, MR, MR>& x){
         //x without row 0 or col i
         lin::Matrix<T,0,0,MR,MR> submat(n-1,n-1);
         if (i==0){
-            submat= lin::ref<0, 0, MR, MR> (x, 1, i+1, n-1, n-1-i);
+            submat= lin::ref<lin::Matrix<T,0,0,MR,MR>> (x, 1, i+1, n-1, n-1-i);
         }else if (i==n-1){
-            submat= lin::ref<0, 0, MR, MR> (x, 1, 0, n-1, i);
+            submat= lin::ref<lin::Matrix<T,0,0,MR,MR>> (x, 1, 0, n-1, i);
         }else {
-            lin::ref<0, 0, MR, MR> (submat, 0, 0, n-1, i) = lin::ref<0, 0, MR, MR> (x, 1, 0, n-1, i);
-            lin::ref<0, 0, MR, MR> (submat, 0, i, n-1, n-1-i) = lin::ref<0, 0, MR, MR> (x, 1, i+1, n-1, n-1-i);
+            lin::ref<lin::Matrix<T,0,0,MR,MR>> (submat, 0, 0, n-1, i) = lin::ref<lin::Matrix<T,0,0,MR,MR>> (x, 1, 0, n-1, i);
+            lin::ref<lin::Matrix<T,0,0,MR,MR>> (submat, 0, i, n-1, n-1-i) = lin::ref<lin::Matrix<T,0,0,MR,MR>> (x, 1, i+1, n-1, n-1-i);
         }
         result+= (i%2?-1:1)*x(0,i)*det<T,MR>(submat);
     }
@@ -287,7 +287,7 @@ void test_shortupdate_c(){
         lin::Matrix<double, 6, 6> jac;
         y.shortupdate(timesteps[j],earth_rate_ecef,junk,jac);
         TEST_ASSERT_TRUE(y.valid());
-        lin::Matrix<double,0,0,6,6> jacref= lin::ref<0, 0, 6, 6> (jac, 0, 0, 6, 6);
+        lin::Matrix<double,0,0,6,6> jacref= lin::ref<lin::Matrix<double, 0, 0, 6, 6>> (jac, 0, 0, 6, 6);
         double detjac=det<double,6>(jacref);
         //test jacobian has determinant 1
         TEST_ASSERT_FLOAT_WITHIN(1.0E-15,(1.0- detjac),0);
@@ -298,8 +298,8 @@ void test_shortupdate_c(){
             initialdelta= initialdelta-lin::consts<lin::Vectord<6>>(0.5,6,1);
             initialdelta= initialdelta*0.2;
             //initialdelta is now a uniform random vector +-0.1
-            lin::Vector3d deltar= lin::ref<3, 1>(initialdelta, 0, 0);
-            lin::Vector3d deltav= lin::ref<3, 1>(initialdelta, 3, 0);
+            lin::Vector3d deltar= lin::ref<lin::Vector3d>(initialdelta, 0, 0);
+            lin::Vector3d deltav= lin::ref<lin::Vector3d>(initialdelta, 3, 0);
             orb::Orbit y_diff(gracestart.nsgpstime(),gracestart.recef()+deltar,gracestart.vecef()+deltav);
             TEST_ASSERT_TRUE(y_diff.valid());
             y_diff.shortupdate(timesteps[j],earth_rate_ecef,junk);
@@ -307,8 +307,8 @@ void test_shortupdate_c(){
             lin::Vector3d finaldr= y_diff.recef()-y.recef();
             lin::Vector3d finaldv= y_diff.vecef()-y.vecef();
             lin::Vectord<6> finaldelta;
-            lin::ref<3, 1>(finaldelta, 0, 0)= finaldr;
-            lin::ref<3, 1>(finaldelta, 3, 0)= finaldv;
+            lin::ref<lin::Vector3d>(finaldelta, 0, 0)= finaldr;
+            lin::ref<lin::Vector3d>(finaldelta, 3, 0)= finaldv;
             lin::Vectord<6> expecteddelta= jac*initialdelta;
             //TEST_MESSAGE("Initial delta");
             //printtensor(initialdelta);

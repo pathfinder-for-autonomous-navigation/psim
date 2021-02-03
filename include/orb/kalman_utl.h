@@ -56,8 +56,8 @@ template <typename T, lin::size_t N>
 void matrix_hypot(const lin::Matrix<T,N,N>& A,const lin::Matrix<T,N,N>& B,lin::Matrix<T,N,N>& C){
     lin::Matrix<T,N*2,N> M;
     lin::Matrix<T,N*2,N> junk;
-    lin::ref<N, N> (M, 0, 0) = A;
-    lin::ref<N, N> (M, N, 0) = B;
+    lin::ref<lin::Matrix<T,N,N>> (M, 0, 0) = A;
+    lin::ref<lin::Matrix<T,N,N>> (M, N, 0) = B;
     lin::qr(M, junk, C);
 }
 

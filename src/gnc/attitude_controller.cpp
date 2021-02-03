@@ -76,8 +76,8 @@ PointingActuation::PointingActuation()
   rwa_body_cmd(lin::nans<decltype(rwa_body_cmd)>()) { }
 
 static void error_from_quaternion(lin::Vector4f const &q, lin::Vector3f &err) {
-  if (q(3) < 0.0f) err = -lin::ref<3, 1>(q, 0, 0);
-  else err = lin::ref<3, 1>(q, 0, 0);
+  if (q(3) < 0.0f) err = -lin::ref<lin::Vector3f>(q, 0, 0);
+  else err = lin::ref<lin::Vector3f>(q, 0, 0);
 }
 
 static void double_objective_error(
