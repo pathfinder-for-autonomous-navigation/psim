@@ -1,0 +1,48 @@
+
+name: CdgpsNoAttitudeInterface
+type: Model
+comment: >
+    Interface for a model responsible for simulating the measurements seen by
+    the CDGPS sensor during flight.
+
+args:
+    - satellite
+    - other
+
+params:
+    - name: "sensors.{satellite}.cdgps.model_range"
+      type: Integer
+      comment: >
+          Flag toggling whether or not being out of range will prevent the CDGPS
+          from producing a reading.
+    - name: "sensors.{satellite}.cdgps.range"
+      type: Real
+      comment: >
+          Range within the CDGPS can still provide readings of the other
+          satellite's position.
+    - name: "sensors.{satellite}.cdgps.dr.sigma"
+      type: Vector3
+      comment: >
+          Standard deviation of the relative position reading from the CDGPS.
+
+adds:
+    - name: "sensors.{satellite}.cdgps.active"
+      type: Lazy Integer
+      comment: >
+          Flag specifying whether or not the CDGPS sensor is currently active
+          and producing readings.
+    - name: "sensors.{satellite}.cdgps.dr"
+      type: Lazy Vector3
+      comment: >
+          Relative position of the other satellite reported by the CDGPS in ECEF.
+    - name: "sensors.{satellite}.cdgps.dr.error"
+      type: Lazy Vector3
+      comment: >
+          Error in the relative position of the other satellite by the CDGPS in
+          ECEF.
+
+gets:
+    - name: "truth.{satellite}.orbit.r.ecef"
+      type: Vector3
+    - name: "truth.{other}.orbit.r.ecef"
+      type: Vector3
