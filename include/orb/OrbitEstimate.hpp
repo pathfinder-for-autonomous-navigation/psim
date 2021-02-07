@@ -216,22 +216,15 @@ class OrbitEstimate {
             lin::ref<lin::Matrixd<6, 6>>(A, 6, 6) = _sqrtP;
             lin::qr(A, _, B);
 
-            lin::Matrixd<6, 6> C, D;
-            C = lin::transpose(lin::ref<lin::Matrixd<6, 6>>(B, 0, 0));
-            D = lin::ref<lin::Matrixd<6, 6>>(B, 0, 6);
-
             /* Kalman gain calculation from the square root formulation:
              *
-             *   K_k+1 = D inverse(C)
+             *   K_k+1 = transpose(D) inverse(C)
+             * 
+             * where C is already upper triangular.
              */
             lin::Matrixd<6, 6> K;
-            {
-                lin::Matrixd<6, 6> Q, R;
-                lin::qr(lin::transpose(C).eval(), Q, R);
-                lin::backward_sub(R, K, (lin::transpose(Q) * lin::transpose(D)).eval());
-
-                K = lin::transpose(K).eval();
-            }
+            lin::forward_sub(lin::ref<lin::Matrixd<6, 6>>(B, 0, 0), K, lin::ref<lin::Matrixd<6, 6>>(B, 0, 6));
+            K = lin::transpose(K).eval();
 
             // Measurement
             lin::Vectord<6> z;
