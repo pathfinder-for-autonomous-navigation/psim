@@ -22,34 +22,28 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/hill_frame.hpp
+/** @file psim/simulation/relative_orbit_estimator_test.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_HILL_FRAME_HPP_
-#define PSIM_TRUTH_HILL_FRAME_HPP_
+#ifndef PSIM_SIMULATIONS_RELATIVE_ORBIT_ESTIMATOR_TEST_HPP_
+#define PSIM_SIMULATIONS_RELATIVE_ORBIT_ESTIMATOR_TEST_HPP_
 
-#include <psim/truth/hill_frame.yml.hpp>
+#include <psim/core/configuration.hpp>
+#include <psim/core/model_list.hpp>
 
 namespace psim {
 
-class HillFrameEci : public HillFrame<HillFrameEci> {
- private:
-  typedef HillFrame<HillFrameEci> Super;
-
+/** @brief Models orbital dynamics for two spacecraft in order to test the
+ *         relative orbit estimator.
+ */
+class RelativeOrbitEstimatorTest : public ModelList {
  public:
-  HillFrameEci() = delete;
-  virtual ~HillFrameEci() = default;
+  RelativeOrbitEstimatorTest() = delete;
+  virtual ~RelativeOrbitEstimatorTest() = default;
 
-  /** @brief Set the frame argument to ECI.
-   */
-  HillFrameEci(RandomsGenerator &randoms, Configuration const &config,
-      std::string const &satellite, std::string const &other);
-
-  Vector4 truth_satellite_hill_q_hill_frame() const;
-  Vector3 truth_satellite_hill_w_frame() const;
-  Vector3 truth_satellite_hill_dr() const;
-  Vector3 truth_satellite_hill_dv() const;
+  RelativeOrbitEstimatorTest(
+      RandomsGenerator &randoms, Configuration const &config);
 };
 } // namespace psim
 

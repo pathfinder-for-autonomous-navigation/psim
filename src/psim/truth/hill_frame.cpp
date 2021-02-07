@@ -35,51 +35,48 @@
 namespace psim {
 
 HillFrameEci::HillFrameEci(RandomsGenerator &randoms,
-    Configuration const &config, std::string const &leader,
-    std::string const &follower)
-  : Super(randoms, config, leader, follower, "eci") {}
+    Configuration const &config, std::string const &satellite,
+    std::string const &other)
+  : Super(randoms, config, satellite, other, "eci") {}
 
-Vector4 HillFrameEci::truth_leader_q_hill_frame() const {
-  auto const &leader_r = this->truth_leader_orbit_r_frame->get();
-  auto const &leader_v = this->truth_leader_orbit_v_frame->get();
+Vector4 HillFrameEci::truth_satellite_hill_q_hill_frame() const {
+  auto const &satellite_r = truth_satellite_orbit_r_frame->get();
+  auto const &satellite_v = truth_satellite_orbit_v_frame->get();
 
-  lin::Vector<Real, 4> q;
-  lin::Matrix<Real, 3, 3> Q;
-  gnc::utl::dcm(Q, leader_r, leader_v); // Q = DCM_hill_eci
-  gnc::utl::dcm_to_quat(Q, q);          // q = q_hill_eci
-  gnc::utl::quat_conj(q);               // q = q_eci_hill
-  return q;
+  Matrix<3, 3> Q_hill_frame;
+  gnc::utl::dcm(Q_hill_frame, satellite_r, satellite_v);
+
+  Vector<4> q_hill_frame;
+  gnc::utl::dcm_to_quat(Q_hill_frame, q_hill_frame);
+  return q_hill_frame;
 }
 
-Vector3 HillFrameEci::truth_leader_w_hill() const {
-  auto const &leader_r = this->truth_leader_orbit_r_frame->get();
-  auto const &leader_v = this->truth_leader_orbit_v_frame->get();
+Vector3 HillFrameEci::truth_satellite_hill_w_frame() const {
+  auto const &satellite_r = truth_satellite_orbit_r_frame->get();
+  auto const &satellite_v = truth_satellite_orbit_v_frame->get();
 
-  return lin::cross(leader_r, leader_v) / lin::fro(leader_v);
+  return lin::cross(satellite_r, satellite_v) / lin::fro(satellite_r);
 }
 
-Vector3 HillFrameEci::truth_follower_orbit_r_hill() const {
-  auto const &leader_r = this->truth_leader_orbit_r_frame->get();
-  auto const &follower_r = this->truth_follower_orbit_r_frame->get();
-  auto const &leader_q_hill_eci =
-      this->HillFrame::truth_leader_q_hill_frame.get();
+Vector3 HillFrameEci::truth_satellite_hill_dr() const {
+  auto const &q_hill_frame = Super::truth_satellite_hill_q_hill_frame.get();
+  auto const &satellite_r = truth_satellite_orbit_r_frame->get();
+  auto const &other_r = truth_other_orbit_r_frame->get();
 
-  Vector3 follower_r_hill = follower_r - leader_r;
-  gnc::utl::rotate_frame(leader_q_hill_eci, follower_r_hill);
-  return follower_r_hill;
+  Vector3 dr = other_r - satellite_r;
+  gnc::utl::rotate_frame(q_hill_frame, dr);
+  return dr;
 }
 
-Vector3 HillFrameEci::truth_follower_orbit_v_hill() const {
-  auto const &leader_v = this->truth_leader_orbit_v_frame->get();
-  auto const &follower_v = this->truth_follower_orbit_v_frame->get();
-  auto const &follower_r_hill =
-      this->HillFrame::truth_follower_orbit_r_hill.get();
-  auto const &leader_q_hill_eci =
-      this->HillFrame::truth_leader_q_hill_frame.get();
-  auto const &leader_w_hill = this->HillFrame::truth_leader_w_hill.get();
+Vector3 HillFrameEci::truth_satellite_hill_dv() const {
+  auto const &q_hill_frame = Super::truth_satellite_hill_q_hill_frame.get();
+  auto const &w_hill_frame = Super::truth_satellite_hill_w_frame.get();
+  auto const &dr = Super::truth_satellite_hill_dr.get();
+  auto const &satellite_v = truth_satellite_orbit_v_frame->get();
+  auto const &other_v = truth_other_orbit_v_frame->get();
 
-  Vector3 follower_v_hill = follower_v - leader_v;
-  gnc::utl::rotate_frame(leader_q_hill_eci, follower_v_hill);
-  return follower_v_hill - lin::cross(leader_w_hill, follower_r_hill);
+  Vector3 dv = other_v - satellite_v;
+  gnc::utl::rotate_frame(q_hill_frame, dv);
+  return dv - lin::cross(Vector3({0.0, 0.0, lin::norm(w_hill_frame)}), dr);
 }
 } // namespace psim

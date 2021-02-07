@@ -22,35 +22,21 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/hill_frame.hpp
+/** @file psim/simulations/relative_orbit_estimator_test.cpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_HILL_FRAME_HPP_
-#define PSIM_TRUTH_HILL_FRAME_HPP_
+#include <psim/simulations/relative_orbit_estimator_test.hpp>
 
-#include <psim/truth/hill_frame.yml.hpp>
+#include <psim/fc/relative_orbit_estimator.hpp>
+#include <psim/simulations/dual_orbit.hpp>
 
 namespace psim {
 
-class HillFrameEci : public HillFrame<HillFrameEci> {
- private:
-  typedef HillFrame<HillFrameEci> Super;
-
- public:
-  HillFrameEci() = delete;
-  virtual ~HillFrameEci() = default;
-
-  /** @brief Set the frame argument to ECI.
-   */
-  HillFrameEci(RandomsGenerator &randoms, Configuration const &config,
-      std::string const &satellite, std::string const &other);
-
-  Vector4 truth_satellite_hill_q_hill_frame() const;
-  Vector3 truth_satellite_hill_w_frame() const;
-  Vector3 truth_satellite_hill_dr() const;
-  Vector3 truth_satellite_hill_dv() const;
-};
+RelativeOrbitEstimatorTest::RelativeOrbitEstimatorTest(
+    RandomsGenerator &randoms, Configuration const &config)
+  : ModelList(randoms) {
+  add<DualOrbitGnc>(randoms, config);
+  add<RelativeOrbitEstimator>(randoms, config, "leader", "follower");
+}
 } // namespace psim
-
-#endif

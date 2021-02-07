@@ -22,34 +22,44 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/hill_frame.hpp
+/** @file psim/fc/attitude_estimator.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_HILL_FRAME_HPP_
-#define PSIM_TRUTH_HILL_FRAME_HPP_
+#ifndef PSIM_FC_RELATIVE_ORBIT_ESTIMATOR_HPP_
+#define PSIM_FC_RELATIVE_ORBIT_ESTIMATOR_HPP_
 
-#include <psim/truth/hill_frame.yml.hpp>
+#include <psim/fc/relative_orbit_estimator.yml.hpp>
+
+#include <gnc/relative_orbit_estimate.hpp>
+
+#include <lin/core.hpp>
+#include <lin/generators.hpp>
 
 namespace psim {
 
-class HillFrameEci : public HillFrame<HillFrameEci> {
+class RelativeOrbitEstimator : public RelativeOrbitEstimatorInterface<RelativeOrbitEstimator> {
  private:
-  typedef HillFrame<HillFrameEci> Super;
+  typedef RelativeOrbitEstimatorInterface<RelativeOrbitEstimator> Super;
+
+  Vector3 previous_dr = lin::nans<Vector3>();
+  gnc::RelativeOrbitEstimate estimate;
+
+  void _set_relative_orbit_outputs();
 
  public:
-  HillFrameEci() = delete;
-  virtual ~HillFrameEci() = default;
+  using Super::RelativeOrbitEstimatorInterface;
 
-  /** @brief Set the frame argument to ECI.
-   */
-  HillFrameEci(RandomsGenerator &randoms, Configuration const &config,
-      std::string const &satellite, std::string const &other);
+  RelativeOrbitEstimator() = delete;
+  virtual ~RelativeOrbitEstimator() = default;
 
-  Vector4 truth_satellite_hill_q_hill_frame() const;
-  Vector3 truth_satellite_hill_w_frame() const;
-  Vector3 truth_satellite_hill_dr() const;
-  Vector3 truth_satellite_hill_dv() const;
+  virtual void add_fields(State &state) override;
+  virtual void step() override;
+
+  Vector3 fc_satellite_relative_orbit_dr_error() const;
+  Vector3 fc_satellite_relative_orbit_r_hill_error() const;
+  Vector3 fc_satellite_relative_orbit_dv_error() const;
+  Vector3 fc_satellite_relative_orbit_v_hill_error() const;
 };
 } // namespace psim
 

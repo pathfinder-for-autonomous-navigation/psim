@@ -2,43 +2,38 @@
 name: HillFrame
 type: Model
 comment: >
-    Transforms the position and velocity of the follower spacecraft into the
-    hill frame of the leader. Note the 'leader' and 'follower' are determined by
-    the model arguments and don't refer to the 'leader' and 'follower' of the
-    simulation. The 'frame' argument is the reference frame used to perform the
-    calculation.
+    Transforms the position and velocity of the other spacecraft into the HILL
+    frame of this satellite.
 
 args:
-    - leader
-    - follower
+    - satellite
+    - other
     - frame
 
 adds:
-    - name: "truth.{leader}.q.hill_{frame}"
+    - name: "truth.{satellite}.hill.q.hill_{frame}"
       type: Lazy Vector4
       comment: >
-          Rotation from the requested frame to the hill frame of the leader.
-    - name: "truth.{leader}.w.hill"
+          Rotates from the requested frame to the HILL frame.
+    - name: "truth.{satellite}.hill.w.{frame}"
       type: Lazy Vector3
       comment: >
-          Angular rate of the hill frame of the leader in an inertial frame.
-    - name: "truth.{follower}.orbit.r.hill"
+          Angular rate of the HILL frame in the requested frame.
+    - name: "truth.{satellite}.hill.dr"
       type: Lazy Vector3
       comment: >
-          Position of the follower satellite in the hill frame of the leader.
-          Units are in meters.
-    - name: "truth.{follower}.orbit.v.hill"
+          Relative position of the other satellite in the HILL frame.
+    - name: "truth.{satellite}.hill.dv"
       type: Lazy Vector3
       comment: >
-          Velocity of the follower satellite in the hill frame of the leader.
-          Units are in meters.
+          Relative velocity of the other satellite in the HILL frame.
 
 gets:
-    - name: "truth.{leader}.orbit.r.{frame}"
+    - name: "truth.{satellite}.orbit.r.{frame}"
       type: Vector3
-    - name: "truth.{leader}.orbit.v.{frame}"
+    - name: "truth.{satellite}.orbit.v.{frame}"
       type: Vector3
-    - name: "truth.{follower}.orbit.r.{frame}"
+    - name: "truth.{other}.orbit.r.{frame}"
       type: Vector3
-    - name: "truth.{follower}.orbit.v.{frame}"
+    - name: "truth.{other}.orbit.v.{frame}"
       type: Vector3
