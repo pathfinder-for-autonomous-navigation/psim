@@ -55,7 +55,7 @@ Vector3 HillFrameEci::truth_leader_w_hill() const {
   auto const &leader_r = this->truth_leader_orbit_r_frame->get();
   auto const &leader_v = this->truth_leader_orbit_v_frame->get();
 
-  return lin::cross(leader_r, leader_v) / lin::fro(leader_v);
+  return lin::cross(leader_r, leader_v) / lin::fro(leader_r);
 }
 
 Vector3 HillFrameEci::truth_follower_orbit_r_hill() const {
@@ -69,6 +69,7 @@ Vector3 HillFrameEci::truth_follower_orbit_r_hill() const {
   return follower_r_hill;
 }
 
+// This is actually just broken
 Vector3 HillFrameEci::truth_follower_orbit_v_hill() const {
   auto const &leader_v = this->truth_leader_orbit_v_frame->get();
   auto const &follower_v = this->truth_follower_orbit_v_frame->get();
@@ -80,6 +81,6 @@ Vector3 HillFrameEci::truth_follower_orbit_v_hill() const {
 
   Vector3 follower_v_hill = follower_v - leader_v;
   gnc::utl::rotate_frame(leader_q_hill_eci, follower_v_hill);
-  return follower_v_hill - lin::cross(leader_w_hill, follower_r_hill);
+  return follower_v_hill - lin::cross(Vector3({0.0, 0.0, lin::norm(leader_w_hill)}), follower_r_hill);
 }
 } // namespace psim

@@ -37,6 +37,7 @@
 #include <psim/simulations/attitude_estimator_test.hpp>
 #include <psim/simulations/dual_attitude_orbit.hpp>
 #include <psim/simulations/dual_orbit.hpp>
+#include <psim/simulations/relative_orbit_estimator_test.hpp>
 #include <psim/simulations/single_attitude_orbit.hpp>
 #include <psim/simulations/single_orbit.hpp>
 
@@ -188,6 +189,7 @@ void py_simulation(py::module &m) {
   PY_SIMULATION(AttitudeEstimatorTestGnc);
   PY_SIMULATION(SingleAttitudeOrbitGnc);
   PY_SIMULATION(SingleOrbitGnc);
+  PY_SIMULATION(RelativeOrbitEstimatorTest);
   PY_SIMULATION(DualAttitudeOrbitGnc);
   PY_SIMULATION(DualOrbitGnc);
 }

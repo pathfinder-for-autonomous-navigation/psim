@@ -1,0 +1,84 @@
+
+name: RelativeOrbitEstimatorInterface
+type: Model
+comment: >
+    Interface for how the flight computer's relative orbit estimator will
+    interact with the simulation in PSim standalone.
+
+args:
+    - satellite
+    - other
+
+adds:
+    - name: "fc.{satellite}.relative_orbit.is_valid"
+      type: Integer
+      comment: >
+          Flag specifying whether or not the estimator is currently initialized.
+    - name: "fc.{satellite}.relative_orbit.dr"
+      type: Vector3
+      comment: >
+          Estimate for the relative position of the other satellite in ECEF.
+    - name: "fc.{satellite}.relative_orbit.dr.error"
+      type: Lazy Vector3
+      comment: >
+          Estimate error for the relative position of the other satellite in
+          ECEF.
+    - name: "fc.{satellite}.relative_orbit.r.hill"
+      type: Vector3
+      comment: >
+          Estimate for the relative position of the other satellite in the HILL
+          frame.
+    - name: "fc.{satellite}.relative_orbit.r.hill.error"
+      type: Lazy Vector3
+      comment: >
+          Estimate error for the relative position of the other satellite in the
+          HILL frame.
+    - name: "fc.{satellite}.relative_orbit.r.hill.sigma"
+      type: Vector3
+      comment: >
+          Estimate error one sigma bounds for the relative position of the other
+          satellite in the HILL frame.
+    - name: "fc.{satellite}.relative_orbit.dv"
+      type: Vector3
+      comment: >
+          Estimate for the relative position of the other satellite in ECEF.
+    - name: "fc.{satellite}.relative_orbit.dv.error"
+      type: Lazy Vector3
+      comment: >
+          Estimate error for the relative position of the other satellite in
+          ECEF.
+    - name: "fc.{satellite}.relative_orbit.v.hill"
+      type: Vector3
+      comment: >
+          Estimate for the relative position of the other satellite in the HILL
+          frame.
+    - name: "fc.{satellite}.relative_orbit.v.hill.error"
+      type: Lazy Vector3
+      comment: >
+          Estimate error for the relative position of the other satellite in the
+          HILL frame.
+    - name: "fc.{satellite}.relative_orbit.v.hill.sigma"
+      type: Vector3
+      comment: >
+          Estimate error one sigma bounds for the relative position of the other
+          satellite in the HILL frame.
+
+gets:
+    - name: "truth.dt.ns"
+      type: Integer
+    - name: "truth.earth.w"
+      type: Vector3
+    - name: "truth.{satellite}.orbit.r.ecef"
+      type: Vector3
+    - name: "truth.{satellite}.orbit.v.ecef"
+      type: Vector3
+    - name: "truth.{other}.orbit.r.ecef"
+      type: Vector3
+    - name: "truth.{other}.orbit.v.ecef"
+      type: Vector3
+    - name: "truth.{other}.orbit.r.hill"
+      type: Vector3
+    - name: "truth.{other}.orbit.v.hill"
+      type: Vector3
+    - name: "sensors.{satellite}.cdgps.dr"
+      type: Vector3

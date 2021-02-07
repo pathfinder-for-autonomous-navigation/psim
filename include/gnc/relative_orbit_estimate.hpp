@@ -172,6 +172,12 @@ class RelativeOrbitEstimate {
   void _check_validity();
 
  public:
+  RelativeOrbitEstimate() = default;
+  RelativeOrbitEstimate(RelativeOrbitEstimate const &) = default;
+  RelativeOrbitEstimate(RelativeOrbitEstimate &&) = default;
+  RelativeOrbitEstimate &operator=(RelativeOrbitEstimate const &) = default;
+  RelativeOrbitEstimate &operator=(RelativeOrbitEstimate &&) = default;
+
   /** @brief
    *
    *  @param w_earth_ecef

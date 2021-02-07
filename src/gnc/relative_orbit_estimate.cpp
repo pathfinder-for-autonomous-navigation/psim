@@ -65,12 +65,12 @@ RelativeOrbitEstimate::_state_transition_matrix(Time dt_ns, Real n) {
   Real const cnt = lin::cos(nt);
 
   return {
-    four - three * cnt,    zero, zero,     snt / n,               two * (one - cnt) / n, zero,
-    six * (snt - nt),      one,  zero,     two * (cnt - one) / n, (four * snt - 3 * nt), zero,
-    zero,                  zero, cnt,      zero,                  zero,                  snt / n,
-    three * n * snt,       zero, zero,     three * n * snt,       zero,                  zero,
-    six * n * (cnt - one), zero, zero,     six * n * (cnt - one), zero,                  zero,
-    zero,                  zero, -n * snt, zero,                  zero,                  -n * snt
+    four - three * cnt,    zero, zero,     snt / n,               two * (one - cnt) / n,         zero,
+    six * (snt - nt),      one,  zero,     two * (cnt - one) / n, (four * snt - three * nt) / n, zero,
+    zero,                  zero, cnt,      zero,                  zero,                          snt / n,
+    three * n * snt,       zero, zero,     cnt,                   two * snt,                     zero,
+    six * n * (cnt - one), zero, zero,     -two * snt,            four * cnt - three,            zero,
+    zero,                  zero, -n * snt, zero,                  zero,                          cnt
   };
 }
 
