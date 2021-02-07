@@ -28,6 +28,7 @@
 
 #include <psim/simulations/dual_attitude_orbit.hpp>
 
+#include <psim/sensors/cdgps_no_attitude.hpp>
 #include <psim/sensors/satellite_sensors.hpp>
 #include <psim/truth/earth.hpp>
 #include <psim/truth/hill_frame.hpp>
@@ -49,5 +50,7 @@ DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(
   // Sensors model
   add<SatelliteSensors>(randoms, config, "leader");
   add<SatelliteSensors>(randoms, config, "follower");
+  add<CdgpsNoAttitude>(randoms, config, "leader", "follower");
+  add<CdgpsNoAttitude>(randoms, config, "follower", "leader");
 }
 } // namespace psim
