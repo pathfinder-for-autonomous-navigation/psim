@@ -1,0 +1,10 @@
+
+# CDGPS relative position measurement over time.
+- type: Plot2D
+  x: truth.t.s
+  y: [sensors.leader.cdgps.dr.x, sensors.leader.cdgps.dr.y, sensors.leader.cdgps.dr.z]
+
+# CDGPS relative position measurement error over time.
+- type: Plot2D
+  x: truth.t.s
+  y: [sensors.leader.cdgps.dr.error.x, sensors.leader.cdgps.dr.error.y, sensors.leader.cdgps.dr.error.z]
