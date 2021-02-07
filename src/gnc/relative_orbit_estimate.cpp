@@ -156,7 +156,7 @@ void RelativeOrbitEstimate::_outputs() {
    * to dr_ecef, dv_ecef.
    */
   _dr_ecef = lin::transpose(_Q_hill_ecef0) * r_hill;
-  _dv_ecef = lin::transpose(_Q_hill_ecef0) * v_hill + lin::cross(_w_earth_ecef + _w_hill_ecef0, _dr_ecef);
+  _dv_ecef = lin::transpose(_Q_hill_ecef0) * v_hill - lin::cross(_w_earth_ecef - _w_hill_ecef0, _dr_ecef);
 }
 
 void RelativeOrbitEstimate::_check_validity() {
@@ -180,15 +180,14 @@ RelativeOrbitEstimate::RelativeOrbitEstimate(Vector<3> const &w_earth_ecef,
 
   auto r_hill = lin::ref<Vector<3>>(_x, 0, 0);
   auto v_hill = lin::ref<Vector<3>>(_x, 3, 0);
-  /* r_hill = Q_hill_ecef0 * dr_ecef0 = Q_hill_ecef0 * dr_ecef
+  /* r_hill = Q_hill_ecef * dr_ecef
    *
-   * v_hill = Q_hill_ecef0 * (dv_ecef0 - w_hill_ecef0 x dr_ecef0)
-   *        = Q_hill_ecef0 * (v_ecef + dv_ecef - w_earth_ecef x (r_ecef + dr_ecef) - v_ecef + w_earth_ecef x r_ecef - w_hill_ecef0 x dr_ecef)
-   *        = Q_hill_ecef0 * (dv_ecef - w_earth_ecef x dr_ecef - w_hill_ecef0 x dr_ecef)
-   *        = Q_hill_ecef0 * (dv_ecef - (w_earth_ecef + w_hill_ecef0) x dr_ecef)
+   * v_hill = Q_hill_ecef * (dv_ecef0 - w_hill_ecef0 x dr_ecef0)
+   *        = Q_hill_ecef * (dv_ecef + w_earth_ecef x dr_ecef - w_hill_ecef0 x dr_ecef0)
+   *        = Q_hill_ecef * (dv_ecef + (w_earth_ecef - w_hill_ecef) x dr_ecef)
    */
   r_hill = _Q_hill_ecef0 * (dr_ecef);
-  v_hill = _Q_hill_ecef0 * (dv_ecef - lin::cross(_w_earth_ecef + _w_hill_ecef0, dr_ecef));
+  v_hill = _Q_hill_ecef0 * (dv_ecef + lin::cross(_w_earth_ecef - _w_hill_ecef0, dr_ecef));
   _sqrtP = S;
 
   _outputs();

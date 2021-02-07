@@ -112,7 +112,7 @@ Vector3 RelativeOrbitEstimator::fc_satellite_relative_orbit_dr_error() const {
 
 Vector3 RelativeOrbitEstimator::fc_satellite_relative_orbit_r_hill_error() const {
   auto const &fc_r_hill = fc_satellite_relative_orbit_r_hill.get();
-  auto const &truth_r_hill = truth_other_orbit_r_hill->get();
+  auto const &truth_r_hill = truth_satellite_hill_dr->get();
 
   return fc_r_hill - truth_r_hill;
 }
@@ -127,7 +127,7 @@ Vector3 RelativeOrbitEstimator::fc_satellite_relative_orbit_dv_error() const {
 
 Vector3 RelativeOrbitEstimator::fc_satellite_relative_orbit_v_hill_error() const {
   auto const &fc_v_hill = fc_satellite_relative_orbit_v_hill.get();
-  auto const &truth_v_hill = truth_other_orbit_v_hill->get();
+  auto const &truth_v_hill = truth_satellite_hill_dv->get();
 
   return fc_v_hill - truth_v_hill;
 }
