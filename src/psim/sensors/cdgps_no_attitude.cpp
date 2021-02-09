@@ -61,7 +61,7 @@ Vector3 CdgpsNoAttitude::sensors_satellite_cdgps_dr() const {
   /** If the sensor isn't active, the NaNs from the error field will make this
    *  calculation results in NaNs as well as desired.
    */
-  return (truth_other_r_ecef - truth_r_ecef) + error;
+  return (truth_r_ecef - truth_other_r_ecef) + error;
 }
 
 Vector3 CdgpsNoAttitude::sensors_satellite_cdgps_dr_error() const {

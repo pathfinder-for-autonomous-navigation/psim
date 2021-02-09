@@ -34,12 +34,13 @@ adds:
     - name: "sensors.{satellite}.cdgps.dr"
       type: Lazy Vector3
       comment: >
-          Relative position of the other satellite reported by the CDGPS in ECEF.
+          Relative position this satellite to the other reported by the CDGPS in
+          ECEF.
     - name: "sensors.{satellite}.cdgps.dr.error"
       type: Lazy Vector3
       comment: >
-          Error in the relative position of the other satellite by the CDGPS in
-          ECEF.
+          Error in the relative position of the this satellite to the other
+          satellite by the CDGPS in ECEF.
 
 gets:
     - name: "truth.{satellite}.orbit.r.ecef"
