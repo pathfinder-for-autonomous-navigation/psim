@@ -5,6 +5,7 @@ from _psim import (
     AttitudeEstimatorTestGnc,
     DualAttitudeOrbitGnc,
     DualOrbitGnc,
+    OrbOrbitEstimatorTest,
     SingleAttitudeOrbitGnc,
     SingleOrbitGnc,
 )
