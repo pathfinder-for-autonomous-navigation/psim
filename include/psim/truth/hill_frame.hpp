@@ -44,12 +44,12 @@ class HillFrameEci : public HillFrame<HillFrameEci> {
   /** @brief Set the frame argument to ECI.
    */
   HillFrameEci(RandomsGenerator &randoms, Configuration const &config,
-      std::string const &leader, std::string const &follower);
+      std::string const &satellite, std::string const &other);
 
-  Vector4 truth_leader_q_hill_frame() const;
-  Vector3 truth_leader_w_hill() const;
-  Vector3 truth_follower_orbit_r_hill() const;
-  Vector3 truth_follower_orbit_v_hill() const;
+  Vector4 truth_satellite_hill_q_hill_frame() const;
+  Vector3 truth_satellite_hill_w_frame() const;
+  Vector3 truth_satellite_hill_dr() const;
+  Vector3 truth_satellite_hill_dv() const;
 };
 } // namespace psim
 
