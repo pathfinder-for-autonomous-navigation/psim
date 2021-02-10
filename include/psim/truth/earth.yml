@@ -18,7 +18,12 @@ adds:
     - name: "truth.earth.w"
       type: Lazy Vector3
       comment: >
-          Angular rate of Earth (i.e. also the angular rate of the ECEF frame).
+          Angular rate of Earth in ECEF (i.e. also the angular rate of the ECEF
+          frame).
+    - name: "truth.earth.w_dot"
+      type: Lazy Vector3
+      comment: >
+          Time derivative of the angular rate of Earth in ECEF.
 
 gets:
     - name: "truth.t.s"

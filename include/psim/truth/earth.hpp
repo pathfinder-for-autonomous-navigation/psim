@@ -51,6 +51,7 @@ class EarthGnc : public Earth<EarthGnc> {
   Vector4 truth_earth_q_ecef_eci() const;
   Vector4 truth_earth_q_eci_ecef() const;
   Vector3 truth_earth_w() const;
+  Vector3 truth_earth_w_dot() const;
 };
 }  // namespace psim
 
