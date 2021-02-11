@@ -31,6 +31,9 @@
 #include <gnc/environment.hpp>
 #include <gnc/utilities.hpp>
 
+#include <lin/core.hpp>
+#include <lin/generators.hpp>
+
 namespace psim {
 
 Vector4 EarthGnc::truth_earth_q_ecef_eci() const {
@@ -55,5 +58,9 @@ Vector3 EarthGnc::truth_earth_w() const {
   Vector3 w_earth;
   gnc::env::earth_angular_rate(t, w_earth);
   return w_earth;
+}
+
+Vector3 EarthGnc::truth_earth_w_dot() const {
+  return lin::zeros<Vector3>();
 }
 }  // namespace psim
