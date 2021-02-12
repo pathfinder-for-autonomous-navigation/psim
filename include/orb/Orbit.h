@@ -41,8 +41,8 @@ SOFTWARE.
 #include <gnc/constants.hpp>
 #include "JacobianHelpers/jacobian_autocoded.h"
 
-#include "geograv.hpp"
-#include "GGM05S.hpp"
+#include <geograv.hpp>
+#include <GGM05S.hpp>
 
 namespace orb
 {

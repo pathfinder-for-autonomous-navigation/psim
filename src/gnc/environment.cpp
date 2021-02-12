@@ -31,8 +31,8 @@
 #include <gnc/environment.hpp>
 #include <gnc/utilities.hpp>
 
-#include <orb/geograv.hpp>
-#include <orb/GGM05S.hpp>
+#include <geograv.hpp>
+#include <GGM05S.hpp>
 
 #include <cmath>
 
