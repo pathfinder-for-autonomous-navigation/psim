@@ -22,35 +22,31 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulations/dual_attitude_orbit.cpp
+/** @file psim/sensors/cdgps_no_attitude.hpp
  *  @author Kyle Krol
  */
 
-#include <psim/simulations/dual_attitude_orbit.hpp>
+#ifndef PSIM_SENSORS_CDGPS_NO_ATTITUDE_HPP_
+#define PSIM_SENSORS_CDGPS_NO_ATTITUDE_HPP_
 
-#include <psim/sensors/cdgps_no_attitude.hpp>
-#include <psim/sensors/satellite_sensors.hpp>
-#include <psim/truth/earth.hpp>
-#include <psim/truth/hill_frame.hpp>
-#include <psim/truth/satellite_truth.hpp>
-#include <psim/truth/time.hpp>
+#include <psim/sensors/cdgps_no_attitude.yml.hpp>
 
 namespace psim {
 
-DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(
-    RandomsGenerator &randoms, Configuration const &config)
-  : ModelList(randoms) {
-  // Truth model
-  add<Time>(randoms, config);
-  add<EarthGnc>(randoms, config);
-  add<SatelliteTruthGnc>(randoms, config, "leader");
-  add<SatelliteTruthGnc>(randoms, config, "follower");
-  add<HillFrameEci>(randoms, config, "leader", "follower");
-  add<HillFrameEci>(randoms, config, "follower", "leader");
-  // Sensors model
-  add<SatelliteSensors>(randoms, config, "leader");
-  add<SatelliteSensors>(randoms, config, "follower");
-  add<CdgpsNoAttitude>(randoms, config, "leader", "follower");
-  add<CdgpsNoAttitude>(randoms, config, "follower", "leader");
-}
-} // namespace psim
+class CdgpsNoAttitude : public CdgpsNoAttitudeInterface<CdgpsNoAttitude> {
+ private:
+  typedef CdgpsNoAttitudeInterface<CdgpsNoAttitude> Super;
+
+ public:
+  using Super::CdgpsNoAttitudeInterface;
+
+  CdgpsNoAttitude() = delete;
+  virtual ~CdgpsNoAttitude() = default;
+
+  Integer sensors_satellite_cdgps_active() const;
+  Vector3 sensors_satellite_cdgps_dr() const;
+  Vector3 sensors_satellite_cdgps_dr_error() const;
+};
+}  // namespace psim
+
+#endif
