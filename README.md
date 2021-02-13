@@ -11,6 +11,9 @@ two main modules:
 MATLAB code listed in `MATLAB/**` is deprecated and will be phased out by the
 new C++ implementation of PSim.
 
+See the full set of documentation [here](https://pan-software.readthedocs.io/en/latest/psim/index.html)
+including installation instructions.
+
 ## Getting Started
 
 ### GNC Development
