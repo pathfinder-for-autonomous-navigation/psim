@@ -22,7 +22,8 @@ cfg['sources'] += [str(p) for p in (psimpath/'src/gnc').rglob('*.cpp') if (p.is_
 #cfg['sources'] += [str(p) for p in (flightsoftwarepath/'src/common').rglob('*.cpp') if (p.is_file() and p.parent.name!='targets')]
 
 cfg['include_dirs'] = [str(psimpath/'include'), 
-                       str(psimpath/'lib/lin/include')]
+                       str(psimpath/'lib/lin/include'),
+                       str(psimpath/'lib/geograv/include')]
 cfg['include_dirs'] += [pybind11.get_include(), pybind11.get_include(True)]
 #cfg['include_dirs'] += [str(flightsoftwarepath/'src'), 
 #                         str(flightsoftwarepath/'lib/common/libsbp/include'),

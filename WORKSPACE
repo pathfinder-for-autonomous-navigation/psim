@@ -60,6 +60,12 @@ http_archive(
     strip_prefix = "variant-1.2.0",
 )
 
+# geograv
+local_repository(
+    name = "geograv",
+    path = "lib/geograv",
+)
+
 # lin
 local_repository(
     name = "lin",
