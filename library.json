@@ -7,6 +7,14 @@
       "srcDir": "src/gnc",
       "srcFilter": "+<*.cpp>"
   },
+  "dependencies": [
+    {
+      "name": "geograv"
+    },
+    {
+      "name": "lin"
+    }
+  ],
   "repository": {
       "type": "git",
       "url": "https://github.com/pathfinder-for-autonomous-navigation/psim"
