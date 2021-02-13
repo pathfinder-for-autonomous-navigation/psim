@@ -2,3 +2,6 @@
 	path = lib/lin
 	url = https://github.com/pathfinder-for-autonomous-navigation/lin.git
 	branch = master
+[submodule "lib/geograv"]
+	path = lib/geograv
+	url = git@github.com:pathfinder-for-autonomous-navigation/geograv.git

@@ -27,7 +27,7 @@ cc_library(
     copts = ["-Isrc", "-fvisibility=hidden"],
     linkstatic = True,
     visibility = ["//visibility:public"],
-    deps = ["@lin//:lin"],
+    deps = ["@geograv//:geograv", "@lin//:lin"],
 )
 
 # Builds the core PSim infrastructure.
