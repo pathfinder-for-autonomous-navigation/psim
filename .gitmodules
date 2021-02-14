@@ -4,4 +4,4 @@
 	branch = master
 [submodule "lib/geograv"]
 	path = lib/geograv
-	url = git@github.com:pathfinder-for-autonomous-navigation/geograv.git
+	url = https://github.com/pathfinder-for-autonomous-navigation/geograv.git
