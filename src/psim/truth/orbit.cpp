@@ -36,55 +36,69 @@
 #include <lin/math.hpp>
 #include <lin/references.hpp>
 
+#include <psim/truth/orbit_utilities.hpp>
+
 namespace psim {
 
-OrbitGncEci::OrbitGncEci(RandomsGenerator &randoms, Configuration const &config,
+OrbitEcef::OrbitEcef(RandomsGenerator &randoms, Configuration const &config,
     std::string const &satellite)
-  : Super(randoms, config, satellite, "eci") { }
+  : Super(randoms, config, satellite, "ecef") {}
 
-void OrbitGncEci::step() {
+void OrbitEcef::step() {
   this->Super::step();
 
-  // References to the current time and timestep
-  auto const &dt = truth_dt_s->get();
-  auto const &t = truth_t_s->get();
+  struct IntegratorData {
+    Vector3 const &earth_w;
+    Vector3 const &earth_w_dot;
+  };
 
-  // References to position and velocity
+  auto const &dt = truth_dt_s->get();
+  auto const &earth_w = truth_earth_w->get();
+  auto const &earth_w_dot = truth_earth_w_dot->get();
+  auto const &m = truth_satellite_m.get();
+
   auto &r = truth_satellite_orbit_r.get();
   auto &v = truth_satellite_orbit_v.get();
+  auto &J = truth_satellite_orbit_J_frame.get();
 
-  // Treat our thruster firings as purely impulses
-  v = v + truth_satellite_orbit_J_frame.get() / truth_satellite_m.get();
-  truth_satellite_orbit_J_frame.get() = lin::zeros<Vector3>();
+  // Thruster firings are modelled here as instantaneous impulses. This removes
+  // thruster dependance from the state dot function in the integrator.
+  v = v + J / m;
+  J = lin::zeros<Vector3>();
 
-  // Simulate our dynamics
-  auto const xf = ode(t, dt, {r(0), r(1), r(2), v(0), v(1), v(2)}, nullptr,
-      [](Real t, Vector<6> const &x, void *) -> Vector<6> {
-    // References to our position and velocity in ECI
-    auto const r = lin::ref<Vector3>(x, 0, 0);
-    auto const v = lin::ref<Vector3>(x, 3, 0);
+  // Prepare integrator inputs.
+  Vector<6> x = {r(0), r(1), r(2), v(0), v(1), v(2)};
+  IntegratorData data = {earth_w, earth_w_dot};
 
-    // Calculate the Earth's current attitude
-    Vector4 q;
-    gnc::env::earth_attitude(t, q);  // q = q_ecef_eci
+  // Simulate dynamics.
+  x = ode(Real(0.0), dt, x, &data,
+      [](Real t, Vector<6> const &x, void *ptr) -> Vector<6> {
+        auto const *data = static_cast<IntegratorData *>(ptr);
 
-    // Determine our gravitation acceleration in ECI
-    Vector3 g;
-    {
-      Vector3 r_ecef;
-      gnc::utl::rotate_frame(q, r.eval(), r_ecef);
+        // References to our position and velocity in ECEF.
+        auto const r = lin::ref<Vector3>(x, 0, 0);
+        auto const v = lin::ref<Vector3>(x, 3, 0);
 
-      Real _;
-      gnc::env::gravity(r_ecef, g, _);  // g = g_ecef
-      gnc::utl::quat_conj(q);           // q = q_eci_ecef
-      gnc::utl::rotate_frame(q, g);     // g = g_eci
-    }
+        // Interpolate Earth's angular rate.
+        Vector3 w = data->earth_w + t * data->earth_w_dot;
+        auto const &w_dot = data->earth_w_dot;
 
-    return {v(0), v(1), v(2), g(0), g(1), g(2)};
-  });
+        // Calculate gravitational acceleration.
+        Vector3 g;
+        orbit::gravity(r.eval(), g);
+
+        // Calculate total acceleration
+        //
+        // Reference(s):
+        //  - https://en.wikipedia.org/wiki/Rotating_reference_frame
+        Vector3 a = g - Real(2.0) * lin::cross(w, v) -
+                    lin::cross(w, lin::cross(w, r)) - lin::cross(w_dot, r);
+
+        return {v(0), v(1), v(2), g(0), g(1), g(2)};
+      });
 
   // Write back to our state fields
-  r = lin::ref<Vector3>(xf, 0, 0);
-  v = lin::ref<Vector3>(xf, 3, 0);
+  r = lin::ref<Vector3>(x, 0, 0);
+  v = lin::ref<Vector3>(x, 3, 0);
 }
-}  // namespace psim
+} // namespace psim

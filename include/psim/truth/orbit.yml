@@ -36,11 +36,9 @@ adds:
           simulation step to avoid applying a continuous input.
 
 gets:
-    - name: "truth.t.s"
-      type: Real
-      comment: >
-          Time sense the PAN epoch in seconds.
+    - name: "truth.earth.w"
+      type: Vector3
+    - name: "truth.earth.w_dot"
+      type: Vector3
     - name: "truth.dt.s"
       type: Real
-      comment: >
-          Timestep of the simulation in seconds.

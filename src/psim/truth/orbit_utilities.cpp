@@ -22,37 +22,33 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/orbit.hpp
+/** @file psim/truth/orbit_utilities.cpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_ORBIT_HPP_
-#define PSIM_TRUTH_ORBIT_HPP_
+#include <psim/truth/orbit_utilities.hpp>
 
-#include <psim/truth/orbit.yml.hpp>
+#include <gnc/config.hpp>
 
-#include <gnc/ode4.hpp>
+#include <GGM05S.hpp>
+#include <geograv.hpp>
 
 namespace psim {
+namespace orbit {
 
-/** @brief Orbit propegator in ECEF.
- */
-class OrbitEcef : public Orbit<OrbitEcef> {
- private:
-  typedef Orbit<OrbitEcef> Super;
-  gnc::Ode4<Real, 6> ode;
+void gravity(Vector3 const &r_ecef, Vector3 &g_ecef) {
+  Real _;
+  gravity(r_ecef, g_ecef, _);
+}
 
- public:
-  OrbitEcef() = delete;
-  virtual ~OrbitEcef() = default;
+void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U) {
+  GNC_TRACKED_CONSTANT(constexpr static auto, PSIM_GRAV_ORDER, 11);
+  GNC_TRACKED_CONSTANT(constexpr static auto, PSIM_GRAV_MODEL,
+      static_cast<geograv::Coeff<PSIM_GRAV_ORDER>>(GGM05S));
 
-  /** @brief Set the frame argument to ECEF.
-   */
-  OrbitEcef(RandomsGenerator &randoms, Configuration const &config,
-      std::string const &satellite);
-
-  virtual void step() override;
-};
+  geograv::Vector g, r = {r_ecef(0), r_ecef(2), r_ecef(3)};
+  U = geograv::GeoGrav(r, g, PSIM_GRAV_MODEL, true);
+  g_ecef = {g.x, g.y, g.z};
+}
+} // namespace orbit
 } // namespace psim
-
-#endif

@@ -22,37 +22,34 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/orbit.hpp
+/** @file psim/truth/orbit_utilities.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_ORBIT_HPP_
-#define PSIM_TRUTH_ORBIT_HPP_
+#ifndef PSIM_TRUTH_ORBIT_UTILITIES_HPP_
+#define PSIM_TRUTH_ORBIT_UTILITIES_HPP_
 
-#include <psim/truth/orbit.yml.hpp>
-
-#include <gnc/ode4.hpp>
+#include <psim/core/types.hpp>
 
 namespace psim {
+namespace orbit {
 
-/** @brief Orbit propegator in ECEF.
+/** @brief Calculate gravitational accelerationa at a location.
+ *
+ *  @param[in]  r_ecef Position in ECEF (m).
+ *  @param[out] g_ecef Gravitational accelerating in ECEF (m/s^2).
  */
-class OrbitEcef : public Orbit<OrbitEcef> {
- private:
-  typedef Orbit<OrbitEcef> Super;
-  gnc::Ode4<Real, 6> ode;
+void gravity(Vector3 const &r_ecef, Vector3 &g_ecef);
 
- public:
-  OrbitEcef() = delete;
-  virtual ~OrbitEcef() = default;
+/** @brief Calculate gravitational accelerationa and potential at a location.
+ *
+ *  @param[in]  r_ecef Position in ECEF (m).
+ *  @param[out] g_ecef Gravitational accelerating in ECEF (m/s^2).
+ *  @param[out] U      Gravitational potential (J/kg).
+ */
+void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U);
 
-  /** @brief Set the frame argument to ECEF.
-   */
-  OrbitEcef(RandomsGenerator &randoms, Configuration const &config,
-      std::string const &satellite);
-
-  virtual void step() override;
-};
+} // namespace orbit
 } // namespace psim
 
 #endif
