@@ -81,7 +81,7 @@ void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real A, Vector<3> &F_ece
   auto const h = lin::norm(r_ecef) - gnc::constant::r_earth;
 
   // Determine the appropriate index
-  lin::size_t i = I - 1;
+  lin::size_t i = h0.size() - 1;
   while (h < h0(i) && i --> 0);
 
   // Atmospheric density calculation

@@ -52,6 +52,10 @@ class OrbitEcef : public Orbit<OrbitEcef> {
       std::string const &satellite);
 
   virtual void step() override;
+
+  Real truth_satellite_orbit_T() const;
+  Real truth_satellite_orbit_U() const;
+  Real truth_satellite_orbit_E() const;
 };
 } // namespace psim
 

@@ -108,4 +108,31 @@ void OrbitEcef::step() {
   r = lin::ref<Vector3>(x, 0, 0);
   v = lin::ref<Vector3>(x, 3, 0);
 }
+
+Real OrbitEcef::truth_satellite_orbit_T() const {
+  auto const &earth_w = truth_earth_w->get();
+  auto const &r = truth_satellite_orbit_r.get();
+  auto const &v = truth_satellite_orbit_v.get();
+  auto const &m = truth_satellite_m.get();
+
+  return 0.5 * m * lin::fro(v + lin::cross(earth_w, r));
+}
+
+Real OrbitEcef::truth_satellite_orbit_U() const {
+  auto const &r = truth_satellite_orbit_r.get();
+  auto const &m = truth_satellite_m.get();
+
+  Real U;
+  Vector3 _;
+  orbit::gravity(r, _, U);
+
+  return m * U;
+}
+
+Real OrbitEcef::truth_satellite_orbit_E() const {
+  auto const &T = this->Super::truth_satellite_orbit_T.get();
+  auto const &U = this->Super::truth_satellite_orbit_U.get();
+
+  return T - U;
+}
 } // namespace psim

@@ -39,6 +39,19 @@ adds:
           kilogram meters per second squared. The coordinate system is
           implementation dependant. Note that this field is zeroed out on each
           simulation step to avoid applying a continuous input.
+    - name: "truth.{satellite}.orbit.T"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital kinetic energy.
+    - name: "truth.{satellite}.orbit.U"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital potential energy.
+    - name: "truth.{satellite}.orbit.E"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital total energy. This is essentially the difference
+          of the kinetic and potential energies.
 
 gets:
     - name: "truth.earth.w"

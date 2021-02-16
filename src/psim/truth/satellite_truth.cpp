@@ -61,8 +61,8 @@ SatelliteTruthNoAttitudeGnc::SatelliteTruthNoAttitudeGnc(
   : ModelList(randoms) {
   // Orbital dynamics
   add<OrbitEcef>(randoms, config, satellite);
-  add<TransformPositionEci>(randoms, config, "truth." + satellite + ".orbit.r");
-  add<TransformVelocityEci>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
+  add<TransformPositionEcef>(randoms, config, "truth." + satellite + ".orbit.r");
+  add<TransformVelocityEcef>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
   // Environmental models
   add<EnvironmentGnc>(randoms, config, satellite);
   add<TransformPositionEcef>(randoms, config, "truth." + satellite + ".environment.b");
