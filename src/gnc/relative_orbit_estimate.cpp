@@ -129,7 +129,7 @@ void RelativeOrbitEstimate::_update(
    *   H = [ I 0 ]
    *
    * which implies the multiplication involving it's transpose can be done
-   * sparsly:
+   * symbolically:
    *
    *   S H' = [ S11 S12 ] [ I ] = [ S11 ]
    *          [ S21 S22 ] [ 0 ]   [ S21 ].

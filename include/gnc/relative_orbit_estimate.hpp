@@ -52,7 +52,7 @@ namespace gnc {
  *  As such, the state covariance is represented as an upper triangular matrix
  *  S defined by:
  *
- *    P = S transpose(S)
+ *    P = transpose(S) S
  *
  *  making S the Cholesky factorization of the state covariance matrix P.
  *  Throughout this class, all Cholesky factors (also called matrix square
