@@ -154,10 +154,10 @@ class PlotEstimate(Plot):
 class Plotter(Plugin):
     """Logs telemetry to display in a set of plots upon simulation termination.
     """
-    def __init__(self, plots=None, step=1):
+    def __init__(self, plots=[], step=1):
         super(Plotter, self).__init__()
 
-        self._plots = plots if not plots or type(plots) == list else [plots]
+        self._plots = plots if type(plots) == list else [plots]
         self._step = step
         self._n = 0
 

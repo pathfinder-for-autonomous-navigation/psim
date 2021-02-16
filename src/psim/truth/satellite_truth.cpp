@@ -42,7 +42,7 @@ namespace psim {
 SatelliteTruthGnc::SatelliteTruthGnc(RandomsGenerator &randoms,
     Configuration const &config, std::string const &satellite)
   : ModelList(randoms) {
-  // Orbital dynamics
+  // Dynamics
   add<AttitudeOrbitNoFuelEciGnc>(randoms, config, satellite);
   add<TransformPositionEci>(randoms, config, "truth." + satellite + ".orbit.r");
   add<TransformVelocityEci>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
@@ -59,7 +59,7 @@ SatelliteTruthNoAttitudeGnc::SatelliteTruthNoAttitudeGnc(
     RandomsGenerator &randoms,  Configuration const &config,
     std::string const &satellite)
   : ModelList(randoms) {
-  // Orbital dynamics
+  // Dynamics
   add<OrbitEcef>(randoms, config, satellite);
   add<TransformPositionEcef>(randoms, config, "truth." + satellite + ".orbit.r");
   add<TransformVelocityEcef>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
