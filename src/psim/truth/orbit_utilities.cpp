@@ -30,6 +30,9 @@
 
 #include <gnc/config.hpp>
 
+#include <lin/core.hpp>
+#include <lin/generators.hpp>
+
 #include <GGM05S.hpp>
 #include <geograv.hpp>
 
@@ -49,6 +52,13 @@ void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U) {
   geograv::Vector g, r = {r_ecef(0), r_ecef(2), r_ecef(3)};
   U = geograv::GeoGrav(r, g, PSIM_GRAV_MODEL, true);
   g_ecef = {g.x, g.y, g.z};
+}
+
+void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real A, Vector<3> &F) {
+  GNC_TRACKED_CONSTANT(constexpr static Real, PSIM_DRAG_CD, 1.15);
+
+  Real rho = 0.0;
+  F = -0.5 * PSIM_DRAG_CD * A * rho * lin::fro(v_ecef) * (v_ecef / lin::norm(v_ecef));
 }
 } // namespace orbit
 } // namespace psim

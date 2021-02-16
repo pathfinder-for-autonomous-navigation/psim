@@ -34,20 +34,31 @@
 namespace psim {
 namespace orbit {
 
-/** @brief Calculate gravitational accelerationa at a location.
+/** @brief Calculate gravitational acceleration.
  *
  *  @param[in]  r_ecef Position in ECEF (m).
  *  @param[out] g_ecef Gravitational accelerating in ECEF (m/s^2).
  */
 void gravity(Vector3 const &r_ecef, Vector3 &g_ecef);
 
-/** @brief Calculate gravitational accelerationa and potential at a location.
+/** @brief Calculate gravitational acceleration and potential.
  *
  *  @param[in]  r_ecef Position in ECEF (m).
  *  @param[out] g_ecef Gravitational accelerating in ECEF (m/s^2).
  *  @param[out] U      Gravitational potential (J/kg).
  */
 void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U);
+
+/** @brief Calculate the force of drag.
+ *
+ *  @param[in]  r_ecef
+ *  @param[in]  v_ecef
+ *  @param[in]  A
+ *  @param[out] F
+ *
+ *  @return
+ */
+void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real A, Vector<3> &F);
 
 } // namespace orbit
 } // namespace psim
