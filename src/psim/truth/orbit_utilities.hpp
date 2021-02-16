@@ -51,14 +51,12 @@ void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U);
 
 /** @brief Calculate the force of drag.
  *
- *  @param[in]  r_ecef
- *  @param[in]  v_ecef
- *  @param[in]  A
- *  @param[out] F
- *
- *  @return
+ *  @param[in]  r_ecef Position in ECEF (m).
+ *  @param[in]  v_ecef Velocity in ECEF (m/s).
+ *  @param[in]  A      Cross sectional surface area (m^2).
+ *  @param[out] F_ecef Drag force in ECEF (N).
  */
-void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real A, Vector<3> &F);
+void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real A, Vector3 &F_ecef);
 
 } // namespace orbit
 } // namespace psim

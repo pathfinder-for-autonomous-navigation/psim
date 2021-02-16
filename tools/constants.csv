@@ -8,6 +8,8 @@ false,double,rad_to_deg,180.0 / pi
 false,float,rad_to_deg_f,rad_to_deg
 false,double,mu_earth,3.986004418e14
 false,float,mu_earth_f,mu_earth
+false,double,r_earth,6.3781e6
+false,float,r_earth_f,r_earth
 false,double,nan,std::numeric_limits<double>::quiet_NaN()
 false,float,nan_f,std::numeric_limits<float>::quiet_NaN()
 true,unsigned short,init_gps_week_number,2045

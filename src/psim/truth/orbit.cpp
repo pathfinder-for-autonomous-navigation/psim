@@ -28,11 +28,11 @@
 
 #include <psim/truth/orbit.hpp>
 
-#include <gnc/environment.hpp>
+#include <gnc/config.hpp>
 #include <gnc/utilities.hpp>
 
 #include <lin/core.hpp>
-#include <lin/generators/constants.hpp>
+#include <lin/generators.hpp>
 #include <lin/math.hpp>
 #include <lin/references.hpp>
 
@@ -48,6 +48,8 @@ void OrbitEcef::step() {
   this->Super::step();
 
   struct IntegratorData {
+    Real const &A;
+    Real const &m;
     Vector3 const &earth_w;
     Vector3 const &earth_w_dot;
   };
@@ -55,6 +57,7 @@ void OrbitEcef::step() {
   auto const &dt = truth_dt_s->get();
   auto const &earth_w = truth_earth_w->get();
   auto const &earth_w_dot = truth_earth_w_dot->get();
+  auto const &A = truth_satellite_A.get();
   auto const &m = truth_satellite_m.get();
 
   auto &r = truth_satellite_orbit_r.get();
@@ -68,7 +71,7 @@ void OrbitEcef::step() {
 
   // Prepare integrator inputs.
   Vector<6> x = {r(0), r(1), r(2), v(0), v(1), v(2)};
-  IntegratorData data = {earth_w, earth_w_dot};
+  IntegratorData data = {A, m, earth_w, earth_w_dot};
 
   // Simulate dynamics.
   x = ode(Real(0.0), dt, x, &data,
@@ -87,14 +90,18 @@ void OrbitEcef::step() {
         Vector3 g;
         orbit::gravity(r.eval(), g);
 
+        // Calculate drag force
+        Vector3 F_drag;
+        orbit::drag(r.eval(), v.eval(), data->A, F_drag);
+
         // Calculate total acceleration
         //
         // Reference(s):
         //  - https://en.wikipedia.org/wiki/Rotating_reference_frame
-        Vector3 a = g - Real(2.0) * lin::cross(w, v) -
+        Vector3 a = g + F_drag / data->m - Real(2.0) * lin::cross(w, v) -
                     lin::cross(w, lin::cross(w, r)) - lin::cross(w_dot, r);
 
-        return {v(0), v(1), v(2), g(0), g(1), g(2)};
+        return {v(0), v(1), v(2), a(0), a(1), a(2)};
       });
 
   // Write back to our state fields

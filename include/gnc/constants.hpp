@@ -36,6 +36,10 @@ GNC_TRACKED_CONSTANT(constexpr static double, mu_earth, 3.986004418e14);
 
 GNC_TRACKED_CONSTANT(constexpr static float, mu_earth_f, mu_earth);
 
+GNC_TRACKED_CONSTANT(constexpr static double, r_earth, 6.3781e6);
+
+GNC_TRACKED_CONSTANT(constexpr static float, r_earth_f, r_earth);
+
 GNC_TRACKED_CONSTANT(constexpr static double, nan, std::numeric_limits<double>::quiet_NaN());
 
 GNC_TRACKED_CONSTANT(constexpr static float, nan_f, std::numeric_limits<float>::quiet_NaN());

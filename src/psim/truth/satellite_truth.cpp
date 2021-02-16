@@ -60,7 +60,7 @@ SatelliteTruthNoAttitudeGnc::SatelliteTruthNoAttitudeGnc(
     std::string const &satellite)
   : ModelList(randoms) {
   // Orbital dynamics
-  add<OrbitGncEci>(randoms, config, satellite);
+  add<OrbitEcef>(randoms, config, satellite);
   add<TransformPositionEci>(randoms, config, "truth." + satellite + ".orbit.r");
   add<TransformVelocityEci>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
   // Environmental models

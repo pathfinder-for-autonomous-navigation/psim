@@ -35,7 +35,7 @@
 
 namespace psim {
 
-/** @brief Orbit propegator in ECEF.
+/** @brief Orbit propagator in ECEF.
  */
 class OrbitEcef : public Orbit<OrbitEcef> {
  private:
