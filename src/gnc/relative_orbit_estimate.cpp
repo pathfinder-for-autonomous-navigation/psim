@@ -183,8 +183,9 @@ void RelativeOrbitEstimate::_check_validity() {
     _dr_ecef = lin::nans<Vector<3>>();
     _dv_ecef = lin::nans<Vector<3>>();
     _sqrtP = lin::nans<Matrix<6, 6>>();
+  } else {
+    _valid = true;
   }
-  _valid = true;
 }
 
 RelativeOrbitEstimate::RelativeOrbitEstimate(Vector<3> const &w_earth_ecef,
