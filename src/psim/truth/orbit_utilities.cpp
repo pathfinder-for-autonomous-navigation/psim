@@ -28,7 +28,6 @@
 
 #include <psim/truth/orbit_utilities.hpp>
 
-#include <gnc/config.hpp>
 #include <gnc/constants.hpp>
 
 #include <lin/core.hpp>
@@ -46,27 +45,27 @@ void gravity(Vector3 const &r_ecef, Vector3 &g_ecef) {
 }
 
 void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U) {
-  GNC_TRACKED_CONSTANT(static constexpr auto, PSIM_GRAV_ORDER, 11);
-  GNC_TRACKED_CONSTANT(static constexpr auto, PSIM_GRAV_MODEL,
-      static_cast<geograv::Coeff<PSIM_GRAV_ORDER>>(GGM05S));
+  static constexpr auto order = 11;
+  static constexpr auto grav = static_cast<geograv::Coeff<order>>(GGM05S));
 
   geograv::Vector g, r = {r_ecef(0), r_ecef(1), r_ecef(2)};
-  U = geograv::GeoGrav(r, g, PSIM_GRAV_MODEL, true);
+  U = geograv::GeoGrav(r, g, grav, true);
   g_ecef = {g.x, g.y, g.z};
 }
 
-void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real A, Vector<3> &F_ecef) {
-  GNC_TRACKED_CONSTANT(static constexpr Real, PSIM_DRAG_CD, 1.15);
-
+void density(Vector3 const &r_ecef, Real &rho) {
+  /* Atmospheric density model is pulled from section 11.2.1 of "Fundamentals of
+   * Spacecraft Attitude Determination and Control" by Markley and Crassidis.
+   */
   static constexpr Real half = 0.5;
   static constexpr lin::size_t I = 36;
-  static constexpr Vector<I> h0 = {0.0e3, 25.0e3, 30.0e3, 35.0e3, 40.0e3,
-      45.0e3, 50.0e3, 55.0e3, 60.0e3, 65.0e3, 70.0e3, 75.0e3, 80.0e3, 85.0e3,
-      90.0e3, 95.0e3, 100.0e3, 110.0e3, 120.0e3, 130.0e3, 140.0e3, 150.0e3,
-      160.0e3, 180.0e3, 200.0e3, 250.0e3, 300.0e3, 350.0e3, 400.0e3, 450.0e3,
-      500.0e3, 600.0e3, 700.0e3, 800.0e3, 900.0e3, 1000.0e3};
+  static constexpr Vector<I> h0 = {0.0, 25.0e3, 30.0e3, 35.0e3, 40.0e3, 45.0e3,
+      50.0e3, 55.0e3, 60.0e3, 65.0e3, 70.0e3, 75.0e3, 80.0e3, 85.0e3, 90.0e3,
+      95.0e3, 100.0e3, 110.0e3, 120.0e3, 130.0e3, 140.0e3, 150.0e3, 160.0e3,
+      180.0e3, 200.0e3, 250.0e3, 300.0e3, 350.0e3, 400.0e3, 450.0e3, 500.0e3,
+      600.0e3, 700.0e3, 800.0e3, 900.0e3, 1000.0e3};
   static constexpr Vector<I> p0 = {1.225, 3.899e-2, 1.774e-2, 8.279e-3,
-      3.972e-3, 1.995e-3, 1.057E-3, 5.821e-4, 3.206e-4, 1.718e-4, 8.770e-5,
+      3.972e-3, 1.995e-3, 1.057e-3, 5.821e-4, 3.206e-4, 1.718e-4, 8.770e-5,
       4.178e-5, 1.905e-5, 8.337e-6, 3.396e-6, 1.343e-6, 5.297e-7, 9.661e-8,
       2.438e-8, 8.484e-9, 3.845e-9, 2.070e-9, 1.224e-9, 5.464e-10, 2.789e-10,
       7.248e-11, 2.418e-11, 9.158e-12, 3.725e-12, 1.585e-12, 6.967e-13,
@@ -86,9 +85,59 @@ void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real A, Vector<3> &F_ece
 
   // Atmospheric density calculation
   auto const rho = p0(i) * lin::exp((h0(i) - h) / H(i));
+}
 
-  // Drag force calculation
-  F_ecef = (-half * PSIM_DRAG_CD * A * rho * lin::norm(v_ecef)) * v_ecef;
+void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m,
+    Vector<3> &a_ecef) {
+  static constexpr Real half = 0.5;
+
+  /* Drag coefficient pulled from "An Evaluation of CubeSat Orbital Decay" by
+   * Oltrogge and Leveque.
+   *
+   * https://digitalcommons.usu.edu/cgi/viewcontent.cgi?article=1144&context=smallsat
+   */
+  static constexpr Real Cd = 2.2;
+
+  /* Section 10.3.3 of "Fundamental of Spacecraft Attitude Determination and
+   * Control" by Markley and Crassidis gives force due to atmospheric drag as:
+   *
+   *  F_drag = -1/2 rho Cd S |v| v
+   *
+   * where F_drag is the force of drag, rho is atmospheric density, Cd is a
+   * dimensionaless drag coefficient, S is the object area projected along the
+   * direction of travel, and v is the velocity relative to the atmosphere (i.e.
+   * in ECEF because the atmosphere rotates).
+   */
+  Real rho;
+  density(r_ecef, rho);
+  a_ecef = v_ecef * (-half * Cd * S * rho * lin::norm(v_ecef) / m);
+}
+
+void acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
+    Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m,
+    Vector3 a_ecef) {
+  static constexpr Real two = 2.0;
+
+  /* Numerically, starting with the smaller forces first like fake forces and
+   * drag will reduce rounding errors. Therefore, we included the force of
+   * gravity last here.
+   */
+
+  /* Acceleration form fake forces.
+   *
+   * https://en.wikipedia.org/wiki/Rotating_reference_frame#Relation_between_accelerations_in_the_two_frames
+   */
+  a_ecef = -(two * lin::cross(earth_w, r_ecef) +
+             lin::cross(earth_w, lin::cross(earth_w, r_ecef)) +
+             lin::cross(earth_w_dot, r_ecef));
+
+  Vector3 a_drag_ecef;
+  drag(r_ecef, v_ecef, S, m, a_drag_ecef);
+
+  Vector3 g_ecef;
+  gravity(r_ecef, g_ecef);
+
+  a_ecef = (a_ecef + a_drag_ecef) + g_ecef;
 }
 } // namespace orbit
 } // namespace psim

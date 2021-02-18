@@ -15,11 +15,11 @@ params:
       type: Real
       comment: >
           Mass of the satellite in units of kilograms.
-    - name: "truth.{satellite}.A"
+    - name: "truth.{satellite}.S"
       type: Real
       comment: >
-          Cross sectional area of the satellite in meters squared. This value is
-          used for the drag calculation.
+          Projected area of the satellite along the direction of travel in
+          meters squared. This value is used for the drag calculation.
 
 adds:
     - name: "truth.{satellite}.orbit.r"

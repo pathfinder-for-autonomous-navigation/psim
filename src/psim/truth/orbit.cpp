@@ -48,8 +48,8 @@ void OrbitEcef::step() {
   this->Super::step();
 
   struct IntegratorData {
-    Real const &A;
     Real const &m;
+    Real const &S;
     Vector3 const &earth_w;
     Vector3 const &earth_w_dot;
   };
@@ -57,74 +57,71 @@ void OrbitEcef::step() {
   auto const &dt = truth_dt_s->get();
   auto const &earth_w = truth_earth_w->get();
   auto const &earth_w_dot = truth_earth_w_dot->get();
-  auto const &A = truth_satellite_A.get();
+  auto const &S = truth_satellite_S.get();
   auto const &m = truth_satellite_m.get();
 
-  auto &r = truth_satellite_orbit_r.get();
-  auto &v = truth_satellite_orbit_v.get();
-  auto &J = truth_satellite_orbit_J_frame.get();
+  auto &r_ecef = truth_satellite_orbit_r.get();
+  auto &v_ecef = truth_satellite_orbit_v.get();
+  auto &J_ecef = truth_satellite_orbit_J_frame.get();
 
   // Thruster firings are modelled here as instantaneous impulses. This removes
   // thruster dependance from the state dot function in the integrator.
-  v = v + J / m;
-  J = lin::zeros<Vector3>();
+  v_ecef = v_ecef + J_ecef / m;
+  J_ecef = lin::zeros<Vector3>();
 
-  // Prepare integrator inputs.
-  Vector<6> x = {r(0), r(1), r(2), v(0), v(1), v(2)};
-  IntegratorData data = {A, m, earth_w, earth_w_dot};
+  // Prepare integrator inputs
+  Vector<6> x;
+  lin::ref<Vector3>(x, 0, 0) = r_ecef;
+  lin::ref<Vector3>(x, 3, 0) = v_ecef;
+  IntegratorData data = {S, m, earth_w, earth_w_dot};
 
-  // Simulate dynamics.
+  // Simulate dynamics
   x = ode(Real(0.0), dt, x, &data,
       [](Real t, Vector<6> const &x, void *ptr) -> Vector<6> {
         auto const *data = static_cast<IntegratorData *>(ptr);
 
-        // References to our position and velocity in ECEF.
-        auto const r = lin::ref<Vector3>(x, 0, 0);
-        auto const v = lin::ref<Vector3>(x, 3, 0);
+        auto const &m = data->m;
+        auto const &S = data->S;
+        auto const earth_w = (data->earth_w + t * data->earth_w_dot).eval();
+        auto const &earth_w_dot = data->earth_w_dot;
 
-        // Interpolate Earth's angular rate.
-        Vector3 w = data->earth_w + t * data->earth_w_dot;
-        auto const &w_dot = data->earth_w_dot;
+        auto const r_ecef = lin::ref<Vector3>(x, 0, 0);
+        auto const v_ecef = lin::ref<Vector3>(x, 3, 0);
 
-        // Calculate gravitational acceleration.
-        Vector3 g;
-        orbit::gravity(r.eval(), g);
+        Vector3 a_ecef;
+        orbit::acceleration(
+            earth_w, earth_w_dot, r_ecef.eval(), v_ecef.eval(), S, m, a_ecef);
 
-        // Calculate drag force
-        Vector3 F_drag;
-        orbit::drag(r.eval(), v.eval(), data->A, F_drag);
+        Vector<6> dx;
+        lin::ref<Vector3>(dx, 0, 0) = v_ecef;
+        lin::ref<Vector3>(dx, 3, 0) = a_ecef;
 
-        // Calculate total acceleration
-        //
-        // Reference(s):
-        //  - https://en.wikipedia.org/wiki/Rotating_reference_frame
-        Vector3 a = g + F_drag / data->m - Real(2.0) * lin::cross(w, v) -
-                    lin::cross(w, lin::cross(w, r)) - lin::cross(w_dot, r);
-
-        return {v(0), v(1), v(2), a(0), a(1), a(2)};
+        return dx;
       });
 
   // Write back to our state fields
-  r = lin::ref<Vector3>(x, 0, 0);
-  v = lin::ref<Vector3>(x, 3, 0);
+  r_ecef = lin::ref<Vector3>(x, 0, 0);
+  v_ecef = lin::ref<Vector3>(x, 3, 0);
 }
 
 Real OrbitEcef::truth_satellite_orbit_T() const {
+  static constexpr Real half = 0.5;
+
   auto const &earth_w = truth_earth_w->get();
-  auto const &r = truth_satellite_orbit_r.get();
-  auto const &v = truth_satellite_orbit_v.get();
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &v_ecef = truth_satellite_orbit_v.get();
   auto const &m = truth_satellite_m.get();
 
-  return 0.5 * m * lin::fro(v + lin::cross(earth_w, r));
+  return half * m * lin::fro(v_ecef + lin::cross(earth_w, r_ecef));
 }
 
 Real OrbitEcef::truth_satellite_orbit_U() const {
-  auto const &r = truth_satellite_orbit_r.get();
+  auto const &r_ecef = truth_satellite_orbit_r.get();
   auto const &m = truth_satellite_m.get();
 
   Real U;
   Vector3 _;
-  orbit::gravity(r, _, U);
+  orbit::gravity(r_ecef, _, U);
 
   return m * U;
 }

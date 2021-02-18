@@ -49,14 +49,37 @@ void gravity(Vector3 const &r_ecef, Vector3 &g_ecef);
  */
 void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U);
 
-/** @brief Calculate the force of drag.
+/** @brief Calculate atmospheric density.
+ *
+ *  @param[in]  r_ecef Position in ECEF (m).
+ *  @param[out] rho    Atmospheric density (k/m^3);
+ */
+void density(Vector3 const &r_ecef, Real &rho);
+
+/** @brief Calculate the acceleration due to drag.
  *
  *  @param[in]  r_ecef Position in ECEF (m).
  *  @param[in]  v_ecef Velocity in ECEF (m/s).
- *  @param[in]  A      Cross sectional surface area (m^2).
- *  @param[out] F_ecef Drag force in ECEF (N).
+ *  @param[in]  S      Area projected along the direction of travel (m^2).
+ *  @param[in]  m      Satellite mass (kg).
+ *  @param[out] a_ecef Drag acceleration in ECEF (m/s^2).
  */
-void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real A, Vector3 &F_ecef);
+void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m,
+    Vector3 &a_ecef);
+
+/** @brief Calculates total orbital acceleration in ECEF.
+ *
+ *  @param[in] earth_w     Earth's angular rate in ECEF (rad/s).
+ *  @param[in] earth_w_dot Time derivative of Earth's angular rate in ECEF
+ *                         (rad/s^2)
+ *  @param[in] r_ecef      Position in ECEF (m).
+ *  @param[in] v_ecef      Velocity in ECEF (m/s).
+ *  @param[in] S           Area projected along the direction of travel (m^2).
+ *  @param[in] m           Satellite mass (kg).
+ */
+void acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
+    Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m,
+    Vector3 a_ecef);
 
 } // namespace orbit
 } // namespace psim

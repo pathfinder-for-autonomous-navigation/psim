@@ -36,120 +36,129 @@
 #include <lin/math.hpp>
 #include <lin/references.hpp>
 
+#include <psim/truth/orbit_utilities.hpp>
+
 namespace psim {
 
-AttitudeOrbitNoFuelEciGnc::AttitudeOrbitNoFuelEciGnc(RandomsGenerator &randoms, 
+AttitudeOrbitNoFuelEcef::AttitudeOrbitNoFuelEcef(RandomsGenerator &randoms,
     Configuration const &config, std::string const &satellite)
-  : Super(randoms, config, satellite, "eci") { }
+  : Super(randoms, config, satellite, "ecef") {}
 
-struct IntegratorData{
-  Real const &mass;
-  Vector3 const &I;
-  Real const &I_w;
-  Vector3 const &tau_w;
-  Vector3 const &m;
-  Vector3 const &b;
-};
-
-void AttitudeOrbitNoFuelEciGnc::step() {
+void AttitudeOrbitNoFuelEcef::step() {
   this->Super::step();
 
-  // Initialize variables from .yml
-  auto const &mass = truth_satellite_m.get();
-  auto const &I = truth_satellite_J.get();
-  auto const &I_w = truth_satellite_wheels_J.get();
-
-  auto &tau_w = truth_satellite_wheels_t.get();
-  auto &omega_w = truth_satellite_wheels_w.get();
-  auto &m = truth_satellite_magnetorquers_m.get();
-  auto &b = truth_satellite_environment_b_body->get();
-
-  auto &q_body_eci = truth_satellite_attitude_q_body_eci.get();
-  auto &w = truth_satellite_attitude_w.get();
-
-  // References to the current time and timestep
-  auto const &dt = truth_dt_s->get();
-  auto const &t = truth_t_s->get();
-
-  // References to position and velocity
-  auto &r = truth_satellite_orbit_r.get();
-  auto &v = truth_satellite_orbit_v.get();
-
-  IntegratorData data {mass, I, I_w, tau_w, m, b};
-
-  // Simulate our dynamics
-  Vector<16> const x = {
-      r(0), r(1), r(2),
-      v(0), v(1), v(2),
-      q_body_eci(0), q_body_eci(1), q_body_eci(2), q_body_eci(3),
-      w(0), w(1), w(2),
-      omega_w(0), omega_w(1), omega_w(2)
+  struct IntegratorData {
+    Real const &m;
+    Vector3 const &J_body;
+    Vector3 const &wheels_J_body;
+    Vector3 const &wheels_t_body;
+    Vector3 const &m_body;
+    Vector3 const &b_eci;
+    Vector3 const &earth_w;
+    Vector3 const &earth_w_dot;
   };
 
-  auto const xf = ode(t, dt, x, &data,
+  auto const &dt = truth_dt_s->get();
+  auto const &earth_w = truth_earth_w->get();
+  auto const &earth_w_dot = truth_earth_w_dot->get();
+  auto const &m = truth_satellite_m.get();
+  auto const &J_body = truth_satellite_J.get();
+  auto const &wheels_J_body = truth_satellite_J.get();
+  auto const &wheels_t_body = truth_satellite_wheels_t.get();
+  auto const &b_eci = truth_satellite_environment_b_eci->get();
+
+  auto &r_ecef = truth_satellite_orbit_r.get();
+  auto &v_ecef = truth_satellite_orbit_v.get();
+  auto &J_ecef = truth_satellite_orbit_J_frame.get();
+  auto &q_body_eci = truth_satellite_attitude_q_body_eci.get();
+  auto &w_body = truth_satellite_attitude_w.get();
+  auto &wheels_w_body = truth_satellite_wheels_w.get();
+  auto &m_body = truth_satellite_magnetorquers_m.get();
+
+  // Thruster firings are modelled here as instantaneous impulses. This removes
+  // thruster dependance from the state dot function in the integrator.
+  v_ecef = v_ecef + J_ecef / m;
+  J_ecef = lin::zeros<Vector3>();
+
+  // Prepare integrator inputs.
+  Vector<16> x;
+  lin::ref<Vector3>(x, 0, 0) = r_ecef;
+  lin::ref<Vector3>(x, 3, 0) = v_ecef;
+  lin::ref<Vector4>(x, 6, 0) = q_body_eci;
+  lin::ref<Vector3>(x, 10, 0) = w_body;
+  lin::ref<Vector3>(x, 13, 0) = wheels_w_body;
+  IntegratorData data{m, J_body, wheels_J_body, wheels_t_body, m_body, b_eci,
+      earth_w, earth_w_dot};
+
+  // Simulate dynamics.
+  x = ode(Real(0.0), dt, x, &data,
       [](Real t, Vector<16> const &x, void *ptr) -> Vector<16> {
-    // position, velocity, quat_body, ang velocity, wheel ang velocity
-    auto const r = lin::ref<Vector3>(x, 0,  0);
-    auto const v = lin::ref<Vector3>(x, 3,  0);
-    auto const q = lin::ref<Vector4>(x, 6,  0);
-    auto const w = lin::ref<Vector3>(x, 10, 0);
-    auto const w_w = lin::ref<Vector3>(x, 13, 0);
-    auto *data = (IntegratorData *) ptr;
+        auto const *data = static_cast<IntegratorData *>(ptr);
 
-    Vector<16> dx;
+        auto const &m = data->m;
+        auto const earth_w = (data->earth_w + t * data->earth_w_dot).eval();
+        auto const &earth_w_dot = data->earth_w_dot;
 
-    // Orbital dynamics
-    {
-      // Calculate the Earth's current attitude (Position in ECI -> gravitational acceleration vector in ECI)
-      Vector4 q; 
-      gnc::env::earth_attitude(t, q);  // q = q_ecef_eci
+        auto const r_ecef = lin::ref<Vector3>(x, 0, 0);
+        auto const v_ecef = lin::ref<Vector3>(x, 3, 0);
+        auto const q_body_eci = lin::ref<Vector4>(x, 6, 0);
+        auto const w_body = lin::ref<Vector3>(x, 10, 0);
+        auto const wheels_w_body = lin::ref<Vector3>(x, 13, 0);
 
-      // Determine our gravitation acceleration in ECI
-      Vector3 g;
-      {
-        Vector3 r_ecef;
-        gnc::utl::rotate_frame(q, r.eval(), r_ecef);
+        auto const S = 0.0; [&q_body_eci]() {
+          
+        }();
+        auto const b_body = [&q_body_eci](Vector3 const &b_eci) {
+          Vector3 b_body;
+          gnc::utl::rotate_frame(q_body_eci.eval(), b_eci, b_body);
+          return b_body;
+        }(data->b_eci);
 
-        Real _;
-        gnc::env::gravity(r_ecef, g, _);  // g = g_ecef
-        gnc::utl::quat_conj(q);           // q = q_eci_ecef
-        gnc::utl::rotate_frame(q, g);     // g = g_eci
-      }
+        Vector<16> dx;
 
-      lin::ref<Vector<6>>(dx, 0, 0) = {v(0), v(1), v(2), g(0), g(1), g(2)};
-    }
+        // Orbital dynamics
+        {
+          Vector3 a_ecef;
+          orbit::acceleration(
+              earth_w, earth_w_dot, r_ecef.eval(), v_ecef.eval(), S, m, a_ecef);
 
-    // dq = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
-    Vector4 dq;
-    Vector4 quat_rate = {0.5 * w(0), 0.5 * w(1), 0.5 * w(2), 0.0};
-    gnc::utl::quat_cross_mult(quat_rate, q.eval(), dq);
+          lin::ref<Vector3>(dx, 0, 0) = v_ecef;
+          lin::ref<Vector3>(dx, 3, 0) = a_ecef;
+        }
 
-    // dw = I^{-1} * m x b - tau_w - w x (I * w + I_w * w_w)
-    Vector3 dw = lin::cross(data->m,data->b) - data->tau_w - lin::cross(w, lin::multiply(data->I, w) + (data->I_w)*w_w);
-    dw = lin::divide(dw, data->I); // Multiplication by I inverse
+        // dq = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
+        Vector4 dq;
+        Vector4 quat_rate = {0.5 * w(0), 0.5 * w(1), 0.5 * w(2), 0.0};
+        gnc::utl::quat_cross_mult(quat_rate, q.eval(), dq);
 
-    // dw_w = tau_w/I_w
-    Vector3 dw_w = lin::divide(data->tau_w, data->I_w);
+        // dw = I^{-1} * m x b - tau_w - w x (I * w + I_w * w_w)
+        Vector3 dw =
+            lin::cross(data->m, data->b) - data->tau_w -
+            lin::cross(w, lin::multiply(data->I, w) + (data->I_w) * w_w);
+        dw = lin::divide(dw, data->I); // Multiplication by I inverse
 
-    // Attitude dynamics
-    {
-      lin::ref<Vector4>(dx, 6, 0) = dq; 
-      lin::ref<Vector3>(dx, 10, 0) = dw; 
-      lin::ref<Vector3>(dx, 13, 0) = dw_w;
-    }
+        // dw_w = tau_w/I_w
+        Vector3 dw_w = lin::divide(data->tau_w, data->I_w);
 
-    return dx;
-  }); 
+        // Attitude dynamics
+        {
+          lin::ref<Vector4>(dx, 6, 0) = dq;
+          lin::ref<Vector3>(dx, 10, 0) = dw;
+          lin::ref<Vector3>(dx, 13, 0) = dw_w;
+        }
+
+        return dx;
+      });
 
   // Write back to our state fields
-  r = lin::ref<Vector3>(xf, 0, 0);
-  v = lin::ref<Vector3>(xf, 3, 0);
-  q_body_eci = lin::ref<Vector4>(xf, 6, 0);
-  w = lin::ref<Vector3>(xf, 10, 0);
-  omega_w = lin::ref<Vector3>(xf, 13, 0);
+  r_ecef = lin::ref<Vector3>(x, 0, 0);
+  v_ecef = lin::ref<Vector3>(x, 3, 0);
+  q_body_eci = lin::ref<Vector4>(x, 6, 0);
+  w_body = lin::ref<Vector3>(x, 10, 0);
+  wheels_w_body = lin::ref<Vector3>(x, 13, 0);
 }
 
-Vector4 AttitudeOrbitNoFuelEciGnc::truth_satellite_attitude_q_eci_body() const {
+Vector4 AttitudeOrbitNoFuelEcef::truth_satellite_attitude_q_eci_body() const {
   auto const &q_body_eci = this->truth_satellite_attitude_q_body_eci.get();
 
   Vector4 q_eci_body;
@@ -157,7 +166,7 @@ Vector4 AttitudeOrbitNoFuelEciGnc::truth_satellite_attitude_q_eci_body() const {
   return q_eci_body;
 }
 
-Vector3 AttitudeOrbitNoFuelEciGnc::truth_satellite_attitude_L() const {
+Vector3 AttitudeOrbitNoFuelEcef::truth_satellite_attitude_L() const {
   auto const &J = truth_satellite_J.get();
   auto const &J_w = truth_satellite_wheels_J.get();
   auto const &w = truth_satellite_attitude_w.get();
@@ -165,4 +174,4 @@ Vector3 AttitudeOrbitNoFuelEciGnc::truth_satellite_attitude_L() const {
 
   return lin::multiply(J, w) + J_w * wheels_w;
 }
-}  // namespace psim
+} // namespace psim
