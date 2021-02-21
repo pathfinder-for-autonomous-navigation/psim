@@ -154,7 +154,7 @@ class PlotEstimate(Plot):
 class Plotter(Plugin):
     """Logs telemetry to display in a set of plots upon simulation termination.
     """
-    def __init__(self, plots=None, step=1):
+    def __init__(self, plots=list(), step=1):
         super(Plotter, self).__init__()
 
         self._plots = plots if not plots or type(plots) == list else [plots]
@@ -209,7 +209,7 @@ class Plotter(Plugin):
             return
 
         if not args.plots_step or args.plots_step < 1:
-            log.warning('No or invalid plots step specified via the command line; defaulting to %d.', self._step)
+            log.warning('Invalid plots step specified via the command line; defaulting to %d.', self._step)
         else:
             self._step = args.plots_step
             log.info('Overriding plots via the command line to %d', self._step)
