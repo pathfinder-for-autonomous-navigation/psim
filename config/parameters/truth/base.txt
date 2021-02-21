@@ -10,7 +10,7 @@ truth.dt.ns  170000000
 
 # Leader spacecraft attitude and orbit shared initial conditions.
 
-truth.leader.A  0.03
+truth.leader.S  0.03
 truth.leader.m  5.0
 truth.leader.J  0.03798 0.03957 0.00688
 
@@ -19,7 +19,7 @@ truth.leader.wheels.w_max  677.0
 
 # Follower spacecraft attitude and orbit shared initial conditions.
 
-truth.follower.A  0.03
+truth.follower.S  0.03
 truth.follower.m  5.0
 truth.follower.J  0.03798 0.03957 0.00688
 
