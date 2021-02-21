@@ -203,6 +203,17 @@ class Plotter(Plugin):
             self._plots = args.plots.split(',')
             log.info('Overriding plots via the command line to %s', self._plots)
 
+        # Don't run the plotter if no plots are given
+        if not self._plots:
+            log.warning('No plots to generate; disabling the plotter extension.')
+            return
+
+        if not args.plots_step or args.plots_step < 1:
+            log.warning('No or invalid plots step specified via the command line; defaulting to %d.', self._step)
+        else:
+            self._step = args.plots_step
+            log.info('Overriding plots via the command line to %d', self._step)
+
         _plots_files = get_plotting_files(self._plots)
         log.debug('Loading plots from the following configuration files: %s', _plots_files)
         self._plots = [plot for plot in _stream_plots(_plots_files)]
@@ -220,6 +231,9 @@ class Plotter(Plugin):
         """
         super(Plotter, self).poststep(sim)
 
+        if not self._plots:
+            return
+
         self._n = self._n + 1
         if self._step > 0 and self._n % self._step == 0:
             self._n = 0
@@ -228,6 +242,9 @@ class Plotter(Plugin):
 
     def cleanup(self, sim):
         super(Plotter, self).cleanup(sim)
+
+        if not self._plots:
+            return
 
         # Ignore plots if the step was set to zero
         if not self._step > 0:
