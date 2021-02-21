@@ -22,45 +22,27 @@
 // SOFTWARE.
 //
 
-/** @file psim/truth/attitude_orbit.hpp
+/** @file psim/truth/attitude_utilities.hpp
  *  @author Kyle Krol
  */
 
-#ifndef PSIM_TRUTH_ATTITUDE_ORBIT_HPP_
-#define PSIM_TRUTH_ATTITUDE_ORBIT_HPP_
+#ifndef PSIM_TRUTH_ATTITUDE_UTILITIES_HPP_
+#define PSIM_TRUTH_ATTITUDE_UTILITIES_HPP_
 
-#include <psim/truth/attitude_orbit.yml.hpp>
-
-#include <gnc/ode4.hpp>
+#include <psim/core/types.hpp>
 
 namespace psim {
+namespace attitude {
 
-/** @brief Simulates attitude dynamics without fuel slosh and propagates the
- *         orbital state with a Keplerian model in ECI.
+/** @brief
+ *
+ *  @param[in]
+ *
+ *  @return
  */
-class AttitudeOrbitNoFuelEcef
-  : public AttitudeOrbit<AttitudeOrbitNoFuelEcef> {
- private:
-  typedef AttitudeOrbit<AttitudeOrbitNoFuelEcef> Super;
-  gnc::Ode4<Real, 16> ode;
+Real S(Vector4 const &q_body_eci, Vector4 const &q_eci_ecef, Vector3 const &v_ecef);
 
- public:
-  AttitudeOrbitNoFuelEcef() = delete;
-  virtual ~AttitudeOrbitNoFuelEcef() = default;
-
-  /** @brief Set the frame argument to ECEF.
-   */
-  AttitudeOrbitNoFuelEcef(RandomsGenerator &randoms,
-      Configuration const &config, std::string const &satellite);
-
-  virtual void step() override;
-
-  Real truth_satellite_orbit_T() const;
-  Real truth_satellite_orbit_U() const;
-  Real truth_satellite_orbit_E() const;
-  Vector4 truth_satellite_attitude_q_eci_body() const;
-  Vector3 truth_satellite_attitude_L() const;
-};
+} // namespace attitude
 } // namespace psim
 
 #endif
