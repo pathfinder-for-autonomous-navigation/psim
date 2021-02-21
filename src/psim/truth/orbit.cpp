@@ -88,9 +88,8 @@ void OrbitEcef::step() {
         auto const r_ecef = lin::ref<Vector3>(x, 0, 0);
         auto const v_ecef = lin::ref<Vector3>(x, 3, 0);
 
-        Vector3 a_ecef;
-        orbit::acceleration(
-            earth_w, earth_w_dot, r_ecef.eval(), v_ecef.eval(), S, m, a_ecef);
+        Vector3 const a_ecef = orbit::acceleration(
+            earth_w, earth_w_dot, r_ecef.eval(), v_ecef.eval(), S, m);
 
         Vector<6> dx;
         lin::ref<Vector3>(dx, 0, 0) = v_ecef;

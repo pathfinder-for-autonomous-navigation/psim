@@ -46,18 +46,17 @@ void gravity(Vector3 const &r_ecef, Vector3 &g_ecef) {
 
 void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U) {
   static constexpr auto order = 11;
-  static constexpr auto grav = static_cast<geograv::Coeff<order>>(GGM05S));
+  static constexpr auto grav = static_cast<geograv::Coeff<order>>(GGM05S);
 
   geograv::Vector g, r = {r_ecef(0), r_ecef(1), r_ecef(2)};
   U = geograv::GeoGrav(r, g, grav, true);
   g_ecef = {g.x, g.y, g.z};
 }
 
-void density(Vector3 const &r_ecef, Real &rho) {
+Real density(Vector3 const &r_ecef) {
   /* Atmospheric density model is pulled from section 11.2.1 of "Fundamentals of
    * Spacecraft Attitude Determination and Control" by Markley and Crassidis.
    */
-  static constexpr Real half = 0.5;
   static constexpr lin::size_t I = 36;
   static constexpr Vector<I> h0 = {0.0, 25.0e3, 30.0e3, 35.0e3, 40.0e3, 45.0e3,
       50.0e3, 55.0e3, 60.0e3, 65.0e3, 70.0e3, 75.0e3, 80.0e3, 85.0e3, 90.0e3,
@@ -84,11 +83,10 @@ void density(Vector3 const &r_ecef, Real &rho) {
   while (h < h0(i) && i --> 0);
 
   // Atmospheric density calculation
-  auto const rho = p0(i) * lin::exp((h0(i) - h) / H(i));
+  return p0(i) * lin::exp((h0(i) - h) / H(i));
 }
 
-void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m,
-    Vector<3> &a_ecef) {
+Vector3 drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m) {
   static constexpr Real half = 0.5;
 
   /* Drag coefficient pulled from "An Evaluation of CubeSat Orbital Decay" by
@@ -108,14 +106,12 @@ void drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m,
    * direction of travel, and v is the velocity relative to the atmosphere (i.e.
    * in ECEF because the atmosphere rotates).
    */
-  Real rho;
-  density(r_ecef, rho);
-  a_ecef = v_ecef * (-half * Cd * S * rho * lin::norm(v_ecef) / m);
+  auto const rho = density(r_ecef);
+  return v_ecef * (-half * Cd * S * rho * lin::norm(v_ecef) / m);
 }
 
-void acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
-    Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m,
-    Vector3 a_ecef) {
+Vector3 acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
+    Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m) {
   static constexpr Real two = 2.0;
 
   /* Numerically, starting with the smaller forces first like fake forces and
@@ -127,17 +123,16 @@ void acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
    *
    * https://en.wikipedia.org/wiki/Rotating_reference_frame#Relation_between_accelerations_in_the_two_frames
    */
-  a_ecef = -(two * lin::cross(earth_w, r_ecef) +
-             lin::cross(earth_w, lin::cross(earth_w, r_ecef)) +
-             lin::cross(earth_w_dot, r_ecef));
+  Vector3 const a_ecef = -(two * lin::cross(earth_w, v_ecef) +
+                           lin::cross(earth_w, lin::cross(earth_w, r_ecef)) +
+                           lin::cross(earth_w_dot, r_ecef));
 
-  Vector3 a_drag_ecef;
-  drag(r_ecef, v_ecef, S, m, a_drag_ecef);
+  Vector3 const a_drag_ecef = drag(r_ecef, v_ecef, S, m);
 
   Vector3 g_ecef;
   gravity(r_ecef, g_ecef);
 
-  a_ecef = (a_ecef + a_drag_ecef) + g_ecef;
+  return (a_ecef + a_drag_ecef) + g_ecef;
 }
 } // namespace orbit
 } // namespace psim
