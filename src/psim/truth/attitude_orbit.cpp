@@ -28,7 +28,6 @@
 
 #include <psim/truth/attitude_orbit.hpp>
 
-#include <gnc/environment.hpp>
 #include <gnc/utilities.hpp>
 
 #include <lin/core.hpp>
@@ -36,6 +35,7 @@
 #include <lin/math.hpp>
 #include <lin/references.hpp>
 
+#include <psim/truth/attitude_utilities.hpp>
 #include <psim/truth/orbit_utilities.hpp>
 
 namespace psim {
@@ -49,21 +49,23 @@ void AttitudeOrbitNoFuelEcef::step() {
 
   struct IntegratorData {
     Real const &m;
+    Real const &S;
+    Vector3 const &earth_w;
+    Vector3 const &earth_w_dot;
     Vector3 const &J_body;
-    Vector3 const &wheels_J_body;
+    Real const &wheels_J_body;
     Vector3 const &wheels_t_body;
     Vector3 const &m_body;
     Vector3 const &b_eci;
-    Vector3 const &earth_w;
-    Vector3 const &earth_w_dot;
   };
 
   auto const &dt = truth_dt_s->get();
   auto const &earth_w = truth_earth_w->get();
   auto const &earth_w_dot = truth_earth_w_dot->get();
+  auto const &q_eci_ecef = truth_earth_q_eci_ecef->get();
   auto const &m = truth_satellite_m.get();
   auto const &J_body = truth_satellite_J.get();
-  auto const &wheels_J_body = truth_satellite_J.get();
+  auto const &wheels_J_body = truth_satellite_wheels_J.get();
   auto const &wheels_t_body = truth_satellite_wheels_t.get();
   auto const &b_eci = truth_satellite_environment_b_eci->get();
 
@@ -80,6 +82,10 @@ void AttitudeOrbitNoFuelEcef::step() {
   v_ecef = v_ecef + J_ecef / m;
   J_ecef = lin::zeros<Vector3>();
 
+  // Calculate surface area projected along the direction of travel. It's
+  // this is constant over the course of a timestep.
+  auto const S = attitude::S(q_body_eci, q_eci_ecef, v_ecef);
+
   // Prepare integrator inputs.
   Vector<16> x;
   lin::ref<Vector3>(x, 0, 0) = r_ecef;
@@ -87,8 +93,8 @@ void AttitudeOrbitNoFuelEcef::step() {
   lin::ref<Vector4>(x, 6, 0) = q_body_eci;
   lin::ref<Vector3>(x, 10, 0) = w_body;
   lin::ref<Vector3>(x, 13, 0) = wheels_w_body;
-  IntegratorData data{m, J_body, wheels_J_body, wheels_t_body, m_body, b_eci,
-      earth_w, earth_w_dot};
+  IntegratorData data{m, S, earth_w, earth_w_dot, J_body, wheels_J_body,
+      wheels_t_body, m_body, b_eci};
 
   // Simulate dynamics.
   x = ode(Real(0.0), dt, x, &data,
@@ -96,18 +102,19 @@ void AttitudeOrbitNoFuelEcef::step() {
         auto const *data = static_cast<IntegratorData *>(ptr);
 
         auto const &m = data->m;
+        auto const &S = data->S;
         auto const earth_w = (data->earth_w + t * data->earth_w_dot).eval();
         auto const &earth_w_dot = data->earth_w_dot;
+        auto const &J_body = data->J_body;
+        auto const &wheels_J_body = data->wheels_J_body;
+        auto const &wheels_t_body = data->wheels_t_body;
+        auto const &m_body = data->m_body;
 
         auto const r_ecef = lin::ref<Vector3>(x, 0, 0);
         auto const v_ecef = lin::ref<Vector3>(x, 3, 0);
         auto const q_body_eci = lin::ref<Vector4>(x, 6, 0);
         auto const w_body = lin::ref<Vector3>(x, 10, 0);
         auto const wheels_w_body = lin::ref<Vector3>(x, 13, 0);
-
-        auto const S = 0.0; [&q_body_eci]() {
-          
-        }();
         auto const b_body = [&q_body_eci](Vector3 const &b_eci) {
           Vector3 b_body;
           gnc::utl::rotate_frame(q_body_eci.eval(), b_eci, b_body);
@@ -118,33 +125,39 @@ void AttitudeOrbitNoFuelEcef::step() {
 
         // Orbital dynamics
         {
-          Vector3 a_ecef;
-          orbit::acceleration(
-              earth_w, earth_w_dot, r_ecef.eval(), v_ecef.eval(), S, m, a_ecef);
+          Vector3 const a_ecef = orbit::acceleration(
+              earth_w, earth_w_dot, r_ecef.eval(), v_ecef.eval(), S, m);
 
           lin::ref<Vector3>(dx, 0, 0) = v_ecef;
           lin::ref<Vector3>(dx, 3, 0) = a_ecef;
         }
 
-        // dq = utl_quat_cross_mult(0.5*quat_rate,quat_body_eci);
-        Vector4 dq;
-        Vector4 quat_rate = {0.5 * w(0), 0.5 * w(1), 0.5 * w(2), 0.0};
-        gnc::utl::quat_cross_mult(quat_rate, q.eval(), dq);
-
-        // dw = I^{-1} * m x b - tau_w - w x (I * w + I_w * w_w)
-        Vector3 dw =
-            lin::cross(data->m, data->b) - data->tau_w -
-            lin::cross(w, lin::multiply(data->I, w) + (data->I_w) * w_w);
-        dw = lin::divide(dw, data->I); // Multiplication by I inverse
-
-        // dw_w = tau_w/I_w
-        Vector3 dw_w = lin::divide(data->tau_w, data->I_w);
-
-        // Attitude dynamics
+        // Attitude dynamics - quaternion
         {
-          lin::ref<Vector4>(dx, 6, 0) = dq;
-          lin::ref<Vector3>(dx, 10, 0) = dw;
-          lin::ref<Vector3>(dx, 13, 0) = dw_w;
+          Vector4 dq_body_eci;
+          Vector4 const dq = {
+              0.5 * w_body(0), 0.5 * w_body(1), 0.5 * w_body(2), 0.0};
+          gnc::utl::quat_cross_mult(dq, q_body_eci.eval(), dq_body_eci);
+
+          lin::ref<Vector4>(dx, 6, 0) = dq_body_eci;
+        }
+
+        // Attitude dynamics - angular rate
+        {
+          Vector3 const H_body =
+              lin::multiply(J_body, w_body) + wheels_J_body * wheels_w_body;
+          Vector3 const t_body = lin::cross(m_body, b_body) - wheels_t_body -
+                                 lin::cross(w_body, H_body);
+          Vector3 const dw_body = lin::divide(t_body, J_body);
+
+          lin::ref<Vector3>(dx, 10, 0) = dw_body;
+        }
+
+        // Attitude dynamics - reaction wheel rates
+        {
+          Vector3 const dwheels_w_body = wheels_t_body / wheels_J_body;
+
+          lin::ref<Vector3>(dx, 13, 0) = dwheels_w_body;
         }
 
         return dx;
@@ -156,6 +169,35 @@ void AttitudeOrbitNoFuelEcef::step() {
   q_body_eci = lin::ref<Vector4>(x, 6, 0);
   w_body = lin::ref<Vector3>(x, 10, 0);
   wheels_w_body = lin::ref<Vector3>(x, 13, 0);
+}
+
+Real AttitudeOrbitNoFuelEcef::truth_satellite_orbit_T() const {
+  static constexpr Real half = 0.5;
+
+  auto const &earth_w = truth_earth_w->get();
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &v_ecef = truth_satellite_orbit_v.get();
+  auto const &m = truth_satellite_m.get();
+
+  return half * m * lin::fro(v_ecef + lin::cross(earth_w, r_ecef));
+}
+
+Real AttitudeOrbitNoFuelEcef::truth_satellite_orbit_U() const {
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &m = truth_satellite_m.get();
+
+  Real U;
+  Vector3 _;
+  orbit::gravity(r_ecef, _, U);
+
+  return m * U;
+}
+
+Real AttitudeOrbitNoFuelEcef::truth_satellite_orbit_E() const {
+  auto const &T = this->Super::truth_satellite_orbit_T.get();
+  auto const &U = this->Super::truth_satellite_orbit_U.get();
+
+  return T - U;
 }
 
 Vector4 AttitudeOrbitNoFuelEcef::truth_satellite_attitude_q_eci_body() const {

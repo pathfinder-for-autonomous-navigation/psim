@@ -39,13 +39,13 @@ namespace attitude {
 
 Real S(Vector4 const &q_body_eci, Vector4 const &q_eci_ecef,
     Vector3 const &v_ecef) {
-  static constexpr Vector3 PSIM_AREA_VEC = {0.03, 0.03, 0.01};
+  static constexpr Vector3 A = {0.03, 0.03, 0.01};
 
   Vector3 v_body;
   gnc::utl::rotate_frame(q_eci_ecef, v_ecef, v_body);
   gnc::utl::rotate_frame(q_body_eci, v_body);
 
-  return lin::dot(lin::abs(v_body / lin::norm(v_body)), PSIM_AREA_VEC);
+  return lin::dot(lin::abs(v_body / lin::norm(v_body)), A);
 }
 } // namespace attitude
 } // namespace psim

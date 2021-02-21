@@ -34,13 +34,17 @@
 namespace psim {
 namespace attitude {
 
-/** @brief
+/** @brief Calculates satellite surface area projected along the direction of
+ *         travel.
  *
- *  @param[in]
+ *  @param[in] q_body_eci Rotation from ECI to body.
+ *  @param[in] q_eci_ecef Rotation from ECEF to ECI.
+ *  @param[in] v_ecef     Velocity in ECEC (m/s).
  *
- *  @return
+ *  @return Surface area projected along the direction of travel (m^2).
  */
-Real S(Vector4 const &q_body_eci, Vector4 const &q_eci_ecef, Vector3 const &v_ecef);
+Real S(Vector4 const &q_body_eci, Vector4 const &q_eci_ecef,
+    Vector3 const &v_ecef);
 
 } // namespace attitude
 } // namespace psim
