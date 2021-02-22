@@ -80,7 +80,7 @@ Real density(Vector3 const &r_ecef) {
 
   // Determine the appropriate index
   lin::size_t i = h0.size() - 1;
-  while (h < h0(i) && i --> 0);
+  while (h < h0(i) && i > 0) i--;
 
   // Atmospheric density calculation
   return p0(i) * lin::exp((h0(i) - h) / H(i));
