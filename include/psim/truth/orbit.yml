@@ -15,6 +15,11 @@ params:
       type: Real
       comment: >
           Mass of the satellite in units of kilograms.
+    - name: "truth.{satellite}.S"
+      type: Real
+      comment: >
+          Projected area of the satellite along the direction of travel in
+          meters squared. This value is used for the drag calculation.
 
 adds:
     - name: "truth.{satellite}.orbit.r"
@@ -34,13 +39,24 @@ adds:
           kilogram meters per second squared. The coordinate system is
           implementation dependant. Note that this field is zeroed out on each
           simulation step to avoid applying a continuous input.
+    - name: "truth.{satellite}.orbit.T"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital kinetic energy.
+    - name: "truth.{satellite}.orbit.U"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital potential energy.
+    - name: "truth.{satellite}.orbit.E"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital total energy. This is essentially the difference
+          of the kinetic and potential energies.
 
 gets:
-    - name: "truth.t.s"
-      type: Real
-      comment: >
-          Time sense the PAN epoch in seconds.
+    - name: "truth.earth.w"
+      type: Vector3
+    - name: "truth.earth.w_dot"
+      type: Vector3
     - name: "truth.dt.s"
       type: Real
-      comment: >
-          Timestep of the simulation in seconds.

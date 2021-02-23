@@ -35,23 +35,27 @@
 
 namespace psim {
 
-/** @brief Orbit propegator in ECI implemented using the GNC gravity model.
+/** @brief Orbit propagator in ECEF.
  */
-class OrbitGncEci : public Orbit<OrbitGncEci> {
+class OrbitEcef : public Orbit<OrbitEcef> {
  private:
-  typedef Orbit<OrbitGncEci> Super;
+  typedef Orbit<OrbitEcef> Super;
   gnc::Ode4<Real, 6> ode;
 
  public:
-  OrbitGncEci() = delete;
-  virtual ~OrbitGncEci() = default;
+  OrbitEcef() = delete;
+  virtual ~OrbitEcef() = default;
 
-  /** @brief Set the frame argument to ECI.
+  /** @brief Set the frame argument to ECEF.
    */
-  OrbitGncEci(RandomsGenerator &randoms, Configuration const &config,
+  OrbitEcef(RandomsGenerator &randoms, Configuration const &config,
       std::string const &satellite);
 
   virtual void step() override;
+
+  Real truth_satellite_orbit_T() const;
+  Real truth_satellite_orbit_U() const;
+  Real truth_satellite_orbit_E() const;
 };
 } // namespace psim
 

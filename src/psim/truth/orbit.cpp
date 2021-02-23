@@ -28,63 +28,107 @@
 
 #include <psim/truth/orbit.hpp>
 
-#include <gnc/environment.hpp>
+#include <gnc/config.hpp>
 #include <gnc/utilities.hpp>
 
 #include <lin/core.hpp>
-#include <lin/generators/constants.hpp>
+#include <lin/generators.hpp>
 #include <lin/math.hpp>
 #include <lin/references.hpp>
 
+#include <psim/truth/orbit_utilities.hpp>
+
 namespace psim {
 
-OrbitGncEci::OrbitGncEci(RandomsGenerator &randoms, Configuration const &config,
+OrbitEcef::OrbitEcef(RandomsGenerator &randoms, Configuration const &config,
     std::string const &satellite)
-  : Super(randoms, config, satellite, "eci") { }
+  : Super(randoms, config, satellite, "ecef") {}
 
-void OrbitGncEci::step() {
+void OrbitEcef::step() {
   this->Super::step();
 
-  // References to the current time and timestep
+  struct IntegratorData {
+    Real const &m;
+    Real const &S;
+    Vector3 const &earth_w;
+    Vector3 const &earth_w_dot;
+  };
+
   auto const &dt = truth_dt_s->get();
-  auto const &t = truth_t_s->get();
+  auto const &earth_w = truth_earth_w->get();
+  auto const &earth_w_dot = truth_earth_w_dot->get();
+  auto const &S = truth_satellite_S.get();
+  auto const &m = truth_satellite_m.get();
 
-  // References to position and velocity
-  auto &r = truth_satellite_orbit_r.get();
-  auto &v = truth_satellite_orbit_v.get();
+  auto &r_ecef = truth_satellite_orbit_r.get();
+  auto &v_ecef = truth_satellite_orbit_v.get();
+  auto &J_ecef = truth_satellite_orbit_J_frame.get();
 
-  // Treat our thruster firings as purely impulses
-  v = v + truth_satellite_orbit_J_frame.get() / truth_satellite_m.get();
-  truth_satellite_orbit_J_frame.get() = lin::zeros<Vector3>();
+  // Thruster firings are modelled here as instantaneous impulses. This removes
+  // thruster dependance from the state dot function in the integrator.
+  v_ecef = v_ecef + J_ecef / m;
+  J_ecef = lin::zeros<Vector3>();
 
-  // Simulate our dynamics
-  auto const xf = ode(t, dt, {r(0), r(1), r(2), v(0), v(1), v(2)}, nullptr,
-      [](Real t, Vector<6> const &x, void *) -> Vector<6> {
-    // References to our position and velocity in ECI
-    auto const r = lin::ref<Vector3>(x, 0, 0);
-    auto const v = lin::ref<Vector3>(x, 3, 0);
+  // Prepare integrator inputs
+  Vector<6> x;
+  lin::ref<Vector3>(x, 0, 0) = r_ecef;
+  lin::ref<Vector3>(x, 3, 0) = v_ecef;
+  IntegratorData data = {S, m, earth_w, earth_w_dot};
 
-    // Calculate the Earth's current attitude
-    Vector4 q;
-    gnc::env::earth_attitude(t, q);  // q = q_ecef_eci
+  // Simulate dynamics
+  x = ode(Real(0.0), dt, x, &data,
+      [](Real t, Vector<6> const &x, void *ptr) -> Vector<6> {
+        auto const *data = static_cast<IntegratorData *>(ptr);
 
-    // Determine our gravitation acceleration in ECI
-    Vector3 g;
-    {
-      Vector3 r_ecef;
-      gnc::utl::rotate_frame(q, r.eval(), r_ecef);
+        auto const &m = data->m;
+        auto const &S = data->S;
+        auto const earth_w = (data->earth_w + t * data->earth_w_dot).eval();
+        auto const &earth_w_dot = data->earth_w_dot;
 
-      Real _;
-      gnc::env::gravity(r_ecef, g, _);  // g = g_ecef
-      gnc::utl::quat_conj(q);           // q = q_eci_ecef
-      gnc::utl::rotate_frame(q, g);     // g = g_eci
-    }
+        auto const r_ecef = lin::ref<Vector3>(x, 0, 0);
+        auto const v_ecef = lin::ref<Vector3>(x, 3, 0);
 
-    return {v(0), v(1), v(2), g(0), g(1), g(2)};
-  });
+        Vector3 const a_ecef = orbit::acceleration(
+            earth_w, earth_w_dot, r_ecef.eval(), v_ecef.eval(), S, m);
+
+        Vector<6> dx;
+        lin::ref<Vector3>(dx, 0, 0) = v_ecef;
+        lin::ref<Vector3>(dx, 3, 0) = a_ecef;
+
+        return dx;
+      });
 
   // Write back to our state fields
-  r = lin::ref<Vector3>(xf, 0, 0);
-  v = lin::ref<Vector3>(xf, 3, 0);
+  r_ecef = lin::ref<Vector3>(x, 0, 0);
+  v_ecef = lin::ref<Vector3>(x, 3, 0);
 }
-}  // namespace psim
+
+Real OrbitEcef::truth_satellite_orbit_T() const {
+  static constexpr Real half = 0.5;
+
+  auto const &earth_w = truth_earth_w->get();
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &v_ecef = truth_satellite_orbit_v.get();
+  auto const &m = truth_satellite_m.get();
+
+  return half * m * lin::fro(v_ecef + lin::cross(earth_w, r_ecef));
+}
+
+Real OrbitEcef::truth_satellite_orbit_U() const {
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &m = truth_satellite_m.get();
+
+  Real U;
+  Vector3 _;
+  orbit::gravity(r_ecef, _, U);
+
+  return m * U;
+}
+
+Real OrbitEcef::truth_satellite_orbit_E() const {
+  auto const &T = this->Super::truth_satellite_orbit_T.get();
+  auto const &U = this->Super::truth_satellite_orbit_U.get();
+
+  return T - U;
+}
+} // namespace psim
