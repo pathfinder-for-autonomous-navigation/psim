@@ -13,7 +13,7 @@ def test_attitude_estimator():
     i.e. ninety five percent of the errors fall within the reported two sigma
     bounds.
     """
-    configs = ['sensors/base', 'truth/base', 'truth/detumble']
+    configs = ['sensors/base', 'truth/base', 'truth/deployment']
     configs = ['config/parameters/' + f + '.txt' for f in configs]
 
     config = Configuration(configs)
@@ -28,8 +28,8 @@ def test_attitude_estimator():
 
     # Total number of sample points and times outside the two sigma bounds
     N = 0
-    p_miss = [0, 0, 0]
-    g_miss = [0, 0, 0]
+    p_miss = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+    g_miss = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
 
     # Log data for two hours
     t_ns = sim['truth.t.ns']
@@ -41,22 +41,22 @@ def test_attitude_estimator():
         p_error = sim['fc.leader.attitude.p.body_eci.error']
         p_sigma = sim['fc.leader.attitude.p.body_eci.sigma']
         for i in range(3):
-            g_miss[i] = g_miss[i] + (abs(g_error[i]) > 2.0 * g_sigma[i])
-            p_miss[i] = p_miss[i] + (abs(p_error[i]) > 2.0 * p_sigma[i])
+            for j in range(2):
+                g_miss[i][j] = g_miss[i][j] + (abs(g_error[i]) > (j + 2) * g_sigma[i])
+                p_miss[i][j] = p_miss[i][j] + (abs(p_error[i]) > (j + 2) * p_sigma[i])
 
         N = N + 1
         sim.step()
 
-    print(p_sigma)
-    print(p_error)
-    print(N)
-    print(g_miss)
-    print(p_miss)
-    
-    # Ensure we had at least 95% of error bounded by two sigma
+    # Ensure the error in our outputs resemble gaussian noise.
+    #
+    # Reference(s):
+    #  - https://en.wikipedia.org/wiki/68%E2%80%9395%E2%80%9399.7_rule
+    bounds = [1.0 - 0.9545, 1.0 - 0.9973]
     for i in range(3):
-        g_percent = g_miss[i] / N
-        p_percent = p_miss[i] / N
+        for j in range(2):
+            g_percent = g_miss[i][j] / N
+            p_percent = p_miss[i][j] / N
 
-        assert g_percent < 0.05
-        assert p_percent < 0.05
+            assert g_percent <= bounds[j]
+            assert p_percent <= bounds[j]

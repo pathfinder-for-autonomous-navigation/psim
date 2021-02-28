@@ -24,8 +24,8 @@ sensors.leader.cdgps.range        2000.0
 sensors.leader.cdgps.dr.sigma     0.1    0.1 0.1
 
 sensors.leader.gyroscope.w.bias        0.02    0.01    -0.03
-sensors.leader.gyroscope.w.bias.sigma  1.00e-6 1.00e-6  1.00e-6
-sensors.leader.gyroscope.w.sigma       2.75e-4 2.75e-4  2.75e-4
+sensors.leader.gyroscope.w.bias.sigma  2.75e-4 2.75e-4  2.75e-4
+sensors.leader.gyroscope.w.sigma       1.00e-6 1.00e-6  1.00e-6
 
 sensors.leader.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7
 
@@ -42,8 +42,8 @@ sensors.follower.cdgps.range        2000.0
 sensors.follower.cdgps.dr.sigma     0.1    0.1 0.1
 
 sensors.follower.gyroscope.w.bias        -0.01    0.01    0.04
-sensors.follower.gyroscope.w.bias.sigma   1.00e-6 1.00e-6 1.00e-6
-sensors.follower.gyroscope.w.sigma        2.75e-4 2.75e-4 2.75e-4
+sensors.follower.gyroscope.w.bias.sigma  2.75e-4 2.75e-4  2.75e-4
+sensors.follower.gyroscope.w.sigma       1.00e-6 1.00e-6  1.00e-6
 
 sensors.follower.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7
 
