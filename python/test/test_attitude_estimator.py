@@ -7,7 +7,7 @@ import pytest
 
 def test_attitude_estimator():
     """Tests the attitude estimator.
-    
+
     The ability of the attitude estimator to initialize itself and remain valid
     are tested. The estimated sigma bounds are also verified to be accurate -
     i.e. ninety five percent of the errors fall within the reported two sigma
