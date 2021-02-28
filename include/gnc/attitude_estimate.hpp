@@ -48,13 +48,12 @@ class AttitudeEstimate {
 
   /** @brief Type representing time in nanoseconds within the class.
    */
-  typedef int32_t Time;
+  typedef int64_t Time;
 
   /** @brief Convenience template for defining lin matrix types within the
    *         class.
    */
-  template <lin::size_t R, lin::size_t C, lin::size_t MR = R,
-      lin::size_t MC = C>
+  template <lin::size_t R, lin::size_t C, lin::size_t MR = R, lin::size_t MC = C>
   using Matrix = lin::Matrix<Real, R, C, MR, MC>;
 
   /** @brief Convenience template for defining lin row vector types within the
@@ -84,38 +83,44 @@ class AttitudeEstimate {
    *
    *  @brief
    */
-  bool _valid = false;
+  bool valid_ = false;
 
   /** @internal
    *
    *  @brief
    */
-  Vector<4> _q_body_eci = lin::nans<Vector<4>>();
+  Vector<4> q_body_eci_ = lin::nans<Vector<4>>();
 
   /** @internal
    *
    *  @brief
    */
-  Vector<3> _w_body = lin::nans<Vector<3>>();
+  Vector<3> w_body_ = lin::nans<Vector<3>>();
 
   /** @internal
    *
    *  @brief
    */
-  Vector<3> _w_bias_body = lin::nans<Vector<3>>();
+  Vector<3> w_bias_body_ = lin::nans<Vector<3>>();
 
   /** @internal
    *
    *  @brief
    */
-  Matrix<6, 6> _cov = lin::nans<Matrix<6, 6>>();
+  Matrix<6, 6> P_ = lin::nans<Matrix<6, 6>>();
 
   /** @internal
    *
-   *  @brief
+   *  @brief Sigma points.
    */
-  Vector<3> _b_eci, _s_eci;
-  Vector<4> _q_sun_body;
+  Vector<3> b_eci_, s_eci_;
+  Vector<4> q_sun_body_;
+  Matrix<6, 13> X_;
+  Matrix<5, 13> Z_;
+
+  static void _generate_X_();
+
+  static void _propegate_X_();
 
  public:
   AttitudeEstimate() = default;
@@ -170,7 +175,7 @@ class AttitudeEstimate {
    *  @parma dt
    *  @param w_body
    */
-  void update(Time dt, Vector<3> const &w_body);
+  void update(Time dt_ns, Vector<3> const &w_body, Matrix<6, 6> const &Q);
 
   /** @brief
    *
