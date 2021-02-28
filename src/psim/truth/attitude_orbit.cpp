@@ -69,6 +69,7 @@ void AttitudeOrbitNoFuelEcef::step() {
   auto const &wheels_t_body = truth_satellite_wheels_t.get();
   auto const &b_eci = truth_satellite_environment_b_eci->get();
 
+  auto &S = truth_satellite_orbit_S.get();
   auto &r_ecef = truth_satellite_orbit_r.get();
   auto &v_ecef = truth_satellite_orbit_v.get();
   auto &J_ecef = truth_satellite_orbit_J_frame.get();
@@ -84,7 +85,7 @@ void AttitudeOrbitNoFuelEcef::step() {
 
   // Calculate surface area projected along the direction of travel. It's
   // this is constant over the course of a timestep.
-  auto const S = attitude::S(q_body_eci, q_eci_ecef, v_ecef);
+  S = attitude::S(q_body_eci, q_eci_ecef, v_ecef);
 
   // Prepare integrator inputs.
   Vector<16> x;
@@ -144,6 +145,21 @@ void AttitudeOrbitNoFuelEcef::step() {
 
         // Attitude dynamics - angular rate
         {
+          /* The total angular momentum of the spacecraft is given by:
+           *
+           *   H = J * w + J_wheels * w_wheels
+           *
+           * which allows us to represent Euler's rotation equation as:
+           *
+           *   J alpha = mu x b - tau_wheels - w x H.
+           * 
+           * Recall that the torque commanded to the wheels exerts the opposite
+           * of that on the spacecraft itself.
+           *
+           * Reference(s):
+           *  - https://en.wikipedia.org/wiki/Euler%27s_equations_(rigid_body_dynamics)
+           *  - https://en.wikipedia.org/wiki/Magnetic_moment
+           */
           Vector3 const H_body =
               lin::multiply(J_body, w_body) + wheels_J_body * wheels_w_body;
           Vector3 const t_body = lin::cross(m_body, b_body) - wheels_t_body -

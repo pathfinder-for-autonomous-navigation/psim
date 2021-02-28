@@ -38,8 +38,7 @@ namespace psim {
 /** @brief Simulates attitude dynamics without fuel slosh and propagates the
  *         orbital state with a Keplerian model in ECI.
  */
-class AttitudeOrbitNoFuelEcef
-  : public AttitudeOrbit<AttitudeOrbitNoFuelEcef> {
+class AttitudeOrbitNoFuelEcef : public AttitudeOrbit<AttitudeOrbitNoFuelEcef> {
  private:
   typedef AttitudeOrbit<AttitudeOrbitNoFuelEcef> Super;
   gnc::Ode4<Real, 16> ode;

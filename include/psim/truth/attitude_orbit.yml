@@ -31,6 +31,11 @@ params:
           radians per second.
 
 adds:
+    - name: "truth.{satellite}.orbit.S"
+      type: Real
+      comment: >
+          Projected area of the satellite along the direction of travel in
+          meters squared. This value is used for the drag calculation.
     - name: "truth.{satellite}.orbit.r"
       type: Initialized Vector3
       comment: >
