@@ -23,6 +23,7 @@ jobs:
       run: |
         sudo apt-get install bazel
         pip install --upgrade pip wheel
+        pip install ptest
         pip install lib/lin
 
     - name: Build and install the psim Python module
