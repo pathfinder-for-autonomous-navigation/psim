@@ -22,17 +22,17 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install bazel
-        pip install --upgrade pip
-        pip install -v lib/lin
+        pip install --upgrade pip wheel
+        pip install lib/lin
+
+    - name: Build and install the psim Python module
+      run: |
+        pip install -e .
 
     - name: Build and run C++ unit tests
       run: |
         bazel test //test/psim:ci
 
-    - name: Build and install psim Python module
+    - name: Run Python unit tests
       run: |
-        pip install -v -e .
-
-    - name: Build and run Python tests
-      run: |
-        python -m psim --help
+        pytest python
