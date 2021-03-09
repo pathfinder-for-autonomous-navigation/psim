@@ -1,0 +1,15 @@
+
+name: DetumblerInterface
+type: Model
+comment: >
+    Interface for how the detumbler will interact with the rest of the
+    simulation.
+
+args:
+    - satellite
+
+gets:
+    - name: "truth.{satellite}.magnetorquers.m"
+      type: Writable Vector3
+    - name: "sensors.{satellite}.magnetometer.b"
+      type: Vector3
