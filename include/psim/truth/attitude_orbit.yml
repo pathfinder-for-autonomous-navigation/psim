@@ -31,6 +31,11 @@ params:
           radians per second.
 
 adds:
+    - name: "truth.{satellite}.orbit.S"
+      type: Real
+      comment: >
+          Projected area of the satellite along the direction of travel in
+          meters squared. This value is used for the drag calculation.
     - name: "truth.{satellite}.orbit.r"
       type: Initialized Vector3
       comment: >
@@ -48,6 +53,19 @@ adds:
           kilogram meters per second squared. The coordinate system is
           implementation dependant. Note that this field is zeroed out on each
           simulation step to avoid applying a continuous input.
+    - name: "truth.{satellite}.orbit.T"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital kinetic energy.
+    - name: "truth.{satellite}.orbit.U"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital potential energy.
+    - name: "truth.{satellite}.orbit.E"
+      type: Lazy Real
+      comment: >
+          Satellite's orbital total energy. This is essentially the difference
+          of the kinetic and potential energies.
     - name: "truth.{satellite}.attitude.q.body_eci"
       type: Initialized Vector4
       comment: >
@@ -81,11 +99,13 @@ adds:
           Angular momentum of the spacecraft in the body frame.
 
 gets:
-    - name: "truth.t.s"
-      type: Real
     - name: "truth.dt.s"
       type: Real
+    - name: "truth.earth.w"
+      type: Vector3
+    - name: "truth.earth.w_dot"
+      type: Vector3
     - name: "truth.earth.q.eci_ecef"
       type: Vector4
-    - name: "truth.{satellite}.environment.b.body"
+    - name: "truth.{satellite}.environment.b.eci"
       type: Vector3

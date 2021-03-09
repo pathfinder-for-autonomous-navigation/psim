@@ -24,3 +24,11 @@
 - type: Plot2D
   x: truth.t.s
   y: truth.leader.attitude.q.body_eci.norm
+
+# Projected area along the direction of travel.
+#
+# This is technically a part of the orbit model but only calculated explicitly
+# while attitude dynamics are being simulation as well.
+- type: Plot2D
+  x: truth.t.s
+  y: truth.leader.orbit.S
