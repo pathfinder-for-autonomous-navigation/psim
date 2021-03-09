@@ -30,8 +30,6 @@ def test_detumbler():
     threshold = 1047 * 1.35e-5 * 0.33
 
     sim.step()
-    steps = 1
     while sim['truth.leader.attitude.L.norm'] > threshold:
         assert sim['truth.t.ns'] < timeout, 'Spacecraft failed to detumble in alloted time'
         sim.step()
-        steps = steps + 1
