@@ -43,9 +43,9 @@ SatelliteTruthGnc::SatelliteTruthGnc(RandomsGenerator &randoms,
     Configuration const &config, std::string const &satellite)
   : ModelList(randoms) {
   // Dynamics
-  add<AttitudeOrbitNoFuelEciGnc>(randoms, config, satellite);
-  add<TransformPositionEci>(randoms, config, "truth." + satellite + ".orbit.r");
-  add<TransformVelocityEci>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
+  add<AttitudeOrbitNoFuelEcef>(randoms, config, satellite);
+  add<TransformPositionEcef>(randoms, config, "truth." + satellite + ".orbit.r");
+  add<TransformVelocityEcef>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
   // Extra telemetry
   add<NormVector3>(randoms, config, "truth." + satellite + ".attitude.L");
   add<NormVector4>(randoms, config, "truth." + satellite + ".attitude.q.body_eci");
