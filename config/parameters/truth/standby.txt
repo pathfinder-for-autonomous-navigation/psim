@@ -1,0 +1,27 @@
+# Initial conditions for simulations starting during standby. These initial
+# conditions were loosely based on output form the following command(s):
+#   python -m psim -s 23000 -c truth/base,truth/deployment --snapshot snapshot.txt DetumblerTest
+#   python -m psim -s 23000 -c truth/base,truth/deployment --snapshot snapshot.txt DualAttitudeOrbitGnc
+#
+
+# Time initial conditions.
+
+truth.t.ns 3910000000000
+
+# Leader spacecraft attitude and orbit initial conditions.
+
+truth.leader.attitude.q.body_eci  0.173301   0.971103 0.029768   0.161367
+truth.leader.attitude.w           0.00359105 0.137562 0.00386897
+truth.leader.wheels.w             0.0        0.0      0.0
+
+truth.leader.orbit.r  -2.41932e6 -4.53187e6 -4.53571e6
+truth.leader.orbit.v   7135.69   -1917.98   -1887.19
+
+# Follower spacecraft attitude and orbit initial conditions.
+
+truth.follower.attitude.q.body_eci   0.0492112  0.423932 0.765907  0.480881
+truth.follower.attitude.w           -0.134192  -0.002457 0.0027549
+truth.follower.wheels.w              0.0        0.0      0.0
+
+truth.follower.orbit.r  -2.42038e6 -4.53184e6 -4.53543e6
+truth.follower.orbit.v   7135.2    -1918.7    -1887.81
