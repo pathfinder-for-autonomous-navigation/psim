@@ -9,6 +9,7 @@ import setuptools.command.build_ext
 import os
 import shutil
 import subprocess
+import sys
 
 __version__ = '0.0.1'
 
@@ -16,16 +17,21 @@ __version__ = '0.0.1'
 class BuildExtCommand(setuptools.command.build_ext.build_ext):
 
     def run(self):
-        p = subprocess.Popen(['bazel', 'build', '//:_psim'])
-        while True:
-            try:
-                if p.wait() != 0:
-                    raise RuntimeError('`bazel build //:_psim` failed')
-                break
-            except KeyboardInterrupt:
-                # Bazel will also get the signal and terminate.
-                # We should continue waiting until it does so.
-                pass
+
+        def cli(*args):
+            p = subprocess.Popen(args, stdout=sys.stdout, stderr=sys.stderr)
+            while True:
+                try:
+                    if p.wait() != 0:
+                        raise RuntimeError(f'{args} failed')
+                    break
+                except KeyboardInterrupt:
+                    # Bazel will also get the signal and terminate.
+                    # We should continue waiting until it does so.
+                    pass
+
+        cli('bazel', 'build', '//:_psim')
+        cli('bazel', 'shutdown')
 
         ext = self.extensions[0]
         shutil.copyfile('bazel-bin/_psim.so', self.get_ext_fullpath(ext.name))
