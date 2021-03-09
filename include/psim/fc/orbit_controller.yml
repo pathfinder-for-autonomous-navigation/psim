@@ -1,0 +1,27 @@
+
+name: OrbitControllerInterface
+type: Model
+comment: >
+    Interface for how the flight computer's orbit controller will interact with the rest of the simulation
+
+args:
+    - satellite
+    - other
+    - frame
+
+gets:
+    - name: "truth.t.s"
+      type: Real
+    - name: "truth.t.ns"
+      type: Integer
+    - name: "truth.{satellite}.orbit.r.ecef"
+      type: Vector3
+    - name: "truth.{satellite}.orbit.v.ecef"
+      type: Vector3
+    - name: "truth.{other}.orbit.r.ecef"
+      type: Vector3
+    - name: "truth.{other}.orbit.v.ecef"
+      type: Vector3
+    - name: "truth.{satellite}.orbit.J.{frame}"
+      type: Writable Vector3
+
