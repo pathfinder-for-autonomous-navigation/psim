@@ -137,7 +137,6 @@ class Orbit {
             //time check
             if (!(_ns_gps_time <= MAXGPSTIME_NS)) goto INVALID;
             if (!(_ns_gps_time >= MINGPSTIME_NS)) goto INVALID;
-
             //position check
             lin::Vector3f recef_f=_recef;
             float r2= lin::fro(recef_f);//lin::fro is Frobenius (aka Euclidean) norm squared
@@ -145,7 +144,6 @@ class Orbit {
             //note if position is NAN, these checks will fail.
             if (!(r2 <= MAXORBITRADIUS*MAXORBITRADIUS)) goto INVALID;
             if (!(r2 >= MINORBITRADIUS*MINORBITRADIUS)) goto INVALID;
-
             //position and velocity check
             //float w= 0.729211585530000E-4;
             //float mu= PANGRAVITYMODEL.earth_gravity_constant;
