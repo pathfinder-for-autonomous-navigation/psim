@@ -30,19 +30,25 @@ SOFTWARE.
  */
 
 #pragma once
+
+#include "JacobianHelpers/jacobian_autocoded.h"
+
+#include <gnc/config.hpp>
+#include <gnc/constants.hpp>
+
+#include <lin/core.hpp>
+#include <lin/generators.hpp>
+#include <lin/math.hpp>
+#include <lin/queries.hpp>
+
+#include <geograv.hpp>
+#include <GGM05S.hpp>
+
+#include <array>
 #include <cstdint>
 #include <cstdlib>
 #include <cmath>
 #include <limits>
-#include <array>
-#include <lin/core.hpp>
-#include <lin/generators.hpp>
-#include <gnc/config.hpp>
-#include <gnc/constants.hpp>
-#include "JacobianHelpers/jacobian_autocoded.h"
-
-#include <geograv.hpp>
-#include <GGM05S.hpp>
 
 namespace orb
 {
@@ -139,21 +145,28 @@ class Orbit {
             if (!(r2 <= MAXORBITRADIUS*MAXORBITRADIUS)) goto INVALID;
             if (!(r2 >= MINORBITRADIUS*MINORBITRADIUS)) goto INVALID;
             //position and velocity check
-            float w= 0.729211585530000E-4;
-            float mu= PANGRAVITYMODEL.earth_gravity_constant;
-            lin::Vector3f vecef0_f=_vecef;
-            vecef0_f= vecef0_f + lin::Vector3f({-w*recef_f(1),w*recef_f(0),0.0f});
+            //float w= 0.729211585530000E-4;
+            //float mu= PANGRAVITYMODEL.earth_gravity_constant;
+            //lin::Vector3f vecef0_f=_vecef;
+            //vecef0_f= vecef0_f + lin::Vector3f({-w*recef_f(1),w*recef_f(0),0.0f});
             //e is the specific orbital energy
             //lin::fro is Frobenius (aka Euclidean) norm squared
-            float e= lin::fro(vecef0_f)*0.5f-mu/std::sqrt(r2);
+            //float e= lin::fro(vecef0_f)*0.5f-mu/std::sqrt(r2);
             //h2 is norm squared of specific orbital angular momentum
-            float h2= lin::fro(lin::cross(recef_f,vecef0_f));
+            //float h2= lin::fro(lin::cross(recef_f,vecef0_f));
             //ep and ea are the lowest specific orbital energy if h2 is the same at max and min radius
-            float ep= h2*(0.5f/(MINORBITRADIUS*MINORBITRADIUS))-mu/MINORBITRADIUS;
-            float ea= h2*(0.5f/(MAXORBITRADIUS*MAXORBITRADIUS))-mu/MAXORBITRADIUS;
+            //float ep= h2*(0.5f/(MINORBITRADIUS*MINORBITRADIUS))-mu/MINORBITRADIUS;
+            //float ea= h2*(0.5f/(MAXORBITRADIUS*MAXORBITRADIUS))-mu/MAXORBITRADIUS;
             //note if velocity is NAN, these checks will fail.
-            if (!(e <= ea)) goto INVALID;
-            if (!(e <= ep)) goto INVALID;
+            //if (!(e <= ea)) goto INVALID;
+            //if (!(e <= ep)) goto INVALID;
+
+            // Hack because this was causing validity issues in flight software
+            // it seems potentially dangerous to let the orbit disable the
+            // filter like this?
+            if (!lin::all(lin::isfinite(_vecef)))
+                goto INVALID;
+
             //made it through all checks
             _valid= true;
             return;
