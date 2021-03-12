@@ -127,12 +127,14 @@ Vector3 acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
                            lin::cross(earth_w, lin::cross(earth_w, r_ecef)) +
                            lin::cross(earth_w_dot, r_ecef));
 
-  Vector3 const a_drag_ecef = drag(r_ecef, v_ecef, S, m);
+// TODO : Fix this per #326
+//  Vector3 const a_drag_ecef = drag(r_ecef, v_ecef, S, m);
 
   Vector3 g_ecef;
   gravity(r_ecef, g_ecef);
 
-  return (a_ecef + a_drag_ecef) + g_ecef;
+//  return (a_ecef + a_drag_ecef) + g_ecef;
+  return a_ecef + g_ecef;
 }
 } // namespace orbit
 } // namespace psim
