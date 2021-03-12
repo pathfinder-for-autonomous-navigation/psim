@@ -25,8 +25,10 @@
 /** @file psim/truth/hill_frame.cpp
  *  @author Kyle Krol
  */
-
+#define LIN_DESKTOP
+#include <lin/core.hpp>
 #include <psim/truth/hill_frame.hpp>
+#include <iostream>
 
 #include <gnc/utilities.hpp>
 
