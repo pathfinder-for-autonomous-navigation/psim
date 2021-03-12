@@ -7,8 +7,12 @@ comment: >
 args:
     - satellite
     - other
-    - frame
-
+params:
+    - name: "truth.follower.m"
+      type: Real
+adds:
+    - name: "truth.follower.deltaV"
+      type: Real
 gets:
     - name: "truth.t.s"
       type: Real
@@ -22,6 +26,8 @@ gets:
       type: Vector3
     - name: "truth.{other}.orbit.v.ecef"
       type: Vector3
-    - name: "truth.{satellite}.orbit.J.{frame}"
+    - name: "truth.{satellite}.orbit.J.ecef"
       type: Writable Vector3
+
+
 

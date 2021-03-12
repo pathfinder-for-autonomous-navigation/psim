@@ -39,6 +39,10 @@ adds:
           kilogram meters per second squared. The coordinate system is
           implementation dependant. Note that this field is zeroed out on each
           simulation step to avoid applying a continuous input.
+    - name: "truth.{satellite}.deltaV"
+      type: Writable Real
+      comment: >
+          The cumulative delta-V of a satellite due to its thrusters
     - name: "truth.{satellite}.orbit.T"
       type: Lazy Real
       comment: >

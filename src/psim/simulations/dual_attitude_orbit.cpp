@@ -34,6 +34,8 @@
 #include <psim/truth/hill_frame.hpp>
 #include <psim/truth/satellite_truth.hpp>
 #include <psim/truth/time.hpp>
+#include <psim/utilities/norm_vector3.hpp>
+
 
 namespace psim {
 
@@ -47,6 +49,8 @@ DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(
   add<SatelliteTruthGnc>(randoms, config, "follower");
   add<HillFrameEci>(randoms, config, "leader", "follower");
   add<HillFrameEci>(randoms, config, "follower", "leader");
+  add<NormVector3>(randoms, config, "truth.leader.hill.dr");
+  add<NormVector3>(randoms, config, "truth.leader.hill.dv");
   // Sensors model
   add<SatelliteSensors>(randoms, config, "leader");
   add<SatelliteSensors>(randoms, config, "follower");

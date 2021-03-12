@@ -37,6 +37,6 @@ OrbitControllerTest::OrbitControllerTest(
     RandomsGenerator &randoms, Configuration const &config)
   : ModelList(randoms) {
   add<DualOrbitGnc>(randoms, config);
-  add<OrbitController>(randoms, config, "follower");
+  add<OrbitController>(randoms, config, "follower", "leader");
 }
 } // namespace psim
