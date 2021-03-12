@@ -232,7 +232,7 @@ void py_simulation(py::module &m) {
   PY_SIMULATION(SingleOrbitGnc);
   PY_SIMULATION(OrbOrbitEstimatorTest);
   PY_SIMULATION(RelativeOrbitEstimatorTest);
-  PY_SIMULATION(OrbitControllerTest)
+  PY_SIMULATION(OrbitControllerTest);
   PY_SIMULATION(DualAttitudeOrbitGnc);
   PY_SIMULATION(DualOrbitGnc);
 }

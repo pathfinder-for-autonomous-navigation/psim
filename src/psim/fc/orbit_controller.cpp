@@ -26,14 +26,18 @@
  * @author Govind Chari
  */
 
-#include <psim/fc/orbit_controller.hpp>
-
 #include <lin/core.hpp>
 #include <lin/generators.hpp>
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
+#include <psim/fc/orbit_controller.hpp>
 
 namespace psim {
+
+void OrbitController::add_fields(State &state) {
+  this->Super::add_fields(state);
+  truth_follower_deltaV.get()=0;
+}
 
 void OrbitController::step() {
   this->Super::step();
@@ -44,7 +48,9 @@ void OrbitController::step() {
   auto const &v_ecef = truth_satellite_orbit_v_ecef->get();
   auto const &other_r_ecef = truth_other_orbit_r_ecef->get();
   auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
-  auto &J_ecef = truth_satellite_orbit_J_frame->get();
+  auto &J_ecef = truth_satellite_orbit_J_ecef->get();
+  auto const &m = truth_follower_m.get();
+  auto &deltaV = truth_follower_deltaV.get();
 
   if (t_ns > last_firing + (1800 * 1e9)) {
     last_firing = t_ns;
@@ -57,6 +63,7 @@ void OrbitController::step() {
     gnc::OrbitActuation actuation;
     gnc::control_orbit(_orbitController, data, actuation);
     J_ecef = actuation.J_ecef;
+    deltaV = deltaV + lin::norm(J_ecef) / m;
   }
 }
 } // namespace psim

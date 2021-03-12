@@ -41,14 +41,14 @@ class OrbitController : public OrbitControllerInterface<OrbitController> {
 
   gnc::OrbitControllerState _orbitController;
 
-  Integer last_firing = 0;
+  psim::Integer last_firing = 0;
 
  public:
   using Super::OrbitControllerInterface;
 
   OrbitController() = delete;
   virtual ~OrbitController() = default;
-
+  virtual void add_fields(State &state) override;
   virtual void step() override;
 };
 } // namespace psim

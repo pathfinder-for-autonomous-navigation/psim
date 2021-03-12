@@ -1,0 +1,9 @@
+# Plots the distance between the satellites over time
+- type: Plot2D
+  x: truth.t.s
+  y: truth.leader.hill.dr.norm
+
+# Plots the relative velocity of the satellites over time
+- type: Plot2D
+  x: truth.t.s
+  y: truth.leader.hill.dv.norm
