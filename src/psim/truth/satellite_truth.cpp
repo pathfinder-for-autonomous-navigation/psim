@@ -38,6 +38,23 @@
 #include <psim/utilities/norm_vector4.hpp>
 
 namespace psim {
+namespace {
+
+class ExtraOrbitTelemetry : public ModelList {
+ public:
+  ExtraOrbitTelemetry() = delete;
+
+  virtual ~ExtraOrbitTelemetry() = default;
+
+  ExtraOrbitTelemetry(RandomsGenerator &randoms, Configuration const &config, std::string const &satellite) : ModelList(randoms) {
+    add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.r");
+    add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.v");
+    add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.a_gravity");
+    add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.a_drag");
+    add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.a_rot");
+  }
+};
+}  // namespace
 
 SatelliteTruthGnc::SatelliteTruthGnc(RandomsGenerator &randoms,
     Configuration const &config, std::string const &satellite)
@@ -49,6 +66,7 @@ SatelliteTruthGnc::SatelliteTruthGnc(RandomsGenerator &randoms,
   // Extra telemetry
   add<NormVector3>(randoms, config, "truth." + satellite + ".attitude.L");
   add<NormVector4>(randoms, config, "truth." + satellite + ".attitude.q.body_eci");
+  add<ExtraOrbitTelemetry>(randoms, config, satellite);
   // Environmental models
   add<EnvironmentGnc>(randoms, config, satellite);
   add<TransformDirectionEcef>(randoms, config, satellite, "truth." + satellite + ".environment.b");
@@ -63,6 +81,7 @@ SatelliteTruthNoAttitudeGnc::SatelliteTruthNoAttitudeGnc(
   add<OrbitEcef>(randoms, config, satellite);
   add<TransformPositionEcef>(randoms, config, "truth." + satellite + ".orbit.r");
   add<TransformVelocityEcef>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
+  add<ExtraOrbitTelemetry>(randoms, config, satellite);
   // Environmental models
   add<EnvironmentGnc>(randoms, config, satellite);
   add<TransformPositionEcef>(randoms, config, "truth." + satellite + ".environment.b");

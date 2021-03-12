@@ -203,8 +203,7 @@ Real AttitudeOrbitNoFuelEcef::truth_satellite_orbit_U() const {
   auto const &m = truth_satellite_m.get();
 
   Real U;
-  Vector3 _;
-  orbit::gravity(r_ecef, _, U);
+  orbit::gravity(r_ecef, U);
 
   return m * U;
 }

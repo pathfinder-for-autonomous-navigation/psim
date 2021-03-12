@@ -103,6 +103,36 @@ void OrbitEcef::step() {
   v_ecef = lin::ref<Vector3>(x, 3, 0);
 }
 
+Vector3 OrbitEcef::truth_satellite_orbit_a_gravity() const {
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+
+  return orbit::gravity(r_ecef);
+}
+
+Vector3 OrbitEcef::truth_satellite_orbit_a_drag() const {
+  auto const &S = truth_satellite_S.get();
+  auto const &m = truth_satellite_m.get();
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &v_ecef = truth_satellite_orbit_v.get();
+
+  return orbit::drag(r_ecef, v_ecef, S, m);
+}
+
+Vector3 OrbitEcef::truth_satellite_orbit_a_rot() const {
+  auto const &earth_w = truth_earth_w->get();
+  auto const &earth_w_dot = truth_earth_w_dot->get();
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &v_ecef = truth_satellite_orbit_v.get();
+
+  return orbit::rotational(earth_w, earth_w_dot, r_ecef, v_ecef);
+}
+
+Real OrbitEcef::truth_satellite_orbit_density() const {
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+
+  return orbit::density(r_ecef);
+};
+
 Real OrbitEcef::truth_satellite_orbit_T() const {
   static constexpr Real half = 0.5;
 
@@ -119,8 +149,7 @@ Real OrbitEcef::truth_satellite_orbit_U() const {
   auto const &m = truth_satellite_m.get();
 
   Real U;
-  Vector3 _;
-  orbit::gravity(r_ecef, _, U);
+  orbit::gravity(r_ecef, U);
 
   return m * U;
 }
