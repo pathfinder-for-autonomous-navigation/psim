@@ -23,7 +23,7 @@
 //
 
 /** @file psim/simulations/orbit_controller_test.cpp
- * @author Govind Chari
+ *  @author Govind Chari
  */
 
 #include <psim/simulations/orbit_controller_test.hpp>

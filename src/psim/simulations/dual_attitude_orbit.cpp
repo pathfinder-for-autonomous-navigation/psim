@@ -36,7 +36,6 @@
 #include <psim/truth/time.hpp>
 #include <psim/utilities/norm_vector3.hpp>
 
-
 namespace psim {
 
 DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(

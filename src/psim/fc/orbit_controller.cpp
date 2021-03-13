@@ -23,14 +23,15 @@
 //
 
 /** @file psim/fc/orbit_controller.cpp
- * @author Govind Chari
+ *  @author Govind Chari
  */
+
+#include <psim/fc/orbit_controller.hpp>
 
 #include <lin/core.hpp>
 #include <lin/generators.hpp>
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
-#include <psim/fc/orbit_controller.hpp>
 
 namespace psim {
 

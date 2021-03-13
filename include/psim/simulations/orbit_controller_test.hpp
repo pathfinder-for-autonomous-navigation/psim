@@ -23,7 +23,7 @@
 //
 
 /** @file psim/simulations/orbit_controller_test.hpp
- * @author Govind Chari
+ *  @author Govind Chari
  */
 
 #ifndef PSIM_SIMULATIONS_ORBIT_CONTROLLER_TEST_HPP_

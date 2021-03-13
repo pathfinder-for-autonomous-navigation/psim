@@ -23,7 +23,7 @@
 //
 
 /** @file psim/fc/orbit_controller.hpp
- * @author Govind Chari
+ *  @author Govind Chari
  */
 
 #ifndef PSIM_FC_ORBIT_CONTROLLER_HPP_
@@ -39,9 +39,9 @@ class OrbitController : public OrbitControllerInterface<OrbitController> {
  private:
   typedef OrbitControllerInterface<OrbitController> Super;
 
-  gnc::OrbitControllerState _orbitController;
+  gnc::OrbitControllerState _orbit_controller;
 
-  psim::Integer last_firing = 0;
+  Integer last_firing = 0;
 
  public:
   using Super::OrbitControllerInterface;
