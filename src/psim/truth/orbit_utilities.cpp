@@ -135,6 +135,7 @@ Vector3 acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
   auto const a_rot_ecef = rotational(earth_w, earth_w_dot, r_ecef, v_ecef);
 
   return (a_rot_ecef + a_drag_ecef) + a_grav_ecef;
+//  return a_rot_ecef + a_grav_ecef;
 }
 } // namespace orbit
 } // namespace psim

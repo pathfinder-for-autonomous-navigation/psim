@@ -46,12 +46,24 @@ class ExtraOrbitTelemetry : public ModelList {
 
   virtual ~ExtraOrbitTelemetry() = default;
 
-  ExtraOrbitTelemetry(RandomsGenerator &randoms, Configuration const &config, std::string const &satellite) : ModelList(randoms) {
-    add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.r");
-    add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.v");
+  ExtraOrbitTelemetry(RandomsGenerator &randoms, Configuration const &config,
+      std::string const &satellite) : ModelList(randoms) {
     add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.a_gravity");
     add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.a_drag");
     add<NormVector3>(randoms, config, "truth." + satellite + ".orbit.a_rot");
+  }
+};
+
+class ExtraAttitudeTelemetry : public ModelList {
+ public:
+  ExtraAttitudeTelemetry() = delete;
+
+  virtual ~ExtraAttitudeTelemetry() = default;
+
+  ExtraAttitudeTelemetry(RandomsGenerator &randoms, Configuration const &config,
+      std::string const &satellite) : ModelList(randoms) {
+    add<NormVector3>(randoms, config, "truth." + satellite + ".attitude.L");
+    add<NormVector4>(randoms, config, "truth." + satellite + ".attitude.q.body_eci");
   }
 };
 }  // namespace
@@ -64,8 +76,7 @@ SatelliteTruthGnc::SatelliteTruthGnc(RandomsGenerator &randoms,
   add<TransformPositionEcef>(randoms, config, "truth." + satellite + ".orbit.r");
   add<TransformVelocityEcef>(randoms, config, satellite, "truth." + satellite + ".orbit.v");
   // Extra telemetry
-  add<NormVector3>(randoms, config, "truth." + satellite + ".attitude.L");
-  add<NormVector4>(randoms, config, "truth." + satellite + ".attitude.q.body_eci");
+  add<ExtraAttitudeTelemetry>(randoms, config, satellite);
   add<ExtraOrbitTelemetry>(randoms, config, satellite);
   // Environmental models
   add<EnvironmentGnc>(randoms, config, satellite);

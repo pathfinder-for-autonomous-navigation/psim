@@ -69,7 +69,7 @@ void AttitudeOrbitNoFuelEcef::step() {
   auto const &wheels_t_body = truth_satellite_wheels_t.get();
   auto const &b_eci = truth_satellite_environment_b_eci->get();
 
-  auto &S = truth_satellite_orbit_S.get();
+  auto &S = truth_satellite_S.get();
   auto &r_ecef = truth_satellite_orbit_r.get();
   auto &v_ecef = truth_satellite_orbit_v.get();
   auto &J_ecef = truth_satellite_orbit_J_frame.get();
@@ -186,6 +186,42 @@ void AttitudeOrbitNoFuelEcef::step() {
   w_body = lin::ref<Vector3>(x, 10, 0);
   wheels_w_body = lin::ref<Vector3>(x, 13, 0);
 }
+
+Real AttitudeOrbitNoFuelEcef::truth_satellite_orbit_altitude() const {
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+
+  return lin::norm(r_ecef) - gnc::constant::r_earth;
+}
+
+Vector3 AttitudeOrbitNoFuelEcef::truth_satellite_orbit_a_gravity() const {
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+
+  return orbit::gravity(r_ecef);
+}
+
+Vector3 AttitudeOrbitNoFuelEcef::truth_satellite_orbit_a_drag() const {
+  auto const &m = truth_satellite_m.get();
+  auto const &S = truth_satellite_S.get();
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &v_ecef = truth_satellite_orbit_v.get();
+
+  return orbit::drag(r_ecef, v_ecef, S, m);
+}
+
+Vector3 AttitudeOrbitNoFuelEcef::truth_satellite_orbit_a_rot() const {
+  auto const &earth_w = truth_earth_w->get();
+  auto const &earth_w_dot = truth_earth_w_dot->get();
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+  auto const &v_ecef = truth_satellite_orbit_v.get();
+
+  return orbit::rotational(earth_w, earth_w_dot, r_ecef, v_ecef);
+}
+
+Real AttitudeOrbitNoFuelEcef::truth_satellite_orbit_density() const {
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+
+  return orbit::density(r_ecef);
+};
 
 Real AttitudeOrbitNoFuelEcef::truth_satellite_orbit_T() const {
   static constexpr Real half = 0.5;

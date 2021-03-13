@@ -29,6 +29,7 @@
 #include <psim/truth/orbit.hpp>
 
 #include <gnc/config.hpp>
+#include <gnc/constants.hpp>
 #include <gnc/utilities.hpp>
 
 #include <lin/core.hpp>
@@ -73,7 +74,7 @@ void OrbitEcef::step() {
   Vector<6> x;
   lin::ref<Vector3>(x, 0, 0) = r_ecef;
   lin::ref<Vector3>(x, 3, 0) = v_ecef;
-  IntegratorData data = {S, m, earth_w, earth_w_dot};
+  IntegratorData data = {m, S, earth_w, earth_w_dot};
 
   // Simulate dynamics
   x = ode(Real(0.0), dt, x, &data,
@@ -101,6 +102,12 @@ void OrbitEcef::step() {
   // Write back to our state fields
   r_ecef = lin::ref<Vector3>(x, 0, 0);
   v_ecef = lin::ref<Vector3>(x, 3, 0);
+}
+
+Real OrbitEcef::truth_satellite_orbit_altitude() const {
+  auto const &r_ecef = truth_satellite_orbit_r.get();
+
+  return lin::norm(r_ecef) - gnc::constant::r_earth;
 }
 
 Vector3 OrbitEcef::truth_satellite_orbit_a_gravity() const {
