@@ -88,15 +88,6 @@ constexpr void dcm(lin::Matrix<T, 3, 3> &DCM, lin::Vector<T, 3> const &x,
   // Set z_hat in place
   z_hat = lin::cross(x_hat, y_hat);
 
-  #ifdef LIN_DESKTOP
-  if (std::abs(1.0f - lin::fro(lin::col(DCM, 0))) >= 1.0e-2f)
-    std::cerr << DCM << std::endl;
-
-  if (lin::any(!lin::isfinite(DCM)))
-    std::cerr << DCM << std::endl;
-  #endif
-
-
   // Assert that DCM is a direction cosine matrix
   GNC_ASSERT_NORMALIZED(lin::col(DCM, 0));
   GNC_ASSERT_NORMALIZED(lin::col(DCM, 1));
