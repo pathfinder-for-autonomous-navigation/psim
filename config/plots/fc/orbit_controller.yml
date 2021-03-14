@@ -1,4 +1,4 @@
 # Plots the deltaV expended over time
 - type: Plot2D
   x: truth.t.s
-  y: truth.follower.deltaV
+  y: fc.follower.cumulative_dv

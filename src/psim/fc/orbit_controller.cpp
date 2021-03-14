@@ -37,7 +37,7 @@ namespace psim {
 
 void OrbitController::add_fields(State &state) {
   this->Super::add_fields(state);
-  truth_follower_deltaV.get()=0;
+  fc_satellite_cumulative_dv.get() = 0;
 }
 
 void OrbitController::step() {
@@ -50,8 +50,8 @@ void OrbitController::step() {
   auto const &other_r_ecef = truth_other_orbit_r_ecef->get();
   auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
   auto &J_ecef = truth_satellite_orbit_J_ecef->get();
-  auto const &m = truth_follower_m.get();
-  auto &deltaV = truth_follower_deltaV.get();
+  auto const &m = truth_satellite_m.get();
+  auto &cumulative_dv = fc_satellite_cumulative_dv.get();
 
   if (t_ns > last_firing + (1800 * 1e9)) {
     last_firing = t_ns;
@@ -61,10 +61,16 @@ void OrbitController::step() {
     data.v_ecef = v_ecef;
     data.dr_ecef = (other_r_ecef - r_ecef);
     data.dv_ecef = (other_v_ecef - v_ecef);
+
     gnc::OrbitActuation actuation;
-    gnc::control_orbit(_orbitController, data, actuation);
-    J_ecef = actuation.J_ecef;
-    deltaV = deltaV + lin::norm(J_ecef) / m;
+    gnc::control_orbit(_orbit_controller, data, actuation);
+
+    if (lin::all(lin::isfinite(actuation.J_ecef))) {
+      J_ecef = actuation.J_ecef;
+      cumulative_dv = cumulative_dv + lin::norm(J_ecef) / m;
+    } else {
+      J_ecef = lin::zeros<Vector3>();
+    }
   }
 }
 } // namespace psim

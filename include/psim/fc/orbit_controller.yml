@@ -2,17 +2,20 @@
 name: OrbitControllerInterface
 type: Model
 comment: >
-    Interface for how the flight computer's orbit controller will interact with the rest of the simulation
+    Interface for how the flight computer's orbit controller will interact with 
+    the rest of the simulation
 
 args:
     - satellite
     - other
 params:
-    - name: "truth.follower.m"
+    - name: "truth.{satellite}.m"
       type: Real
 adds:
-    - name: "truth.follower.deltaV"
+    - name: "fc.{satellite}.cumulative_dv"
       type: Real
+      comment: >
+        Stores the cumulative delta-v from thruster firings
 gets:
     - name: "truth.t.s"
       type: Real
