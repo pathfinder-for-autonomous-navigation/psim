@@ -31,6 +31,3 @@ gets:
       type: Vector3
     - name: "truth.{satellite}.orbit.J.ecef"
       type: Writable Vector3
-
-
-
