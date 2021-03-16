@@ -22,38 +22,21 @@
 // SOFTWARE.
 //
 
-/** @file psim/simulations/dual_attitude_orbit.cpp
- *  @author Kyle Krol
+/** @file psim/simulations/orbit_controller_test.cpp
+ *  @author Govind Chari
  */
 
-#include <psim/simulations/dual_attitude_orbit.hpp>
+#include <psim/simulations/orbit_controller_test.hpp>
 
-#include <psim/sensors/cdgps_no_attitude.hpp>
-#include <psim/sensors/satellite_sensors.hpp>
-#include <psim/truth/earth.hpp>
-#include <psim/truth/hill_frame.hpp>
-#include <psim/truth/satellite_truth.hpp>
-#include <psim/truth/time.hpp>
-#include <psim/utilities/norm_vector3.hpp>
+#include <psim/fc/orbit_controller.hpp>
+#include <psim/simulations/dual_orbit.hpp>
 
 namespace psim {
 
-DualAttitudeOrbitGnc::DualAttitudeOrbitGnc(
+OrbitControllerTest::OrbitControllerTest(
     RandomsGenerator &randoms, Configuration const &config)
   : ModelList(randoms) {
-  // Truth model
-  add<Time>(randoms, config);
-  add<EarthGnc>(randoms, config);
-  add<SatelliteTruthGnc>(randoms, config, "leader");
-  add<SatelliteTruthGnc>(randoms, config, "follower");
-  add<HillFrameEci>(randoms, config, "leader", "follower");
-  add<HillFrameEci>(randoms, config, "follower", "leader");
-  add<NormVector3>(randoms, config, "truth.leader.hill.dr");
-  add<NormVector3>(randoms, config, "truth.leader.hill.dv");
-  // Sensors model
-  add<SatelliteSensors>(randoms, config, "leader");
-  add<SatelliteSensors>(randoms, config, "follower");
-  add<CdgpsNoAttitude>(randoms, config, "leader", "follower");
-  add<CdgpsNoAttitude>(randoms, config, "follower", "leader");
+  add<DualOrbitGnc>(randoms, config);
+  add<OrbitController>(randoms, config, "follower", "leader");
 }
 } // namespace psim
