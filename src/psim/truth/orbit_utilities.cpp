@@ -39,18 +39,18 @@
 namespace psim {
 namespace orbit {
 
-void gravity(Vector3 const &r_ecef, Vector3 &g_ecef) {
+Vector3 gravity(Vector3 const &r_ecef) {
   Real _;
-  gravity(r_ecef, g_ecef, _);
+  return gravity(r_ecef, _);
 }
 
-void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U) {
+Vector3 gravity(Vector3 const &r_ecef, Real &U) {
   static constexpr auto order = 11;
   static constexpr auto grav = static_cast<geograv::Coeff<order>>(GGM05S);
 
   geograv::Vector g, r = {r_ecef(0), r_ecef(1), r_ecef(2)};
   U = geograv::GeoGrav(r, g, grav, true);
-  g_ecef = {g.x, g.y, g.z};
+  return {g.x, g.y, g.z};
 }
 
 Real density(Vector3 const &r_ecef) {
@@ -80,7 +80,8 @@ Real density(Vector3 const &r_ecef) {
 
   // Determine the appropriate index
   lin::size_t i = h0.size() - 1;
-  while (h < h0(i) && --i);
+  while (h < h0(i) && --i)
+    ;
 
   // Atmospheric density calculation
   return p0(i) * lin::exp((h0(i) - h) / H(i));
@@ -110,31 +111,31 @@ Vector3 drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m) {
   return v_ecef * (-half * Cd * S * rho * lin::norm(v_ecef) / m);
 }
 
-Vector3 acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
-    Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m) {
+Vector3 rotational(Vector3 const &earth_w, Vector3 const &earth_w_dot,
+    Vector3 const &r_ecef, Vector3 const &v_ecef) {
   static constexpr Real two = 2.0;
-
-  /* Numerically, starting with the smaller forces first like fake forces and
-   * drag will reduce rounding errors. Therefore, we included the force of
-   * gravity last here.
-   */
 
   /* Acceleration due to the rotating frame.
    *
    * https://en.wikipedia.org/wiki/Rotating_reference_frame#Relation_between_accelerations_in_the_two_frames
    */
-  Vector3 const a_ecef = -(two * lin::cross(earth_w, v_ecef) +
-                           lin::cross(earth_w, lin::cross(earth_w, r_ecef)) +
-                           lin::cross(earth_w_dot, r_ecef));
+  return -(two * lin::cross(earth_w, v_ecef) +
+           lin::cross(earth_w, lin::cross(earth_w, r_ecef)) +
+           lin::cross(earth_w_dot, r_ecef));
+}
 
-// TODO : Fix this per #326
-//  Vector3 const a_drag_ecef = drag(r_ecef, v_ecef, S, m);
+Vector3 acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
+    Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m) {
+  /* Numerically, starting with the smaller forces first like fake forces and
+   * drag will reduce rounding errors. Therefore, we included the force of
+   * gravity last here.
+   */
+  auto const a_drag_ecef = drag(r_ecef, v_ecef, S, m);
+  auto const a_grav_ecef = gravity(r_ecef);
+  auto const a_rot_ecef = rotational(earth_w, earth_w_dot, r_ecef, v_ecef);
 
-  Vector3 g_ecef;
-  gravity(r_ecef, g_ecef);
-
-//  return (a_ecef + a_drag_ecef) + g_ecef;
-  return a_ecef + g_ecef;
+  return (a_rot_ecef + a_drag_ecef) + a_grav_ecef;
+//  return a_rot_ecef + a_grav_ecef;
 }
 } // namespace orbit
 } // namespace psim

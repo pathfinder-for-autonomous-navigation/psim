@@ -1,0 +1,20 @@
+
+# Plot altitude
+- type: Plot2D
+  x: truth.t.s
+  y: truth.leader.orbit.altitude
+
+# Plot magnitudes of orbital forces
+- type: Plot2DLog
+  x: truth.t.s
+  y: [truth.leader.orbit.a_gravity.norm, truth.leader.orbit.a_drag.norm, truth.leader.orbit.a_rot.norm]
+
+# Plot atmospheric density
+- type: Plot2D
+  x: truth.t.s
+  y: truth.leader.orbit.density
+
+# Plot orbital energies
+- type: Plot2D
+  x: truth.t.s
+  y: [truth.leader.orbit.T, truth.leader.orbit.U, truth.leader.orbit.E]

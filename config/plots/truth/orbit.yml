@@ -25,8 +25,3 @@
 - type: Plot2D
   x: truth.t.s
   y: [truth.leader.orbit.v.ecef.x, truth.leader.orbit.v.ecef.y, truth.leader.orbit.v.ecef.z]
-
-# Plot orbital energies
-- type: Plot2D
-  x: truth.t.s
-  y: [truth.leader.orbit.T, truth.leader.orbit.U, truth.leader.orbit.E]

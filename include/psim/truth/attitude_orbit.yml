@@ -31,7 +31,7 @@ params:
           radians per second.
 
 adds:
-    - name: "truth.{satellite}.orbit.S"
+    - name: "truth.{satellite}.S"
       type: Real
       comment: >
           Projected area of the satellite along the direction of travel in
@@ -53,6 +53,27 @@ adds:
           kilogram meters per second squared. The coordinate system is
           implementation dependant. Note that this field is zeroed out on each
           simulation step to avoid applying a continuous input.
+    - name: "truth.{satellite}.orbit.altitude"
+      type: Lazy Real
+      comment: >
+          Altitude of the satellite in meters.
+    - name: "truth.{satellite}.orbit.a_gravity"
+      type: Lazy Vector3
+      comment: >
+          Acceleration due to gravity acting on the satellite in ECEF.
+    - name: "truth.{satellite}.orbit.a_drag"
+      type: Lazy Vector3
+      comment: >
+          Acceleration due to drag acting on the satellite in ECEF.
+    - name: "truth.{satellite}.orbit.a_rot"
+      type: Lazy Vector3
+      comment: >
+          Acceleration due to the rotating frame acting on the satellite in
+          ECEF.
+    - name: "truth.{satellite}.orbit.density"
+      type: Lazy Real
+      comment: >
+          Density of Earth's atmosphere at satellite's location.
     - name: "truth.{satellite}.orbit.T"
       type: Lazy Real
       comment: >

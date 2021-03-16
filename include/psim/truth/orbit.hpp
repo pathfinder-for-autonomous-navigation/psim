@@ -53,6 +53,11 @@ class OrbitEcef : public Orbit<OrbitEcef> {
 
   virtual void step() override;
 
+  Real truth_satellite_orbit_altitude() const;
+  Vector3 truth_satellite_orbit_a_gravity() const;
+  Vector3 truth_satellite_orbit_a_drag() const;
+  Vector3 truth_satellite_orbit_a_rot() const;
+  Real truth_satellite_orbit_density() const;
   Real truth_satellite_orbit_T() const;
   Real truth_satellite_orbit_U() const;
   Real truth_satellite_orbit_E() const;

@@ -34,20 +34,20 @@
 namespace psim {
 namespace orbit {
 
-/** @brief Calculate gravitational acceleration.
+/** @brief Calculates total orbital acceleration in ECEF.
  *
- *  @param[in]  r_ecef Position in ECEF (m).
- *  @param[out] g_ecef Gravitational accelerating in ECEF (m/s^2).
- */
-void gravity(Vector3 const &r_ecef, Vector3 &g_ecef);
-
-/** @brief Calculate gravitational acceleration and potential.
+ *  @param[in] earth_w     Earth's angular rate in ECEF (rad/s).
+ *  @param[in] earth_w_dot Time derivative of Earth's angular rate in ECEF
+ *                         (rad/s^2).
+ *  @param[in] r_ecef      Position in ECEF (m).
+ *  @param[in] v_ecef      Velocity in ECEF (m/s).
+ *  @param[in] S           Area projected along the direction of travel (m^2).
+ *  @param[in] m           Satellite mass (kg).
  *
- *  @param[in]  r_ecef Position in ECEF (m).
- *  @param[out] g_ecef Gravitational accelerating in ECEF (m/s^2).
- *  @param[out] U      Gravitational potential (J/kg).
+ *  @return Acceleration in ECEF (m/s^2).
  */
-void gravity(Vector3 const &r_ecef, Vector3 &g_ecef, Real &U);
+Vector3 acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
+    Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m);
 
 /** @brief Calculate atmospheric density.
  *
@@ -68,20 +68,35 @@ Real density(Vector3 const &r_ecef);
  */
 Vector3 drag(Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m);
 
-/** @brief Calculates total orbital acceleration in ECEF.
+/** @brief Calculate gravitational acceleration.
+ *
+ *  @param[in]  r_ecef Position in ECEF (m).
+ *
+ *  @return g_ecef Gravitational accelerating in ECEF (m/s^2).
+ */
+Vector3 gravity(Vector3 const &r_ecef);
+
+/** @brief Calculate gravitational acceleration and potential.
+ *
+ *  @param[in]  r_ecef Position in ECEF (m).
+ *  @param[out] U      Gravitational potential (J/kg).
+ *
+ *  @return g_ecef Gravitational accelerating in ECEF (m/s^2).
+ */
+Vector3 gravity(Vector3 const &r_ecef, Real &U);
+
+/** @brief Calculates acceleration due to the rotating frame in ECEF.
  *
  *  @param[in] earth_w     Earth's angular rate in ECEF (rad/s).
  *  @param[in] earth_w_dot Time derivative of Earth's angular rate in ECEF
- *                         (rad/s^2)
+ *                         (rad/s^2).
  *  @param[in] r_ecef      Position in ECEF (m).
  *  @param[in] v_ecef      Velocity in ECEF (m/s).
- *  @param[in] S           Area projected along the direction of travel (m^2).
- *  @param[in] m           Satellite mass (kg).
  *
- *  @return Acceleration in ECEF (m/s^2).
+ *  @return Rotational acceleration in ECEF (m/s^2).
  */
-Vector3 acceleration(Vector3 const &earth_w, Vector3 const &earth_w_dot,
-    Vector3 const &r_ecef, Vector3 const &v_ecef, Real S, Real m);
+Vector3 rotational(Vector3 const &earth_w, Vector3 const &earth_w_dot,
+    Vector3 const &r_ecef, Vector3 const &v_ecef);
 
 } // namespace orbit
 } // namespace psim
