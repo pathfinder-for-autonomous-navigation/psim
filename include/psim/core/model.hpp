@@ -77,10 +77,11 @@ class Model {
       throw std::runtime_error(
           "Entry not found while getting a field: " + name);
 
-    auto const *field_ptr =
-        dynamic_cast<StateField<T> const *>(base_field_ptr);
+    auto const *field_ptr = dynamic_cast<StateField<T> const *>(base_field_ptr);
     if (!field_ptr)
-      throw std::runtime_error("Invalid cast while getting a field: " + name);
+      throw std::runtime_error(
+          "Invalid cast while getting a field - " +
+          base_field_ptr->name() + ":" + base_field_ptr->type());
 
     return field_ptr;
   }
@@ -105,11 +106,11 @@ class Model {
       throw std::runtime_error(
           "Entry not found while getting a writable field:" + name);
 
-    auto *field_ptr =
-        dynamic_cast<StateFieldWritable<T> *>(base_field_ptr);
+    auto *field_ptr = dynamic_cast<StateFieldWritable<T> *>(base_field_ptr);
     if (!field_ptr)
       throw std::runtime_error(
-          "Invalid cast while getting a writable field: " + name);
+          "Invalid cast while getting a writable field - " +
+          base_field_ptr->name() + ":" + base_field_ptr->type());
 
     return field_ptr;
   }
