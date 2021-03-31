@@ -36,7 +36,7 @@ def get_printer(verbose=False):
         print(f'{field.name} [{field.specifier}]')
 
     def verbose_print(field: Field):
-        print(field.name, ':')
+        print(field.name)
         print('\ttype:', field.specifier)
         print('\tsource:', field.source)
         print('\tcomment:')
