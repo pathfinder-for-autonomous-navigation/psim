@@ -82,6 +82,17 @@ TEST(Configuration, TestSingleFileMake) {
     ASSERT_EQ(test_integer, -2);
   }
 
+  // Check Boolean fields(s)
+  {
+    psim::Boolean test_boolean;
+
+    test_boolean = config["test.true"].template get<psim::Boolean>();
+    ASSERT_TRUE(test_boolean);
+
+    test_boolean = config["test.false"].template get<psim::Boolean>();
+    ASSERT_FALSE(test_boolean);
+  }
+
   // Check Real field(s)
   {
     psim::Real test_real;

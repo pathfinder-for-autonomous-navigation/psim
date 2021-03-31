@@ -34,37 +34,63 @@
 
 namespace psim {
 
-/** @brief Types that are held by parameters and fields and transactable with
- *         Python.
+/** @brief Boolean parameter and field type used throughout psim.
  *
- *  @{
+ *  This type is transactable to and from Python.
  */
-typedef long Integer;
-typedef double Real;
-typedef lin::Vector2d Vector2;
-typedef lin::Vector3d Vector3;
-typedef lin::Vector4d Vector4;
-/** @}
- */
+using Boolean = bool;
 
-/** @brief Standardized matrix and vector types for use throughout psim.
+/** @brief Signed integer parameter and field type used throughout psim.
  *
- *  @{
+ *  This type is transactable to and from Python.
+ */
+using Integer = long;
+
+/** @brief Floating point parameter and field type used throughout psim.
+ *
+ *  This type is transactable to and from Python.
+ */
+using Real = double;
+
+/** @brief Standardized vector type used throughout psim.
  */
 template <lin::size_t N, lin::size_t MN = N>
 using Vector = lin::Vector<Real, N, MN>;
 
+/** @brief Two dimensional floating point vector parameter and field type used
+ *         throughout psim.
+ *
+ *  This type is transactable to and from Python.
+ */
+using Vector2 = Vector<2>;
+
+/** @brief Three dimensional floating point vector parameter and field type used
+ *         throughout psim.
+ *
+ *  This type is transactable to and from Python.
+ */
+using Vector3 = Vector<3>;
+
+/** @brief Four dimensional floating point vector parameter and field type used
+ *         throughout psim.
+ *
+ *  This type is transactable to and from Python.
+ */
+using Vector4 = Vector<4>;
+
+/** @brief Standardized row vector type used throughout psim.
+ */
 template <lin::size_t N, lin::size_t MN = N>
 using RowVector = lin::RowVector<Real, N, MN>;
 
+/** @brief Standardized matrix type used throughout psim.
+ */
 template <lin::size_t R, lin::size_t C, lin::size_t MR = R, lin::size_t MC = C>
 using Matrix = lin::Matrix<Real, R, C, MR, MC>;
-/** @}
- */
 
-/** @brief Used as a random number generator for all simulations.
+/** @brief Randoms number generator used throughout psim.
  */
-typedef lin::internal::RandomsGenerator RandomsGenerator;
+using RandomsGenerator = lin::internal::RandomsGenerator;
 
 } // namespace psim
 
