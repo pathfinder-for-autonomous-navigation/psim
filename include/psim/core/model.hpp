@@ -68,12 +68,17 @@ class Model {
    *  @return Pointer to the state field.
    *
    *  Note, if the field wasn't found or has an invalid underlying type, a
-   * runtime error will be thrown.
+   *  runtime error will be thrown.
    */
   template <typename T>
   StateField<T> const *get_field(State const &state, std::string const &name) {
+    auto const *base_field_ptr = state.get(name);
+    if (!base_field_ptr)
+      throw std::runtime_error(
+          "Entry not found while getting a field: " + name);
+
     auto const *field_ptr =
-        dynamic_cast<StateField<T> const *>(state.get(name));
+        dynamic_cast<StateField<T> const *>(base_field_ptr);
     if (!field_ptr)
       throw std::runtime_error("Invalid cast while getting a field: " + name);
 
@@ -95,8 +100,13 @@ class Model {
   template <typename T>
   StateFieldWritable<T> *get_writable_field(
       State &state, std::string const &name) {
+    auto *base_field_ptr = state.get_writable(name);
+    if (!base_field_ptr)
+      throw std::runtime_error(
+          "Entry not found while getting a writable field:" + name);
+
     auto *field_ptr =
-        dynamic_cast<StateFieldWritable<T> *>(state.get_writable(name));
+        dynamic_cast<StateFieldWritable<T> *>(base_field_ptr);
     if (!field_ptr)
       throw std::runtime_error(
           "Invalid cast while getting a writable field: " + name);
