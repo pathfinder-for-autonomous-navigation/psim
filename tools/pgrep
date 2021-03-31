@@ -24,7 +24,7 @@ class Field:
     source: str
 
 
-def get_printer(verbose=False):
+def get_printer(verbose: bool=False):
     """Returns a printer function for logging field information. The function
     returned varies on the verbosity requested.
     """
