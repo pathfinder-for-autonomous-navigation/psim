@@ -33,24 +33,30 @@
 
 namespace psim {
 
-Integer CdgpsNoAttitude::sensors_satellite_cdgps_active() const {
+Boolean CdgpsNoAttitude::sensors_satellite_cdgps_valid() const {
+  /* The CDGPS doesn't produce a valid measurement if:
+   *
+   *  1. The model has been explicitly disabled via the disabled field.
+   *  2. The range model is enabled and the spacecraft are too far apart.
+   */
+  auto const &disabled = sensors_satellite_cdgps_disabled.get();
   auto const &model_range = sensors_satellite_cdgps_model_range.get();
 
-  /* If model range if requested. Otherwise, the sensor will be active all the
-   * time.
-   */
-  if (!model_range) {
-    return true;
+  if (disabled)
+    return false;
+
+  if (model_range) {
+    auto const &range = sensors_satellite_cdgps_range.get();
+    auto const &truth_r_ecef = truth_satellite_orbit_r_ecef->get();
+    auto const &truth_other_r_ecef = truth_other_orbit_r_ecef->get();
+
+    /* The sensor will be active if within range for this timestep. We're using
+     * lin::fro instaed of lin::norm here to avoid a square root.
+     */
+    return lin::fro(truth_other_r_ecef - truth_r_ecef) < (range * range);
   }
 
-  auto const &range = sensors_satellite_cdgps_range.get();
-  auto const &truth_r_ecef = truth_satellite_orbit_r_ecef->get();
-  auto const &truth_other_r_ecef = truth_other_orbit_r_ecef->get();
-
-  /* The sensor will be active if within range for this timestep. We're using
-   * lin::fro instaed of lin::norm here to avoid a square root.
-   */
-  return lin::fro(truth_other_r_ecef - truth_r_ecef) < (range * range);
+  return true;
 }
 
 Vector3 CdgpsNoAttitude::sensors_satellite_cdgps_dr() const {
@@ -65,16 +71,12 @@ Vector3 CdgpsNoAttitude::sensors_satellite_cdgps_dr() const {
 }
 
 Vector3 CdgpsNoAttitude::sensors_satellite_cdgps_dr_error() const {
-  auto const &active = Super::sensors_satellite_cdgps_active.get();
+  auto const &valid = Super::sensors_satellite_cdgps_valid.get();
+  auto const &sigma = sensors_satellite_cdgps_dr_sigma.get();
 
-  /* Only calculate an output if the sensor is active.
-   */
-  if (active) {
-    auto const &sigma = sensors_satellite_cdgps_dr_sigma.get();
-
+  if (valid)
     return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
-  }
-
-  return lin::nans<Vector3>();
+  else
+    return lin::nans<Vector3>();
 }
-}  // namespace psim
+} // namespace psim

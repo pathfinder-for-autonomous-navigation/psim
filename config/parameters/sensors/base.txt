@@ -16,36 +16,46 @@
 
 # Leader spacecraft base sensor configuration
 
-sensors.leader.gps.r.sigma  5.0 5.0 5.0
-sensors.leader.gps.v.sigma  5.0 5.0 5.0
+sensors.leader.gps.disabled  false
+sensors.leader.gps.r.sigma   5.0 5.0 5.0
+sensors.leader.gps.v.sigma   5.0 5.0 5.0
 
-sensors.leader.cdgps.model_range  1
+sensors.leader.cdgps.disabled     false
+sensors.leader.cdgps.model_range  true
 sensors.leader.cdgps.range        2000.0
 sensors.leader.cdgps.dr.sigma     0.1    0.1 0.1
 
+sensors.leader.gyroscope.w.disabled    false
 sensors.leader.gyroscope.w.bias        0.02    0.01    -0.03
 sensors.leader.gyroscope.w.bias.sigma  1.00e-6 1.00e-6  1.00e-6
 sensors.leader.gyroscope.w.sigma       2.75e-4 2.75e-4  2.75e-4
 
-sensors.leader.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7
+sensors.leader.magnetometer.b.disabled  false
+sensors.leader.magnetometer.b.sigma     5.00e-7 5.00e-7 5.00e-7
 
-sensors.leader.sun_sensors.model_eclipse  0
+sensors.leader.sun_sensors.disabled       false
+sensors.leader.sun_sensors.model_eclipse  false
 sensors.leader.sun_sensors.s.sigma        0.0349066 0.0349066
 
 # Follower spacecraft base sensor configuration
 
-sensors.follower.gps.r.sigma  5.0 5.0 5.0
-sensors.follower.gps.v.sigma  5.0 5.0 5.0
+sensors.follower.gps.disabled  false
+sensors.follower.gps.r.sigma   5.0 5.0 5.0
+sensors.follower.gps.v.sigma   5.0 5.0 5.0
 
-sensors.follower.cdgps.model_range  1
+sensors.follower.cdgps.disabled     false
+sensors.follower.cdgps.model_range  true
 sensors.follower.cdgps.range        2000.0
 sensors.follower.cdgps.dr.sigma     0.1    0.1 0.1
 
+sensors.follower.gyroscope.w.disabled     false
 sensors.follower.gyroscope.w.bias        -0.01    0.01    0.04
 sensors.follower.gyroscope.w.bias.sigma   1.00e-6 1.00e-6 1.00e-6
 sensors.follower.gyroscope.w.sigma        2.75e-4 2.75e-4 2.75e-4
 
-sensors.follower.magnetometer.b.sigma  5.00e-7 5.00e-7 5.00e-7
+sensors.follower.magnetometer.b.disabled  false
+sensors.follower.magnetometer.b.sigma     5.00e-7 5.00e-7 5.00e-7
 
-sensors.follower.sun_sensors.model_eclipse  0
+sensors.follower.sun_sensors.disabled       false
+sensors.follower.sun_sensors.model_eclipse  false
 sensors.follower.sun_sensors.s.sigma        0.0349066 0.0349066

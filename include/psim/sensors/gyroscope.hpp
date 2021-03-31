@@ -45,9 +45,10 @@ class Gyroscope : public GyroscopeInterface<Gyroscope> {
 
   virtual void step() override;
 
+  Boolean sensors_satellite_gyroscope_valid() const;
   Vector3 sensors_satellite_gyroscope_w() const;
   Vector3 sensors_satellite_gyroscope_w_error() const;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

@@ -19,22 +19,36 @@ params:
         Standard deviation of the velocity reading from the GPS.
 
 adds:
+    - name: "sensors.{satellite}.gps.valid"
+      type: Lazy Boolean
+      comment: >
+          Flag specifying whether or not the current GPS measurement is valid or
+          not.
     - name: "sensors.{satellite}.gps.r"
       type: Lazy Vector3
       comment: >
-          Position reported by the GPS in ECEF.
+          Position reported by the GPS in ECEF. This is set to NaNs if the
+          measurement is invalid.
     - name: "sensors.{satellite}.gps.r.error"
       type: Lazy Vector3
       comment: >
-          Error in the position reported by the GPS in ECEF.
+          Error in the position reported by the GPS in ECEF. This is set to NaNs
+          if the measurement is invalid.
     - name: "sensors.{satellite}.gps.v"
       type: Lazy Vector3
       comment: >
-          Velocity reported by the GPS in ECEF.
+          Velocity reported by the GPS in ECEF. This is set to NaNs if the
+          measurement is invalid.
     - name: "sensors.{satellite}.gps.v.error"
       type: Lazy Vector3
       comment: >
-          Error in the velocity reported by the GPS in ECEF.
+          Error in the velocity reported by the GPS in ECEF. This is set to NaNs
+          if the measurement is invalid.
+    - name: "sensors.{satellite}.gps.disabled"
+      type: Initialized Writable Boolean
+      comment: >
+          When set to true, the GPS never produces a valid reading. This, for
+          example, can be used to simulate a sensor failure.
 
 gets:
     - name: "truth.{satellite}.orbit.r.ecef"
