@@ -47,11 +47,11 @@ def get_printer(verbose=False):
 
 
 def main() -> int:
-
     # Specify and parse the command line arguments
     parser = argparse.ArgumentParser(
         description='Simple command line tool to search for state fields ' +
-        'declared within the psim repository.'
+        'declared within the psim repository. Note that the regular ' +
+        'expressions use Python\'s syntax.'
     )
     parser.add_argument(
         '-v', '--verbose', action='store_true', help='increases the amount ' +
