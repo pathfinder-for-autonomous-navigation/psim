@@ -88,7 +88,7 @@ class Variable(Commented):
         # Underlying type
         underlying_type_matches = 0
         self.__underlying_type = None
-        for underlying_type in ['Integer', 'Real', 'Vector2', 'Vector3', 'Vector4']:
+        for underlying_type in ['Boolean', 'Integer', 'Real', 'Vector2', 'Vector3', 'Vector4']:
             if underlying_type in self._type:
                 underlying_type_matches = underlying_type_matches + 1
                 self.__underlying_type = underlying_type

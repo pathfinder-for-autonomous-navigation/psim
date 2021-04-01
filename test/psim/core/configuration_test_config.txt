@@ -11,6 +11,10 @@
 # instead of an Integer.
 #
 
+test.true true
+
+test.false false
+
 test.integer  1
 test.i       -2
 

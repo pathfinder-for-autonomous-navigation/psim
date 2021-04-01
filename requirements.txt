@@ -2,9 +2,3 @@ platformio
 pylint
 pytest
 ./lib/lin
-# Required for old orbit estimator testing
-cppimport
-h5py
-dulwich
-ipykernel
-notebook
