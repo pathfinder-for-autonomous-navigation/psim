@@ -28,19 +28,31 @@
 
 #include <psim/sensors/magnetometer.hpp>
 
+#include <lin/core.hpp>
+#include <lin/generators.hpp>
+
 namespace psim {
 
-Vector3 Magnetometer::sensors_satellite_magnetometer_b() const {
-  auto const &truth_b = truth_satellite_environment_b_body->get();
-  auto const &sigma = sensors_satellite_magnetometer_b_sigma.get();
+Boolean Magnetometer::sensors_satellite_magnetometer_valid() const {
+  auto const &disabled = sensors_satellite_magnetometer_disabled.get();
 
-  return truth_b + lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  return !disabled;
+}
+
+Vector3 Magnetometer::sensors_satellite_magnetometer_b() const {
+  auto const &error = Super::sensors_satellite_magnetometer_b_error.get();
+  auto const &truth_b = truth_satellite_environment_b_body->get();
+
+  return truth_b + error;
 }
 
 Vector3 Magnetometer::sensors_satellite_magnetometer_b_error() const {
-  auto const &truth_b = truth_satellite_environment_b_body->get();
-  auto const &sensors_b = this->Super::sensors_satellite_magnetometer_b.get();
+  auto const &valid = Super::sensors_satellite_magnetometer_valid.get();
+  auto const &sigma = sensors_satellite_magnetometer_b_sigma.get();
 
-  return sensors_b - truth_b;
+  if (valid)
+    return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  else
+    return lin::nans<Vector3>();
 }
 }  // namespace psim

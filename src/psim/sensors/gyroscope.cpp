@@ -28,30 +28,44 @@
 
 #include <psim/sensors/gyroscope.hpp>
 
+#include <lin/core.hpp>
+#include <lin/generators.hpp>
+
 namespace psim {
 
 void Gyroscope::step() {
   this->Super::step();
 
-  auto       &bias = sensors_satellite_gyroscope_w_bias.get();
   auto const &bias_sigma = sensors_satellite_gyroscope_w_bias_sigma.get();
   auto const &dt = truth_dt_s->get();
 
-  bias = bias + dt * lin::multiply(bias_sigma, lin::gaussians<Vector3>(_randoms));
+  auto &bias = sensors_satellite_gyroscope_w_bias.get();
+
+  bias =
+      bias + dt * lin::multiply(bias_sigma, lin::gaussians<Vector3>(_randoms));
+}
+
+Boolean Gyroscope::sensors_satellite_gyroscope_valid() const {
+  auto const &disabled = sensors_satellite_gyroscope_disabled.get();
+
+  return !disabled;
 }
 
 Vector3 Gyroscope::sensors_satellite_gyroscope_w() const {
+  auto const &error = Super::sensors_satellite_gyroscope_w_error.get();
   auto const &truth_w = truth_satellite_attitude_w->get();
-  auto const &bias = sensors_satellite_gyroscope_w_bias.get();
-  auto const &sigma = sensors_satellite_gyroscope_w_sigma.get();
 
-  return truth_w + bias + lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  return truth_w + error;
 }
 
 Vector3 Gyroscope::sensors_satellite_gyroscope_w_error() const {
-  auto const &truth_w = truth_satellite_attitude_w->get();
-  auto const &sensors_w = this->Super::sensors_satellite_gyroscope_w.get();
+  auto const &valid = Super::sensors_satellite_gyroscope_valid.get();
+  auto const &bias = sensors_satellite_gyroscope_w_bias.get();
+  auto const &sigma = sensors_satellite_gyroscope_w_sigma.get();
 
-  return sensors_w - truth_w;
+  if (valid)
+    return bias + lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  else
+    return lin::nans<Vector3>();
 }
-}  // namespace psim
+} // namespace psim
