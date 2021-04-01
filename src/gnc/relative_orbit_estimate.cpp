@@ -38,8 +38,6 @@
 #include <lin/references.hpp>
 #include <lin/substitutions.hpp>
 
-#include <tuple>
-
 namespace gnc {
 
 RelativeOrbitEstimate::Matrix<6, 6>
