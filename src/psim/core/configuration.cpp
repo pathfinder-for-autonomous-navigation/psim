@@ -102,7 +102,11 @@ void Configuration::_parse(std::string const &file) {
             "Only one token detected in the following line: '" + line + "'");
 
       case 2:
-        if (tokens[1].find('.') == std::string::npos)
+        if (tokens[1] == "true")
+          _add(tokens[0], true, file, l);
+        else if (tokens[1] == "false")
+          _add(tokens[0], false, file, l);
+        else if (tokens[1].find('.') == std::string::npos)
           _add(tokens[0], std::stol(tokens[1]), file, l);
         else
           _add(tokens[0], std::stod(tokens[1]), file, l);
