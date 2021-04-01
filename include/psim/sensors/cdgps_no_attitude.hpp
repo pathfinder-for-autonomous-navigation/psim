@@ -43,7 +43,7 @@ class CdgpsNoAttitude : public CdgpsNoAttitudeInterface<CdgpsNoAttitude> {
   CdgpsNoAttitude() = delete;
   virtual ~CdgpsNoAttitude() = default;
 
-  Integer sensors_satellite_cdgps_active() const;
+  Boolean sensors_satellite_cdgps_valid() const;
   Vector3 sensors_satellite_cdgps_dr() const;
   Vector3 sensors_satellite_cdgps_dr_error() const;
 };

@@ -43,11 +43,12 @@ class GpsNoAttitude : public GpsNoAttitudeInterface<GpsNoAttitude> {
   GpsNoAttitude() = delete;
   virtual ~GpsNoAttitude() = default;
 
+  Boolean sensors_satellite_gps_valid() const;
   Vector3 sensors_satellite_gps_r() const;
   Vector3 sensors_satellite_gps_r_error() const;
   Vector3 sensors_satellite_gps_v() const;
   Vector3 sensors_satellite_gps_v_error() const;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif
