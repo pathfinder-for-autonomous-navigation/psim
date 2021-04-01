@@ -44,6 +44,8 @@ class RelativeOrbitEstimator : public RelativeOrbitEstimatorInterface<RelativeOr
 
   Vector3 previous_dr = lin::nans<Vector3>();
   gnc::RelativeOrbitEstimate estimate;
+  Integer cycles_without_rtk=0;
+  Integer cycles_without_rtk_limit=5000; 
 
   void _set_relative_orbit_outputs();
 

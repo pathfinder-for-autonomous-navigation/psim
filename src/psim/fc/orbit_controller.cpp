@@ -45,13 +45,25 @@ void OrbitController::step() {
 
   auto const &t = truth_t_s->get();
   auto const &t_ns = truth_t_ns->get();
-  auto const &r_ecef = truth_satellite_orbit_r_ecef->get();
-  auto const &v_ecef = truth_satellite_orbit_v_ecef->get();
-  auto const &other_r_ecef = truth_other_orbit_r_ecef->get();
-  auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
+
   auto &J_ecef = truth_satellite_orbit_J_ecef->get();
   auto const &m = truth_satellite_m.get();
   auto &cumulative_dv = fc_satellite_cumulative_dv.get();
+  auto const &relative_orbit_is_valid = fc_satellite_relative_orbit_is_valid->get();
+  auto const &r_ecef = fc_satellite_orbit_r->get();
+  auto const &v_ecef = fc_satellite_orbit_v->get();
+  auto const &other_r_ecef = truth_other_orbit_r_ecef->get();
+  auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
+  Vector3 dr_ecef;
+  Vector3 dv_ecef;
+
+  if (relative_orbit_is_valid) {
+    dr_ecef = fc_satellite_relative_orbit_dr->get();
+    dv_ecef = fc_satellite_relative_orbit_dv->get();
+  } else {
+    dr_ecef = (other_r_ecef - r_ecef);
+    dv_ecef = (other_v_ecef - v_ecef);
+  }
 
   if (t_ns > last_firing + (1800 * 1e9)) {
     last_firing = t_ns;
@@ -59,8 +71,8 @@ void OrbitController::step() {
     data.t = t;
     data.r_ecef = r_ecef;
     data.v_ecef = v_ecef;
-    data.dr_ecef = (other_r_ecef - r_ecef);
-    data.dv_ecef = (other_v_ecef - v_ecef);
+    data.dr_ecef = dr_ecef;
+    data.dv_ecef = dv_ecef;
 
     gnc::OrbitActuation actuation;
     gnc::control_orbit(_orbit_controller, data, actuation);
