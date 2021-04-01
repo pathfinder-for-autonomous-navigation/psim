@@ -10,7 +10,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-_BANNER = """
+_BANNER = r'''
 ,-.----.                                 ____   
 \    /  \    .--.--.      ,---,        ,'  , `.
 |   :    \  /  /    '. ,`--.' |     ,-+-,.' _ |
@@ -25,7 +25,7 @@ _BANNER = """
 |   | :      `--'---'  ;   |.' ;   | |`-'
 `---'.|                '---'   |   ;/ 
   `---`                        '---'
-"""
+'''
 
 _DESCRIPTION = """
 Command line interface for running standalone PSim simulations.
