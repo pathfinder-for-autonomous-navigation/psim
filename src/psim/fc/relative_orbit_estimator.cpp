@@ -66,7 +66,7 @@ void RelativeOrbitEstimator::step() {
 
   // Sensor noise
   static constexpr auto sqrtR =
-      lin::diag(lin::consts<Vector<3>>(1.0e-1)).eval();
+      lin::diag(lin::consts<Vector<3>>(1.0e-2)).eval();
 
   auto const &dt = truth_dt_ns->get();
   auto const &w_earth = truth_earth_w->get();

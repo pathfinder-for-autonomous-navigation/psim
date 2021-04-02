@@ -11,6 +11,8 @@ args:
 params:
     - name: "truth.{satellite}.m"
       type: Real
+    - name: "fc.{satellite}.fire_time"
+      type: Integer
 adds:
     - name: "fc.{satellite}.cumulative_dv"
       type: Real

@@ -1,0 +1,5 @@
+# Time between firings in seconds
+
+fc.leader.fire_time      1800
+
+fc.follower.fire_time    1800

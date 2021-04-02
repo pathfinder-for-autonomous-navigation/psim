@@ -54,6 +54,8 @@ void OrbitController::step() {
   auto const &v_ecef = fc_satellite_orbit_v->get();
   auto const &other_r_ecef = truth_other_orbit_r_ecef->get();
   auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
+  auto const &fire_time = fc_satellite_fire_time.get();
+
   Vector3 dr_ecef;
   Vector3 dv_ecef;
 
@@ -65,7 +67,7 @@ void OrbitController::step() {
     dv_ecef = (other_v_ecef - v_ecef);
   }
 
-  if (t_ns > last_firing + (1800 * 1e9)) {
+  if (t_ns > last_firing + (fire_time * 1e9)) {
     last_firing = t_ns;
     gnc::OrbitControllerData data;
     data.t = t;
