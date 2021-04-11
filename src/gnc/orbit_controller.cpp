@@ -51,10 +51,10 @@ static constexpr double J_min = 0;              // Minimum impulse              
 static constexpr double J_max = 2.5e-2;         // Maximum impulse               (N s)
 static constexpr double max_dv = J_max / mass;  // Max velocity change           (m/s)
 static constexpr double min_dv = J_min / mass;  // Min velocity change           (m/s)
-static constexpr double p = 1.0e-6/6;
-static constexpr double d = 5.0e-2/6;
-static constexpr double energy_gain = 5.0e-5/6;   // Energy gain                   (J)
-static constexpr double h_gain = 2.0e-3/6;        // Angular momentum gain         (kg m^2/sec)
+static constexpr double p = 1.0e-6;
+static constexpr double d = 5.0e-2;
+static constexpr double energy_gain = 5.0e-5;   // Energy gain                   (J)
+static constexpr double h_gain = 2.0e-3;        // Angular momentum gain         (kg m^2/sec)
 
 OrbitControllerState::OrbitControllerState()
   : t_last_firing(0),
