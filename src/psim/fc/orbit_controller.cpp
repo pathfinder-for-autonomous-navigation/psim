@@ -49,7 +49,8 @@ void OrbitController::step() {
   auto &J_ecef = truth_satellite_orbit_J_ecef->get();
   auto const &m = truth_satellite_m.get();
   auto &cumulative_dv = fc_satellite_cumulative_dv.get();
-  auto const &relative_orbit_is_valid = fc_satellite_relative_orbit_is_valid->get();
+  auto const &relative_orbit_is_valid =
+      fc_satellite_relative_orbit_is_valid->get();
   auto const &r_ecef = fc_satellite_orbit_r->get();
   auto const &v_ecef = fc_satellite_orbit_v->get();
   auto const &other_r_ecef = truth_other_orbit_r_ecef->get();
@@ -58,9 +59,6 @@ void OrbitController::step() {
 
   Vector3 dr_ecef;
   Vector3 dv_ecef;
-  Vector3 dr_ecef_smoothed;
-  Vector3 dv_ecef_smoothed;
-
 
   if (relative_orbit_is_valid) {
     dr_ecef = fc_satellite_relative_orbit_dr->get();
@@ -70,16 +68,16 @@ void OrbitController::step() {
     dv_ecef = (other_v_ecef - v_ecef);
   }
 
-  if(!lin::all(lin::isfinite(prev_dr_ecef))){
-    dr_ecef_smoothed=dr_ecef;
+  if (!lin::all(lin::isfinite(prev_dr_ecef))) {
+    prev_dr_ecef = dr_ecef;
   } else {
-    dr_ecef_smoothed=alpha*dr_ecef+(1.0-alpha)*prev_dr_ecef;
+    prev_dr_ecef = alpha * dr_ecef + (1.0 - alpha) * prev_dr_ecef;
   }
 
-  if(!lin::all(lin::isfinite(prev_dv_ecef))){
-    dv_ecef_smoothed=dv_ecef;
+  if (!lin::all(lin::isfinite(prev_dv_ecef))) {
+    prev_dv_ecef = dv_ecef;
   } else {
-    dv_ecef_smoothed=alpha*dv_ecef+(1.0-alpha)*prev_dv_ecef;
+    prev_dv_ecef = alpha * dv_ecef + (1.0 - alpha) * prev_dv_ecef;
   }
 
   if (t_ns > last_firing + (fire_time * 1e9)) {
@@ -88,8 +86,8 @@ void OrbitController::step() {
     data.t = t;
     data.r_ecef = r_ecef;
     data.v_ecef = v_ecef;
-    data.dr_ecef = dr_ecef_smoothed;
-    data.dv_ecef = dv_ecef_smoothed;
+    data.dr_ecef = prev_dr_ecef;
+    data.dv_ecef = prev_dv_ecef;
 
     gnc::OrbitActuation actuation;
     gnc::control_orbit(_orbit_controller, data, actuation);
