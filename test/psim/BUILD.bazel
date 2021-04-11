@@ -17,3 +17,9 @@ psim_cc_test(
     deps = ["//:psim_core", "//:psim_truth"],
     tags = ["cc", "ci"],
 )
+
+psim_cc_test(
+    name = "utilities",
+    deps = ["//:psim_core", "//:psim_utilities"],
+    tags = ["cc", "ci"],
+)
