@@ -15,7 +15,7 @@ def test_orbit_controller():
     sim = Simulation(sims.OrbitControllerTest, config)
 
     #The spacecrafts are given 10 days to rendezvous
-    timeout = 10 * 24 * 3600 * 1e9
+    timeout = 30 * 24 * 3600 * 1000000000
     threshold = 0.5
     sim.step()
 
