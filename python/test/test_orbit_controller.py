@@ -10,7 +10,7 @@ def test_orbit_controller():
     """
     configs = ['sensors/base', 'truth/base', 'fc/base', 'truth/standby']
     configs = ['config/parameters/' + f + '.txt' for f in configs]
-
+    print(configs)
     config = Configuration(configs)
     sim = Simulation(sims.OrbitControllerTest, config)
 
