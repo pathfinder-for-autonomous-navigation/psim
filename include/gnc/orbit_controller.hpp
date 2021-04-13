@@ -62,6 +62,10 @@ struct OrbitControllerState {
   lin::Vector3d this_v_ecef0, that_v_ecef0, this_v_hat;
   lin::Vector3d this_h_ecef0, that_h_ecef0, this_h_hat;
   lin::Matrix3x3d DCM_hill_ecef0;
+  double p;
+  double d;
+  double energy_gain;    // Energy gain                   (J)
+  double h_gain;         // Angular momentum gain         (kg m^2/sec)
   /** @brief Defaults everything's value to NaN. */
   OrbitControllerState();
 };
@@ -87,6 +91,10 @@ struct OrbitControllerData {
   lin::Vector3d v_ecef;  //!< Velocity in ECEF (m/s).
   lin::Vector3d dr_ecef; //!< Relative position of the other satellite in ECEF (m).
   lin::Vector3d dv_ecef; //!< Relative velocity of the other satellite in ECEF (m/s).
+  double p;
+  double d;
+  double energy_gain;    // Energy gain                   (J)
+  double h_gain;         // Angular momentum gain         (kg m^2/sec)
   /** @brief Defaults everything's value to NaN. */
   OrbitControllerData();
 };

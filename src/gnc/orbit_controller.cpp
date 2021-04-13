@@ -51,11 +51,6 @@ static constexpr double J_min = 0;      // Minimum impulse               (N s)
 static constexpr double J_max = 2.5e-2; // Maximum impulse               (N s)
 static constexpr double max_dv = J_max / mass; // Max velocity change (m/s)
 static constexpr double min_dv = J_min / mass; // Min velocity change (m/s)
-static constexpr double p = 1.0e-6;
-static constexpr double d = 5.0e-2;
-static constexpr double energy_gain = 5.0e-5; // Energy gain (J)
-static constexpr double h_gain =
-    2.0e-3; // Angular momentum gain         (kg m^2/sec)
 
 OrbitControllerState::OrbitControllerState()
   : t_last_firing(0), this_r_ecef0(lin::nans<decltype(this_r_ecef0)>()),
@@ -97,12 +92,16 @@ static
     void
     mex_control_orbit(struct OrbitControllerState &state,
         struct OrbitControllerData const &data,
-        struct OrbitActuation &actuation, double mass, double K_p, double K_d,
-        double K_e, double K_h) {
+        struct OrbitActuation &actuation, double mass) {
   // Default actuation outputs
   actuation = OrbitActuation();
 
   // Pull in references to the controller's state entries
+  auto K_p = data.p;
+  auto K_d = data.d;
+  auto K_e = data.energy_gain;  // Energy gain
+  auto K_h = data.h_gain;       // Angular momentum gain
+
   auto &this_r_ecef0 = state.this_r_ecef0;
   auto &that_r_ecef0 = state.that_r_ecef0;
   auto &this_r_hat = state.this_r_hat;
@@ -207,7 +206,7 @@ static
 #ifndef MEX
 void control_orbit(struct OrbitControllerState &state,
     struct OrbitControllerData const &data, struct OrbitActuation &actuation) {
-  mex_control_orbit(state, data, actuation, mass, p, d, energy_gain, h_gain);
+  mex_control_orbit(state, data, actuation, mass);
 }
 #endif
 
