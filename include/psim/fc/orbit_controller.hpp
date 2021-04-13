@@ -45,7 +45,7 @@ class OrbitController : public OrbitControllerInterface<OrbitController> {
   Integer last_firing = 0;
   Vector3 prev_dr_ecef = lin::nans<Vector3>();
   Vector3 prev_dv_ecef = lin::nans<Vector3>();
-  Real alpha = 1;
+  Real alpha = 0.4;
 
  public:
   using Super::OrbitControllerInterface;
