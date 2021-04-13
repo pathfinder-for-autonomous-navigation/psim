@@ -28,7 +28,16 @@
 
 #include <psim/sensors/gps_no_attitude.hpp>
 
+#include <lin/core.hpp>
+#include <lin/generators.hpp>
+
 namespace psim {
+
+Boolean GpsNoAttitude::sensors_satellite_gps_valid() const {
+  auto const &disabled = sensors_satellite_gps_disabled.get();
+
+  return !disabled;
+}
 
 Vector3 GpsNoAttitude::sensors_satellite_gps_r() const {
   auto const &truth_r_ecef = truth_satellite_orbit_r_ecef->get();
@@ -38,9 +47,13 @@ Vector3 GpsNoAttitude::sensors_satellite_gps_r() const {
 }
 
 Vector3 GpsNoAttitude::sensors_satellite_gps_r_error() const {
+  auto const &valid = Super::sensors_satellite_gps_valid.get();
   auto const &sigma = sensors_satellite_gps_r_sigma.get();
 
-  return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  if (valid)
+    return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  else
+    return lin::nans<Vector3>();
 }
 
 Vector3 GpsNoAttitude::sensors_satellite_gps_v() const {
@@ -51,8 +64,12 @@ Vector3 GpsNoAttitude::sensors_satellite_gps_v() const {
 }
 
 Vector3 GpsNoAttitude::sensors_satellite_gps_v_error() const {
+  auto const &valid = Super::sensors_satellite_gps_valid.get();
   auto const &sigma = sensors_satellite_gps_v_sigma.get();
 
-  return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  if (valid)
+    return lin::multiply(sigma, lin::gaussians<Vector3>(_randoms));
+  else
+    return lin::nans<Vector3>();
 }
-}  // namespace psim
+} // namespace psim

@@ -43,9 +43,10 @@ class Magnetometer : public MagnetometerInterface<Magnetometer> {
   Magnetometer() = delete;
   virtual ~Magnetometer() = default;
 
+  Boolean sensors_satellite_magnetometer_valid() const;
   Vector3 sensors_satellite_magnetometer_b() const;
   Vector3 sensors_satellite_magnetometer_b_error() const;
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

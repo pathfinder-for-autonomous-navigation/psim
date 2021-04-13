@@ -70,7 +70,8 @@ struct visit_helper<mapbox::util::variant> {
 }  // namespace detail
 }  // namespace pybind11
 
-using PyVariant = mapbox::util::variant<psim::Integer, psim::Real, psim::Vector2, psim::Vector3, psim::Vector4>;
+using PyVariant = mapbox::util::variant<
+    psim::Boolean, psim::Integer, psim::Real, psim::Vector2, psim::Vector3, psim::Vector4>;
 
 namespace py = pybind11;
 
@@ -91,18 +92,6 @@ class PyConfiguration : public psim::Configuration {
     if (!param)
       throw std::runtime_error("Parameter '" + name + "' does not exist.");
     {
-      auto const *ptr = dynamic_cast<psim::Parameter<psim::Integer> const *>(param);
-      if (ptr) return ptr->get();
-    }
-    {
-      auto const *ptr = dynamic_cast<psim::Parameter<psim::Real> const *>(param);
-      if (ptr) return ptr->get();
-    }
-    {
-      auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector2> const *>(param);
-      if (ptr) return ptr->get();
-    }
-    {
       auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector3> const *>(param);
       if (ptr) return ptr->get();
     }
@@ -110,16 +99,33 @@ class PyConfiguration : public psim::Configuration {
       auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector4> const *>(param);
       if (ptr) return ptr->get();
     }
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Real> const *>(param);
+      if (ptr) return ptr->get();
+    }
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Boolean> const *>(param);
+      if (ptr) return ptr->get();
+    }
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Integer> const *>(param);
+      if (ptr) return ptr->get();
+    }
+    {
+      auto const *ptr = dynamic_cast<psim::Parameter<psim::Vector2> const *>(param);
+      if (ptr) return ptr->get();
+    }
     throw std::runtime_error("Parameter '" + name + "' holds an unsupported type.");
   }
 
   void set(std::string const &name, PyVariant const &value) {
     value.match(
-      [this, &name](psim::Real    const &v) { _set(name, v); },
-      [this, &name](psim::Integer const &v) { _set(name, v); },
-      [this, &name](psim::Vector2 const &v) { _set(name, v); },
-      [this, &name](psim::Vector3 const &v) { _set(name, v); },
-      [this, &name](psim::Vector4 const &v) { _set(name, v); }
+      [&](psim::Real    const &v) { this->_set(name, v); },
+      [&](psim::Boolean const &v) { this->_set(name, v); },
+      [&](psim::Integer const &v) { this->_set(name, v); },
+      [&](psim::Vector2 const &v) { this->_set(name, v); },
+      [&](psim::Vector3 const &v) { this->_set(name, v); },
+      [&](psim::Vector4 const &v) { this->_set(name, v); }
     );
   }
 };
@@ -151,7 +157,11 @@ static void py_assign(psim::StateFieldWritableBase &field, T const &value) {
         if (!field) \
           throw std::runtime_error("State field '" + name + "' does not exist."); \
         { \
-            auto const *ptr = dynamic_cast<psim::StateField<psim::Integer> const *>(field); \
+            auto const *ptr = dynamic_cast<psim::StateField<psim::Vector3> const *>(field); \
+            if (ptr) return ptr->get(); \
+        } \
+        { \
+            auto const *ptr = dynamic_cast<psim::StateField<psim::Vector4> const *>(field); \
             if (ptr) return ptr->get(); \
         } \
         { \
@@ -159,15 +169,15 @@ static void py_assign(psim::StateFieldWritableBase &field, T const &value) {
             if (ptr) return ptr->get(); \
         } \
         { \
+            auto const *ptr = dynamic_cast<psim::StateField<psim::Boolean> const *>(field); \
+            if (ptr) return ptr->get(); \
+        } \
+        { \
+            auto const *ptr = dynamic_cast<psim::StateField<psim::Integer> const *>(field); \
+            if (ptr) return ptr->get(); \
+        } \
+        { \
             auto const *ptr = dynamic_cast<psim::StateField<psim::Vector2> const *>(field); \
-            if (ptr) return ptr->get(); \
-        } \
-        { \
-            auto const *ptr = dynamic_cast<psim::StateField<psim::Vector3> const *>(field); \
-            if (ptr) return ptr->get(); \
-        } \
-        { \
-            auto const *ptr = dynamic_cast<psim::StateField<psim::Vector4> const *>(field); \
             if (ptr) return ptr->get(); \
         } \
         throw std::runtime_error("State field '" + name + "' holds an unsupported type."); \
@@ -177,11 +187,12 @@ static void py_assign(psim::StateFieldWritableBase &field, T const &value) {
         if (!ptr) \
           throw std::runtime_error("Writable state field '" + name + "' does not exist."); \
         value.match( \
-          [&ptr](psim::Real    const &v) { py_assign(*ptr, v); }, \
-          [&ptr](psim::Integer const &v) { py_assign(*ptr, v); }, \
-          [&ptr](psim::Vector2 const &v) { py_assign(*ptr, v); }, \
-          [&ptr](psim::Vector3 const &v) { py_assign(*ptr, v); }, \
-          [&ptr](psim::Vector4 const &v) { py_assign(*ptr, v); } \
+          [&](psim::Real    const &v) { py_assign(*ptr, v); }, \
+          [&](psim::Boolean const &v) { py_assign(*ptr, v); }, \
+          [&](psim::Integer const &v) { py_assign(*ptr, v); }, \
+          [&](psim::Vector2 const &v) { py_assign(*ptr, v); }, \
+          [&](psim::Vector3 const &v) { py_assign(*ptr, v); }, \
+          [&](psim::Vector4 const &v) { py_assign(*ptr, v); }  \
         ); \
       }) \
       .def("step", [](psim::Simulation<psim::model> &self) { \

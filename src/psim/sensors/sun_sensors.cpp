@@ -37,23 +37,40 @@
 
 namespace psim {
 
-Vector3 SunSensors::sensors_satellite_sun_sensors_s() const {
-  /* Don't generate a sun vector measurement if in eclipse and the model is
-   * enabled.
+Boolean SunSensors::sensors_satellite_sun_sensors_valid() const {
+  /* The suns sensors don't produce a valid measurement if:
    *
-   * We consider ourselves to be in eclipse if the dot product of our position
-   * vector and the sun vector, both in ECI, is negative.
+   *  1. The model has been explicitly disabled via the disabled field.
+   *  2. The eclipse model is enabled and we are indeed in eclipse. We consider
+   *     ourselves to be in eclipse if the dot product of our position vector
+   *     and sun vector is negative.
    */
+  auto const &disabled = sensors_satellite_sun_sensors_disabled.get();
   auto const &model_eclipse = sensors_satellite_sun_sensors_model_eclipse.get();
+
+  if (disabled)
+    return false;
 
   if (model_eclipse) {
     auto const &truth_r_eci = truth_satellite_orbit_r_eci->get();
     auto const &truth_s_eci = truth_satellite_environment_s_eci->get();
 
     if (lin::dot(truth_s_eci, truth_r_eci) < 0.0) {
-      return lin::nans<Vector3>();
+      return false;
     }
   }
+
+  return true;
+}
+
+Vector3 SunSensors::sensors_satellite_sun_sensors_s() const {
+  /* Don't generate a sun vector measurement if the current measurement should
+   * be invalid.
+   */
+  auto const &valid = Super::sensors_satellite_sun_sensors_valid.get();
+
+  if (!valid)
+    return lin::nans<Vector3>();
 
   /* Currently, we're using noise representation in spherical coordinates.
    * This is alright for now but really we should update this model to simulate
