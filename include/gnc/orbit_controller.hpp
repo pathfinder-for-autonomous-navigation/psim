@@ -36,6 +36,7 @@
 #define GNC_ORBIT_CONTROLLER_HPP_
 
 #include <lin/core.hpp>
+#include <gnc/config.hpp>
 
 #include <cstdint>
 
@@ -55,6 +56,15 @@ namespace gnc {
  * 
  *  @ingroup orbit_controller
  */
+
+namespace constant {
+
+GNC_TRACKED_CONSTANT(static constexpr double, K_p, 1.0e-6);
+GNC_TRACKED_CONSTANT(static constexpr double, K_d, 5.0e-2);
+GNC_TRACKED_CONSTANT(static constexpr double, K_e, 5.0e-5);
+GNC_TRACKED_CONSTANT(static constexpr double, K_h, 2.0e-3);
+
+}  // namespace constant
 struct OrbitControllerState {
   int64_t t_last_firing; //!< Last firing's timestamp since the PAN epoch (s).
   // The below variables serve as a calculation buffer
@@ -87,6 +97,10 @@ struct OrbitControllerData {
   lin::Vector3d v_ecef;  //!< Velocity in ECEF (m/s).
   lin::Vector3d dr_ecef; //!< Relative position of the other satellite in ECEF (m).
   lin::Vector3d dv_ecef; //!< Relative velocity of the other satellite in ECEF (m/s).
+  double p;
+  double d;
+  double energy_gain;    // Energy gain                   (J)
+  double h_gain;         // Angular momentum gain         (kg m^2/sec)
   /** @brief Defaults everything's value to NaN. */
   OrbitControllerData();
 };

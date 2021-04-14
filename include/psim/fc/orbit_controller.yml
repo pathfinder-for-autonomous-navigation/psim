@@ -11,7 +11,9 @@ args:
 params:
     - name: "truth.{satellite}.m"
       type: Real
-    - name: "fc.{satellite}.fire_time"
+    - name: "fc.{satellite}.fire_time_far"
+      type: Integer
+    - name: "fc.{satellite}.fire_time_near"
       type: Integer
 adds:
     - name: "fc.{satellite}.cumulative_dv"
@@ -38,4 +40,6 @@ gets:
     - name: "fc.{satellite}.relative_orbit.dr"
       type: Vector3
     - name: "fc.{satellite}.relative_orbit.dv"
+      type: Vector3
+    - name: "sensors.{satellite}.cdgps.dr"
       type: Vector3

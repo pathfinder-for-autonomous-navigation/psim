@@ -27,6 +27,8 @@
  */
 
 #include <psim/fc/orbit_controller.hpp>
+#include <gnc/orbit_controller.hpp>
+#include <psim/fc/relative_orbit_estimator.hpp>
 
 #include <lin/core.hpp>
 #include <lin/generators.hpp>
@@ -55,7 +57,11 @@ void OrbitController::step() {
   auto const &v_ecef = fc_satellite_orbit_v->get();
   auto const &other_r_ecef = truth_other_orbit_r_ecef->get();
   auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
-  auto const &fire_time = fc_satellite_fire_time.get();
+  auto const &fire_time_far = fc_satellite_fire_time_far.get();
+  auto const &fire_time_near = fc_satellite_fire_time_near.get();
+  auto const &cdgps_dr = sensors_satellite_cdgps_dr->get();
+
+  auto const gain_factor = fire_time_far / fire_time_near;
 
   Vector3 dr_ecef;
   Vector3 dv_ecef;
@@ -80,7 +86,10 @@ void OrbitController::step() {
     prev_dv_ecef = alpha * dv_ecef + (1.0 - alpha) * prev_dv_ecef;
   }
 
-  if (t_ns > last_firing + (fire_time * 1e9)) {
+  if (((t_ns > last_firing + (fire_time_near * 1e9)) &&
+          (lin::all(lin::isfinite(cdgps_dr)))) ||
+      ((t_ns > last_firing + (fire_time_far * 1e9)) &&
+          (!lin::all(lin::isfinite(cdgps_dr))))) {
     last_firing = t_ns;
     gnc::OrbitControllerData data;
     data.t = t;
@@ -88,6 +97,18 @@ void OrbitController::step() {
     data.v_ecef = v_ecef;
     data.dr_ecef = prev_dr_ecef;
     data.dv_ecef = prev_dv_ecef;
+
+    if (lin::all(lin::isfinite(cdgps_dr))) {
+      data.p = gnc::constant::K_p / gain_factor;
+      data.d = gnc::constant::K_d / gain_factor;
+      data.energy_gain = gnc::constant::K_e / gain_factor; // Energy gain                   (J)
+      data.h_gain = gnc::constant::K_h / gain_factor; // Angular momentum gain         (kg m^2/sec)
+    } else {
+      data.p = gnc::constant::K_p;
+      data.d = gnc::constant::K_d;
+      data.energy_gain = gnc::constant::K_e; // Energy gain                   (J)
+      data.h_gain = gnc::constant::K_h;      // Angular momentum gain         (kg m^2/sec)
+    }
 
     gnc::OrbitActuation actuation;
     gnc::control_orbit(_orbit_controller, data, actuation);
