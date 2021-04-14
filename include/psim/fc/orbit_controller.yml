@@ -11,13 +11,9 @@ args:
 params:
     - name: "truth.{satellite}.m"
       type: Real
-<<<<<<< HEAD
     - name: "fc.{satellite}.fire_time_far"
       type: Integer
     - name: "fc.{satellite}.fire_time_near"
-=======
-    - name: "fc.{satellite}.fire_time"
->>>>>>> master
       type: Integer
 adds:
     - name: "fc.{satellite}.cumulative_dv"

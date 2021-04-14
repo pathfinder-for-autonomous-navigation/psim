@@ -74,7 +74,6 @@ void OrbitController::step() {
     dr_ecef = (other_r_ecef - r_ecef);
     dv_ecef = (other_v_ecef - v_ecef);
   }
-<<<<<<< HEAD
 
   if (!lin::all(lin::isfinite(prev_dr_ecef))) {
     prev_dr_ecef = dr_ecef;
@@ -92,22 +91,6 @@ void OrbitController::step() {
           (lin::all(lin::isfinite(cdgps_dr)))) ||
       ((t_ns > last_firing + (fire_time_far * 1e9)) &&
           (!lin::all(lin::isfinite(cdgps_dr))))) {
-=======
-
-  if (!lin::all(lin::isfinite(prev_dr_ecef))) {
-    prev_dr_ecef = dr_ecef;
-  } else {
-    prev_dr_ecef = alpha * dr_ecef + (1.0 - alpha) * prev_dr_ecef;
-  }
-
-  if (!lin::all(lin::isfinite(prev_dv_ecef))) {
-    prev_dv_ecef = dv_ecef;
-  } else {
-    prev_dv_ecef = alpha * dv_ecef + (1.0 - alpha) * prev_dv_ecef;
-  }
-
-  if (t_ns > last_firing + (fire_time * 1e9)) {
->>>>>>> master
     last_firing = t_ns;
     gnc::OrbitControllerData data;
     data.t = t;
