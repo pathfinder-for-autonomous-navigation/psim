@@ -97,8 +97,6 @@ void mex_control_orbit(struct OrbitControllerState &state,
   // Default actuation outputs
   actuation = OrbitActuation();
 
-  
-
   // Pull in references to the controller's state entries
   auto K_p = data.p;
   auto K_d = data.d;
