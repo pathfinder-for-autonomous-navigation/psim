@@ -28,6 +28,7 @@
 
 #include <psim/simulations/relative_orbit_estimator_test.hpp>
 
+#include <psim/fc/orbit_estimator.hpp>
 #include <psim/fc/relative_orbit_estimator.hpp>
 #include <psim/simulations/dual_orbit.hpp>
 
@@ -37,6 +38,7 @@ RelativeOrbitEstimatorTest::RelativeOrbitEstimatorTest(
     RandomsGenerator &randoms, Configuration const &config)
   : ModelList(randoms) {
   add<DualOrbitGnc>(randoms, config);
-  add<RelativeOrbitEstimator>(randoms, config, "leader", "follower");
+  add<OrbOrbitEstimator>(randoms, config, "follower");
+  add<RelativeOrbitEstimator>(randoms, config, "follower", "leader");
 }
 } // namespace psim

@@ -8,14 +8,14 @@ def test_orbit_controller():
     """Test the orbit controller.
     This boots the simulation starting in standby (after detumbling)
     """
-    configs = ['sensors/base', 'truth/base', 'truth/standby']
+    configs = ['sensors/base', 'truth/base', 'fc/base', 'truth/standby']
     configs = ['config/parameters/' + f + '.txt' for f in configs]
-
+    print(configs)
     config = Configuration(configs)
     sim = Simulation(sims.OrbitControllerTest, config)
 
-    #The spacecrafts are given 10 days to rendezvous
-    timeout = 10 * 24 * 3600 * 1e9
+    #The spacecrafts are given 30 days to rendezvous
+    timeout = 30 * 24 * 3600 * 1000000000
     threshold = 0.5
     sim.step()
 

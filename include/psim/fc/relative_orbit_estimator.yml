@@ -72,6 +72,10 @@ gets:
       type: Vector3
     - name: "truth.{satellite}.orbit.v.ecef"
       type: Vector3
+    - name: "fc.{satellite}.orbit.r"
+      type: Vector3
+    - name: "fc.{satellite}.orbit.v"
+      type: Vector3
     - name: "truth.{satellite}.hill.dr"
       type: Vector3
     - name: "truth.{satellite}.hill.dv"
