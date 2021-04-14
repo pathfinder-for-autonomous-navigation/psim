@@ -1,0 +1,24 @@
+
+name: ExponentialFilterRealInterface
+type: Model
+comment: >
+    Filters a value using an exponential filter.
+
+args:
+    - real
+
+adds:
+    - name: "{real}.filtered"
+      type: Real
+      comment: >
+          Filtered value. This is set to NaN when the filter is uninitialized.
+    - name: "{real}.alpha"
+      type: Initialized Writable Real
+      comment: >
+          Exponential filtering constant. This should always take on some value
+          between zero and one.
+
+gets:
+    - name: "{real}"
+      type: Real
+
