@@ -11,6 +11,8 @@ args:
 params:
     - name: "truth.{satellite}.m"
       type: Real
+    - name: "fc.{satellite}.fire_time"
+      type: Integer
 adds:
     - name: "fc.{satellite}.cumulative_dv"
       type: Real
@@ -21,9 +23,9 @@ gets:
       type: Real
     - name: "truth.t.ns"
       type: Integer
-    - name: "truth.{satellite}.orbit.r.ecef"
+    - name: "fc.{satellite}.orbit.r"
       type: Vector3
-    - name: "truth.{satellite}.orbit.v.ecef"
+    - name: "fc.{satellite}.orbit.v"
       type: Vector3
     - name: "truth.{other}.orbit.r.ecef"
       type: Vector3
@@ -31,3 +33,9 @@ gets:
       type: Vector3
     - name: "truth.{satellite}.orbit.J.ecef"
       type: Writable Vector3
+    - name: "fc.{satellite}.relative_orbit.is_valid"
+      type: Integer
+    - name: "fc.{satellite}.relative_orbit.dr"
+      type: Vector3
+    - name: "fc.{satellite}.relative_orbit.dv"
+      type: Vector3

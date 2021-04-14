@@ -29,6 +29,7 @@
 #ifndef PSIM_FC_ORBIT_CONTROLLER_HPP_
 #define PSIM_FC_ORBIT_CONTROLLER_HPP_
 
+#include <lin/generators.hpp>
 #include <psim/fc/orbit_controller.yml.hpp>
 
 #include <gnc/orbit_controller.hpp>
@@ -42,6 +43,9 @@ class OrbitController : public OrbitControllerInterface<OrbitController> {
   gnc::OrbitControllerState _orbit_controller;
 
   Integer last_firing = 0;
+  Vector3 prev_dr_ecef = lin::nans<Vector3>();
+  Vector3 prev_dv_ecef = lin::nans<Vector3>();
+  Real alpha = 0.4;
 
  public:
   using Super::OrbitControllerInterface;

@@ -2,41 +2,41 @@
 # Relative orbit estimator's validity over time.
 - type: Plot2D
   x: truth.t.s
-  y: fc.leader.relative_orbit.is_valid
+  y: fc.follower.relative_orbit.is_valid
 
 # Relative orbit estimator's relative position estimate and error in ECEF.
 - type: Plot2D
   x: truth.t.s
-  y: [fc.leader.relative_orbit.dr.x, fc.leader.relative_orbit.dr.y, fc.leader.relative_orbit.dr.z]
+  y: [fc.follower.relative_orbit.dr.x, fc.follower.relative_orbit.dr.y, fc.follower.relative_orbit.dr.z]
 - type: Plot2D
   x: truth.t.s
-  y: [fc.leader.relative_orbit.dr.error.x, fc.leader.relative_orbit.dr.error.y, fc.leader.relative_orbit.dr.error.z]
+  y: [fc.follower.relative_orbit.dr.error.x, fc.follower.relative_orbit.dr.error.y, fc.follower.relative_orbit.dr.error.z]
 
 # Relative orbit estimator's relative velocity estimate and error in ECEF.
 - type: Plot2D
   x: truth.t.s
-  y: [fc.leader.relative_orbit.dv.x, fc.leader.relative_orbit.dv.y, fc.leader.relative_orbit.dv.z]
+  y: [fc.follower.relative_orbit.dv.x, fc.follower.relative_orbit.dv.y, fc.follower.relative_orbit.dv.z]
 - type: Plot2D
   x: truth.t.s
-  y: [fc.leader.relative_orbit.dv.error.x, fc.leader.relative_orbit.dv.error.y, fc.leader.relative_orbit.dv.error.z]
+  y: [fc.follower.relative_orbit.dv.error.x, fc.follower.relative_orbit.dv.error.y, fc.follower.relative_orbit.dv.error.z]
 
 # Relative orbit estimator performance in terms of hill frame position and
 # velocity measurements for the other spacecraft.
 - type: PlotEstimate
   x: truth.t.s
-  y: fc.leader.relative_orbit.r.hill.x
+  y: fc.follower.relative_orbit.r.hill.x
 - type: PlotEstimate
   x: truth.t.s
-  y: fc.leader.relative_orbit.r.hill.y
+  y: fc.follower.relative_orbit.r.hill.y
 - type: PlotEstimate
   x: truth.t.s
-  y: fc.leader.relative_orbit.r.hill.z
+  y: fc.follower.relative_orbit.r.hill.z
 - type: PlotEstimate
   x: truth.t.s
-  y: fc.leader.relative_orbit.v.hill.x
+  y: fc.follower.relative_orbit.v.hill.x
 - type: PlotEstimate
   x: truth.t.s
-  y: fc.leader.relative_orbit.v.hill.y
+  y: fc.follower.relative_orbit.v.hill.y
 - type: PlotEstimate
   x: truth.t.s
-  y: fc.leader.relative_orbit.v.hill.z
+  y: fc.follower.relative_orbit.v.hill.z

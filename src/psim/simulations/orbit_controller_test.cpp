@@ -28,6 +28,8 @@
 
 #include <psim/simulations/orbit_controller_test.hpp>
 
+#include <psim/fc/orbit_estimator.hpp>
+#include <psim/fc/relative_orbit_estimator.hpp>
 #include <psim/fc/orbit_controller.hpp>
 #include <psim/simulations/dual_orbit.hpp>
 
@@ -37,6 +39,8 @@ OrbitControllerTest::OrbitControllerTest(
     RandomsGenerator &randoms, Configuration const &config)
   : ModelList(randoms) {
   add<DualOrbitGnc>(randoms, config);
+  add<OrbOrbitEstimator>(randoms, config, "follower");
+  add<RelativeOrbitEstimator>(randoms, config, "follower", "leader");
   add<OrbitController>(randoms, config, "follower", "leader");
 }
 } // namespace psim

@@ -156,3 +156,5 @@ bazel-genfiles
 
 # Compiler commands from Bazel
 compile_commands.json
+
+*.icloud

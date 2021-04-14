@@ -66,23 +66,31 @@ void RelativeOrbitEstimator::step() {
 
   // Sensor noise
   static constexpr auto sqrtR =
-      lin::diag(lin::consts<Vector<3>>(1.0e-1)).eval();
+      lin::diag(lin::consts<Vector<3>>(1.0e-2)).eval();
 
   auto const &dt = truth_dt_ns->get();
   auto const &w_earth = truth_earth_w->get();
-  auto const &r_ecef = truth_satellite_orbit_r_ecef->get();
-  auto const &v_ecef = truth_satellite_orbit_v_ecef->get();
+  auto const &r_ecef = fc_satellite_orbit_r->get();
+  auto const &v_ecef = fc_satellite_orbit_v->get();
   auto const &cdgps_dr = sensors_satellite_cdgps_dr->get();
 
   // Handle when the estimate is already valid
   if (estimate.valid()) {
     // Predict and update
     if (lin::all(lin::isfinite(cdgps_dr))) {
+      cycles_without_rtk=0;
       estimate.update(dt, w_earth, r_ecef, v_ecef, -cdgps_dr, sqrtQ, sqrtR);
     }
     // No measurement so we just predict
-    else {
+    else if(cycles_without_rtk<cycles_without_rtk_limit) {
       estimate.update(dt, w_earth, r_ecef, v_ecef, sqrtQ);
+      cycles_without_rtk++;
+    }
+    // If cycles without measurement exceeds the limit, relative estimate is
+    // invalidated
+    else {
+      estimate=gnc::RelativeOrbitEstimate();
+      cycles_without_rtk=0;
     }
   }
   // Attempt to initialize the estimate
