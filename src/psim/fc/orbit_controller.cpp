@@ -60,6 +60,8 @@ void OrbitController::step() {
   auto const &fire_time_near = fc_satellite_fire_time_near.get();
   auto const &cdgps_dr = sensors_satellite_cdgps_dr->get();
 
+  auto const gain_factor = fire_time_far / fire_time_near;
+
   Vector3 dr_ecef;
   Vector3 dv_ecef;
 
@@ -96,10 +98,10 @@ void OrbitController::step() {
     data.dv_ecef = prev_dv_ecef;
 
     if (lin::all(lin::isfinite(cdgps_dr))) {
-      data.p = 1.0e-6 / 6; // Make "6" a parameter
-      data.d = 5.0e-2 / 6;
-      data.energy_gain = 5.0e-5 / 6; // Energy gain                   (J)
-      data.h_gain = 2.0e-3 / 6; // Angular momentum gain         (kg m^2/sec)
+      data.p = 1.0e-6 / gain_factor; // Make "6" a parameter
+      data.d = 5.0e-2 / gain_factor;
+      data.energy_gain = 5.0e-5 / gain_factor; // Energy gain                   (J)
+      data.h_gain = 2.0e-3 / gain_factor; // Angular momentum gain         (kg m^2/sec)
     } else {
       data.p = 1.0e-6;
       data.d = 5.0e-2;
