@@ -1,0 +1,24 @@
+
+name: ExponentialFilterVector3Interface
+type: Model
+comment: >
+    Filters a value using an exponential filter.
+
+args:
+    - vector
+
+adds:
+    - name: "{vector}.filtered"
+      type: Vector3
+      comment: >
+          Filtered value. This is set to NaNs when the filter is uninitialized.
+    - name: "{vector}.alpha"
+      type: Initialized Writable Real
+      comment: >
+          Exponential filtering constant. This should always take on some value
+          between zero and one.
+
+gets:
+    - name: "{vector}"
+      type: Vector3
+
