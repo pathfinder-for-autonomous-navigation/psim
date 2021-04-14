@@ -27,6 +27,7 @@
  */
 
 #include <psim/fc/orbit_controller.hpp>
+#include <gnc/orbit_controller.hpp>
 #include <psim/fc/relative_orbit_estimator.hpp>
 
 #include <lin/core.hpp>
@@ -98,15 +99,15 @@ void OrbitController::step() {
     data.dv_ecef = prev_dv_ecef;
 
     if (lin::all(lin::isfinite(cdgps_dr))) {
-      data.p = 1.0e-6 / gain_factor;
-      data.d = 5.0e-2 / gain_factor;
-      data.energy_gain = 5.0e-5 / gain_factor; // Energy gain                   (J)
-      data.h_gain = 2.0e-3 / gain_factor; // Angular momentum gain         (kg m^2/sec)
+      data.p = gnc::constant::K_p / gain_factor;
+      data.d = gnc::constant::K_d / gain_factor;
+      data.energy_gain = gnc::constant::K_e / gain_factor; // Energy gain                   (J)
+      data.h_gain = gnc::constant::K_h / gain_factor; // Angular momentum gain         (kg m^2/sec)
     } else {
-      data.p = 1.0e-6;
-      data.d = 5.0e-2;
-      data.energy_gain = 5.0e-5; // Energy gain                   (J)
-      data.h_gain = 2.0e-3;      // Angular momentum gain         (kg m^2/sec)
+      data.p = gnc::constant::K_p;
+      data.d = gnc::constant::K_d;
+      data.energy_gain = gnc::constant::K_e; // Energy gain                   (J)
+      data.h_gain = gnc::constant::K_h;      // Angular momentum gain         (kg m^2/sec)
     }
 
     gnc::OrbitActuation actuation;

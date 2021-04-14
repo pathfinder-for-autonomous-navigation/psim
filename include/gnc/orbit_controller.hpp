@@ -36,6 +36,7 @@
 #define GNC_ORBIT_CONTROLLER_HPP_
 
 #include <lin/core.hpp>
+#include <gnc/config.hpp>
 
 #include <cstdint>
 
@@ -55,6 +56,15 @@ namespace gnc {
  * 
  *  @ingroup orbit_controller
  */
+
+namespace constant {
+
+GNC_TRACKED_CONSTANT(static constexpr double, K_p, 1.0e-6);
+GNC_TRACKED_CONSTANT(static constexpr double, K_d, 5.0e-2);
+GNC_TRACKED_CONSTANT(static constexpr double, K_e, 5.0e-5);
+GNC_TRACKED_CONSTANT(static constexpr double, K_h, 2.0e-3);
+
+}  // namespace constant
 struct OrbitControllerState {
   int64_t t_last_firing; //!< Last firing's timestamp since the PAN epoch (s).
   // The below variables serve as a calculation buffer
@@ -62,10 +72,6 @@ struct OrbitControllerState {
   lin::Vector3d this_v_ecef0, that_v_ecef0, this_v_hat;
   lin::Vector3d this_h_ecef0, that_h_ecef0, this_h_hat;
   lin::Matrix3x3d DCM_hill_ecef0;
-  double p;
-  double d;
-  double energy_gain;    // Energy gain                   (J)
-  double h_gain;         // Angular momentum gain         (kg m^2/sec)
   /** @brief Defaults everything's value to NaN. */
   OrbitControllerState();
 };
