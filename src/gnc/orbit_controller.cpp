@@ -186,7 +186,7 @@ void mex_control_orbit(struct OrbitControllerState &state,
   // Calculate final dv command and account for saturation events
   lin::Vector3d dv;
   {
- /   dv = dv_plane + dv_in_plane;
+    dv = dv_plane + dv_in_plane;
 
     auto const fro_dv = lin::fro(dv);
     if (fro_dv > max_dv * max_dv)
