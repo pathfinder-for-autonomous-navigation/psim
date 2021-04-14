@@ -15,24 +15,34 @@ params:
           Noise in terms of a spherical coordinate representation of the sun
           vector. The noise affects the phi and theta angles in the body frame
           currently.
-    - name: "sensors.{satellite}.sun_sensors.model_eclipse"
-      type: Integer
-      comment: >
-          Toggle whether or not being in eclipse prevents a sun vector from
-          being modelled.
 
 adds:
+    - name: "sensors.{satellite}.sun_sensors.valid"
+      type: Lazy Boolean
+      comment: >
+          Flag specifying whether or not the current sun vector measurement is
+          valid or not.
     - name: "sensors.{satellite}.sun_sensors.s"
       type: Lazy Vector3
       comment: >
-          Sun vector reported by the sun sensors in the body frame. This vector
-          is set to NaN if a sun vector cannot be determined.
+          Sun vector reported by the sun sensors in the body frame. This is set
+          to NaNs if the measurement is invalid.
     - name: "sensors.{satellite}.sun_sensors.s.error"
       type: Lazy Vector3
       comment: >
-          Error in the sun vector reported by the sun sensors. Note, that the
-          error in being represented as the difference between two unit vectors
-          and therefore has an extra degree of freedom.
+          Error in the sun vector reported by the sun sensors. This is set to
+          NaNs if the measurement is invalid. Note, that the error in being
+          represented as the difference between two unit vectors and therefore
+          has an extra degree of freedom.
+    - name: "sensors.{satellite}.sun_sensors.disabled"
+      type: Initialized Writable Boolean
+      comment: >
+          When set to true, the sun sensors never produce a valid reading. This,
+          for example, can be used to simulate a sensor failure.
+    - name: "sensors.{satellite}.sun_sensors.model_eclipse"
+      type: Initialized Writable Boolean
+      comment: >
+          When set to true, sun sensor measurements are prevented in eclipse.
 
 gets:
     - name: "truth.{satellite}.environment.s.body"

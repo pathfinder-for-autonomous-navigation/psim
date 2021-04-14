@@ -31,4 +31,4 @@
 # while attitude dynamics are being simulation as well.
 - type: Plot2D
   x: truth.t.s
-  y: truth.leader.orbit.S
+  y: truth.leader.S

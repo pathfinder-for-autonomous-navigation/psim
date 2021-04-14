@@ -21,10 +21,17 @@ params:
         bias' random walk over time.
 
 adds:
+    - name: "sensors.{satellite}.gyroscope.valid"
+      type: Lazy Boolean
+      comment: >
+          Flag specifying whether or not the current gyroscope measurement is
+          valid or not. Note that this only applies to the actual angular rate
+          reading and not the bias reading.
     - name: "sensors.{satellite}.gyroscope.w"
       type: Lazy Vector3
       comment: >
-          Angular rate reported by the gyroscope in the body frame.
+          Angular rate reported by the gyroscope in the body frame. This is set
+          to NaNs if the measurement is invalid.
     - name: "sensors.{satellite}.gyroscope.w.bias"
       type: Initialized Vector3
       comment: >
@@ -35,6 +42,12 @@ adds:
       type: Lazy Vector3
       comment: >
           Error in the angular rate reported by the gyroscope in the body frame.
+          This is set to NaNs if the measurement is invalid.
+    - name: "sensors.{satellite}.gyroscope.disabled"
+      type: Initialized Writable Boolean
+      comment: >
+          When set to true, the gyroscope never produces a valid reading. This,
+          for example, can be used to simulate a sensor failure.
 
 gets:
     - name: "truth.dt.s"

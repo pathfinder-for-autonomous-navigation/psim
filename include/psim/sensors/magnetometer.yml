@@ -15,15 +15,26 @@ params:
         Standard deviation of the magnetic field reading from the magnetometer.
 
 adds:
+    - name: "sensors.{satellite}.magnetometer.valid"
+      type: Lazy Boolean
+      comment: >
+          Flag specifying whether or not the current magnetometer measurement is
+          valid or not.
     - name: "sensors.{satellite}.magnetometer.b"
       type: Lazy Vector3
       comment: >
-          Magnetic field reported by the magnetometer in the body frame.
+          Magnetic field reported by the magnetometer in the body frame. This is
+          set to NaNs if the measurement is invalid.
     - name: "sensors.{satellite}.magnetometer.b.error"
       type: Lazy Vector3
       comment: >
           Error in the magnetic field reported by the magnetometer in the body
-          frame.
+          frame. This is set to NaNs if the measurement is invalid.
+    - name: "sensors.{satellite}.magnetometer.disabled"
+      type: Initialized Writable Boolean
+      comment: >
+          When set to true, the magnetometer never produces a valid reading.
+          This, for example, can be used to simulate a sensor failure.
 
 gets:
     - name: "truth.{satellite}.environment.b.body"

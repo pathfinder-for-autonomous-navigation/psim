@@ -56,9 +56,13 @@ void OrbitController::step() {
   auto const &v_ecef = fc_satellite_orbit_v->get();
   auto const &other_r_ecef = truth_other_orbit_r_ecef->get();
   auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
+<<<<<<< HEAD
   auto const &fire_time_far = fc_satellite_fire_time_far.get();
   auto const &fire_time_near = fc_satellite_fire_time_near.get();
   auto const &cdgps_dr = sensors_satellite_cdgps_dr->get();
+=======
+  auto const &fire_time = fc_satellite_fire_time.get();
+>>>>>>> master
 
   Vector3 dr_ecef;
   Vector3 dv_ecef;
@@ -70,6 +74,7 @@ void OrbitController::step() {
     dr_ecef = (other_r_ecef - r_ecef);
     dv_ecef = (other_v_ecef - v_ecef);
   }
+<<<<<<< HEAD
 
   if (!lin::all(lin::isfinite(prev_dr_ecef))) {
     prev_dr_ecef = dr_ecef;
@@ -87,6 +92,22 @@ void OrbitController::step() {
           (lin::all(lin::isfinite(cdgps_dr)))) ||
       ((t_ns > last_firing + (fire_time_far * 1e9)) &&
           (!lin::all(lin::isfinite(cdgps_dr))))) {
+=======
+
+  if (!lin::all(lin::isfinite(prev_dr_ecef))) {
+    prev_dr_ecef = dr_ecef;
+  } else {
+    prev_dr_ecef = alpha * dr_ecef + (1.0 - alpha) * prev_dr_ecef;
+  }
+
+  if (!lin::all(lin::isfinite(prev_dv_ecef))) {
+    prev_dv_ecef = dv_ecef;
+  } else {
+    prev_dv_ecef = alpha * dv_ecef + (1.0 - alpha) * prev_dv_ecef;
+  }
+
+  if (t_ns > last_firing + (fire_time * 1e9)) {
+>>>>>>> master
     last_firing = t_ns;
     gnc::OrbitControllerData data;
     data.t = t;
@@ -94,6 +115,7 @@ void OrbitController::step() {
     data.v_ecef = v_ecef;
     data.dr_ecef = prev_dr_ecef;
     data.dv_ecef = prev_dv_ecef;
+<<<<<<< HEAD
 
     if (lin::all(lin::isfinite(cdgps_dr))) {
       data.p = 1.0e-6 / 6; // Make "6" a parameter
@@ -106,6 +128,8 @@ void OrbitController::step() {
       data.energy_gain = 5.0e-5; // Energy gain                   (J)
       data.h_gain = 2.0e-3;      // Angular momentum gain         (kg m^2/sec)
     }
+=======
+>>>>>>> master
 
     gnc::OrbitActuation actuation;
     gnc::control_orbit(_orbit_controller, data, actuation);

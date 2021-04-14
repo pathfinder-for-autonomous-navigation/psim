@@ -55,6 +55,6 @@ class SatelliteSensorsNoAttitude : public ModelList {
   SatelliteSensorsNoAttitude(RandomsGenerator &randoms,
       Configuration const &config, std::string const &satellite);
 };
-}  // namespace psim
+} // namespace psim
 
 #endif

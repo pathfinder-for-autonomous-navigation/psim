@@ -10,11 +10,6 @@ args:
     - other
 
 params:
-    - name: "sensors.{satellite}.cdgps.model_range"
-      type: Integer
-      comment: >
-          Flag toggling whether or not being out of range will prevent the CDGPS
-          from producing a reading.
     - name: "sensors.{satellite}.cdgps.range"
       type: Real
       comment: >
@@ -26,21 +21,32 @@ params:
           Standard deviation of the relative position reading from the CDGPS.
 
 adds:
-    - name: "sensors.{satellite}.cdgps.active"
-      type: Lazy Integer
+    - name: "sensors.{satellite}.cdgps.valid"
+      type: Lazy Boolean
       comment: >
-          Flag specifying whether or not the CDGPS sensor is currently active
-          and producing readings.
+          Flag specifying whether or not the current CDGPS measurement is valid
+          or not.
     - name: "sensors.{satellite}.cdgps.dr"
       type: Lazy Vector3
       comment: >
           Relative position this satellite to the other reported by the CDGPS in
-          ECEF.
+          ECEF. This is set to NaNs if the measurement is invalid.
     - name: "sensors.{satellite}.cdgps.dr.error"
       type: Lazy Vector3
       comment: >
           Error in the relative position of the this satellite to the other
-          satellite by the CDGPS in ECEF.
+          satellite by the CDGPS in ECEF. This is set to NaNs if the measurement
+          is invalid.
+    - name: "sensors.{satellite}.cdgps.disabled"
+      type: Initialized Writable Boolean
+      comment: >
+          When set to true, the CDGPS never produces a valid reading. This, for
+          example, can be used to simulate a sensor failure.
+    - name: "sensors.{satellite}.cdgps.model_range"
+      type: Initialized Writable Boolean
+      comment: >
+          When set to true, a valid CDGPS reading can only be produced when the
+          spacecraft are close enough.
 
 gets:
     - name: "truth.{satellite}.orbit.r.ecef"
