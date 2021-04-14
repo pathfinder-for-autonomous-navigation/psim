@@ -10,8 +10,8 @@
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
 //
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
 //
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -39,21 +39,22 @@
 #include <lin/math.hpp>
 #include <lin/queries.hpp>
 
-#include <cmath>
 #include <cstdint>
+#include <cmath>
 #include <math.h>
 
 namespace gnc {
 
 // Initialize constants
-static constexpr double mass = 3.7;     // Mass of spacecraft            (kg)
-static constexpr double J_min = 0;      // Minimum impulse               (N s)
-static constexpr double J_max = 2.5e-2; // Maximum impulse               (N s)
-static constexpr double max_dv = J_max / mass; // Max velocity change (m/s)
-static constexpr double min_dv = J_min / mass; // Min velocity change (m/s)
+static constexpr double mass = 3.7;             // Mass of spacecraft            (kg)
+static constexpr double J_min = 0;              // Minimum impulse               (N s)
+static constexpr double J_max = 2.5e-2;         // Maximum impulse               (N s)
+static constexpr double max_dv = J_max / mass;  // Max velocity change           (m/s)
+static constexpr double min_dv = J_min / mass;  // Min velocity change           (m/s)
 
 OrbitControllerState::OrbitControllerState()
-  : t_last_firing(0), this_r_ecef0(lin::nans<decltype(this_r_ecef0)>()),
+  : t_last_firing(0),
+    this_r_ecef0(lin::nans<decltype(this_r_ecef0)>()),
     that_r_ecef0(lin::nans<decltype(that_r_ecef0)>()),
     this_r_hat(lin::nans<decltype(this_r_hat)>()),
     this_v_ecef0(lin::nans<decltype(this_v_ecef0)>()),
@@ -62,21 +63,22 @@ OrbitControllerState::OrbitControllerState()
     this_h_ecef0(lin::nans<decltype(this_h_ecef0)>()),
     that_h_ecef0(lin::nans<decltype(that_h_ecef0)>()),
     this_h_hat(lin::nans<decltype(this_h_hat)>()),
-    DCM_hill_ecef0(lin::nans<decltype(DCM_hill_ecef0)>()) {}
+    DCM_hill_ecef0(lin::nans<decltype(DCM_hill_ecef0)>()) { }
 
 OrbitControllerData::OrbitControllerData()
-  : t(0), r_ecef(lin::nans<decltype(r_ecef)>()),
+  : t(0),
+    r_ecef(lin::nans<decltype(r_ecef)>()),
     v_ecef(lin::nans<decltype(v_ecef)>()),
     dr_ecef(lin::nans<decltype(dr_ecef)>()),
-    dv_ecef(lin::nans<decltype(dv_ecef)>()) {}
+    dv_ecef(lin::nans<decltype(dv_ecef)>()) { }
 
-OrbitActuation::OrbitActuation() : J_ecef(lin::nans<decltype(J_ecef)>()) {}
+OrbitActuation::OrbitActuation()
+  : J_ecef(lin::nans<decltype(J_ecef)>()) { }
 
 /*
  * Calculates orbital energy given position and velocity
  */
-static double energy(
-    lin::Vector3d const &r_ecef0, lin::Vector3d const &v_ecef0) {
+static double energy(lin::Vector3d const &r_ecef0, lin::Vector3d const &v_ecef0) {
   // Calculate gravitational potential
   double potential;
   lin::Vector3d acceleration;
@@ -89,12 +91,13 @@ static double energy(
 #ifndef MEX
 static
 #endif
-    void
-    mex_control_orbit(struct OrbitControllerState &state,
-        struct OrbitControllerData const &data,
-        struct OrbitActuation &actuation, double mass) {
+void mex_control_orbit(struct OrbitControllerState &state,
+    struct OrbitControllerData const &data, struct OrbitActuation &actuation,
+    double mass) {
   // Default actuation outputs
   actuation = OrbitActuation();
+
+  
 
   // Pull in references to the controller's state entries
   auto K_p = data.p;
@@ -128,8 +131,7 @@ static
 
     // Velocities need to velocity of the ECEF frame itself added on
     this_v_ecef0 = data.v_ecef - lin::cross(w_earth, this_r_ecef0);
-    that_v_ecef0 =
-        data.v_ecef + data.dv_ecef - lin::cross(w_earth, that_r_ecef0);
+    that_v_ecef0 = data.v_ecef + data.dv_ecef - lin::cross(w_earth, that_r_ecef0);
     this_v_hat = this_v_ecef0 / lin::norm(this_v_ecef0);
 
     // Calculate the satellites angular momentums (without scaling by mass)
@@ -152,18 +154,15 @@ static
     lin::Vector3d const w_hill = that_h_ecef0 / lin::fro(that_r_ecef0);
 
     // Position and velocity of this satellite in the other's hill frame
-    lin::Vector3d const r_hill =
-        DCM_hill_ecef0 * (this_r_ecef0 - that_r_ecef0).eval();
-    lin::Vector3d const v_hill =
-        DCM_hill_ecef0 * (this_v_ecef0 - that_v_ecef0).eval() -
-        lin::cross(w_hill, r_hill);
+    lin::Vector3d const r_hill = DCM_hill_ecef0 * (this_r_ecef0 - that_r_ecef0).eval();
+    lin::Vector3d const v_hill = DCM_hill_ecef0 * (this_v_ecef0 - that_v_ecef0).eval() - lin::cross(w_hill, r_hill);
 
     // Hill frame PD controller
-    dv_in_plane =
-        this_v_hat * ((K_p * r_hill(1)) +     // Hill position term
-                         (-K_d * v_hill(1)) + // Hill velocity term
-                         (-K_e * (this_energy - that_energy)) // Energy term
-                     );
+    dv_in_plane = this_v_hat * (
+        ( K_p * r_hill(1)) +                  // Hill position term
+        (-K_d * v_hill(1)) +                  // Hill velocity term
+        (-K_e * (this_energy - that_energy))  // Energy term
+      );
   }
 
   // Angular momentum controller (matching orbital planes)
@@ -171,17 +170,15 @@ static
   {
     // Project that satellite's angular momentum onto the plane perpendicular
     // to this satellite's position vector
-    lin::Vector3d that_h_proj =
-        that_h_ecef0 - lin::dot(that_h_ecef0, this_r_hat) * this_r_hat;
+    lin::Vector3d that_h_proj = that_h_ecef0 - lin::dot(that_h_ecef0, this_r_hat) * this_r_hat;
 
     // Calculate the angle between this projection of the other satellites
     // angular momentum and our angular momentum
     double const theta = lin::atan2(
         lin::dot(that_h_proj, lin::cross(this_r_ecef0, this_h_ecef0)),
-        lin::dot(that_h_proj,
-            this_h_ecef0)); // ^^ this seems a tad weird to me and would be of
-                            // very different orders of magnitude - i.e.
-                            // `this_r_ecef0` or `this_r_hat`?
+        lin::dot(that_h_proj, this_h_ecef0)
+      ); // ^^ this seems a tad weird to me and would be of very different
+         // orders of magnitude - i.e. `this_r_ecef0` or `this_r_hat`?
 
     dv_plane = this_h_hat * (K_h * theta / mass);
     // Don't understand why we divide by mass ^^ as we never were working with
@@ -191,7 +188,7 @@ static
   // Calculate final dv command and account for saturation events
   lin::Vector3d dv;
   {
-    dv = dv_plane + dv_in_plane;
+ /   dv = dv_plane + dv_in_plane;
 
     auto const fro_dv = lin::fro(dv);
     if (fro_dv > max_dv * max_dv)
@@ -210,4 +207,4 @@ void control_orbit(struct OrbitControllerState &state,
 }
 #endif
 
-} // namespace gnc
+}  // namespace gnc
