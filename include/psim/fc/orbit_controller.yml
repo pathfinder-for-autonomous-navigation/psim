@@ -40,9 +40,6 @@ gets:
     - name: "fc.{satellite}.relative_orbit.dr"
       type: Vector3
     - name: "fc.{satellite}.relative_orbit.dv"
-<<<<<<< HEAD
       type: Vector3
     - name: "sensors.{satellite}.cdgps.dr"
-=======
->>>>>>> master
       type: Vector3
