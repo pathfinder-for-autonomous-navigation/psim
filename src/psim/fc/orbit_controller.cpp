@@ -98,7 +98,7 @@ void OrbitController::step() {
     data.dv_ecef = prev_dv_ecef;
 
     if (lin::all(lin::isfinite(cdgps_dr))) {
-      data.p = 1.0e-6 / gain_factor; // Make "6" a parameter
+      data.p = 1.0e-6 / gain_factor;
       data.d = 5.0e-2 / gain_factor;
       data.energy_gain = 5.0e-5 / gain_factor; // Energy gain                   (J)
       data.h_gain = 2.0e-3 / gain_factor; // Angular momentum gain         (kg m^2/sec)
