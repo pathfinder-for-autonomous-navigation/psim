@@ -19,7 +19,7 @@ truth.leader.orbit.v  -3938.17   4930.62   -3620.39
 # Follower spacecraft attitude and orbit initial conditions.
 
 truth.follower.attitude.q.body_eci   0.0492112  0.423932 0.765907  0.480881
-truth.follower.attitude.w           -0.079192  -0.002457 0.0027549
+truth.follower.attitude.w           -0.069192  -0.002457 0.0027549
 truth.follower.wheels.w              0.0        0.0      0.0
 
 truth.follower.orbit.r 5.55822e+06 1.79838e+06 -3.58744e+06
