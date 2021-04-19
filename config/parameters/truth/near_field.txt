@@ -10,7 +10,7 @@ truth.t.ns 556410000000000
 # Leader spacecraft attitude and orbit initial conditions.
 
 truth.leader.attitude.q.body_eci  0.173301   0.971103 0.029768   0.161367
-truth.leader.attitude.w           0.00359105 0.137562 0.00386897
+truth.leader.attitude.w           0.00359105 0.069562 0.00386897
 truth.leader.wheels.w             0.0        0.0      0.0
 
 truth.leader.orbit.r 5.55736e+06 1.79956e+06 -3.58828e+06
@@ -19,7 +19,7 @@ truth.leader.orbit.v  -3938.17   4930.62   -3620.39
 # Follower spacecraft attitude and orbit initial conditions.
 
 truth.follower.attitude.q.body_eci   0.0492112  0.423932 0.765907  0.480881
-truth.follower.attitude.w           -0.134192  -0.002457 0.0027549
+truth.follower.attitude.w           -0.079192  -0.002457 0.0027549
 truth.follower.wheels.w              0.0        0.0      0.0
 
 truth.follower.orbit.r 5.55822e+06 1.79838e+06 -3.58744e+06
