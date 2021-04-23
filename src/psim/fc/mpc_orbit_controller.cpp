@@ -48,7 +48,9 @@ void MpcOrbitController::step() {
   auto &J_hill = fc_satellite_orbit_J_hill.get();
   auto &J_ecef = truth_satellite_orbit_J_ecef->get();
 
-  gnc::utl::rotate_frame(q_eci_hill, J_hill);
+  Vector4 q;
+  gnc::utl::quat_conj(q_eci_hill, q);
+  gnc::utl::rotate_frame(q, J_hill);
   gnc::utl::rotate_frame(q_ecef_eci, J_hill, J_ecef);
 
   J_hill = lin::zeros<Vector3>();
