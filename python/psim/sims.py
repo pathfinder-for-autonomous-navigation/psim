@@ -6,9 +6,10 @@ from _psim import (
     DetumblerTest,
     DualAttitudeOrbitGnc,
     DualOrbitGnc,
+    OrbitControllerTest,
+    OrbitMpcRendezvous,
     OrbOrbitEstimatorTest,
     RelativeOrbitEstimatorTest,
-    OrbitControllerTest,
     SingleAttitudeOrbitGnc,
-    SingleOrbitGnc,
+    SingleOrbitGnc
 )

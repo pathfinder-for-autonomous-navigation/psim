@@ -1,0 +1,29 @@
+
+name: MpcOrbitControllerInterface
+type: Model
+comment: >
+    Interface for the MPC orbit controller (which is ultimately implemented in
+    Python using CVXPY) to plugin to the simulation. This model must be run at
+    the start of a step to transform the commanded Delta-V from the HILL frame
+    to ECEF.
+
+args:
+    - satellite
+
+params:
+    - name: "truth.{satellite}.m"
+      type: Real
+
+adds:
+    - name: "fc.{satellite}.orbit.J.hill"
+      type: Writable Vector3
+      comment: >
+        Desired impulse in the HILL frame of the spacecraft.
+
+gets:
+    - name: "truth.earth.q.ecef_eci"
+      type: Vector4
+    - name: "truth.{satellite}.orbit.J.ecef"
+      type: Writable Vector3
+    - name: "truth.{satellite}.hill.q.hill_eci"
+      type: Vector4
