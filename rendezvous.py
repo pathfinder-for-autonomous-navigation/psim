@@ -31,7 +31,7 @@ fields = [
 filename = 'logs.csv'
 
 # Final stage cost
-QT = sp.sparse.diags([1e3, 1e3, 1e3, 1e3, 1e3, 1e3])
+QT = sp.sparse.diags([1e4, 1e4, 1e4, 1e4, 1e4, 1e4])
 
 # Stage costs
 Q = sp.sparse.diags([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
@@ -120,33 +120,33 @@ class RendezvousController(object):
         # print(dt)
         # print(n)
 
-        fg = plt.figure()
-        ax = fg.add_subplot(111, projection='3d')
-        ax.plot(self.X.value[0,:], self.X.value[1,:], self.X.value[2,:])
-        fg.show()
+        # fg = plt.figure()
+        # ax = fg.add_subplot(111, projection='3d')
+        # ax.plot(self.X.value[0,:], self.X.value[1,:], self.X.value[2,:])
+        # fg.show()
 
-        fg = plt.figure()
-        plt.plot(self.X.value[0,:], label='r.x')
-        plt.plot(self.X.value[1,:], label='r.y')
-        plt.plot(self.X.value[2,:], label='r.z')
-        plt.legend()
-        fg.show()
+        # fg = plt.figure()
+        # plt.plot(self.X.value[0,:], label='r.x')
+        # plt.plot(self.X.value[1,:], label='r.y')
+        # plt.plot(self.X.value[2,:], label='r.z')
+        # plt.legend()
+        # fg.show()
 
-        fg = plt.figure()
-        plt.plot(self.X.value[3,:], label='v.x')
-        plt.plot(self.X.value[4,:], label='v.y')
-        plt.plot(self.X.value[5,:], label='v.z')
-        plt.legend()
-        fg.show()
+        # fg = plt.figure()
+        # plt.plot(self.X.value[3,:], label='v.x')
+        # plt.plot(self.X.value[4,:], label='v.y')
+        # plt.plot(self.X.value[5,:], label='v.z')
+        # plt.legend()
+        # fg.show()
 
-        plt.figure()
-        plt.plot(self.U.value[0,:], label='u.x')
-        plt.plot(self.U.value[1,:], label='u.y')
-        plt.plot(self.U.value[2,:], label='u.z')
-        plt.legend()
-        plt.show()
+        # plt.figure()
+        # plt.plot(self.U.value[0,:], label='u.x')
+        # plt.plot(self.U.value[1,:], label='u.y')
+        # plt.plot(self.U.value[2,:], label='u.z')
+        # plt.legend()
+        # plt.show()
 
-        assert False
+        # assert False
 
         return lin.Vector3(self.U.value[:,0])
 
@@ -171,7 +171,7 @@ sim.step()
 sim.step()
 
 # Main simulation loop
-for _ in range(250):
+for _ in range(150):
 
     # Mean motion of the follower
     r = sim['truth.follower.orbit.r.eci']
