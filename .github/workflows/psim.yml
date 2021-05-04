@@ -27,7 +27,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        sudo apt-get install bazel
         pip install --upgrade pip wheel
         pip install pytest
         pip install lib/lin
