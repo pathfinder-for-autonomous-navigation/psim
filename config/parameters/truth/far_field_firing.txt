@@ -1,0 +1,26 @@
+# These initial conditions lead to a firing node after ~30s econds. These initial
+# conditions were based on output form the following command:
+#   python -m psim -s 10800 -p truth/hill,fc/orbit_controller -c sensors/base,truth/base,fc/base,truth/standby OrbitControllerTest --snapshot snapshot.txt
+#
+
+# Time initial conditions.
+
+truth.t.ns 5780000000000
+
+# Leader spacecraft attitude and orbit initial conditions.
+
+truth.leader.attitude.q.body_eci  0.173301   0.971103 0.029768   0.161367
+truth.leader.attitude.w           0.00359105 0.0069562 0.00386897
+truth.leader.wheels.w             0.0        0.0      0.0
+
+truth.leader.orbit.r 6.43326e+06 -2.29555e+06 562931
+truth.leader.orbit.v  1235.64 4777.94 5358.75
+
+# Follower spacecraft attitude and orbit initial conditions.
+
+truth.follower.attitude.q.body_eci   0.0492112  0.423932 0.765907  0.480881
+truth.follower.attitude.w           -0.0079192  -0.002457 0.0027549
+truth.follower.wheels.w              0.0        0.0      0.0
+
+truth.follower.orbit.r 6.43371e+06 -2.29391e+06 564601
+truth.follower.orbit.v  1233.22 4778.71 5358.43
