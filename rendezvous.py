@@ -41,7 +41,7 @@ R = sp.sparse.diags([1.0, 1.0, 1.0])
 J_max = 0.025
 
 # Satellite mass
-m = 3.6
+m = config["truth.follower.m"]
 
 
 class RendezvousController(object):
@@ -102,7 +102,7 @@ class RendezvousController(object):
 
         # Calculate our dynamics
         self.A.value = RendezvousController.cw(dt, n)
-        self.B.value = self.A.value[:,3:6] / m
+        self.B.value = -self.A.value[:,3:6] / m
 
         # Initial state
         self.x.value = np.array([dr[0], dr[1], dr[2], dv[0], dv[1], dv[2]])
@@ -171,7 +171,7 @@ sim.step()
 sim.step()
 
 # Main simulation loop
-for _ in range(150):
+for _ in range(250):
 
     # Mean motion of the follower
     r = sim['truth.follower.orbit.r.eci']
