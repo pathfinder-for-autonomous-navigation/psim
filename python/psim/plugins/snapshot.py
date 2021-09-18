@@ -57,6 +57,7 @@ class Snapshot(Plugin):
             'truth.follower.attitude.q.body_eci',
             'truth.follower.attitude.w',
             'truth.follower.wheels.w',
+            'truth.earth.q.eci_ecef',
         ]
         
         log.info('Saving simulation snapshot to "%s"', self._snapshot)

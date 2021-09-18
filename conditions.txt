@@ -1,0 +1,22 @@
+truth.t.ns 1700000000000
+truth.leader.orbit.r Vector3
+-1.09945e+06
+5.72569e+06
+5.06429e+06
+truth.leader.orbit.v Vector3
+-6684.92
+237.913
+-670.892
+truth.leader.attitude.q.body_eci None
+truth.leader.attitude.w None
+truth.leader.wheels.w None
+truth.follower.orbit.r None
+truth.follower.orbit.v None
+truth.follower.attitude.q.body_eci None
+truth.follower.attitude.w None
+truth.follower.wheels.w None
+truth.earth.q.eci_ecef Vector4
+-0.00091787
+1.80464e-05
+-0.999956
+-0.0092984

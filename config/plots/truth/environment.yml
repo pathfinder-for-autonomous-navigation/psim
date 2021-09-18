@@ -8,3 +8,4 @@
 - type: Plot2D
   x: truth.t.s
   y: [truth.leader.environment.b.body.x, truth.leader.environment.b.body.y, truth.leader.environment.b.body.z]
+  

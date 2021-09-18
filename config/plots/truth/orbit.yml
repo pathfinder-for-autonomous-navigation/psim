@@ -4,6 +4,11 @@
   x: truth.t.s
   y: [truth.leader.orbit.r.eci.x, truth.leader.orbit.r.eci.y, truth.leader.orbit.r.eci.z]
 
+  # Plot all three coordinates of the leader spacecraft over time.
+- type: Plot2D
+  x: truth.t.s
+  y: [truth.leader.orbit.r.ecef.x, truth.leader.orbit.r.ecef.y, truth.leader.orbit.r.ecef.z]
+
 # Plot the 3D trajectory in ECI
 - type: Plot3D
   x: truth.leader.orbit.r.eci.x
@@ -25,3 +30,7 @@
 - type: Plot2D
   x: truth.t.s
   y: [truth.leader.orbit.v.ecef.x, truth.leader.orbit.v.ecef.y, truth.leader.orbit.v.ecef.z]
+
+- type: Plot2D
+  x: truth.t.s
+  y: [truth.earth.q.eci_ecef.x, truth.earth.q.eci_ecef.y, truth.earth.q.eci_ecef.z, truth.earth.q.eci_ecef.w]
