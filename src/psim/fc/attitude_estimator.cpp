@@ -76,8 +76,11 @@ void AttitudeEstimator::step() {
   }
   // Attempt to reset the current estimate if it isn't valid.
   else {
-    if (lin::all(lin::isfinite(t)) && lin::all(lin::isfinite(r)) &&
-        lin::all(lin::isfinite(b)) && lin::all(lin::isfinite(s)))
+    if (!lin::all(lin::isfinite(s))) {
+      gnc::attitude_estimator_reset(
+          _attitude_state, t, {0.0f, 0.0f, 0.0f, 1.0f});
+    } else if (lin::all(lin::isfinite(t)) && lin::all(lin::isfinite(r)) &&
+               lin::all(lin::isfinite(b)))
       gnc::attitude_estimator_reset(_attitude_state, t, r, b, s);
   }
 
