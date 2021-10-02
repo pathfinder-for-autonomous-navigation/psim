@@ -58,6 +58,7 @@ class AttitudeEstimator : public AttitudeEstimatorInterface<AttitudeEstimator> {
   Real fc_satellite_attitude_q_body_eci_error_degrees() const;
   Vector3 fc_satellite_attitude_p_body_eci_error() const;
   Vector3 fc_satellite_attitude_p_body_eci_sigma() const;
+  Real fc_satellite_attitude_sigma_fro() const; 
   Vector3 fc_satellite_attitude_w() const;
   Vector3 fc_satellite_attitude_w_error() const;
   Vector3 fc_satellite_attitude_w_bias_error() const;

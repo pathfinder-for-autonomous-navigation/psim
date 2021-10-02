@@ -37,6 +37,10 @@ adds:
       comment: >
         One sigma bounds on the current attitude estimate error. This value is
         represented as a Generalized Rodrigues Parameter.
+    - name: "fc.{satellite}.attitude.sigma.fro"
+      type: Lazy Real
+      comment: >
+        Frobenius norm of covariance matrix of attitude estimate. 
     - name: "fc.{satellite}.attitude.w"
       type: Lazy Vector3
       comment: >

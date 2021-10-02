@@ -120,6 +120,12 @@ Vector3 AttitudeEstimator::fc_satellite_attitude_p_body_eci_sigma() const {
   return lin::sqrt(lin::ref<Vector3>(lin::diag(P), 0, 0));
 }
 
+Real AttitudeEstimator::fc_satellite_attitude_sigma_fro() const {
+  auto const &P = _attitude_state.P;
+
+  return lin::fro(P);
+}
+
 Vector3 AttitudeEstimator::fc_satellite_attitude_w() const {
   auto const &bias = fc_satellite_attitude_w_bias.get();
   auto const &sensors_w = sensors_satellite_gyroscope_w->get();

@@ -16,6 +16,9 @@
 - type: Plot2D
   x: truth.t.s
   y: [fc.leader.attitude.w.error.x, fc.leader.attitude.w.error.y, fc.leader.attitude.w.error.z]
+- type: Plot2D
+  x: truth.t.s
+  y: fc.leader.attitude.sigma.fro
 
 # Attitude estimator performance in terms attitude and gyroscope bias error.
 - type: PlotEstimate
@@ -36,3 +39,5 @@
 - type: PlotEstimate
   x: truth.t.s
   y: fc.leader.attitude.w.bias.z
+
+
