@@ -1,0 +1,29 @@
+# Initial conditions for simulations starting during standby. These initial
+# conditions were loosely based on output form the following command(s):
+#   python -m psim -s 500000 -c sensors/base,truth/base,truth/vox_deployment --snapshot snapshot.txt DualAttitudeOrbitGnc
+#   Simulated vox_deployment conditions for 1 day
+
+# Time model initial conditions.
+
+truth.t.ns  85000000000000
+
+# Leader spacecraft attitude and orbit initial conditions.
+
+truth.leader.attitude.q.body_eci  0.00436954    0.00565492  -0.0791557  -0.996835
+truth.leader.attitude.w           0.0985192 0.288825    -0.0898062
+truth.leader.wheels.w             0.0  0.0  0.0
+
+truth.leader.orbit.r  -1.20247e+06  -6.31893e+06    -2.43573e+06
+truth.leader.orbit.v  4866.09   -2721.85    4658.23
+
+# Follower spacecraft attitude and orbit initial conditions.
+#
+# The velocity vector is slightly perturbed from the leader's to allow them to
+# drift apart.
+
+truth.follower.attitude.q.body_eci  -0.834528   0.521121    -0.0457584  -0.17292
+truth.follower.attitude.w           0.22864 -0.106256   0.081877
+truth.follower.wheels.w             0.0  0.0  0.0
+
+truth.follower.orbit.r  -1.15947e+06    -6.34144e+06    -2.39772e+06
+truth.follower.orbit.v  4876.01 -2662.31    4682.02
