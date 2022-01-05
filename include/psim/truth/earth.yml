@@ -6,6 +6,12 @@ comment: >
     quaternions to facilitate the transformations between the ECEF and ECI
     reference frames.
 
+params:
+    - name: "truth.q_ecef0_eci"
+      type: Vector4
+    - name: "truth.earth_precession_rate"
+      type: Vector3
+
 adds:
     - name: "truth.earth.q.eci_ecef"
       type: Lazy Vector4
