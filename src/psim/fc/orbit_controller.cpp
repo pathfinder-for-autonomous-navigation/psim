@@ -119,10 +119,7 @@ void OrbitController::step() {
       //get random noise
       Vector3 random_noise = lin::gaussians<Vector3>(_randoms);
 
-      // normalize the random noise
-      random_noise = random_noise / lin::norm(random_noise);
-
-      // apply proper radius scaling
+      // apply radius scaling
       random_noise = random_noise * thruster_noise_sigma;
 
       //add random noise to impulse
