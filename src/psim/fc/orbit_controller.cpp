@@ -59,7 +59,7 @@ void OrbitController::step() {
   auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
   auto const &fire_time_far = fc_satellite_fire_time_far.get();
   auto const &fire_time_near = fc_satellite_fire_time_near.get();
-  auto const &thruster_noise_radius = fc_satellite_thruster_noise_radius.get();
+  auto const &thruster_noise_sigma = fc_satellite_thruster_noise_sigma.get();
 
   auto const &cdgps_dr = sensors_satellite_cdgps_dr->get();
 
@@ -117,9 +117,15 @@ void OrbitController::step() {
 
     if (lin::all(lin::isfinite(actuation.J_ecef))) {
       //get random noise
-      Vector3 random_noise = lin::gaussians<Vector3>(_randoms) * thruster_noise_radius;
+      Vector3 random_noise = lin::gaussians<Vector3>(_randoms);
 
-      //add random noise
+      // normalize the random noise
+      random_noise = random_noise / lin::norm(random_noise);
+
+      // apply proper radius scaling
+      random_noise = random_noise * thruster_noise_sigma;
+
+      //add random noise to impulse
       J_ecef = actuation.J_ecef + random_noise;
 
       cumulative_dv = cumulative_dv + lin::norm(J_ecef) / m;
