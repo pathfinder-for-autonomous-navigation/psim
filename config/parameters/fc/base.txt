@@ -5,3 +5,7 @@ fc.leader.fire_time_near   300
 
 fc.follower.fire_time_far     1800
 fc.follower.fire_time_near    300
+
+# Ideally these would be in an actuators folder...
+fc.leader.thruster.noise_radius 1.0
+fc.follower.thruster.noise_radius 1.0

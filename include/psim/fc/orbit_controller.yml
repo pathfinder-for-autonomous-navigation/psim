@@ -15,6 +15,8 @@ params:
       type: Integer
     - name: "fc.{satellite}.fire_time_near"
       type: Integer
+    - name: "fc.{satellite}.thruster.noise_radius"
+      type: Real
 adds:
     - name: "fc.{satellite}.cumulative_dv"
       type: Real

@@ -59,6 +59,8 @@ void OrbitController::step() {
   auto const &other_v_ecef = truth_other_orbit_v_ecef->get();
   auto const &fire_time_far = fc_satellite_fire_time_far.get();
   auto const &fire_time_near = fc_satellite_fire_time_near.get();
+  auto const &thruster_noise_radius = fc_satellite_thruster_noise_radius.get();
+
   auto const &cdgps_dr = sensors_satellite_cdgps_dr->get();
 
   auto const gain_factor = fire_time_far / fire_time_near;
@@ -114,7 +116,12 @@ void OrbitController::step() {
     gnc::control_orbit(_orbit_controller, data, actuation);
 
     if (lin::all(lin::isfinite(actuation.J_ecef))) {
-      J_ecef = actuation.J_ecef;
+      //get random noise
+      Vector3 random_noise = lin::gaussians<Vector3>(_randoms) * thruster_noise_radius;
+
+      //add random noise
+      J_ecef = actuation.J_ecef + random_noise;
+
       cumulative_dv = cumulative_dv + lin::norm(J_ecef) / m;
     } else {
       J_ecef = lin::zeros<Vector3>();
