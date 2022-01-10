@@ -5,3 +5,12 @@ fc.leader.fire_time_near   300
 
 fc.follower.fire_time_far     1800
 fc.follower.fire_time_near    300
+
+# Ideally these would be in an actuators folder...
+# https://docs.google.com/spreadsheets/d/1PmbRiLaxWfPm8o3WJnG9EudwjCTLcfDGJe1scMyEqao/edit?usp=sharing
+# Best Case 0.0002828427125
+# Expected Case 0.0004242640687
+# Worst Case (Conservative) 0.0008485281374
+
+fc.leader.thruster.noise_sigma 0.0004242640687
+fc.follower.thruster.noise_sigma 0.0004242640687
