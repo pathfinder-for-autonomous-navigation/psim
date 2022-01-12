@@ -38,9 +38,32 @@ namespace psim {
 
 Vector4 EarthGnc::truth_earth_q_ecef_eci() const {
   auto const &t = truth_t_s->get();
+  auto const &earth_precession_rate = truth_earth_precession_rate.get();
+  auto const &q_ecef0_eci = truth_q_ecef0_eci.get();
 
-  Vector4 q_ecef_eci;
-  gnc::env::earth_attitude(t, q_ecef_eci);
+    Vector4 q_ecef_eci;
+
+    // Determine a transformation from ecef0 to ecef0p
+  lin::Vector4d q_ecef0p_ecef0({  // Small angle approx sin(x) ~ x
+    t * earth_precession_rate(0),
+    t * earth_precession_rate(1),
+    t * earth_precession_rate(2),
+    1.0
+  });
+  q_ecef0p_ecef0 = q_ecef0p_ecef0 / lin::norm(q_ecef0p_ecef0);
+  // Earth's rotation angle about the z axis (assumes x, y components are zero)
+  double theta = t * gnc::constant::earth_rate_ecef_z;
+  lin::Vector4d q_ecef_ecef0p({
+    0.0,
+    0.0,
+    std::sin(theta / 2.0),
+    std::cos(theta / 2.0)
+  });
+  // Rotate through ECI -> ECEF0 -> ECEF0P -> ECEF
+  lin::Vector4d temp;
+  gnc::utl::quat_cross_mult(q_ecef0p_ecef0, q_ecef0_eci, temp);
+  gnc::utl::quat_cross_mult(q_ecef_ecef0p, temp, q_ecef_eci);
+
   return q_ecef_eci;
 }
 

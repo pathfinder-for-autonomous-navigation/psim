@@ -8,6 +8,10 @@ seed  0
 
 truth.dt.ns  170000000
 
+# Earth initial conditions
+truth.earth_precession_rate 0.069896936522494e-11 -0.315732660584366e-11    0.0
+truth.q_ecef0_eci 0.000917219458782 0.000038843277811   0.998612074831165   0.052660053181324
+
 # Leader spacecraft attitude and orbit shared initial conditions.
 
 truth.leader.S  0.03
